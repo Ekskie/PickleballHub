@@ -1,78 +1,101 @@
 {% extends "base.html" %}
 
-{% block title %}Player Dashboard{% endblock %}
-
-{% block sidebar_menu %}
-    <li class="active"><a href="#"><i class="ph ph-squares-four"></i> Overview</a></li>
-    <li><a href="#"><i class="ph ph-calendar-check"></i> My Bookings</a></li>
-    <li><a href="#"><i class="ph ph-magnifying-glass"></i> Find Matches</a></li>
-    <li><a href="#"><i class="ph ph-trophy"></i> Leaderboard</a></li>
-    <li><a href="#"><i class="ph ph-chat-circle-dots"></i> Messages</a></li>
-{% endblock %}
+{% block title %}Dashboard{% endblock %}
 
 {% block content %}
+<div class="dashboard-header">
+    <h1 class="page-title">Dashboard</h1>
+</div>
+
 <div class="dashboard-grid">
-    
+
     <!-- Left Column (Main) -->
     <div class="dashboard-main">
-        <h1 class="page-title">Welcome back, Player One! 👋</h1>
-        
+
         <!-- Hero Widget: Next Reservation -->
-        <div class="glass-card hero-widget">
-            <div class="widget-header">
-                <h3><i class="ph ph-clock"></i> Next Reservation</h3>
-                <span class="status-badge">Confirmed</span>
-            </div>
-            <div class="reservation-details">
-                <div class="detail-block">
-                    <h4>Court 1 - Premium Indoor</h4>
-                    <p>Downtown Pickleball Center</p>
+        <div class="glass-card full-width">
+            <div class="reservation-grid">
+                <div class="court-image">
+                    <img src="{{ url_for('static', filename='images/court-hero.jpg') }}" alt="Pickleball Court">
                 </div>
-                <div class="detail-time">
-                    <h2>Today, 6:00 PM</h2>
-                    <p>Duration: 2 Hours</p>
+                <div class="reservation-info">
+                    <p class="small-caps">UPCOMING RESERVATION</p>
+                    <h2>Court 2</h2>
+                    <div class="info-row">
+                        <span><i class="ph ph-map-pin"></i> Main Facility</span>
+                        <span><i class="ph ph-calendar"></i> April 28, 2025</span>
+                    </div>
+                    <div class="info-time">5:00 PM - 6:00 PM</div>
+                    <span class="status-badge success"><i class="ph ph-check-circle"></i> Confirmed</span>
                 </div>
-                <button class="btn-primary">View Details</button>
             </div>
         </div>
 
         <!-- Available Courts Data Grid -->
-        <div class="glass-card section-widget">
-            <div class="widget-header space-between">
-                <h3>Available Courts Today</h3>
+        <div class="glass-card">
+            <div class="widget-header">
+                <h3>Available Courts</h3>
                 <a href="#" class="view-all">View All</a>
             </div>
             <div class="table-container">
                 <table class="data-grid">
                     <thead>
                         <tr>
-                            <th>Court Name</th>
-                            <th>Time Slot</th>
-                            <th>Level/Type</th>
-                            <th>Action</th>
+                            <th>COURT</th>
+                            <th>TIME SLOT</th>
+                            <th>STATUS</th>
+                            <th>ACTION</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>Court 3 - Outdoor</td>
-                            <td>8:00 PM - 9:00 PM</td>
-                            <td><span class="pill outline">Intermediate</span></td>
-                            <td><button class="btn-sm">Reserve</button></td>
+                            <td class="bold">Court 1</td>
+                            <td>3:00 - 4:00 PM</td>
+                            <td><span class="status-pill success">Available</span></td>
+                            <td><a href="#" class="action-link">Book</a></td>
                         </tr>
                         <tr>
-                            <td>Court 2 - Indoor</td>
-                            <td>9:00 PM - 10:00 PM</td>
-                            <td><span class="pill outline">Advanced</span></td>
-                            <td><button class="btn-sm">Reserve</button></td>
+                            <td class="bold">Court 2</td>
+                            <td>4:00 - 5:00 PM</td>
+                            <td><span class="status-pill disabled">Booked</span></td>
+                            <td><a href="#" class="action-link disabled-action">View</a></td>
                         </tr>
                         <tr>
-                            <td>Court 4 - Outdoor</td>
-                            <td>7:30 PM - 8:30 PM</td>
-                            <td><span class="pill outline">Open Play</span></td>
-                            <td><button class="btn-sm">Join</button></td>
+                            <td class="bold">Court 3</td>
+                            <td>5:00 - 6:00 PM</td>
+                            <td><span class="status-pill success">Available</span></td>
+                            <td><a href="#" class="action-link">Book</a></td>
+                        </tr>
+                        <tr>
+                            <td class="bold">Court 4</td>
+                            <td>3:30 - 5:00 PM</td>
+                            <td><span class="status-pill success">Available</span></td>
+                            <td><a href="#" class="action-link">Book</a></td>
                         </tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <!-- Upcoming Events -->
+        <div class="glass-card">
+            <div class="widget-header">
+                <h3>Upcoming Events</h3>
+                <a href="#" class="view-all">View All</a>
+            </div>
+            <div class="events-grid">
+                <div class="event-card">
+                    <h4>Weekend Doubles</h4>
+                    <p>May 3, 2025</p>
+                </div>
+                <div class="event-card">
+                    <h4>City Tournament</h4>
+                    <p>May 10, 2025</p>
+                </div>
+                <div class="event-card">
+                    <h4>Community Playday</h4>
+                    <p>May 20, 2025</p>
+                </div>
             </div>
         </div>
     </div>
@@ -80,54 +103,58 @@
     <!-- Right Column (Sidebar) -->
     <div class="dashboard-side">
         <!-- Quick Actions -->
-        <div class="glass-card section-widget">
-            <h3>Quick Actions</h3>
+        <div class="glass-card">
+            <h3 class="widget-title">Quick Actions</h3>
             <div class="action-grid">
-                <button class="action-box">
-                    <i class="ph ph-plus-circle"></i>
-                    <span>Book Court</span>
+                <button class="action-box orange">
+                    <i class="ph ph-calendar-plus"></i>
+                    <span>Reserve Court</span>
                 </button>
-                <button class="action-box">
-                    <i class="ph ph-users-three"></i>
-                    <span>Find Match</span>
+                <button class="action-box navy">
+                    <i class="ph ph-trophy"></i>
+                    <span>Join Tournament</span>
                 </button>
-                <button class="action-box">
-                    <i class="ph ph-barcode"></i>
-                    <span>My QR</span>
+                <button class="action-box navy">
+                    <i class="ph ph-users"></i>
+                    <span>View Events</span>
                 </button>
-                <button class="action-box">
-                    <i class="ph ph-storefront"></i>
-                    <span>Pro Shop</span>
+                <button class="action-box green">
+                    <i class="ph ph-chat-text"></i>
+                    <span>Community Chat</span>
                 </button>
             </div>
         </div>
 
         <!-- Activity Feed -->
-        <div class="glass-card section-widget">
-            <h3>Recent Activity</h3>
+        <div class="glass-card flex-fill">
+            <h3 class="widget-title">Activity Feed</h3>
             <ul class="activity-feed">
                 <li>
-                    <div class="activity-icon"><i class="ph ph-check-circle"></i></div>
+                    <span class="dot"></span>
                     <div class="activity-info">
-                        <strong>Match won</strong>
-                        <p>You beat Team Alpha 11-5</p>
-                        <small>2h ago</small>
+                        <p><strong>Maria Santos</strong> joined a tournament</p>
+                        <small>10 mins ago</small>
                     </div>
                 </li>
                 <li>
-                    <div class="activity-icon"><i class="ph ph-wallet"></i></div>
+                    <span class="dot"></span>
                     <div class="activity-info">
-                        <strong>Payment successful</strong>
-                        <p>Court 1 Reservation paid</p>
-                        <small>Yesterday</small>
+                        <p>You booked Court 2</p>
+                        <small>1 hour ago</small>
                     </div>
                 </li>
                 <li>
-                    <div class="activity-icon"><i class="ph ph-user-plus"></i></div>
+                    <span class="dot"></span>
                     <div class="activity-info">
-                        <strong>New friend request</strong>
-                        <p>Jane Smith added you</p>
-                        <small>2 days ago</small>
+                        <p>Summer Open! registrations live</p>
+                        <small>3 hours ago</small>
+                    </div>
+                </li>
+                <li>
+                    <span class="dot"></span>
+                    <div class="activity-info">
+                        <p>New community event posted</p>
+                        <small>5 hours ago</small>
                     </div>
                 </li>
             </ul>
