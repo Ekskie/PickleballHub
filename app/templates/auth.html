@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication - PickleballHub</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Phosphor Icons (for standard UI icons) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+
+<body>
+
+    <div class="background-wrap">
+        <div class="overlay"></div>
+    </div>
+
+    <nav class="navbar">
+        <div class="logo">
+            <span class="logo-ball"></span>
+            PickleballHub
+        </div>
+    </nav>
+
+    <main class="auth-container">
+        <!-- Left Side content (Hero info) -->
+        <div class="hero-info">
+            <div class="pill">🌟 PREMIUM PICKLEBALL EXPERIENCE</div>
+            <h1>Where Players Meet Excellence</h1>
+            <p>Join the fastest growing community of elite pickleball players. Book courts, find matches, and track your
+                progress in real-time.</p>
+        </div>
+
+        <!-- Right Side content (Auth Card) -->
+        <div class="auth-card">
+
+            <div class="auth-toggle">
+                <button class="toggle-btn active" id="btn-login" onclick="switchTab('login')">Login</button>
+                <button class="toggle-btn" id="btn-signup" onclick="switchTab('signup')">Sign Up</button>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="alerts">
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <!-- Login Form -->
+            <form id="form-login" class="auth-form {% if active_tab != 'signup' %}active{% endif %}"
+                action="{{ url_for('auth.auth') }}" method="POST">
+                <input type="hidden" name="action" value="login">
+
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <div class="input-wrapper">
+                        <i class="ph ph-envelope"></i>
+                        <input type="email" name="email" placeholder="player@email.com" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-wrapper">
+                        <i class="ph ph-lock-key"></i>
+                        <input type="password" name="password" id="login-password" placeholder="••••••••" required>
+                        <i class="ph ph-eye hover-icon" onclick="togglePassword('login-password')"></i>
+                    </div>
+                </div>
+
+                <div class="forgot-password">
+                    <a href="#">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="submit-btn">Sign In to Dashboard <i class="ph ph-arrow-right"></i></button>
+
+                <div class="divider"><span>or continue with</span></div>
+
+                <button type="button" class="social-btn">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google">
+                    Google
+                </button>
+            </form>
+
+            <!-- Signup Form -->
+            <form id="form-signup" class="auth-form {% if active_tab == 'signup' %}active{% endif %}"
+                action="{{ url_for('auth.auth') }}" method="POST">
+                <input type="hidden" name="action" value="signup">
+
+                <div class="role-selector">
+                    <div class="role-card active" onclick="selectRole(this, 'player')">
+                        <i class="ph ph-user"></i>
+                        <span>Player</span>
+                    </div>
+                    <div class="role-card" onclick="selectRole(this, 'coach')">
+                        <i class="ph ph-chalkboard-teacher"></i>
+                        <span>Coach</span>
+                    </div>
+                    <div class="role-card" onclick="selectRole(this, 'facility')">
+                        <i class="ph ph-buildings"></i>
+                        <span>Facility</span>
+                    </div>
+                </div>
+                <!-- Hidden input for role -->
+                <input type="hidden" name="role" id="selected-role" value="player">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>First Name</label>
+                        <div class="input-wrapper">
+                            <i class="ph ph-user"></i>
+                            <input type="text" name="first_name" placeholder="John" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name</label>
+                        <div class="input-wrapper">
+                            <i class="ph ph-user"></i>
+                            <input type="text" name="last_name" placeholder="Doe" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <div class="input-wrapper">
+                        <i class="ph ph-envelope"></i>
+                        <input type="email" name="email" placeholder="john@example.com" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-wrapper">
+                        <i class="ph ph-lock-key"></i>
+                        <input type="password" name="password" id="signup-password"
+                            placeholder="Create a strong password" required>
+                        <i class="ph ph-eye hover-icon" onclick="togglePassword('signup-password')"></i>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn primary-orange">Create Account <i
+                        class="ph ph-arrow-right"></i></button>
+                <div class="terms-text">By creating an account, you agree to our Terms of Service and Privacy Policy.
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <footer class="stats-footer">
+        <div class="stat-item">
+            <h3>500+</h3>
+            <p>Active Players</p>
+        </div>
+        <div class="stat-item">
+            <h3>50+</h3>
+            <p>Premium Courts</p>
+        </div>
+        <div class="stat-item">
+            <h3>10k+</h3>
+            <p>Matches Played</p>
+        </div>
+        <div class="stat-item">
+            <h3>100%</h3>
+            <p>Satisfaction</p>
+        </div>
+    </footer>
+
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        // Automatically switch to the active tab chosen by flask
+        document.addEventListener("DOMContentLoaded", function () {
+            const tab = '{{ active_tab }}' || 'login';
+            switchTab(tab);
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard{% endblock %} - PickleballHub</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Base CSS + Dashboard Specific CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body class="dashboard-body">
+    <!-- Reusable Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <span class="logo-ball"></span>
+            <h2>PickleHub</h2>
+        </div>
+        <ul class="sidebar-nav">
+            {% block sidebar_menu %}
+            <!-- Default placeholder menu -->
+            <li class="active"><a href="#"><i class="ph ph-squares-four"></i> Dashboard</a></li>
+            <li><a href="#"><i class="ph ph-tennis-ball"></i> Courts</a></li>
+            <li><a href="#"><i class="ph ph-calendar-blank"></i> Reservations</a></li>
+            <li><a href="#"><i class="ph ph-users"></i> Community</a></li>
+            <li><a href="#"><i class="ph ph-gear"></i> Settings</a></li>
+            {% endblock %}
+        </ul>
+        <div class="sidebar-footer">
+            <a href="{{ url_for('auth.auth') }}" class="logout-btn"><i class="ph ph-sign-out"></i> Log Out</a>
+        </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-wrapper">
+        <!-- Reusable Header -->
+        <header class="top-header">
+            <div class="header-search">
+                <i class="ph ph-magnifying-glass"></i>
+                <input type="text" placeholder="Search courts, players...">
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn"><i class="ph ph-bell"></i></button>
+                <div class="user-profile">
+                    <img src="https://ui-avatars.com/api/?name=Player+One&background=ff5722&color=fff" alt="Profile">
+                    <span>Player One</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dynamic Content Area -->
+        <main class="content-area">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</body>
+</html>
