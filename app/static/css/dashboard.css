@@ -96,21 +96,22 @@ th {
     position: relative;
 }
 
-/* Base Gradient Blob (mimics lovable design) */
+/* Background image with white overlay (light mode) */
 .content-background {
     position: absolute;
-    top: -200px;
-    right: -100px;
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(circle, rgba(225, 86, 35, 0.08) 0%, rgba(225, 86, 35, 0) 70%);
+    inset: 0;
     z-index: 0;
     pointer-events: none;
-    border-radius: 50%;
+    background:
+        linear-gradient(rgba(246, 247, 249, 0.90), rgba(246, 247, 249, 0.90)),
+        url('/static/images/background.jpg') center / cover no-repeat;
 }
 
+/* Background image with dark overlay (dark mode) */
 html.dark-mode .content-background {
-    background: radial-gradient(circle, rgba(225, 86, 35, 0.04) 0%, rgba(225, 86, 35, 0) 70%);
+    background:
+        linear-gradient(rgba(11, 14, 20, 0.92), rgba(11, 14, 20, 0.92)),
+        url('/static/images/background.jpg') center / cover no-repeat;
 }
 
 /* ----- Sidebar ----- */
