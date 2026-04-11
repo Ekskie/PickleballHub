@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}Court Reservation{% endblock %}
+
+{% block extra_head %}
+<style>
+    .reservation-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+    .date-picker-wrap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+    .date-picker-wrap input[type="date"] {
+        border: 1px solid var(--border-color);
+        background: var(--card-bg);
+        color: var(--text-primary);
+        font-size: 0.875rem;
+        padding: 8px 12px;
+        border-radius: 8px;
+        outline: none;
+        cursor: pointer;
+        font-family: inherit;
+    }
+    .date-picker-wrap input[type="date"]:focus {
+        border-color: var(--primary-orange);
+    }
+
+    /* Legend */
+    .court-legend {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        margin-bottom: 20px;
+    }
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+    .legend-dot {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 2px solid var(--border-color);
+        background: var(--card-bg);
+    }
+    .legend-dot.booked {
+        background: var(--input-bg);
+        border-color: var(--border-color);
+    }
+    .legend-dot.selected {
+        background: var(--primary-orange);
+        border-color: var(--primary-orange);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .legend-dot.selected::after {
+        content: '✓';
+        color: white;
+        font-size: 10px;
+        font-weight: 700;
+    }
+
+    /* Booking Table */
+    .booking-table-wrap {
+        overflow-x: auto;
+    }
+    .booking-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 600px;
+    }
+    .booking-table th {
+        padding: 14px 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-align: center;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .booking-table th:first-child {
+        text-align: left;
+        width: 110px;
+    }
+    .booking-table td {
+        padding: 0;
+        border-bottom: 1px solid var(--border-color);
+        border-right: 1px solid var(--border-color);
+        text-align: center;
+    }
+    .booking-table td:first-child {
+        padding: 14px 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        text-align: left;
+        border-right: 1px solid var(--border-color);
+        background: var(--bg-color);
+        white-space: nowrap;
+    }
+    .booking-table tr:last-child td {
+        border-bottom: none;
+    }
+    .slot-btn {
+        display: block;
+        width: 100%;
+        padding: 16px 8px;
+        border: none;
+        background: transparent;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        transition: background 0.2s, color 0.2s;
+        color: var(--text-muted);
+    }
+    .slot-btn.available:hover {
+        background: var(--primary-orange-light);
+        color: var(--primary-orange);
+    }
+    .slot-btn.reserved {
+        background: var(--input-bg);
+        color: var(--text-muted);
+        cursor: not-allowed;
+        font-weight: 500;
+    }
+    .slot-btn.selected-slot {
+        background: var(--primary-orange);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="reservation-page-header">
+    <h1 class="page-title">Court Reservation</h1>
+    <div class="date-picker-wrap">
+        <span>Select Date:</span>
+        <input type="date" value="2025-04-28">
+    </div>
+</div>
+
+<div class="glass-card">
+    <div class="court-legend">
+        <div class="legend-item">
+            <div class="legend-dot"></div>
+            <span>Available</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot booked"></div>
+            <span>Booked</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot selected"></div>
+            <span>Selected</span>
+        </div>
+    </div>
+
+    <div class="booking-table-wrap">
+        <table class="booking-table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Court 1</th>
+                    <th>Court 2</th>
+                    <th>Court 3</th>
+                    <th>Court 4</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>08:00 AM</td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                    <td><button class="slot-btn reserved">RESERVED</button></td>
+                </tr>
+                <tr>
+                    <td>09:00 AM</td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                    <td><button class="slot-btn reserved">RESERVED</button></td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                </tr>
+                <tr>
+                    <td>10:00 AM</td>
+                    <td><button class="slot-btn reserved">RESERVED</button></td>
+                    <td><button class="slot-btn reserved">RESERVED</button></td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                </tr>
+                <tr>
+                    <td>11:00 AM</td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                </tr>
+                <tr>
+                    <td>12:00 PM</td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                </tr>
+                <tr>
+                    <td>01:00 PM</td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                    <td><button class="slot-btn reserved">RESERVED</button></td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                </tr>
+                <tr>
+                    <td>02:00 PM</td>
+                    <td><button class="slot-btn reserved">RESERVED</button></td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                </tr>
+                <tr>
+                    <td>03:00 PM</td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                    <td><button class="slot-btn reserved">RESERVED</button></td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                </tr>
+                <tr>
+                    <td>04:00 PM</td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                    <td><button class="slot-btn reserved">RESERVED</button></td>
+                </tr>
+                <tr>
+                    <td>05:00 PM</td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                    <td><button class="slot-btn available">AVAILABLE</button></td>
+                    <td><button class="slot-btn reserved">RESERVED</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.slot-btn.available').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Deselect if already selected
+            if (this.classList.contains('selected-slot')) {
+                this.classList.remove('selected-slot');
+                this.textContent = 'AVAILABLE';
+                return;
+            }
+            this.classList.add('selected-slot');
+            this.textContent = '✓ SELECTED';
+        });
+    });
+</script>
+{% endblock %}

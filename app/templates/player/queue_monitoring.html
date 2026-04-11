@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}Queue Monitoring{% endblock %}
+
+{% block extra_head %}
+<style>
+    .queue-position-card {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        padding: 28px;
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        box-shadow: var(--shadow-card);
+        margin-bottom: 24px;
+    }
+    .queue-circle {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: var(--primary-orange-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--primary-orange);
+        flex-shrink: 0;
+    }
+    .queue-details h2 {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+    }
+    .queue-details p {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    /* Queue table */
+    .queue-table-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+    .queue-table-header i {
+        color: var(--primary-orange);
+        font-size: 1.2rem;
+    }
+    .queue-table-header h3 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+    .queue-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .queue-table th {
+        text-align: left;
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border-color);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .queue-table td {
+        padding: 16px 0;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        border-bottom: 1px solid var(--border-color);
+    }
+    .queue-table tr:last-child td {
+        border-bottom: none;
+    }
+    .queue-table td:first-child {
+        font-weight: 700;
+        color: var(--text-primary);
+        width: 40px;
+    }
+    .queue-table td.player-name {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    .queue-table td.court-mono {
+        font-family: monospace;
+        font-size: 0.85rem;
+    }
+    .queue-row-you {
+        background: var(--primary-orange-light);
+    }
+    .queue-row-you td {
+        color: var(--text-primary) !important;
+    }
+    .you-label {
+        color: var(--primary-orange);
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-left: 6px;
+    }
+
+    /* Status pills */
+    .pill-next {
+        display: inline-block;
+        background: var(--btn-green-light);
+        color: var(--btn-green);
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 4px 12px;
+        border-radius: 20px;
+    }
+    .pill-waiting {
+        display: inline-block;
+        background: rgba(225, 86, 35, 0.1);
+        color: var(--primary-orange);
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 4px 12px;
+        border-radius: 20px;
+    }
+    html.dark-mode .pill-next {
+        background: rgba(41, 163, 86, 0.15);
+        color: #4ade80;
+    }
+    html.dark-mode .pill-waiting {
+        background: rgba(225, 86, 35, 0.15);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="page-title">Queue Monitoring</h1>
+</div>
+
+<!-- Your position card -->
+<div class="queue-position-card">
+    <div class="queue-circle">#3</div>
+    <div class="queue-details">
+        <h2>Your Queue Position</h2>
+        <p>Estimated wait: ~25 min</p>
+        <p>Assigned to: Court 2</p>
+    </div>
+</div>
+
+<!-- Current queue table -->
+<div class="glass-card">
+    <div class="queue-table-header">
+        <i class="ph ph-list-numbers"></i>
+        <h3>Current Queue</h3>
+    </div>
+    <table class="queue-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Player</th>
+                <th>Court</th>
+                <th>Status</th>
+                <th>Est. Wait</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td class="player-name">Juan Dela Cruz</td>
+                <td class="court-mono">Court 1</td>
+                <td><span class="pill-next">Next</span></td>
+                <td>~5 min</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td class="player-name">Maria Santos</td>
+                <td class="court-mono">Court 1</td>
+                <td><span class="pill-waiting">Waiting</span></td>
+                <td>~15 min</td>
+            </tr>
+            <tr class="queue-row-you">
+                <td>3</td>
+                <td class="player-name">You <span class="you-label">(You)</span></td>
+                <td class="court-mono">Court 2</td>
+                <td><span class="pill-waiting">Waiting</span></td>
+                <td>~25 min</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td class="player-name">Pedro Reyes</td>
+                <td class="court-mono">Court 2</td>
+                <td><span class="pill-waiting">Waiting</span></td>
+                <td>~35 min</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td class="player-name">Ana Garcia</td>
+                <td class="court-mono">Court 3</td>
+                <td><span class="pill-waiting">Waiting</span></td>
+                <td>~45 min</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block title %}Community{% endblock %}
+
+{% block extra_head %}
+<style>
+    .community-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+    .posts-count {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    /* Create Post Card */
+    .create-post-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: var(--shadow-card);
+        margin-bottom: 20px;
+    }
+    .create-post-top {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        margin-bottom: 14px;
+    }
+    .community-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        background: var(--btn-navy);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+    .post-textarea {
+        flex: 1;
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 12px 16px;
+        font-size: 0.875rem;
+        color: var(--text-primary);
+        resize: none;
+        min-height: 60px;
+        font-family: inherit;
+        outline: none;
+        width: 100%;
+        transition: border-color 0.2s;
+    }
+    .post-textarea:focus {
+        border-color: var(--primary-orange);
+    }
+    .post-textarea::placeholder {
+        color: var(--text-muted);
+    }
+    .create-post-footer {
+        display: flex;
+        justify-content: flex-end;
+    }
+    .btn-post {
+        padding: 9px 22px;
+        background: var(--primary-orange);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.2s;
+    }
+    .btn-post:hover {
+        background: var(--primary-orange-hover);
+        transform: translateY(-1px);
+    }
+
+    /* Feed Post Cards */
+    .feed-post-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: var(--shadow-card);
+        margin-bottom: 16px;
+    }
+    .feed-post-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+    .feed-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        background: var(--btn-navy);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+    .feed-post-meta h4 {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 2px;
+    }
+    .feed-post-meta span {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .feed-post-body {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin-bottom: 14px;
+    }
+    .feed-post-footer {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+    .feed-action {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: color 0.2s;
+        background: none;
+        border: none;
+        padding: 0;
+        font-family: inherit;
+    }
+    .feed-action:hover {
+        color: var(--primary-orange);
+    }
+    .feed-action i {
+        font-size: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="community-page-header">
+    <h1 class="page-title">Community</h1>
+    <span class="posts-count">4 posts</span>
+</div>
+
+<!-- Create Post -->
+<div class="create-post-card">
+    <div class="create-post-top">
+        <div class="community-avatar">P</div>
+        <textarea class="post-textarea" placeholder="Share something with the community..."></textarea>
+    </div>
+    <div class="create-post-footer">
+        <button class="btn-post">Post</button>
+    </div>
+</div>
+
+<!-- Posts Feed -->
+<div class="feed-post-card">
+    <div class="feed-post-header">
+        <div class="feed-avatar">MS</div>
+        <div class="feed-post-meta">
+            <h4>Maria Santos</h4>
+            <span><i class="ph ph-clock"></i> 2 hours ago</span>
+        </div>
+    </div>
+    <p class="feed-post-body">Anyone up for doubles this Saturday morning? Looking for 3 more players!</p>
+    <div class="feed-post-footer">
+        <button class="feed-action"><i class="ph ph-thumbs-up"></i> 5</button>
+        <button class="feed-action"><i class="ph ph-chat-circle"></i> 2 replies</button>
+    </div>
+</div>
+
+<div class="feed-post-card">
+    <div class="feed-post-header">
+        <div class="feed-avatar">CR</div>
+        <div class="feed-post-meta">
+            <h4>Carlos Rivera</h4>
+            <span><i class="ph ph-clock"></i> 4 hours ago</span>
+        </div>
+    </div>
+    <p class="feed-post-body">Great session today at Court 3. The new nets are amazing! Thanks to the facility team.</p>
+    <div class="feed-post-footer">
+        <button class="feed-action"><i class="ph ph-thumbs-up"></i> 12</button>
+        <button class="feed-action"><i class="ph ph-chat-circle"></i> 1 replies</button>
+    </div>
+</div>
+
+<div class="feed-post-card">
+    <div class="feed-post-header">
+        <div class="feed-avatar">JK</div>
+        <div class="feed-post-meta">
+            <h4>Jane Kim</h4>
+            <span><i class="ph ph-clock"></i> 6 hours ago</span>
+        </div>
+    </div>
+    <p class="feed-post-body">Reminder: Weekend Doubles Championship registration closes Friday. Don't miss out! 🏆</p>
+    <div class="feed-post-footer">
+        <button class="feed-action"><i class="ph ph-thumbs-up"></i> 22</button>
+        <button class="feed-action"><i class="ph ph-chat-circle"></i> 0 replies</button>
+    </div>
+</div>
+
+<div class="feed-post-card">
+    <div class="feed-post-header">
+        <div class="feed-avatar">JD</div>
+        <div class="feed-post-meta">
+            <h4>Juan Dela Cruz</h4>
+            <span><i class="ph ph-clock"></i> 1 day ago</span>
+        </div>
+    </div>
+    <p class="feed-post-body">New to the hub! Looking forward to meeting everyone on the courts. 🎾</p>
+    <div class="feed-post-footer">
+        <button class="feed-action"><i class="ph ph-thumbs-up"></i> 8</button>
+        <button class="feed-action"><i class="ph ph-chat-circle"></i> 3 replies</button>
+    </div>
+</div>
+{% endblock %}
