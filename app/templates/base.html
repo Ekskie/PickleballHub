@@ -12,6 +12,8 @@
     <!-- Base CSS + Dashboard Specific CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
     <!-- Phosphor Icons -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script>
         // Init Dark Mode from localStorage on load to prevent flickering
@@ -26,7 +28,7 @@
     <!-- Reusable Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <img class="logo" src="{{ url_for('static', filename='images/logo-icon.png') }}" alt="PickleballHub Logo">
+            <img class="sidebar-logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="PickleballHub Logo">
             <h2>PickleballHub</h2>
         </div>
 
@@ -38,14 +40,21 @@
 
         <ul class="sidebar-nav">
             {% block sidebar_menu %}
-            <li class="{% if request.endpoint == 'player.dashboard' %}active{% endif %}"><a href="{{ url_for('player.dashboard') }}"><i class="ph ph-squares-four"></i> Dashboard</a></li>
-            <li class="{% if request.endpoint == 'player.profile' %}active{% endif %}"><a href="{{ url_for('player.profile') }}"><i class="ph ph-user-circle"></i> Profile Management</a></li>
-            <li class="{% if request.endpoint == 'player.reservation' %}active{% endif %}"><a href="{{ url_for('player.reservation') }}"><i class="ph ph-calendar-plus"></i> Court Reservation</a></li>
-            <li class="{% if request.endpoint == 'player.queue' %}active{% endif %}"><a href="{{ url_for('player.queue') }}"><i class="ph ph-list-numbers"></i> Queue Monitoring</a></li>
-            <li class="{% if request.endpoint == 'player.events' %}active{% endif %}"><a href="{{ url_for('player.events') }}"><i class="ph ph-trophy"></i> Events & Tournaments</a></li>
-            <li class="{% if request.endpoint == 'player.community' %}active{% endif %}"><a href="{{ url_for('player.community') }}"><i class="ph ph-users"></i> Community</a></li>
-            <li class="{% if request.endpoint == 'player.messages' %}active{% endif %}"><a href="{{ url_for('player.messages') }}"><i class="ph ph-chat-circle-dots"></i> Messages</a></li>
-            <li class="{% if request.endpoint == 'player.notifications' %}active{% endif %}"><a href="{{ url_for('player.notifications') }}"><i class="ph ph-bell"></i> Notifications</a></li>
+            <li class="{% if request.endpoint == 'player.dashboard' %}active{% endif %}"><a
+                    href="{{ url_for('player.dashboard') }}"><i class="ph ph-squares-four"></i> Dashboard</a></li>
+            <li class="{% if request.endpoint == 'player.profile' %}active{% endif %}"><a
+                    href="{{ url_for('player.profile') }}"><i class="ph ph-user-circle"></i> Profile Management</a></li>
+            <li class="{% if request.endpoint == 'player.reservation' %}active{% endif %}"><a
+                    href="{{ url_for('player.reservation') }}"><i class="ph ph-calendar-plus"></i> Court Reservation</a>
+            </li>
+            <li class="{% if request.endpoint == 'player.queue' %}active{% endif %}"><a
+                    href="{{ url_for('player.queue') }}"><i class="ph ph-list-numbers"></i> Queue Monitoring</a></li>
+            <li class="{% if request.endpoint == 'player.events' %}active{% endif %}"><a
+                    href="{{ url_for('player.events') }}"><i class="ph ph-trophy"></i> Events & Tournaments</a></li>
+            <li class="{% if request.endpoint == 'player.community' %}active{% endif %}"><a
+                    href="{{ url_for('player.community') }}"><i class="ph ph-users"></i> Community</a></li>
+            <li class="{% if request.endpoint == 'player.messages' %}active{% endif %}"><a
+                    href="{{ url_for('player.messages') }}"><i class="ph ph-chat-circle-dots"></i> Messages</a></li>
             {% endblock %}
         </ul>
         <div class="sidebar-footer">
@@ -64,8 +73,8 @@
             <div class="header-actions">
                 <button class="icon-btn theme-toggle" onclick="toggleTheme()"><i class="ph ph-moon"
                         id="theme-icon"></i></button>
-                <button class="icon-btn notification-bell"><i class="ph ph-bell"></i> <span
-                        class="badge"></span></button>
+                <a href="{{ url_for('player.notifications') }}"><button class="icon-btn notification-bell"><i
+                            class="ph ph-bell"></i> <span class="badge"></span></button></a>
                 <div class="user-profile">
                     <div class="avatar">p</div>
                     <div class="avatar-info">

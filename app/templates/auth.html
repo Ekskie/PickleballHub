@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <!-- Phosphor Icons (for standard UI icons) -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
 </head>
 
 <body>
@@ -23,7 +24,7 @@
 
     <nav class="navbar">
         <div class="logo">
-            <span class="logo-ball"></span>
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="PickleballHub Logo">
             PickleballHub
         </div>
     </nav>
