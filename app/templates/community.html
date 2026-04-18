@@ -64,15 +64,16 @@
             gap: 48px;
         }
 
-        /* Leaderboard block */
-        .leaderboard-panel {
-            background: rgba(22, 25, 33, 0.6);
+        /* Feed panel block */
+        .feed-panel {
+            background: rgba(22, 25, 33, 0.4);
             border: 1px solid var(--card-border);
             border-radius: 24px;
             padding: 32px;
             display: flex;
             flex-direction: column;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            height: fit-content;
         }
 
         .panel-header {
@@ -93,91 +94,133 @@
         }
 
         .panel-header h3 i {
-            color: #FFD700;
+            color: #00C6ff;
         }
 
-        .leaderboard-list {
+        .feed-list {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 24px;
         }
 
-        .leaderboard-item {
-            display: flex;
-            align-items: center;
+        .feed-item {
             background: var(--card-bg);
-            padding: 16px 20px;
+            border: 1px solid var(--card-border);
             border-radius: 16px;
-            border: 1px solid transparent;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
             transition: transform 0.2s, border-color 0.2s;
         }
 
-        .leaderboard-item:hover {
-            transform: translateX(5px);
-            border-color: rgba(255, 255, 255, 0.1);
+        .feed-item:hover {
+            border-color: rgba(0, 198, 255, 0.4);
         }
 
-        .rank {
-            font-size: 1.25rem;
-            font-weight: 700;
-            width: 40px;
-            color: var(--text-secondary);
+        .feed-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
         }
 
-        .rank.top-1 { color: #FFD700; }
-        .rank.top-2 { color: #C0C0C0; }
-        .rank.top-3 { color: #CD7F32; }
-
-        .player-avatar {
+        .feed-avatar {
             width: 48px;
             height: 48px;
             border-radius: 50%;
-            background: #2a2d36;
-            margin-right: 16px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            color: white;
-        }
-
-        .player-avatar img {
-            width: 100%;
-            height: 100%;
             object-fit: cover;
         }
 
-        .player-info {
-            flex: 1;
+        .feed-user-info {
+            display: flex;
+            flex-direction: column;
         }
 
-        .player-info h4 {
-            font-size: 1.1rem;
+        .feed-user-info h4 {
             color: white;
-            margin-bottom: 4px;
+            font-size: 1.1rem;
+            margin-bottom: 2px;
         }
 
-        .player-info p {
-            font-size: 0.85rem;
+        .feed-user-info span {
             color: var(--text-secondary);
+            font-size: 0.85rem;
         }
 
-        .player-rating {
-            text-align: right;
+        .feed-body p {
+            color: #d1d5db;
+            font-size: 1rem;
+            line-height: 1.6;
         }
 
-        .player-rating span {
-            display: block;
-            font-size: 1.2rem;
-            font-weight: 700;
+        .feed-attachment {
+            margin-top: 16px;
+            height: 200px;
+            border-radius: 12px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .play-overlay {
+            background: rgba(0,0,0,0.4);
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        
+        .play-overlay:hover {
+            background: rgba(0,0,0,0.2);
+        }
+        
+        .play-overlay i {
+            font-size: 3.5rem;
+            color: white;
+            opacity: 0.9;
+            transition: opacity 0.2s, transform 0.2s;
+            cursor: pointer;
+        }
+
+        .play-overlay i:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .feed-footer {
+            display: flex;
+            gap: 24px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding-top: 16px;
+        }
+
+        .feed-footer button {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: color 0.2s;
+            font-family: inherit;
+        }
+
+        .feed-footer button:hover {
             color: var(--primary-orange);
         }
 
-        .player-rating p {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            text-transform: uppercase;
+        .feed-footer button i {
+            font-size: 1.25rem;
         }
 
         /* Clubs Block */
@@ -323,74 +366,53 @@
             </div>
 
             <div class="community-grid">
-                <!-- Leaderboards Column -->
-                <div class="leaderboard-panel">
+                <!-- Community Feed Column -->
+                <div class="feed-panel">
                     <div class="panel-header">
-                        <h3><i class="ph-fill ph-trophy"></i> Top District Players</h3>
-                        <a href="{{ url_for('auth.login') }}" style="color: var(--primary-orange); text-decoration: none; font-size: 0.9rem;">View Full Standings</a>
+                        <h3><i class="ph-fill ph-chat-circle-text"></i> Community Feed</h3>
+                        <a href="{{ url_for('auth.login') }}" style="color: var(--primary-orange); text-decoration: none; font-size: 0.9rem;">Login to Post</a>
                     </div>
-                    <div class="leaderboard-list">
-                        <!-- Rank 1 -->
-                        <div class="leaderboard-item">
-                            <div class="rank top-1">#1</div>
-                            <div class="player-avatar">
-                                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200&auto=format&fit=crop" alt="Player">
+                    
+                    <div class="feed-list">
+                        <!-- Feed Item 1 -->
+                        <div class="feed-item">
+                            <div class="feed-header">
+                                <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200&auto=format&fit=crop" class="feed-avatar" alt="User">
+                                <div class="feed-user-info">
+                                    <h4>Anna Cruz</h4>
+                                    <span>2 hours ago • Pangil Smashers</span>
+                                </div>
                             </div>
-                            <div class="player-info">
-                                <h4>Marcus Reyes</h4>
-                                <p>Paete Pickleball Club</p>
+                            <div class="feed-body">
+                                <p>Just had an intense 3-set match against Paete Paddlers! The new courts are feeling great. Anyone up for drills this weekend? 🏓🔥</p>
                             </div>
-                            <div class="player-rating">
-                                <span>4.85</span>
-                                <p>DUPR</p>
-                            </div>
-                        </div>
-
-                        <!-- Rank 2 -->
-                        <div class="leaderboard-item">
-                            <div class="rank top-2">#2</div>
-                            <div class="player-avatar">
-                                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop" alt="Player">
-                            </div>
-                            <div class="player-info">
-                                <h4>Elena Santos</h4>
-                                <p>Pakil Sports Org</p>
-                            </div>
-                            <div class="player-rating">
-                                <span>4.72</span>
-                                <p>DUPR</p>
+                            <div class="feed-footer">
+                                <button onclick="window.location.href='{{ url_for('auth.login') }}'"><i class="ph ph-heart"></i> 24 Likes</button>
+                                <button onclick="window.location.href='{{ url_for('auth.login') }}'"><i class="ph ph-chat-circle"></i> 5 Comments</button>
+                                <button onclick="window.location.href='{{ url_for('auth.login') }}'"><i class="ph ph-share-network"></i> Share</button>
                             </div>
                         </div>
 
-                        <!-- Rank 3 -->
-                        <div class="leaderboard-item">
-                            <div class="rank top-3">#3</div>
-                            <div class="player-avatar">
-                                <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?q=80&w=200&auto=format&fit=crop" alt="Player">
+                        <!-- Feed Item 2 -->
+                        <div class="feed-item">
+                            <div class="feed-header">
+                                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200&auto=format&fit=crop" class="feed-avatar" alt="User">
+                                <div class="feed-user-info">
+                                    <h4>Marcus Reyes</h4>
+                                    <span>5 hours ago • Paete Pickleball Club</span>
+                                </div>
                             </div>
-                            <div class="player-info">
-                                <h4>Jason Lim</h4>
-                                <p>Independent</p>
+                            <div class="feed-body">
+                                <p>First time hitting an ATP in a tournament match! Huge shoutout to my partner for setting it up perfectly. Check out the clip below!</p>
+                                <!-- Video Attachment -->
+                                <div class="feed-attachment" style="background-image: url('https://images.unsplash.com/photo-1622281484080-69273c66f54c?q=80&w=600&auto=format&fit=crop');">
+                                    <div class="play-overlay" onclick="window.location.href='{{ url_for('auth.login') }}'"><i class="ph-fill ph-play-circle"></i></div>
+                                </div>
                             </div>
-                            <div class="player-rating">
-                                <span>4.60</span>
-                                <p>DUPR</p>
-                            </div>
-                        </div>
-
-                        <!-- Rank 4 -->
-                        <div class="leaderboard-item">
-                            <div class="rank">#4</div>
-                            <div class="player-avatar">
-                                <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200&auto=format&fit=crop" alt="Player">
-                            </div>
-                            <div class="player-info">
-                                <h4>Anna Cruz</h4>
-                                <p>Pangil Smashers</p>
-                            </div>
-                            <div class="player-rating">
-                                <span>4.45</span>
-                                <p>DUPR</p>
+                            <div class="feed-footer">
+                                <button onclick="window.location.href='{{ url_for('auth.login') }}'"><i class="ph ph-heart"></i> 112 Likes</button>
+                                <button onclick="window.location.href='{{ url_for('auth.login') }}'"><i class="ph ph-chat-circle"></i> 18 Comments</button>
+                                <button onclick="window.location.href='{{ url_for('auth.login') }}'"><i class="ph ph-share-network"></i> Share</button>
                             </div>
                         </div>
                     </div>
