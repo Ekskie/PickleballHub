@@ -51,55 +51,33 @@ function switchTab(tabId) {
     }, 200); // Give previous form 200ms to visually leave
 }
 
-function toggleRoleDropdown() {
-    const opts = document.getElementById('role-dropdown-opts');
-    if(opts) {
-        opts.classList.toggle('open');
-        const caret = document.getElementById('role-caret');
-        if(caret) caret.classList.toggle('rotated');
-    }
-}
+function selectRoleGrid(role) {
+    // Hidden Input value update
+    const selectedInput = document.getElementById('selected-role');
+    if (selectedInput) selectedInput.value = role;
 
-function selectRoleDropdown(role, iconClass, title, desc) {
-    // Update Trigger UI
-    document.getElementById('selected-role-icon').className = 'ph ' + iconClass;
-    document.getElementById('selected-role-title').innerText = title;
-    document.getElementById('selected-role-desc').innerText = desc;
+    // Toggle active classes on cards
+    document.querySelectorAll('.role-choice-card').forEach(card => {
+        card.classList.remove('active');
+    });
     
-    // Update hidden input
-    document.getElementById('selected-role').value = role;
-    
-    // Close dropdown
-    document.getElementById('role-dropdown-opts').classList.remove('open');
-    const caret = document.getElementById('role-caret');
-    if(caret) caret.classList.remove('rotated');
+    const clickedCard = document.getElementById('role-card-' + role);
+    if (clickedCard) clickedCard.classList.add('active');
 
-    // Handle proficiency
+    // Proficiency Group Logic
     const profGroup = document.getElementById('proficiency-group');
     const profInput = document.getElementById('proficiency-input');
-    if (profGroup) {
+    
+    if (profGroup && profInput) {
         if (role === 'player') {
             profGroup.classList.remove('hidden-group');
-            if (profInput) profInput.setAttribute('required', 'true');
+            profInput.setAttribute('required', 'true');
         } else {
             profGroup.classList.add('hidden-group');
-            if (profInput) profInput.removeAttribute('required');
+            profInput.removeAttribute('required');
         }
     }
 }
-
-// Close dropdown when clicking outside
-document.addEventListener('click', function(event) {
-    const trigger = document.querySelector('.custom-select-trigger');
-    const opts = document.getElementById('role-dropdown-opts');
-    if (trigger && opts) {
-        if (!trigger.contains(event.target) && !opts.contains(event.target)) {
-            opts.classList.remove('open');
-            const caret = document.getElementById('role-caret');
-            if(caret) caret.classList.remove('rotated');
-        }
-    }
-});
 
 function togglePassword(inputId) {
     const input = document.getElementById(inputId);
@@ -114,4 +92,55 @@ function togglePassword(inputId) {
         icon.classList.remove('ph-eye-slash');
         icon.classList.add('ph-eye');
     }
+}
+
+function nextSignupStep(currentStep) {
+    // Validate current step inputs before moving forward
+    const currentStepEl = document.getElementById('signup-step-' + currentStep);
+    const inputs = currentStepEl.querySelectorAll('input, select');
+    for (let i = 0; i < inputs.length; i++) {
+        // Skip hidden proficiency input validation if not a player
+        if(inputs[i].offsetParent === null) continue;
+        
+        if (!inputs[i].checkValidity()) {
+            inputs[i].reportValidity();
+            return;
+        }
+    }
+
+    // Move to next step
+    currentStepEl.classList.remove('active');
+    const nextStepEl = document.getElementById('signup-step-' + (currentStep + 1));
+    nextStepEl.classList.add('active');
+
+    // Update Stepper Dots
+    document.getElementById('step-ind-' + currentStep).classList.replace('active', 'completed');
+    document.getElementById('step-ind-' + (currentStep + 1)).classList.add('active');
+}
+
+function prevSignupStep(currentStep) {
+    // Move to previous step without validation
+    const currentStepEl = document.getElementById('signup-step-' + currentStep);
+    currentStepEl.classList.remove('active');
+    
+    const prevStepEl = document.getElementById('signup-step-' + (currentStep - 1));
+    prevStepEl.classList.add('active');
+
+    // Update Stepper Dots
+    document.getElementById('step-ind-' + currentStep).classList.remove('active');
+    const prevInd = document.getElementById('step-ind-' + (currentStep - 1));
+    prevInd.classList.remove('completed');
+    prevInd.classList.add('active');
+}
+
+function validateFinalStep() {
+    const stepEl = document.getElementById('signup-step-3');
+    const inputs = stepEl.querySelectorAll('input, select');
+    for (let i = 0; i < inputs.length; i++) {
+        if (!inputs[i].checkValidity()) {
+            inputs[i].reportValidity();
+            return false;
+        }
+    }
+    return true;
 }

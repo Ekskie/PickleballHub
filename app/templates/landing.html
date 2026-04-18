@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PickleballHub - Centralized Court & Tournament Management</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Base CSS (Reusing your auth style variables) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+
+    <style>
+        /* Landing Page Specific Styles */
+        .hero-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0 24px;
+            position: relative;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            z-index: 2;
+            margin-top: 60px;
+        }
+
+        .hero-content h1 {
+            font-size: 4rem;
+            margin-bottom: 24px;
+            background: linear-gradient(to right, #ffffff, #ff5722);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-content p {
+            font-size: 1.25rem;
+            margin-bottom: 40px;
+            color: var(--text-secondary);
+        }
+
+        .search-bar {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            padding: 12px;
+            border-radius: 100px;
+            display: flex;
+            gap: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            font-size: 1rem;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .search-btn {
+            background: var(--primary-orange);
+            color: white;
+            border: none;
+            border-radius: 100px;
+            padding: 0 32px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .search-btn:hover {
+            background: var(--primary-orange-hover);
+        }
+
+        /* Features Section */
+        .features-section {
+            padding: 100px 48px;
+            background: var(--bg-color);
+            position: relative;
+            z-index: 2;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+            color: white;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: rgba(22, 25, 33, 0.4);
+            border: 1px solid var(--card-border);
+            padding: 40px 32px;
+            border-radius: 24px;
+            text-align: left;
+            transition: transform 0.3s, background 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            background: rgba(22, 25, 33, 0.8);
+            border-color: rgba(255, 87, 34, 0.3);
+        }
+
+        .feature-icon {
+            width: 64px;
+            height: 64px;
+            background: rgba(255, 87, 34, 0.1);
+            color: var(--primary-orange);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-bottom: 24px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            color: white;
+            margin-bottom: 16px;
+        }
+
+        .feature-card p {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+
+            .search-bar {
+                flex-direction: column;
+                border-radius: 24px;
+                padding: 16px;
+            }
+
+            .search-btn {
+                padding: 16px;
+                border-radius: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Reusing existing animated background from style.css -->
+    <div class="background-wrap">
+        <div class="overlay"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="landing-nav">
+        <a href="{{ url_for('main.index') }}">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="PickleballHub Logo">
+                PickleballHub
+            </div>
+        </a>
+        <div class="nav-links">
+            <a href="#courts">Find Courts</a>
+            <a href="#tournaments">Tournaments</a>
+            <a href="#community">Community</a>
+        </div>
+        <div class="nav-auth-btns">
+            <a href="{{ url_for('auth.login') }}" class="btn-outline">Log In</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <div class="pill">🌟 LAGUNA'S PREMIER NETWORK</div>
+            <h1>Your Ultimate Centralized Pickleball Hub</h1>
+            <p>Discover available courts across Paete, Pakil, Pangil and beyond. Book instantly, join District
+                Tournaments, and connect with players of your skill level.</p>
+
+            <form class="search-bar" action="{{ url_for('auth.login') }}">
+                <i class="ph ph-map-pin"
+                    style="color: var(--text-secondary); font-size: 1.5rem; margin-top: 10px; margin-left: 12px;"></i>
+                <input type="text" class="search-input" placeholder="Search for courts in Paete, Laguna...">
+                <button type="submit" class="search-btn">Find Courts</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Modular Features Section -->
+    <section class="features-section" id="courts">
+        <div class="section-title">
+            <h2>Everything You Need in One Place</h2>
+            <p>Designed for Players, Club Admins, and Court Owners.</p>
+        </div>
+
+        <div class="features-grid">
+            <!-- Court Booking Module -->
+            <div class="feature-card">
+                <div class="feature-icon"><i class="ph ph-calendar-check"></i></div>
+                <h3>Smart Court Booking</h3>
+                <p>View real-time availability across multiple municipalities. Members enjoy exclusive rates. Secure
+                    your spot easily with integrated GCash payments.</p>
+            </div>
+
+            <!-- Tournament Module -->
+            <div class="feature-card">
+                <div class="feature-icon"><i class="ph ph-trophy"></i></div>
+                <h3>Tournament Engine</h3>
+                <p>Club organizers can create and manage open or exclusive tournaments. Register for Singles or Doubles
+                    brackets with automated matchmaking.</p>
+            </div>
+
+            <!-- Player Matchmaking Module -->
+            <div class="feature-card">
+                <div class="feature-icon"><i class="ph ph-users-three"></i></div>
+                <h3>Skill-Based Matchmaking</h3>
+                <p>No more mismatches. Our system classifies players from Beginner to Pro, ensuring you always play
+                    against the right competitors.</p>
+            </div>
+
+            <!-- Live Queue Module -->
+            <div class="feature-card">
+                <div class="feature-icon"><i class="ph ph-list-numbers"></i></div>
+                <h3>Live Queue System</h3>
+                <p>Arrive at the court and track your place in line digitally. Facility operators can manage walk-ins
+                    and reservations seamlessly.</p>
+            </div>
+
+            <!-- Learning Module -->
+            <div class="feature-card">
+                <div class="feature-icon"><i class="ph ph-graduation-cap"></i></div>
+                <h3>Clinics & Tutorials</h3>
+                <p>Access training sessions, upload your gameplay for feedback, and learn techniques from advanced
+                    players in the community.</p>
+            </div>
+
+            <!-- Smart Analytics Module -->
+            <div class="feature-card">
+                <div class="feature-icon"><i class="ph ph-chart-line-up"></i></div>
+                <h3>Owner Analytics</h3>
+                <p>Facility owners get a bird's-eye view of revenue, peak hours, and court utilization with GPS
+                    integration and transparent commission tracking.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Utilizing existing stats footer -->
+    <footer class="stats-footer">
+        <div class="stat-item">
+            <h3>500+</h3>
+            <p>Active Players</p>
+        </div>
+        <div class="stat-item">
+            <h3>12</h3>
+            <p>Connected Towns</p>
+        </div>
+        <div class="stat-item">
+            <h3>10k+</h3>
+            <p>Matches Played</p>
+        </div>
+        <div class="stat-item">
+            <h3>100%</h3>
+            <p>Automated Booking</p>
+        </div>
+    </footer>
+
+</body>
+
+</html>

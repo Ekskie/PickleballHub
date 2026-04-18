@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - PickleballHub</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+</head>
+
+<body>
+
+    <div class="background-wrap">
+        <div class="overlay"></div>
+    </div>
+
+    <nav class="landing-nav">
+        <a href="{{ url_for('main.index') }}">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="PickleballHub Logo">
+                PickleballHub
+            </div>
+        </a>
+        <div class="nav-links">
+            <a href="{{ url_for('main.index') }}#courts">Find Courts</a>
+            <a href="{{ url_for('main.index') }}#tournaments">Tournaments</a>
+            <a href="{{ url_for('main.index') }}#community">Community</a>
+        </div>
+        <div class="nav-auth-btns">
+            <a href="{{ url_for('auth.login') }}" class="btn-outline">Log In</a>
+        </div>
+    </nav>
+
+
+    <main class="auth-container">
+        <!-- Left Side content (Hero info) -->
+        <div class="hero-info">
+            <div class="pill">🌟 JOIN THE COMMUNITY</div>
+            <h1>Create Your Account</h1>
+            <p>Connect with players of your skill level, book premium courts, and participate in District Tournaments across Laguna.</p>
+        </div>
+
+        <!-- Right Side content (Auth Card) -->
+        <div class="auth-card">
+
+            <div class="auth-toggle">
+                <button class="toggle-btn" id="btn-login"
+                    data-url="{{ url_for('auth.login') }}" onclick="window.location.href=this.dataset.url">Login</button>
+                <button class="toggle-btn active" id="btn-signup"
+                    data-url="{{ url_for('auth.signup') }}" onclick="window.location.href=this.dataset.url">Sign Up</button>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="alerts">
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <div class="stepper-container" id="signup-stepper">
+                <div class="step-indicator active" id="step-ind-1">1</div>
+                <div class="step-indicator" id="step-ind-2">2</div>
+                <div class="step-indicator" id="step-ind-3">3</div>
+            </div>
+
+            <!-- Signup Form wrapper -->
+            <div id="forms-wrapper" style="position: relative; overflow: visible;">
+                <form id="form-signup" class="auth-form active" action="{{ url_for('auth.signup') }}" method="POST">
+                    
+                    <!-- STEP 1: ROLE -->
+                    <div class="signup-step active" id="signup-step-1">
+                        <div class="form-group" style="margin-bottom: 4px;">
+                            <label>I AM A...</label>
+                        </div>
+                        <div class="role-selection-group">
+                            <div class="role-choice-card active" id="role-card-player" onclick="selectRoleGrid('player')">
+                                <i class="ph ph-game-controller"></i>
+                                <div class="role-info">
+                                    <span>Player</span>
+                                    <small>Reserve courts, join events, connect with community</small>
+                                </div>
+                            </div>
+                            <div class="role-choice-card" id="role-card-administrator" onclick="selectRoleGrid('administrator')">
+                                <i class="ph ph-shield"></i>
+                                <div class="role-info">
+                                    <span>Club Administrator</span>
+                                    <small>Manage courts, users, queue, analytics & settings</small>
+                                </div>
+                            </div>
+                            <div class="role-choice-card" id="role-card-owner" onclick="selectRoleGrid('owner')">
+                                <i class="ph ph-buildings"></i>
+                                <div class="role-info">
+                                    <span>Pickleball Facility Owner</span>
+                                    <small>Manage facility, revenue, events & analytics</small>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="role" id="selected-role" value="player">
+                        
+                        <div class="button-group">
+                            <button type="button" class="submit-btn primary-orange" onclick="nextSignupStep(1)">Next Step <i class="ph ph-arrow-right"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- STEP 2: PERSONAL -->
+                    <div class="signup-step" id="signup-step-2">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>First Name</label>
+                                <div class="input-wrapper">
+                                    <i class="ph ph-user"></i>
+                                    <input type="text" name="first_name" placeholder="John" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Last Name</label>
+                                <div class="input-wrapper">
+                                    <i class="ph ph-user"></i>
+                                    <input type="text" name="last_name" placeholder="Doe" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="proficiency-group">
+                            <label>Proficiency</label>
+                            <div class="input-wrapper">
+                                <i class="ph ph-trophy"></i>
+                                <select name="proficiency" id="proficiency-input" class="select-input" required>
+                                    <option value="beginner" selected>Beginner</option>
+                                    <option value="intermediate">Intermediate</option>
+                                    <option value="advanced">Advanced</option>
+                                    <option value="pro">Pro</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Cellphone Number</label>
+                                <div class="input-wrapper">
+                                    <i class="ph ph-phone"></i>
+                                    <input type="tel" name="phone" placeholder="e.g. 123-456-7890" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="button-group">
+                            <button type="button" class="btn-secondary" onclick="prevSignupStep(2)"><i class="ph ph-arrow-left"></i> Back</button>
+                            <button type="button" class="submit-btn primary-orange" onclick="nextSignupStep(2)">Next Step <i class="ph ph-arrow-right"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- STEP 3: CREDENTIALS -->
+                    <div class="signup-step" id="signup-step-3">
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <div class="input-wrapper">
+                                <i class="ph ph-envelope"></i>
+                                <input type="email" name="email" placeholder="john@example.com" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Password</label>
+                            <div class="input-wrapper">
+                                <i class="ph ph-lock-key"></i>
+                                <input type="password" name="password" id="signup-password"
+                                    placeholder="Create a strong password" required>
+                                <i class="ph ph-eye hover-icon" onclick="togglePassword('signup-password')"></i>
+                            </div>
+                        </div>
+
+                        <div class="button-group">
+                            <button type="button" class="btn-secondary" onclick="prevSignupStep(3)"><i class="ph ph-arrow-left"></i> Back</button>
+                            <button type="submit" class="submit-btn primary-orange" onclick="return validateFinalStep()">Create Account <i class="ph ph-check"></i></button>
+                        </div>
+                        <div class="terms-text">By creating an account, you agree to our Terms of Service and Privacy
+                            Policy.
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer class="stats-footer">
+        <div class="stat-item">
+            <h3>500+</h3>
+            <p>Active Players</p>
+        </div>
+        <div class="stat-item">
+            <h3>50+</h3>
+            <p>Premium Courts</p>
+        </div>
+        <div class="stat-item">
+            <h3>10k+</h3>
+            <p>Matches Played</p>
+        </div>
+        <div class="stat-item">
+            <h3>100%</h3>
+            <p>Satisfaction</p>
+        </div>
+    </footer>
+
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+
+</html>

@@ -143,12 +143,21 @@
         color: var(--text-muted);
     }
 
-    .stat-box.orange .stat-value { color: var(--primary-orange); }
-    .stat-box.navy  .stat-value  { color: var(--btn-navy); }
+    .stat-box.orange .stat-value {
+        color: var(--primary-orange);
+    }
 
-    html.dark-mode .stat-box.navy .stat-value { color: #93c5fd; }
+    .stat-box.navy .stat-value {
+        color: var(--btn-navy);
+    }
 
-    .stat-box.green .stat-value { color: var(--btn-green); }
+    html.dark-mode .stat-box.navy .stat-value {
+        color: #93c5fd;
+    }
+
+    .stat-box.green .stat-value {
+        color: var(--btn-green);
+    }
 
     /* Fairness Rating */
     .fairness-label {
@@ -237,18 +246,18 @@
     <!-- Left: Profile Card -->
     <div class="glass-card">
         <div class="profile-card">
-            <div class="profile-avatar">P</div>
-            <h2>player</h2>
+            <div class="profile-avatar">{{ current_user.initials }}</div>
+            <h2>{{ current_user.full_name }}</h2>
             <p class="player-id">Player ID: PBH-544A69CB</p>
 
             <div class="profile-contact">
                 <div class="contact-row">
                     <i class="ph ph-envelope"></i>
-                    <span>player@email.com</span>
+                    <span>{{ current_user.email or '—' }}</span>
                 </div>
                 <div class="contact-row">
                     <i class="ph ph-phone"></i>
-                    <span>123</span>
+                    <span>{{ current_user.phone or '—' }}</span>
                 </div>
                 <div class="contact-row">
                     <i class="ph ph-shield-check"></i>

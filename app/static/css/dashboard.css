@@ -319,6 +319,21 @@ html.dark-mode .content-background {
     display: flex;
     align-items: center;
     gap: 12px;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 4px 8px;
+    transition: var(--transition);
+}
+
+.user-profile:hover {
+    background: var(--primary-orange-light);
+}
+
+a.user-profile:hover .name,
+a.user-profile:hover .avatar {
+    color: var(--primary-orange);
 }
 
 .user-profile .avatar {

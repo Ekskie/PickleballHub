@@ -27,23 +27,23 @@
 <body class="dashboard-body">
     <!-- Reusable Sidebar -->
     <aside class="sidebar">
-        <div class="sidebar-header">
-            <img class="sidebar-logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="PickleballHub Logo">
-            <h2>PickleballHub</h2>
-        </div>
-
+        <a href="{{ url_for('player.dashboard') }}" style="text-decoration: none;">
+            <div class="sidebar-header">
+                <img class="sidebar-logo" src="{{ url_for('static', filename='images/logo.png') }}"
+                    alt="PickleballHub Logo">
+                <h2>PickleballHub</h2>
+            </div>
+        </a>
         <div class="sidebar-profile">
             <p class="welcome-text">Welcome,</p>
-            <p class="profile-name">player</p>
-            <span class="role-pill"><i class="ph ph-identification-card"></i> Player</span>
+            <p class="profile-name">{{ current_user.first_name }}</p>
+            <span class="role-pill"><i class="ph ph-identification-card"></i> {{ current_user.role }}</span>
         </div>
 
         <ul class="sidebar-nav">
             {% block sidebar_menu %}
             <li class="{% if request.endpoint == 'player.dashboard' %}active{% endif %}"><a
                     href="{{ url_for('player.dashboard') }}"><i class="ph ph-squares-four"></i> Dashboard</a></li>
-            <li class="{% if request.endpoint == 'player.profile' %}active{% endif %}"><a
-                    href="{{ url_for('player.profile') }}"><i class="ph ph-user-circle"></i> Profile Management</a></li>
             <li class="{% if request.endpoint == 'player.reservation' %}active{% endif %}"><a
                     href="{{ url_for('player.reservation') }}"><i class="ph ph-calendar-plus"></i> Court Reservation</a>
             </li>
@@ -58,7 +58,7 @@
             {% endblock %}
         </ul>
         <div class="sidebar-footer">
-            <a href="{{ url_for('auth.auth') }}" class="logout-btn"><i class="ph ph-sign-out"></i> Log Out</a>
+            <a href="{{ url_for('auth.logout') }}" class="logout-btn"><i class="ph ph-sign-out"></i> Log Out</a>
         </div>
     </aside>
 
@@ -75,13 +75,13 @@
                         id="theme-icon"></i></button>
                 <a href="{{ url_for('player.notifications') }}"><button class="icon-btn notification-bell"><i
                             class="ph ph-bell"></i> <span class="badge"></span></button></a>
-                <div class="user-profile">
-                    <div class="avatar">p</div>
+                <a href="{{ url_for('player.profile') }}" class="user-profile" id="header-user-profile">
+                    <div class="avatar">{{ current_user.initials }}</div>
                     <div class="avatar-info">
-                        <span class="name">player</span>
-                        <span class="role">Player</span>
+                        <span class="name">{{ current_user.full_name }}</span>
+                        <span class="role">{{ current_user.role }}</span>
                     </div>
-                </div>
+                </a>
             </div>
         </header>
 
