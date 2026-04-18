@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community - PickleballHub</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Base CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+
+    <style>
+        body {
+            min-height: 100vh;
+        }
+
+        .community-page-wrap {
+            padding-top: 100px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .community-section {
+            padding: 60px 48px 100px;
+            position: relative;
+            z-index: 2;
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .section-title h2 {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            color: white;
+            background: linear-gradient(to right, #00C6ff, #0072ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .section-title p {
+            color: var(--text-secondary);
+            font-size: 1.15rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .community-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 48px;
+        }
+
+        /* Leaderboard block */
+        .leaderboard-panel {
+            background: rgba(22, 25, 33, 0.6);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 16px;
+        }
+
+        .panel-header h3 {
+            font-size: 1.5rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .panel-header h3 i {
+            color: #FFD700;
+        }
+
+        .leaderboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 16px 20px;
+            border-radius: 16px;
+            border: 1px solid transparent;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .leaderboard-item:hover {
+            transform: translateX(5px);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .rank {
+            font-size: 1.25rem;
+            font-weight: 700;
+            width: 40px;
+            color: var(--text-secondary);
+        }
+
+        .rank.top-1 { color: #FFD700; }
+        .rank.top-2 { color: #C0C0C0; }
+        .rank.top-3 { color: #CD7F32; }
+
+        .player-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #2a2d36;
+            margin-right: 16px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        .player-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .player-info {
+            flex: 1;
+        }
+
+        .player-info h4 {
+            font-size: 1.1rem;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .player-info p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .player-rating {
+            text-align: right;
+        }
+
+        .player-rating span {
+            display: block;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-orange);
+        }
+
+        .player-rating p {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        /* Clubs Block */
+        .clubs-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .club-card {
+            background: rgba(22, 25, 33, 0.6);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: border-color 0.3s;
+            display: flex;
+            flex-direction: row;
+        }
+
+        .club-card:hover {
+            border-color: rgba(0, 198, 255, 0.4);
+        }
+
+        .club-image {
+            width: 160px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        
+        .club-content {
+            padding: 24px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .club-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .club-title {
+            font-size: 1.25rem;
+            color: white;
+        }
+        
+        .club-location {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .club-stats {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .club-stat {
+            font-size: 0.85rem;
+            color: white;
+            background: rgba(255,255,255,0.05);
+            padding: 4px 10px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-join {
+            margin-top: auto;
+            background: transparent;
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 100px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .btn-join:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.4);
+        }
+
+        @media (max-width: 992px) {
+            .community-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .club-card {
+                flex-direction: column;
+            }
+            .club-image {
+                width: 100%;
+                height: 180px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="background-wrap">
+        <div class="overlay"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="landing-nav">
+        <a href="{{ url_for('main.index') }}">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="PickleballHub Logo">
+                PickleballHub
+            </div>
+        </a>
+        <div class="nav-links">
+            <a href="{{ url_for('main.index') }}#courts">Find Courts</a>
+            <a href="{{ url_for('main.tournaments') }}">Tournaments</a>
+            <a href="{{ url_for('main.clinics') }}">Clinics & Tutorials</a>
+            <a href="{{ url_for('main.community') }}" class="active" style="color: var(--primary-orange); font-weight: 600;">Community</a>
+        </div>
+        <div class="nav-auth-btns">
+            <a href="{{ url_for('auth.login') }}" class="btn-outline">Log In</a>
+        </div>
+    </nav>
+
+    <div class="community-page-wrap">
+        <section class="community-section">
+            <div class="section-title">
+                <h2>Join The Movement</h2>
+                <p>Connect with local clubs, find hitting partners, and climb the district leaderboards. Pickleball is better together.</p>
+            </div>
+
+            <div class="community-grid">
+                <!-- Leaderboards Column -->
+                <div class="leaderboard-panel">
+                    <div class="panel-header">
+                        <h3><i class="ph-fill ph-trophy"></i> Top District Players</h3>
+                        <a href="{{ url_for('auth.login') }}" style="color: var(--primary-orange); text-decoration: none; font-size: 0.9rem;">View Full Standings</a>
+                    </div>
+                    <div class="leaderboard-list">
+                        <!-- Rank 1 -->
+                        <div class="leaderboard-item">
+                            <div class="rank top-1">#1</div>
+                            <div class="player-avatar">
+                                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200&auto=format&fit=crop" alt="Player">
+                            </div>
+                            <div class="player-info">
+                                <h4>Marcus Reyes</h4>
+                                <p>Paete Pickleball Club</p>
+                            </div>
+                            <div class="player-rating">
+                                <span>4.85</span>
+                                <p>DUPR</p>
+                            </div>
+                        </div>
+
+                        <!-- Rank 2 -->
+                        <div class="leaderboard-item">
+                            <div class="rank top-2">#2</div>
+                            <div class="player-avatar">
+                                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop" alt="Player">
+                            </div>
+                            <div class="player-info">
+                                <h4>Elena Santos</h4>
+                                <p>Pakil Sports Org</p>
+                            </div>
+                            <div class="player-rating">
+                                <span>4.72</span>
+                                <p>DUPR</p>
+                            </div>
+                        </div>
+
+                        <!-- Rank 3 -->
+                        <div class="leaderboard-item">
+                            <div class="rank top-3">#3</div>
+                            <div class="player-avatar">
+                                <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?q=80&w=200&auto=format&fit=crop" alt="Player">
+                            </div>
+                            <div class="player-info">
+                                <h4>Jason Lim</h4>
+                                <p>Independent</p>
+                            </div>
+                            <div class="player-rating">
+                                <span>4.60</span>
+                                <p>DUPR</p>
+                            </div>
+                        </div>
+
+                        <!-- Rank 4 -->
+                        <div class="leaderboard-item">
+                            <div class="rank">#4</div>
+                            <div class="player-avatar">
+                                <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200&auto=format&fit=crop" alt="Player">
+                            </div>
+                            <div class="player-info">
+                                <h4>Anna Cruz</h4>
+                                <p>Pangil Smashers</p>
+                            </div>
+                            <div class="player-rating">
+                                <span>4.45</span>
+                                <p>DUPR</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Local Clubs Column -->
+                <div class="clubs-panel">
+                    <div class="panel-header" style="margin-bottom: 0;">
+                        <h3 style="color: white; font-size: 1.5rem;"><i class="ph-fill ph-users-three" style="color: #00C6ff;"></i> Featured Local Clubs</h3>
+                    </div>
+
+                    <!-- Club 1 -->
+                    <div class="club-card">
+                        <div class="club-image" style="background-image: url('https://images.unsplash.com/photo-1554068865-24cecd4e34f8?q=80&w=400&auto=format&fit=crop');"></div>
+                        <div class="club-content">
+                            <div class="club-header">
+                                <div>
+                                    <h4 class="club-title">Paete Paddlers</h4>
+                                    <span class="club-location"><i class="ph-fill ph-map-pin"></i> Paete Central</span>
+                                </div>
+                            </div>
+                            <div class="club-stats">
+                                <span class="club-stat"><i class="ph-fill ph-users"></i> 150+ Members</span>
+                                <span class="club-stat"><i class="ph-fill ph-star"></i> Pro Affiliated</span>
+                            </div>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 16px;">The definitive community for competitive players in Paete. Regular drills on weekends.</p>
+                            <a href="{{ url_for('auth.login') }}" class="btn-join">Join Group</a>
+                        </div>
+                    </div>
+
+                    <!-- Club 2 -->
+                    <div class="club-card">
+                        <div class="club-image" style="background-image: url('https://plus.unsplash.com/premium_photo-1663102377017-024c0840b3ff?q=80&w=400&auto=format&fit=crop');"></div>
+                        <div class="club-content">
+                            <div class="club-header">
+                                <div>
+                                    <h4 class="club-title">Pakil Smashers</h4>
+                                    <span class="club-location"><i class="ph-fill ph-map-pin"></i> Pakil Indoor</span>
+                                </div>
+                            </div>
+                            <div class="club-stats">
+                                <span class="club-stat"><i class="ph-fill ph-users"></i> 85 Members</span>
+                                <span class="club-stat"><i class="ph-fill ph-hand-heart"></i> Beginner Friendly</span>
+                            </div>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 16px;">Welcoming new players to learn the ropes. Nightly social play sessions.</p>
+                            <a href="{{ url_for('auth.login') }}" class="btn-join">Join Group</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Utilizing existing stats footer -->
+        <footer class="stats-footer">
+            <div class="stat-item">
+                <h3>500+</h3>
+                <p>Active Players</p>
+            </div>
+            <div class="stat-item">
+                <h3>12</h3>
+                <p>Connected Towns</p>
+            </div>
+            <div class="stat-item">
+                <h3>10k+</h3>
+                <p>Matches Played</p>
+            </div>
+            <div class="stat-item">
+                <h3>100%</h3>
+                <p>Automated Booking</p>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
