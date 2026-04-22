@@ -11,9 +11,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+
     <!-- Phosphor Icons (for standard UI icons) -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+
+
 </head>
 
 <body>
@@ -32,7 +36,7 @@
         <div class="nav-links">
             <a href="{{ url_for('main.index') }}#courts">Find Courts</a>
             <a href="{{ url_for('main.tournaments') }}">Tournaments</a>
-            <a href="{{ url_for('main.clinics') }}">Clinics & Tutorials</a>
+            <a href="{{ url_for('main.clinics') }}">Clinics &amp; Tutorials</a>
             <a href="{{ url_for('main.community') }}">Community</a>
         </div>
         <div class="nav-auth-btns">
@@ -61,6 +65,39 @@
                 <button class="toggle-btn" id="btn-signup" data-url="{{ url_for('auth.signup') }}"
                     onclick="window.location.href=this.dataset.url">Sign Up</button>
             </div>
+
+            <!-- ── "Check your inbox" banner (shown after signup) ── -->
+            {% if request.args.get('pending_verification') %}
+            <div class="verify-banner" id="verify-banner">
+                <div class="verify-banner-top">
+                    <div class="verify-banner-icon">
+                        <i class="ph ph-envelope-simple-open"></i>
+                    </div>
+                    <div class="verify-banner-text">
+                        <h4>Check your inbox!</h4>
+                        <p>
+                            We sent a verification link to
+                            {% if session.get('pending_email') %}
+                            <strong>{{ session.get('pending_email') }}</strong>
+                            {% else %}
+                            your email address
+                            {% endif %}.
+                            Click the link to activate your account.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Resend form -->
+                <form class="resend-form" action="{{ url_for('auth.resend_verification') }}" method="POST">
+                    <input type="email" name="email" placeholder="Confirm your email to resend…"
+                        value="{{ session.get('pending_email', '') }}" required>
+                    <button type="submit" class="resend-btn">
+                        <i class="ph ph-paper-plane-tilt"></i>
+                        Resend
+                    </button>
+                </form>
+            </div>
+            {% endif %}
 
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -93,7 +130,7 @@
                     </div>
 
                     <div class="forgot-password">
-                        <a href="#">Forgot password?</a>
+                        <a href="{{ url_for('auth.forgot_password') }}">Forgot password?</a>
                     </div>
 
                     <button type="submit" class="submit-btn primary-orange">Sign In to Dashboard <i
@@ -121,6 +158,87 @@
             <p>Satisfaction</p>
         </div>
     </footer>
+
+    <!-- ── Verification Confirmed Modal ───────────────────────────────────── -->
+    {% if request.args.get('verified') == '1' %}
+    <div class="modal-backdrop" id="verifiedModal">
+        <div class="verified-modal">
+
+            <!-- Floating sparkles -->
+            <div class="sparkles" id="sparkles-container"></div>
+
+            <!-- Check ring -->
+            <div class="check-ring">
+                <i class="ph ph-check-circle"></i>
+            </div>
+
+            <h2>Email Verified!</h2>
+            <p class="modal-sub">
+                Your account is now active and ready to go.<br>
+                Sign in below to start your pickleball journey.
+            </p>
+
+            <button class="modal-signin-btn" onclick="dismissModal()">
+                <i class="ph ph-sign-in"></i>
+                Sign In Now
+            </button>
+
+            <div class="modal-countdown">
+                <span id="countdown-label">Dismissing automatically in <strong id="countdown-num">4</strong>s</span>
+                <div class="countdown-bar-track">
+                    <div class="countdown-bar-fill"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── Sparkles ──────────────────────────────────────────────────────
+        (function spawnSparkles() {
+            const container = document.getElementById('sparkles-container');
+            const colors = ['#69f0ae', '#4caf50', '#b9f6ca', '#fff', '#ffb74d'];
+            for (let i = 0; i < 18; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'sparkle';
+                const size = Math.random() * 7 + 4;
+                dot.style.cssText = `
+                    width:${size}px; height:${size}px;
+                    left:${Math.random() * 100}%;
+                    background:${colors[Math.floor(Math.random() * colors.length)]};
+                    animation-delay:${Math.random() * 2.5}s;
+                    animation-duration:${Math.random() * 1.5 + 2}s;
+                `;
+                container.appendChild(dot);
+            }
+        })();
+
+        // ── Auto-dismiss countdown ────────────────────────────────────────
+        let remaining = 4;
+        const numEl = document.getElementById('countdown-num');
+        const timer = setInterval(() => {
+            remaining--;
+            if (numEl) numEl.textContent = remaining;
+            if (remaining <= 0) {
+                clearInterval(timer);
+                dismissModal();
+            }
+        }, 1000);
+
+        function dismissModal() {
+            clearInterval(timer);
+            const modal = document.getElementById('verifiedModal');
+            if (modal) {
+                modal.style.transition = 'opacity 0.35s ease';
+                modal.style.opacity = '0';
+                setTimeout(() => modal.remove(), 380);
+            }
+            // Clean up URL so modal doesn't reappear on refresh
+            const url = new URL(window.location.href);
+            url.searchParams.delete('verified');
+            window.history.replaceState({}, '', url.toString());
+        }
+    </script>
+    {% endif %}
 
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
