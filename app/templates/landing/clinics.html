@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinics & Tutorials - PickleballHub</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Base CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Landing CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing/clinics.css') }}">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+
+
+</head>
+
+<body>
+
+    <!-- Animated background -->
+    <div class="background-wrap">
+        <div class="overlay"></div>
+    </div>
+
+    <!-- Navigation -->
+    {% include 'Landing/navigation.html' %}
+
+    <div class="clinics-page-wrap">
+        <!-- Clinics & Tutorials Showcase Section -->
+        <section class="clinics-section" id="clinics">
+            <div class="section-title">
+                <h2>Master Your Game</h2>
+                <p>Expert-led clinics and step-by-step tutorials designed to elevate your skills from beginner to pro.
+                </p>
+            </div>
+
+            <div class="clinics-container">
+                <!-- Left/Top: Tutorials -->
+                <div class="tutorials-showcase">
+                    <div class="showcase-header">
+                        <h3>Latest Tutorials</h3>
+                        <a href="{{ url_for('auth.login') }}" class="view-all">View All Tutorials <i
+                                class="ph ph-arrow-right"></i></a>
+                    </div>
+                    <div class="video-grid">
+                        <!-- Video Card 1 -->
+                        <div class="video-card">
+                            <div class="video-thumbnail">
+                                <img src="https://plus.unsplash.com/premium_photo-1709048991290-1d36455a2895?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                                    alt="Dinking Tutorial">
+                                <div class="play-btn"><i class="ph-fill ph-play"></i></div>
+                                <span class="video-duration">08:45</span>
+                            </div>
+                            <div class="video-info">
+                                <span class="video-tag beginner">Beginner</span>
+                                <h4>The Perfect Dinking Technique</h4>
+                                <p>Master the soft game at the kitchen line with these 3 fundamental drills.</p>
+                            </div>
+                        </div>
+                        <!-- Video Card 2 -->
+                        <div class="video-card">
+                            <div class="video-thumbnail">
+                                <img src="https://plus.unsplash.com/premium_photo-1709048991290-1d36455a2895?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                                    alt="Serve Tutorial">
+                                <div class="play-btn"><i class="ph-fill ph-play"></i></div>
+                                <span class="video-duration">12:20</span>
+                            </div>
+                            <div class="video-info">
+                                <span class="video-tag advanced">Advanced</span>
+                                <h4>Adding Topspin to Your Serve</h4>
+                                <p>Learn how to generate massive topspin for a deeply offensive serve.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right/Bottom: Clinics -->
+                <div class="clinics-showcase">
+                    <div class="showcase-header">
+                        <h3>Upcoming In-Person Clinics</h3>
+                    </div>
+                    <div class="clinics-list">
+                        <!-- Clinic Item 1 -->
+                        <div class="clinic-item">
+                            <div class="clinic-date">
+                                <span class="month">MAY</span>
+                                <span class="day">15</span>
+                            </div>
+                            <div class="clinic-details">
+                                <h4>Weekend Fundamentals Bootcamp</h4>
+                                <p><i class="ph ph-map-pin"></i> Paete Town Plaza</p>
+                                <p><i class="ph ph-clock"></i> 8:00 AM - 11:00 AM</p>
+                            </div>
+                            <div class="clinic-action">
+                                <a href="{{ url_for('auth.login') }}" class="btn-primary sm">Book Slot</a>
+                            </div>
+                        </div>
+                        <!-- Clinic Item 2 -->
+                        <div class="clinic-item">
+                            <div class="clinic-date">
+                                <span class="month">MAY</span>
+                                <span class="day">22</span>
+                            </div>
+                            <div class="clinic-details">
+                                <h4>Double Strategy & Positioning</h4>
+                                <p><i class="ph ph-map-pin"></i> Pakil Indoor Court</p>
+                                <p><i class="ph ph-clock"></i> 1:00 PM - 4:00 PM</p>
+                            </div>
+                            <div class="clinic-action">
+                                <a href="{{ url_for('auth.login') }}" class="btn-primary sm">Book Slot</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Utilizing existing stats footer -->
+        <footer class="stats-footer">
+            <div class="stat-item">
+                <h3>500+</h3>
+                <p>Active Players</p>
+            </div>
+            <div class="stat-item">
+                <h3>12</h3>
+                <p>Connected Towns</p>
+            </div>
+            <div class="stat-item">
+                <h3>10k+</h3>
+                <p>Matches Played</p>
+            </div>
+            <div class="stat-item">
+                <h3>100%</h3>
+                <p>Automated Booking</p>
+            </div>
+        </footer>
+    </div>
+</body>
+
+</html>

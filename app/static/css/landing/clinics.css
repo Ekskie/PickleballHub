@@ -1,0 +1,292 @@
+/* Clinics & Tutorials Page Specific Styles */
+
+
+.clinics-section {
+    padding: 60px 48px 100px;
+    position: relative;
+    z-index: 2;
+    flex: 1;
+}
+
+.clinics-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 48px;
+}
+
+.section-title {
+    text-align: center;
+    margin-bottom: 64px;
+}
+
+.section-title h2 {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    color: white;
+    background: linear-gradient(to right, #ffffff, #ff5722);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.section-title p {
+    color: var(--text-secondary);
+    font-size: 1.15rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.showcase-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.showcase-header h3 {
+    font-size: 1.75rem;
+    color: white;
+}
+
+.view-all {
+    color: var(--primary-orange);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.view-all:hover {
+    color: var(--primary-orange-hover);
+}
+
+.video-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.video-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: transform 0.3s, border-color 0.3s;
+}
+
+.video-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(255, 87, 34, 0.4);
+}
+
+.video-thumbnail {
+    position: relative;
+    height: 200px;
+    width: 100%;
+    overflow: hidden;
+}
+
+.video-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s;
+}
+
+.video-card:hover .video-thumbnail img {
+    transform: scale(1.05);
+}
+
+.play-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 87, 34, 0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    backdrop-filter: blur(4px);
+    opacity: 0.9;
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.video-card:hover .play-btn {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+}
+
+.video-duration {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.video-info {
+    padding: 24px;
+}
+
+.video-tag {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.video-tag.beginner {
+    background: rgba(76, 175, 80, 0.15);
+    color: #4CAF50;
+}
+
+.video-tag.advanced {
+    background: rgba(244, 67, 54, 0.15);
+    color: #F44336;
+}
+
+.video-info h4 {
+    font-size: 1.25rem;
+    color: white;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.video-info p {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.clinics-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.clinic-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 20px;
+    transition: background 0.3s;
+}
+
+.clinic-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.clinic-date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 87, 34, 0.1);
+    color: var(--primary-orange);
+    border-radius: 12px;
+    min-width: 70px;
+    height: 70px;
+    border: 1px solid rgba(255, 87, 34, 0.2);
+}
+
+.clinic-date .month {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.clinic-date .day {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.clinic-details {
+    flex: 1;
+}
+
+.clinic-details h4 {
+    font-size: 1.1rem;
+    color: white;
+    margin-bottom: 6px;
+}
+
+.clinic-details p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+.clinic-details p i {
+    color: var(--primary-orange);
+}
+
+.btn-primary.sm {
+    background: var(--primary-orange);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 100px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: background 0.3s;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-primary.sm:hover {
+    background: var(--primary-orange-hover);
+}
+
+@media (max-width: 1024px) {
+    .clinics-container {
+        grid-template-columns: 1fr;
+    }
+
+    .video-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .clinic-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .clinic-action {
+        width: 100%;
+        margin-top: 12px;
+    }
+
+    .btn-primary.sm {
+        display: flex;
+        text-align: center;
+        width: 100%;
+    }
+}

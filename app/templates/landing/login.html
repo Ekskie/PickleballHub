@@ -11,13 +11,27 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing/login.css') }}">
 
     <!-- Phosphor Icons (for standard UI icons) -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
 
-
+    <!-- ── Intercept Supabase hash-fragment verification token ────────────────
+         Supabase puts the session token in the URL hash (#access_token=...)
+         upon successful email verification. Hash fragments never reach Flask,
+         so we read them here and redirect to show the verified modal. -->
+    <script>
+        (function () {
+            var hash = window.location.hash.substring(1);
+            if (!hash) return;
+            var params = new URLSearchParams(hash);
+            var type = params.get('type');
+            if (type === 'signup' || type === 'email' || type === 'invite') {
+                window.location.replace('/login?verified=1');
+            }
+        })();
+    </script>
 </head>
 
 <body>
@@ -34,7 +48,7 @@
             </div>
         </a>
         <div class="nav-links">
-            <a href="{{ url_for('main.index') }}#courts">Find Courts</a>
+            <a href="{{ url_for('main.index') }}">Find Courts</a>
             <a href="{{ url_for('main.tournaments') }}">Tournaments</a>
             <a href="{{ url_for('main.clinics') }}">Clinics &amp; Tutorials</a>
             <a href="{{ url_for('main.community') }}">Community</a>
@@ -50,7 +64,7 @@
     <main class="auth-container">
         <!-- Left Side content (Hero info) -->
         <div class="hero-info">
-            <div class="pill">🌟 PREMIUM PICKLEBALL EXPERIENCE</div>
+            <div class="pill">PREMIUM PICKLEBALL EXPERIENCE</div>
             <h1>Where Players Meet Excellence</h1>
             <p>Join the fastest growing community of elite pickleball players. Book courts, find matches, and track your
                 progress in real-time.</p>

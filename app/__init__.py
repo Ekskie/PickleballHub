@@ -58,7 +58,7 @@ def create_app():
         if client:
             try:
                 resp = client.table('profiles').select(
-                    'first_name, last_name, email, phone, role'
+                    'first_name, last_name, phone, role'
                 ).eq('id', user_id).single().execute()
 
                 if resp.data:

@@ -22,14 +22,14 @@ def login():
     # Supabase appends ?token_hash=xxx&type=email when user clicks the link.
     if request.method == 'GET':
         token_hash = request.args.get('token_hash')
-        token_type = request.args.get('type')        # 'email', 'recovery', etc.
+        token_type = request.args.get('type')        # 'email', 'signup', etc.
 
-        if token_hash and token_type == 'email':
+        if token_hash and token_type in ['email', 'signup']:
             try:
                 if supabase:
                     resp = supabase.auth.verify_otp({
                         "token_hash": token_hash,
-                        "type": "email"
+                        "type": token_type
                     })
                     if resp and resp.user:
                         # Verification succeeded → redirect with ?verified=1
@@ -67,16 +67,16 @@ def login():
                     return _redirect_by_role(session['role'])
 
                 flash('Login failed: no user returned.', 'error')
-                return render_template('login.html')
+                return render_template('landing/login.html')
             else:
                 flash('Supabase not configured locally.', 'error')
-                return render_template('login.html')
+                return render_template('landing/login.html')
 
         except Exception as e:
             flash(f"Login Failed: {str(e)}", 'error')
-            return render_template('login.html')
+            return render_template('landing/login.html')
 
-    return render_template('login.html')
+    return render_template('landing/login.html')
 
 
 @auth_bp.route('/signup', methods=['GET', 'POST'])
@@ -99,6 +99,7 @@ def signup():
                     "email": email,
                     "password": password,
                     "options": {
+                        "emailRedirectTo": url_for('auth.login', _external=True),
                         "data": {
                             "first_name":  first_name,
                             "last_name":   last_name,
@@ -113,13 +114,13 @@ def signup():
                 return redirect(url_for('auth.login', pending_verification='1'))
             else:
                 flash('Supabase not configured locally.', 'error')
-                return render_template('signup.html')
+                return render_template('landing/signup.html')
 
         except Exception as e:
             flash(f"Signup Failed: {str(e)}", 'error')
-            return render_template('signup.html')
+            return render_template('landing/signup.html')
 
-    return render_template('signup.html')
+    return render_template('landing/signup.html')
 
 
 @auth_bp.route('/resend-verification', methods=['POST'])
@@ -155,7 +156,7 @@ def forgot_password():
         email = request.form.get('email', '').strip()
         if not email:
             flash('Please enter your email address.', 'error')
-            return render_template('forgot_password.html')
+            return render_template('landing/forgot_password.html')
 
         try:
             if supabase:
@@ -169,9 +170,9 @@ def forgot_password():
             return redirect(url_for('auth.forgot_password', sent='1', email=email))
         except Exception as e:
             flash(f'Could not send reset email: {str(e)}', 'error')
-            return render_template('forgot_password.html')
+            return render_template('landing/forgot_password.html')
 
-    return render_template('forgot_password.html')
+    return render_template('landing/forgot_password.html')
 
 
 @auth_bp.route('/reset-password', methods=['GET', 'POST'])
@@ -196,13 +197,13 @@ def reset_password():
                     if resp and resp.session:
                         session['reset_access_token']  = resp.session.access_token
                         session['reset_refresh_token'] = resp.session.refresh_token or ''
-                        return render_template('reset_password.html',
+                        return render_template('landing/reset_password.html',
                                                token_valid=True,
                                                access_token=resp.session.access_token,
                                                refresh_token=resp.session.refresh_token or '')
             except Exception as e:
                 flash(f'Reset link error: {str(e)}', 'error')
-            return render_template('reset_password.html', token_valid=False)
+            return render_template('landing/reset_password.html', token_valid=False)
 
         # ── Path B: Implicit/hash flow — ?access_token=xxx&type=recovery ─────
         # (tokens were in the URL hash; JS extracted and forwarded them here)
@@ -213,20 +214,20 @@ def reset_password():
                     supabase.auth.set_session(access_token, refresh_token)
                     session['reset_access_token']  = access_token
                     session['reset_refresh_token'] = refresh_token
-                    return render_template('reset_password.html',
+                    return render_template('landing/reset_password.html',
                                            token_valid=True,
                                            access_token=access_token,
                                            refresh_token=refresh_token)
             except Exception as e:
                 flash(f'Reset link error: {str(e)}', 'error')
-            return render_template('reset_password.html', token_valid=False)
+            return render_template('landing/reset_password.html', token_valid=False)
 
         # ── No token at all ───────────────────────────────────────────────────
         if not session.get('reset_access_token'):
             return redirect(url_for('auth.forgot_password'))
 
         # Already verified in a previous request — show the form again
-        return render_template('reset_password.html',
+        return render_template('landing/reset_password.html',
                                token_valid=True,
                                access_token=session.get('reset_access_token'),
                                refresh_token=session.get('reset_refresh_token', ''))
@@ -240,14 +241,14 @@ def reset_password():
 
     if password != confirm_password:
         flash('Passwords do not match.', 'error')
-        return render_template('reset_password.html',
+        return render_template('landing/reset_password.html',
                                token_valid=True,
                                access_token=access_token,
                                refresh_token=refresh_token)
 
     if len(password) < 8:
         flash('Password must be at least 8 characters.', 'error')
-        return render_template('reset_password.html',
+        return render_template('landing/reset_password.html',
                                token_valid=True,
                                access_token=access_token,
                                refresh_token=refresh_token)
@@ -262,18 +263,18 @@ def reset_password():
             session.pop('reset_access_token', None)
             session.pop('reset_refresh_token', None)
 
-            return render_template('reset_password.html',
+            return render_template('landing/reset_password.html',
                                    token_valid=False,
                                    reset_success=True)
         else:
             flash('Supabase not configured locally.', 'error')
-            return render_template('reset_password.html',
+            return render_template('landing/reset_password.html',
                                    token_valid=True,
                                    access_token=access_token)
 
     except Exception as e:
         flash(f'Could not update password: {str(e)}', 'error')
-        return render_template('reset_password.html',
+        return render_template('landing/reset_password.html',
                                token_valid=True,
                                access_token=access_token)
 

@@ -1,0 +1,29 @@
+<nav class="landing-nav">
+    <a href="{{ url_for('main.index') }}">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="PickleballHub Logo">
+            PickleballHub
+        </div>
+    </a>
+    <div class="nav-links">
+        <a href="{{ url_for('main.index') }}" {% if request.endpoint=='main.index' %}class="active"
+            style="color: var(--primary-orange); font-weight: 600;" {% endif %}>Find Courts</a>
+        <a href="{{ url_for('main.tournaments') }}" {% if request.endpoint=='main.tournaments' %}class="active"
+            style="color: var(--primary-orange); font-weight: 600;" {% endif %}>Tournaments</a>
+        <a href="{{ url_for('main.clinics') }}" {% if request.endpoint=='main.clinics' %}class="active"
+            style="color: var(--primary-orange); font-weight: 600;" {% endif %}>Clinics &amp; Tutorials</a>
+        <a href="{{ url_for('main.community') }}" {% if request.endpoint=='main.community' %}class="active"
+            style="color: var(--primary-orange); font-weight: 600;" {% endif %}>Community</a>
+    </div>
+    <div class="nav-auth-btns">
+        {% if request.endpoint == 'auth.login' %}
+        <a href="{{ url_for('auth.signup') }}" class="btn-solid"
+            style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.2);">Sign Up</a>
+        {% elif request.endpoint == 'auth.signup' %}
+        <a href="{{ url_for('auth.login') }}" class="btn-outline">Log In</a>
+        {% else %}
+        <a href="{{ url_for('auth.login') }}" class="btn-outline">Log In</a>
+        {% endif %}
+    </div>
+    <i class="ph ph-list mobile-toggle" onclick="this.parentElement.classList.toggle('nav-open')"></i>
+</nav>

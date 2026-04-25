@@ -22,42 +22,26 @@
         <div class="overlay"></div>
     </div>
 
-    <nav class="landing-nav">
-        <a href="{{ url_for('main.index') }}">
-            <div class="logo">
-                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="PickleballHub Logo">
-                PickleballHub
-            </div>
-        </a>
-        <div class="nav-links">
-            <a href="{{ url_for('main.index') }}#courts">Find Courts</a>
-            <a href="{{ url_for('main.tournaments') }}">Tournaments</a>
-            <a href="{{ url_for('main.clinics') }}">Clinics & Tutorials</a>
-            <a href="{{ url_for('main.community') }}">Community</a>
-        </div>
-        <div class="nav-auth-btns">
-            <a href="{{ url_for('auth.login') }}" class="btn-outline">Log In</a>
-        </div>
-        <i class="ph ph-list mobile-toggle" onclick="this.parentElement.classList.toggle('nav-open')"></i>
-    </nav>
+    {% include 'Landing/navigation.html' %}
 
 
     <main class="auth-container">
         <!-- Left Side content (Hero info) -->
         <div class="hero-info">
-            <div class="pill">🌟 JOIN THE COMMUNITY</div>
+            <div class="pill">JOIN THE COMMUNITY</div>
             <h1>Create Your Account</h1>
-            <p>Connect with players of your skill level, book premium courts, and participate in District Tournaments across Laguna.</p>
+            <p>Connect with players of your skill level, book premium courts, and participate in District Tournaments
+                across Laguna.</p>
         </div>
 
         <!-- Right Side content (Auth Card) -->
         <div class="auth-card">
 
             <div class="auth-toggle">
-                <button class="toggle-btn" id="btn-login"
-                    data-url="{{ url_for('auth.login') }}" onclick="window.location.href=this.dataset.url">Login</button>
-                <button class="toggle-btn active" id="btn-signup"
-                    data-url="{{ url_for('auth.signup') }}" onclick="window.location.href=this.dataset.url">Sign Up</button>
+                <button class="toggle-btn" id="btn-login" data-url="{{ url_for('auth.login') }}"
+                    onclick="window.location.href=this.dataset.url">Login</button>
+                <button class="toggle-btn active" id="btn-signup" data-url="{{ url_for('auth.signup') }}"
+                    onclick="window.location.href=this.dataset.url">Sign Up</button>
             </div>
 
             {% with messages = get_flashed_messages(with_categories=true) %}
@@ -79,21 +63,23 @@
             <!-- Signup Form wrapper -->
             <div id="forms-wrapper" style="position: relative; overflow: visible;">
                 <form id="form-signup" class="auth-form active" action="{{ url_for('auth.signup') }}" method="POST">
-                    
+
                     <!-- STEP 1: ROLE -->
                     <div class="signup-step active" id="signup-step-1">
                         <div class="form-group" style="margin-bottom: 4px;">
                             <label>I AM A...</label>
                         </div>
                         <div class="role-selection-group">
-                            <div class="role-choice-card active" id="role-card-player" onclick="selectRoleGrid('player')">
+                            <div class="role-choice-card active" id="role-card-player"
+                                onclick="selectRoleGrid('player')">
                                 <i class="ph ph-game-controller"></i>
                                 <div class="role-info">
                                     <span>Player</span>
                                     <small>Reserve courts, join events, connect with community</small>
                                 </div>
                             </div>
-                            <div class="role-choice-card" id="role-card-administrator" onclick="selectRoleGrid('administrator')">
+                            <div class="role-choice-card" id="role-card-administrator"
+                                onclick="selectRoleGrid('administrator')">
                                 <i class="ph ph-shield"></i>
                                 <div class="role-info">
                                     <span>Club Administrator</span>
@@ -109,9 +95,10 @@
                             </div>
                         </div>
                         <input type="hidden" name="role" id="selected-role" value="player">
-                        
+
                         <div class="button-group">
-                            <button type="button" class="submit-btn primary-orange" onclick="nextSignupStep(1)">Next Step <i class="ph ph-arrow-right"></i></button>
+                            <button type="button" class="submit-btn primary-orange" onclick="nextSignupStep(1)">Next
+                                Step <i class="ph ph-arrow-right"></i></button>
                         </div>
                     </div>
 
@@ -158,8 +145,10 @@
                         </div>
 
                         <div class="button-group">
-                            <button type="button" class="btn-secondary" onclick="prevSignupStep(2)"><i class="ph ph-arrow-left"></i> Back</button>
-                            <button type="button" class="submit-btn primary-orange" onclick="nextSignupStep(2)">Next Step <i class="ph ph-arrow-right"></i></button>
+                            <button type="button" class="btn-secondary" onclick="prevSignupStep(2)"><i
+                                    class="ph ph-arrow-left"></i> Back</button>
+                            <button type="button" class="submit-btn primary-orange" onclick="nextSignupStep(2)">Next
+                                Step <i class="ph ph-arrow-right"></i></button>
                         </div>
                     </div>
 
@@ -184,8 +173,10 @@
                         </div>
 
                         <div class="button-group">
-                            <button type="button" class="btn-secondary" onclick="prevSignupStep(3)"><i class="ph ph-arrow-left"></i> Back</button>
-                            <button type="submit" class="submit-btn primary-orange" onclick="return validateFinalStep()">Create Account <i class="ph ph-check"></i></button>
+                            <button type="button" class="btn-secondary" onclick="prevSignupStep(3)"><i
+                                    class="ph ph-arrow-left"></i> Back</button>
+                            <button type="submit" class="submit-btn primary-orange"
+                                onclick="return validateFinalStep()">Create Account <i class="ph ph-check"></i></button>
                         </div>
                         <div class="terms-text">By creating an account, you agree to our Terms of Service and Privacy
                             Policy.

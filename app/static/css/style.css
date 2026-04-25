@@ -86,7 +86,7 @@ p {
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.landing-nav > a {
+.landing-nav>a {
     text-decoration: none;
     color: var(--text-primary);
 }
@@ -162,7 +162,7 @@ p {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    padding: 120px 8vw 60px;
+    padding: 60px 8vw 60px;
     margin: auto 0;
     flex: 1;
     gap: 64px;
@@ -219,7 +219,7 @@ p {
         padding-bottom: 8px;
     }
 
-    .nav-auth-btns > a {
+    .nav-auth-btns>a {
         width: 100%;
         text-align: center;
     }
@@ -386,6 +386,7 @@ p {
         opacity: 0;
         transform: translateX(15px);
     }
+
     to {
         opacity: 1;
         transform: translateX(0);
@@ -399,7 +400,8 @@ p {
 }
 
 .role-choice-card {
-    background: rgba(255, 87, 34, 0.05); /* very light orange tint */
+    background: rgba(255, 87, 34, 0.05);
+    /* very light orange tint */
     border: 1px solid var(--input-border);
     border-radius: 12px;
     padding: 16px;
