@@ -8,7 +8,17 @@ def _redirect_by_role(role: str):
     role = (role or 'player').strip().lower()
     if role == 'player':
         return redirect(url_for('player.dashboard'))
-    # Future roles: admin, staff, etc.
+    elif role == 'superadmin':
+        return redirect(url_for('superadmin.dashboard'))
+    elif role == 'owner':
+        return redirect(url_for('owner.dashboard'))
+    elif role == 'clubadmin':
+        return redirect(url_for('clubadmin.dashboard'))
+    elif role == 'facilitystaff':
+        return redirect(url_for('facilitystaff.dashboard'))
+    elif role == 'adminstaff':
+        return redirect(url_for('adminstaff.dashboard'))
+    # Default fallback
     return redirect(url_for('player.dashboard'))
 
 
@@ -64,19 +74,32 @@ def login():
                     session['phone']      = meta.get('phone', '')
                     session['role']       = meta.get('role', 'player') or 'player'
 
+                    # Fetch role from profiles table as fallback (for accounts created via console)
+                    try:
+                        profile_resp = supabase.table('profiles').select('role').eq('id', user.id).single().execute()
+                        if profile_resp.data and profile_resp.data.get('role'):
+                            db_role = profile_resp.data['role']
+                            if db_role and db_role != 'player':
+                                session['role'] = db_role
+                                session['first_name'] = profile_resp.data.get('first_name', session['first_name'])
+                                session['last_name'] = profile_resp.data.get('last_name', session['last_name'])
+                                session['phone'] = profile_resp.data.get('phone', session['phone'])
+                    except:
+                        pass  # Fallback to metadata role if profile fetch fails
+
                     return _redirect_by_role(session['role'])
 
                 flash('Login failed: no user returned.', 'error')
-                return render_template('landing/login.html')
+                return render_template('landings/login.html')
             else:
                 flash('Supabase not configured locally.', 'error')
-                return render_template('landing/login.html')
+                return render_template('landings/login.html')
 
         except Exception as e:
             flash(f"Login Failed: {str(e)}", 'error')
-            return render_template('landing/login.html')
+            return render_template('landings/login.html')
 
-    return render_template('landing/login.html')
+    return render_template('landings/login.html')
 
 
 @auth_bp.route('/signup', methods=['GET', 'POST'])
@@ -114,13 +137,13 @@ def signup():
                 return redirect(url_for('auth.login', pending_verification='1'))
             else:
                 flash('Supabase not configured locally.', 'error')
-                return render_template('landing/signup.html')
+                return render_template('landings/signup.html')
 
         except Exception as e:
             flash(f"Signup Failed: {str(e)}", 'error')
-            return render_template('landing/signup.html')
+            return render_template('landings/signup.html')
 
-    return render_template('landing/signup.html')
+    return render_template('landings/signup.html')
 
 
 @auth_bp.route('/resend-verification', methods=['POST'])
@@ -156,7 +179,7 @@ def forgot_password():
         email = request.form.get('email', '').strip()
         if not email:
             flash('Please enter your email address.', 'error')
-            return render_template('landing/forgot_password.html')
+            return render_template('landings/forgot_password.html')
 
         try:
             if supabase:
@@ -170,9 +193,9 @@ def forgot_password():
             return redirect(url_for('auth.forgot_password', sent='1', email=email))
         except Exception as e:
             flash(f'Could not send reset email: {str(e)}', 'error')
-            return render_template('landing/forgot_password.html')
+            return render_template('landings/forgot_password.html')
 
-    return render_template('landing/forgot_password.html')
+    return render_template('landings/forgot_password.html')
 
 
 @auth_bp.route('/reset-password', methods=['GET', 'POST'])
@@ -197,13 +220,13 @@ def reset_password():
                     if resp and resp.session:
                         session['reset_access_token']  = resp.session.access_token
                         session['reset_refresh_token'] = resp.session.refresh_token or ''
-                        return render_template('landing/reset_password.html',
+                        return render_template('landings/reset_password.html',
                                                token_valid=True,
                                                access_token=resp.session.access_token,
                                                refresh_token=resp.session.refresh_token or '')
             except Exception as e:
                 flash(f'Reset link error: {str(e)}', 'error')
-            return render_template('landing/reset_password.html', token_valid=False)
+            return render_template('landings/reset_password.html', token_valid=False)
 
         # ── Path B: Implicit/hash flow — ?access_token=xxx&type=recovery ─────
         # (tokens were in the URL hash; JS extracted and forwarded them here)
@@ -214,20 +237,20 @@ def reset_password():
                     supabase.auth.set_session(access_token, refresh_token)
                     session['reset_access_token']  = access_token
                     session['reset_refresh_token'] = refresh_token
-                    return render_template('landing/reset_password.html',
+                    return render_template('landings/reset_password.html',
                                            token_valid=True,
                                            access_token=access_token,
                                            refresh_token=refresh_token)
             except Exception as e:
                 flash(f'Reset link error: {str(e)}', 'error')
-            return render_template('landing/reset_password.html', token_valid=False)
+            return render_template('landings/reset_password.html', token_valid=False)
 
         # ── No token at all ───────────────────────────────────────────────────
         if not session.get('reset_access_token'):
             return redirect(url_for('auth.forgot_password'))
 
         # Already verified in a previous request — show the form again
-        return render_template('landing/reset_password.html',
+        return render_template('landings/reset_password.html',
                                token_valid=True,
                                access_token=session.get('reset_access_token'),
                                refresh_token=session.get('reset_refresh_token', ''))
@@ -241,14 +264,14 @@ def reset_password():
 
     if password != confirm_password:
         flash('Passwords do not match.', 'error')
-        return render_template('landing/reset_password.html',
+        return render_template('landings/reset_password.html',
                                token_valid=True,
                                access_token=access_token,
                                refresh_token=refresh_token)
 
     if len(password) < 8:
         flash('Password must be at least 8 characters.', 'error')
-        return render_template('landing/reset_password.html',
+        return render_template('landings/reset_password.html',
                                token_valid=True,
                                access_token=access_token,
                                refresh_token=refresh_token)
@@ -263,18 +286,18 @@ def reset_password():
             session.pop('reset_access_token', None)
             session.pop('reset_refresh_token', None)
 
-            return render_template('landing/reset_password.html',
+            return render_template('landings/reset_password.html',
                                    token_valid=False,
                                    reset_success=True)
         else:
             flash('Supabase not configured locally.', 'error')
-            return render_template('landing/reset_password.html',
+            return render_template('landings/reset_password.html',
                                    token_valid=True,
                                    access_token=access_token)
 
     except Exception as e:
         flash(f'Could not update password: {str(e)}', 'error')
-        return render_template('landing/reset_password.html',
+        return render_template('landings/reset_password.html',
                                token_valid=True,
                                access_token=access_token)
 
