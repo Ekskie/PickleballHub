@@ -1,0 +1,80 @@
+{% extends "clubadmin/base_clubadmin.html" %}
+
+{% block title %}Club Members{% endblock %}
+
+{% block content %}
+<div class="dashboard-header ">
+    <h1 class="page-title">Club Members</h1>
+    <button class="action-box orange display-row" style="width: auto; padding: 0.5rem 1rem; ">
+        <i class="ph ph-user-plus"></i> Invite Member
+    </button>
+</div>
+
+<div class="glass-card">
+    <div class="widget-header">
+        <div class="header-search" style="flex: 1; max-width: 400px; margin-right: 15px;">
+            <i class="ph ph-magnifying-glass"></i>
+            <input type="text" placeholder="Search members by name...">
+        </div>
+        <div class="filter-actions">
+            <select class="action-box"
+                style="padding: 0.5rem; border: none; background: rgba(255,255,255,0.05); color: var(--text-primary); cursor: pointer; border-radius: 8px;">
+                <option value="all">All Levels</option>
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+            </select>
+        </div>
+    </div>
+    <div class="table-container">
+        <table class="data-grid">
+            <thead>
+                <tr>
+                    <th>MEMBER</th>
+                    <th>JOIN DATE</th>
+                    <th>SKILL LEVEL</th>
+                    <th>STATUS</th>
+                    <th>ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="bold">Sarah Jenkins</td>
+                    <td>Apr 20, 2025</td>
+                    <td>Intermediate</td>
+                    <td><span class="status-pill success">Active</span></td>
+                    <td>
+                        <a href="#" class="action-link" title="Edit"><i class="ph ph-pencil-simple"></i></a>
+                        <a href="#" class="action-link" title="Remove" style="color: #ef4444;"><i
+                                class="ph ph-trash"></i></a>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="bold">Tom Hardy</td>
+                    <td>Apr 19, 2025</td>
+                    <td>Beginner</td>
+                    <td><span class="status-pill success">Active</span></td>
+                    <td>
+                        <a href="#" class="action-link" title="Edit"><i class="ph ph-pencil-simple"></i></a>
+                        <a href="#" class="action-link" title="Remove" style="color: #ef4444;"><i
+                                class="ph ph-trash"></i></a>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="bold">Nancy Drew</td>
+                    <td>Apr 15, 2025</td>
+                    <td>Advanced</td>
+                    <td><span class="status-pill warning" style="color:#f59e0b; background:rgba(245,158,11,0.1)">Pending
+                            Dues</span></td>
+                    <td>
+                        <a href="#" class="action-link" title="Send Reminder" style="color: #f59e0b;"><i
+                                class="ph ph-bell-ringing"></i></a>
+                        <a href="#" class="action-link" title="Remove" style="color: #ef4444;"><i
+                                class="ph ph-trash"></i></a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

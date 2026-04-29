@@ -1,0 +1,34 @@
+{% extends "adminstaff/base_adminstaff.html" %}
+{% block title %}Verifications{% endblock %}
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="page-title">Pending Verifications</h1>
+</div>
+<div class="glass-card">
+    <div class="table-container">
+        <table class="data-grid">
+            <thead>
+                <tr>
+                    <th>ENTITY NAME</th>
+                    <th>TYPE</th>
+                    <th>SUBMITTED</th>
+                    <th>DOCUMENTS</th>
+                    <th>ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="bold">Oasis Pickleball Club</td>
+                    <td>Facility</td>
+                    <td>2 hours ago</td>
+                    <td><i class="ph ph-file-pdf" style="color: #ef4444;"></i> License.pdf</td>
+                    <td>
+                        <button class="action-box green" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto;"><i class="ph ph-check"></i> Approve</button>
+                        <button class="action-box red" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto; background: rgba(239, 68, 68, 0.2); color: #ef4444;"><i class="ph ph-x"></i> Reject</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

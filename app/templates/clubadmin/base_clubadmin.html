@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block sidebar_menu %}
+<li class="{% if request.endpoint == 'clubadmin.dashboard' %}active{% endif %}"><a
+        href="{{ url_for('clubadmin.dashboard') }}"><i class="ph ph-squares-four"></i> Club Overview</a></li>
+<li class="{% if request.endpoint == 'clubadmin.members' %}active{% endif %}"><a
+        href="{{ url_for('clubadmin.members') }}"><i class="ph ph-users"></i> Members</a></li>
+<li class="{% if request.endpoint == 'clubadmin.events' %}active{% endif %}"><a
+        href="{{ url_for('clubadmin.events') }}"><i class="ph ph-calendar-star"></i> Club Events</a></li>
+<li class="{% if request.endpoint == 'clubadmin.tournaments' %}active{% endif %}"><a
+        href="{{ url_for('clubadmin.tournaments') }}"><i class="ph ph-sword"></i> Tournaments</a></li>
+<li class="{% if request.endpoint == 'clubadmin.leaderboard' %}active{% endif %}"><a
+        href="{{ url_for('clubadmin.leaderboard') }}"><i class="ph ph-medal"></i> Leaderboard</a></li>
+{% endblock %}

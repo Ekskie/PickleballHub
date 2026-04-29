@@ -375,7 +375,13 @@ a.user-profile:hover .avatar {
 
 .dashboard-header {
     margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
+
+
+
 
 .page-title {
     font-size: 1.5rem;
@@ -601,6 +607,11 @@ a.user-profile:hover .avatar {
     align-items: center;
     gap: 12px;
     transition: transform 0.2s, background-color 0.3s;
+}
+
+.action-box.display-row {
+    display: flex;
+    flex-direction: row;
 }
 
 .action-box:hover {

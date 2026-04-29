@@ -1,0 +1,42 @@
+{% extends "facilitystaff/base_facilitystaff.html" %}
+{% block title %}Queue Management{% endblock %}
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="page-title">Live Waitlist</h1>
+</div>
+<div class="glass-card">
+    <div class="table-container">
+        <table class="data-grid">
+            <thead>
+                <tr>
+                    <th>POSITION</th>
+                    <th>PLAYER / TEAM</th>
+                    <th>WAIT TIME</th>
+                    <th>REQUESTED COURT</th>
+                    <th>ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="bold">1</td>
+                    <td>Smith & Jones</td>
+                    <td>15 mins</td>
+                    <td>Any Indoor</td>
+                    <td>
+                        <button class="action-box green" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto;">Assign Court</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="bold">2</td>
+                    <td>Alex D.</td>
+                    <td>5 mins</td>
+                    <td>Court 4</td>
+                    <td>
+                        <button class="action-box green" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto;">Assign Court</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

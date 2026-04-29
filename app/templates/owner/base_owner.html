@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block sidebar_menu %}
+<li class="{% if request.endpoint == 'owner.dashboard' %}active{% endif %}"><a href="{{ url_for('owner.dashboard') }}"><i class="ph ph-squares-four"></i> Overview</a></li>
+<li class="{% if request.endpoint == 'owner.facilities' %}active{% endif %}"><a href="{{ url_for('owner.facilities') }}"><i class="ph ph-buildings"></i> My Facilities</a></li>
+<li class="{% if request.endpoint == 'owner.courts' %}active{% endif %}"><a href="{{ url_for('owner.courts') }}"><i class="ph ph-intersect"></i> Courts & Pricing</a></li>
+<li class="{% if request.endpoint == 'owner.staff' %}active{% endif %}"><a href="{{ url_for('owner.staff') }}"><i class="ph ph-users-three"></i> Staff Management</a></li>
+<li class="{% if request.endpoint == 'owner.earnings' %}active{% endif %}"><a href="{{ url_for('owner.earnings') }}"><i class="ph ph-wallet"></i> Earnings</a></li>
+{% endblock %}

@@ -1,0 +1,118 @@
+{% extends "clubadmin/base_clubadmin.html" %}
+
+{% block title %}Club Leaderboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="page-title">Club Leaderboard</h1>
+    <div class="header-actions">
+        <select class="action-box display-row"
+            style="padding: 0.5rem; border: none; background: rgba(255,255,255,0.05); color: var(--text-primary); cursor: pointer; border-radius: 8px;">
+            <option>Men's Singles</option>
+            <option>Women's Singles</option>
+            <option>Mixed Doubles</option>
+        </select>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <div class="dashboard-main" style="width: 100%;">
+
+        <!-- Podium -->
+        <div class="glass-card"
+            style="margin-bottom: 20px; display: flex; justify-content: center; align-items: flex-end; gap: 20px; padding: 40px 20px;">
+
+            <!-- 2nd Place -->
+            <div style="text-align: center; flex: 1; max-width: 150px;">
+                <div class="avatar"
+                    style="width: 60px; height: 60px; font-size: 1.5rem; margin: 0 auto 10px; background: #94a3b8; color: #0f172a;">
+                    TJ</div>
+                <h3 style="margin-bottom: 5px;">Tom Jones</h3>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">4.2 DUPR</p>
+                <div
+                    style="height: 100px; background: rgba(255,255,255,0.05); border-radius: 8px 8px 0 0; margin-top: 15px; display: flex; justify-content: center; align-items: center; font-size: 2rem; font-weight: bold; color: #94a3b8;">
+                    2</div>
+            </div>
+
+            <!-- 1st Place -->
+            <div style="text-align: center; flex: 1; max-width: 150px;">
+                <i class="ph ph-crown"
+                    style="color: #fbbf24; font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                <div class="avatar"
+                    style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto 10px; background: #fbbf24; color: #78350f;">
+                    DK</div>
+                <h3 style="margin-bottom: 5px;">David Kim</h3>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">4.8 DUPR</p>
+                <div
+                    style="height: 140px; background: rgba(251, 191, 36, 0.1); border-radius: 8px 8px 0 0; margin-top: 15px; display: flex; justify-content: center; align-items: center; font-size: 2.5rem; font-weight: bold; color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.2); border-bottom: none;">
+                    1</div>
+            </div>
+
+            <!-- 3rd Place -->
+            <div style="text-align: center; flex: 1; max-width: 150px;">
+                <div class="avatar"
+                    style="width: 60px; height: 60px; font-size: 1.5rem; margin: 0 auto 10px; background: #b45309; color: #fef3c7;">
+                    SJ</div>
+                <h3 style="margin-bottom: 5px;">Sarah Jenkins</h3>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">4.0 DUPR</p>
+                <div
+                    style="height: 70px; background: rgba(255,255,255,0.05); border-radius: 8px 8px 0 0; margin-top: 15px; display: flex; justify-content: center; align-items: center; font-size: 2rem; font-weight: bold; color: #b45309;">
+                    3</div>
+            </div>
+
+        </div>
+
+        <div class="glass-card">
+            <div class="table-container">
+                <table class="data-grid">
+                    <thead>
+                        <tr>
+                            <th>RANK</th>
+                            <th>PLAYER</th>
+                            <th>MATCHES PLAYED</th>
+                            <th>WIN RATE</th>
+                            <th>DUPR RATING</th>
+                            <th>TREND</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="bold">4</td>
+                            <td>Alex Johnson</td>
+                            <td>45</td>
+                            <td>68%</td>
+                            <td class="bold">3.9</td>
+                            <td><i class="ph ph-trend-up" style="color: #4ade80;"></i></td>
+                        </tr>
+                        <tr>
+                            <td class="bold">5</td>
+                            <td>Emma Watson</td>
+                            <td>32</td>
+                            <td>65%</td>
+                            <td class="bold">3.8</td>
+                            <td><i class="ph ph-trend-up" style="color: #4ade80;"></i></td>
+                        </tr>
+                        <tr>
+                            <td class="bold">6</td>
+                            <td>Chris Pratt</td>
+                            <td>50</td>
+                            <td>60%</td>
+                            <td class="bold">3.75</td>
+                            <td><i class="ph ph-trend-down" style="color: #ef4444;"></i></td>
+                        </tr>
+                        <tr>
+                            <td class="bold">7</td>
+                            <td>John Doe</td>
+                            <td>20</td>
+                            <td>55%</td>
+                            <td class="bold">3.5</td>
+                            <td><i class="ph ph-minus" style="color: var(--text-secondary);"></i></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

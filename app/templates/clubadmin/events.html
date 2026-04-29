@@ -1,0 +1,62 @@
+{% extends "clubadmin/base_clubadmin.html" %}
+
+{% block title %}Club Events{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="page-title">Club Events</h1>
+    <button class="action-box navy display-row" style="width: auto; padding: 0.5rem 1rem;">
+        <i class="ph ph-calendar-plus"></i> Create Event
+    </button>
+</div>
+
+<div class="dashboard-grid">
+    <div class="dashboard-main" style="width: 100%;">
+        <div class="stats-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+
+            <div class="glass-card">
+                <div
+                    style="height: 120px; background: url('{{ url_for('static', filename='images/court-hero.jpg') }}') center/cover; border-radius: 8px 8px 0 0; margin: -20px -20px 15px -20px;">
+                </div>
+                <h3 style="margin-bottom: 5px;">Spring Mixer</h3>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 15px;"><i
+                        class="ph ph-calendar"></i> May 15, 2025 &bull; <i class="ph ph-clock"></i> 5:00 PM</p>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="status-pill success">42 RSVP</span>
+                    <a href="#" class="action-link">Manage</a>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <div
+                    style="height: 120px; background: rgba(255,255,255,0.05); border-radius: 8px 8px 0 0; margin: -20px -20px 15px -20px; display: flex; align-items: center; justify-content: center;">
+                    <i class="ph ph-users-three" style="font-size: 3rem; color: var(--secondary);"></i>
+                </div>
+                <h3 style="margin-bottom: 5px;">Beginners Clinic</h3>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 15px;"><i
+                        class="ph ph-calendar"></i> May 20, 2025 &bull; <i class="ph ph-clock"></i> 9:00 AM</p>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="status-pill warning" style="color:#f59e0b; background:rgba(245,158,11,0.1)">12 / 16
+                        Full</span>
+                    <a href="#" class="action-link">Manage</a>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <div
+                    style="height: 120px; background: rgba(255,255,255,0.05); border-radius: 8px 8px 0 0; margin: -20px -20px 15px -20px; display: flex; align-items: center; justify-content: center;">
+                    <i class="ph ph-barbell" style="font-size: 3rem; color: var(--primary);"></i>
+                </div>
+                <h3 style="margin-bottom: 5px;">Drills & Skills</h3>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 15px;"><i
+                        class="ph ph-calendar"></i> May 25, 2025 &bull; <i class="ph ph-clock"></i> 6:00 PM</p>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="status-pill success">8 RSVP</span>
+                    <a href="#" class="action-link">Manage</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

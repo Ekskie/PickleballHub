@@ -1,0 +1,131 @@
+{% extends "owner/base_owner.html" %}
+
+{% block title %}Owner Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="page-title">Facility Owner Dashboard</h1>
+</div>
+
+<div class="dashboard-grid">
+    <!-- Main Area -->
+    <div class="dashboard-main">
+        <!-- Stat Cards -->
+        <div class="stats-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px;">
+            <div class="glass-card stat-box">
+                <i class="ph ph-wallet" style="font-size: 2rem; color: #4ade80;"></i>
+                <div class="stat-info">
+                    <h3>Today's Earnings</h3>
+                    <p class="stat-value">$1,250</p>
+                    <span class="stat-change positive"><i class="ph ph-trend-up"></i> 15%</span>
+                </div>
+            </div>
+            <div class="glass-card stat-box">
+                <i class="ph ph-calendar-check" style="font-size: 2rem; color: var(--primary);"></i>
+                <div class="stat-info">
+                    <h3>Total Bookings</h3>
+                    <p class="stat-value">42</p>
+                    <span class="stat-change positive"><i class="ph ph-trend-up"></i> 5%</span>
+                </div>
+            </div>
+            <div class="glass-card stat-box">
+                <i class="ph ph-users-three" style="font-size: 2rem; color: var(--secondary);"></i>
+                <div class="stat-info">
+                    <h3>Active Staff</h3>
+                    <p class="stat-value">8</p>
+                    <span class="stat-change" style="color:var(--text-secondary);"><i class="ph ph-minus"></i> No change</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <div class="widget-header">
+                <h3>Recent Bookings</h3>
+                <a href="#" class="view-all">View All</a>
+            </div>
+            <div class="table-container">
+                <table class="data-grid">
+                    <thead>
+                        <tr>
+                            <th>PLAYER</th>
+                            <th>COURT</th>
+                            <th>TIME SLOT</th>
+                            <th>STATUS</th>
+                            <th>FEE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="bold">John Doe</td>
+                            <td>Court 1 (Indoor)</td>
+                            <td>5:00 - 6:00 PM</td>
+                            <td><span class="status-pill success">Paid</span></td>
+                            <td>$25.00</td>
+                        </tr>
+                        <tr>
+                            <td class="bold">Emma Watson</td>
+                            <td>Court 3 (Outdoor)</td>
+                            <td>6:00 - 7:30 PM</td>
+                            <td><span class="status-pill success">Paid</span></td>
+                            <td>$35.00</td>
+                        </tr>
+                        <tr>
+                            <td class="bold">Chris Pratt</td>
+                            <td>Court 2 (Indoor)</td>
+                            <td>7:00 - 8:00 PM</td>
+                            <td><span class="status-pill warning">Pending</span></td>
+                            <td>$25.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Area -->
+    <div class="dashboard-side">
+        <div class="glass-card">
+            <h3 class="widget-title">Facility Controls</h3>
+            <div class="action-grid">
+                <button class="action-box orange">
+                    <i class="ph ph-intersect"></i>
+                    <span>Manage Courts</span>
+                </button>
+                <button class="action-box navy">
+                    <i class="ph ph-clock"></i>
+                    <span>Operating Hours</span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="glass-card flex-fill">
+            <h3 class="widget-title">Facility Activity</h3>
+            <ul class="activity-feed">
+                <li>
+                    <span class="dot"></span>
+                    <div class="activity-info">
+                        <p><strong>Court 1</strong> maintenance scheduled</p>
+                        <small>Today, 9:00 AM</small>
+                    </div>
+                </li>
+                <li>
+                    <span class="dot"></span>
+                    <div class="activity-info">
+                        <p><strong>Staff member</strong> Sarah started shift</p>
+                        <small>Today, 1:00 PM</small>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<style>
+.stat-box { display: flex; align-items: center; gap: 15px; }
+.stat-info h3 { font-size: 0.9rem; color: var(--text-secondary); margin: 0; }
+.stat-value { font-size: 1.8rem; font-weight: 700; margin: 5px 0; color: var(--text-primary); }
+.stat-change { font-size: 0.8rem; font-weight: 600; }
+.stat-change.positive { color: #4ade80; }
+.stat-change.negative { color: #f87171; }
+</style>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "facilitystaff/base_facilitystaff.html" %}
+{% block title %}Walk-In Registration{% endblock %}
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="page-title">Register Walk-In</h1>
+</div>
+<div class="dashboard-grid">
+    <div class="dashboard-main" style="max-width: 600px;">
+        <div class="glass-card">
+            <form>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Player Name</label>
+                    <input type="text" class="form-input" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: var(--text-primary); border-radius: 8px;">
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Contact Number</label>
+                    <input type="tel" class="form-input" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: var(--text-primary); border-radius: 8px;">
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Party Size</label>
+                    <input type="number" value="1" min="1" max="4" class="form-input" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: var(--text-primary); border-radius: 8px;">
+                </div>
+                <button type="button" class="action-box green" style="width: 100%; padding: 1rem;">
+                    Add to Queue & Take Payment
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

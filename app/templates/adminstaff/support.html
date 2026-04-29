@@ -1,0 +1,49 @@
+{% extends "adminstaff/base_adminstaff.html" %}
+{% block title %}Support Tickets{% endblock %}
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="page-title">Support Tickets</h1>
+    <div class="header-actions">
+        <select class="action-box" style="padding: 0.5rem; border: none; background: rgba(255,255,255,0.05); color: var(--text-primary); cursor: pointer; border-radius: 8px;">
+            <option>All Statuses</option>
+            <option>Open</option>
+            <option>In Progress</option>
+            <option>Closed</option>
+        </select>
+    </div>
+</div>
+<div class="glass-card">
+    <div class="table-container">
+        <table class="data-grid">
+            <thead>
+                <tr>
+                    <th>TICKET ID</th>
+                    <th>SUBJECT</th>
+                    <th>USER</th>
+                    <th>PRIORITY</th>
+                    <th>STATUS</th>
+                    <th>ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="bold">#TK-8092</td>
+                    <td>Refund request for rained out court</td>
+                    <td>Jane Doe</td>
+                    <td><span class="status-pill warning" style="color:#f59e0b; background:rgba(245,158,11,0.1)">Medium</span></td>
+                    <td><span class="status-pill success">Open</span></td>
+                    <td><a href="#" class="action-link">Review</a></td>
+                </tr>
+                <tr>
+                    <td class="bold">#TK-8091</td>
+                    <td>Cannot update profile picture</td>
+                    <td>John Smith</td>
+                    <td><span class="status-pill" style="background:rgba(255,255,255,0.1)">Low</span></td>
+                    <td><span class="status-pill warning" style="color:#3b82f6; background:rgba(59,130,246,0.1)">In Progress</span></td>
+                    <td><a href="#" class="action-link">Review</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

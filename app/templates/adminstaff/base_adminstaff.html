@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block sidebar_menu %}
+<li class="{% if request.endpoint == 'adminstaff.dashboard' %}active{% endif %}"><a href="{{ url_for('adminstaff.dashboard') }}"><i class="ph ph-squares-four"></i> Overview</a></li>
+<li class="{% if request.endpoint == 'adminstaff.support' %}active{% endif %}"><a href="{{ url_for('adminstaff.support') }}"><i class="ph ph-ticket"></i> Support Tickets</a></li>
+<li class="{% if request.endpoint == 'adminstaff.verifications' %}active{% endif %}"><a href="{{ url_for('adminstaff.verifications') }}"><i class="ph ph-shield-check"></i> Verifications</a></li>
+<li class="{% if request.endpoint == 'adminstaff.disputes' %}active{% endif %}"><a href="{{ url_for('adminstaff.disputes') }}"><i class="ph ph-warning-circle"></i> Disputes</a></li>
+{% endblock %}

@@ -27,10 +27,20 @@ def create_app():
     from app.main.routes import main_bp
     from app.auth.routes import auth_bp
     from app.player.routes import player_bp
+    from app.superadmin.routes import superadmin_bp
+    from app.adminstaff.routes import adminstaff_bp
+    from app.owner.routes import owner_bp
+    from app.facilitystaff.routes import facilitystaff_bp
+    from app.clubadmin.routes import clubadmin_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(player_bp)
+    app.register_blueprint(superadmin_bp)
+    app.register_blueprint(adminstaff_bp)
+    app.register_blueprint(owner_bp)
+    app.register_blueprint(facilitystaff_bp)
+    app.register_blueprint(clubadmin_bp)
 
     @app.context_processor
     def inject_current_user():

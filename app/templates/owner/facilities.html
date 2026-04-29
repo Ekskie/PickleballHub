@@ -1,0 +1,34 @@
+{% extends "owner/base_owner.html" %}
+{% block title %}My Facilities{% endblock %}
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="page-title">My Facilities</h1>
+    <button class="action-box green" style="width: auto; padding: 0.5rem 1rem;">
+        <i class="ph ph-plus-circle"></i> Add Facility
+    </button>
+</div>
+<div class="glass-card">
+    <div class="table-container">
+        <table class="data-grid">
+            <thead>
+                <tr>
+                    <th>FACILITY NAME</th>
+                    <th>LOCATION</th>
+                    <th>TOTAL COURTS</th>
+                    <th>STATUS</th>
+                    <th>ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="bold">Oasis Pickleball Club</td>
+                    <td>123 Main St, Springfield</td>
+                    <td>8</td>
+                    <td><span class="status-pill success">Active</span></td>
+                    <td><a href="#" class="action-link">Edit</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

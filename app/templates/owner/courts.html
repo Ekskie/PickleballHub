@@ -1,0 +1,41 @@
+{% extends "owner/base_owner.html" %}
+{% block title %}Courts & Pricing{% endblock %}
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="page-title">Courts & Pricing</h1>
+    <button class="action-box navy" style="width: auto; padding: 0.5rem 1rem;">
+        <i class="ph ph-plus-circle"></i> Add Court
+    </button>
+</div>
+<div class="glass-card">
+    <div class="table-container">
+        <table class="data-grid">
+            <thead>
+                <tr>
+                    <th>COURT NAME</th>
+                    <th>TYPE</th>
+                    <th>HOURLY RATE</th>
+                    <th>STATUS</th>
+                    <th>ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="bold">Court 1 (Championship)</td>
+                    <td>Indoor</td>
+                    <td>$40.00 / hr</td>
+                    <td><span class="status-pill success">Active</span></td>
+                    <td><a href="#" class="action-link">Edit</a></td>
+                </tr>
+                <tr>
+                    <td class="bold">Court 2</td>
+                    <td>Outdoor</td>
+                    <td>$25.00 / hr</td>
+                    <td><span class="status-pill warning" style="color:#ef4444; background:rgba(239,68,68,0.1)">Maintenance</span></td>
+                    <td><a href="#" class="action-link">Edit</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

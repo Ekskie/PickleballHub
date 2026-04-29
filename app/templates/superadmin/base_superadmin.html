@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block sidebar_menu %}
+<li class="{% if request.endpoint == 'superadmin.dashboard' %}active{% endif %}"><a href="{{ url_for('superadmin.dashboard') }}"><i class="ph ph-squares-four"></i> Overview</a></li>
+<li class="{% if request.endpoint == 'superadmin.facilities' %}active{% endif %}"><a href="{{ url_for('superadmin.facilities') }}"><i class="ph ph-buildings"></i> Facilities</a></li>
+<li class="{% if request.endpoint == 'superadmin.users' %}active{% endif %}"><a href="{{ url_for('superadmin.users') }}"><i class="ph ph-users"></i> User Management</a></li>
+<li class="{% if request.endpoint == 'superadmin.reports' %}active{% endif %}"><a href="{{ url_for('superadmin.reports') }}"><i class="ph ph-chart-line-up"></i> System Reports</a></li>
+<li class="{% if request.endpoint == 'superadmin.settings' %}active{% endif %}"><a href="{{ url_for('superadmin.settings') }}"><i class="ph ph-gear"></i> Settings</a></li>
+{% endblock %}

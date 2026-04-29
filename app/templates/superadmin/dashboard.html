@@ -1,0 +1,138 @@
+{% extends "superadmin/base_superadmin.html" %}
+
+{% block title %}Super Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="page-title">Super Admin Dashboard</h1>
+</div>
+
+<div class="dashboard-grid">
+    <!-- Main Area -->
+    <div class="dashboard-main">
+        <!-- Stat Cards -->
+        <div class="stats-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px;">
+            <div class="glass-card stat-box">
+                <i class="ph ph-users" style="font-size: 2rem; color: var(--primary);"></i>
+                <div class="stat-info">
+                    <h3>Total Users</h3>
+                    <p class="stat-value">12,450</p>
+                    <span class="stat-change positive"><i class="ph ph-trend-up"></i> 12%</span>
+                </div>
+            </div>
+            <div class="glass-card stat-box">
+                <i class="ph ph-buildings" style="font-size: 2rem; color: var(--secondary);"></i>
+                <div class="stat-info">
+                    <h3>Active Facilities</h3>
+                    <p class="stat-value">48</p>
+                    <span class="stat-change positive"><i class="ph ph-trend-up"></i> 3%</span>
+                </div>
+            </div>
+            <div class="glass-card stat-box">
+                <i class="ph ph-currency-circle-dollar" style="font-size: 2rem; color: #4ade80;"></i>
+                <div class="stat-info">
+                    <h3>System Revenue</h3>
+                    <p class="stat-value">$142k</p>
+                    <span class="stat-change positive"><i class="ph ph-trend-up"></i> 8%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <div class="widget-header">
+                <h3>Recent Facility Onboarding</h3>
+                <a href="#" class="view-all">View All</a>
+            </div>
+            <div class="table-container">
+                <table class="data-grid">
+                    <thead>
+                        <tr>
+                            <th>FACILITY NAME</th>
+                            <th>LOCATION</th>
+                            <th>JOIN DATE</th>
+                            <th>STATUS</th>
+                            <th>ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="bold">Metro Sports Hub</td>
+                            <td>New York, NY</td>
+                            <td>Apr 20, 2025</td>
+                            <td><span class="status-pill success">Active</span></td>
+                            <td><a href="#" class="action-link">Review</a></td>
+                        </tr>
+                        <tr>
+                            <td class="bold">Pickle Pro Arena</td>
+                            <td>Austin, TX</td>
+                            <td>Apr 18, 2025</td>
+                            <td><span class="status-pill warning">Pending</span></td>
+                            <td><a href="#" class="action-link">Review</a></td>
+                        </tr>
+                        <tr>
+                            <td class="bold">Westside Courts</td>
+                            <td>Los Angeles, CA</td>
+                            <td>Apr 15, 2025</td>
+                            <td><span class="status-pill success">Active</span></td>
+                            <td><a href="#" class="action-link">Review</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Area -->
+    <div class="dashboard-side">
+        <div class="glass-card">
+            <h3 class="widget-title">Quick Actions</h3>
+            <div class="action-grid">
+                <button class="action-box orange">
+                    <i class="ph ph-user-plus"></i>
+                    <span>Add Admin</span>
+                </button>
+                <button class="action-box navy">
+                    <i class="ph ph-building"></i>
+                    <span>New Facility</span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="glass-card flex-fill">
+            <h3 class="widget-title">System Activity</h3>
+            <ul class="activity-feed">
+                <li>
+                    <span class="dot"></span>
+                    <div class="activity-info">
+                        <p><strong>System Backup</strong> completed</p>
+                        <small>1 hour ago</small>
+                    </div>
+                </li>
+                <li>
+                    <span class="dot"></span>
+                    <div class="activity-info">
+                        <p>New facility <strong>Metro Sports Hub</strong> verified</p>
+                        <small>3 hours ago</small>
+                    </div>
+                </li>
+                <li>
+                    <span class="dot"></span>
+                    <div class="activity-info">
+                        <p>Payment gateway synced</p>
+                        <small>5 hours ago</small>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<style>
+.stat-box { display: flex; align-items: center; gap: 15px; }
+.stat-info h3 { font-size: 0.9rem; color: var(--text-secondary); margin: 0; }
+.stat-value { font-size: 1.8rem; font-weight: 700; margin: 5px 0; color: var(--text-primary); }
+.stat-change { font-size: 0.8rem; font-weight: 600; }
+.stat-change.positive { color: #4ade80; }
+.stat-change.negative { color: #f87171; }
+</style>
+{% endblock %}

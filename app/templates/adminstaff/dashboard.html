@@ -1,0 +1,138 @@
+{% extends "adminstaff/base_adminstaff.html" %}
+
+{% block title %}Operations Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="page-title">Operations Dashboard</h1>
+</div>
+
+<div class="dashboard-grid">
+    <!-- Main Area -->
+    <div class="dashboard-main">
+        <!-- Stat Cards -->
+        <div class="stats-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px;">
+            <div class="glass-card stat-box">
+                <i class="ph ph-ticket" style="font-size: 2rem; color: var(--primary);"></i>
+                <div class="stat-info">
+                    <h3>Open Tickets</h3>
+                    <p class="stat-value">24</p>
+                    <span class="stat-change negative"><i class="ph ph-trend-up"></i> 5 new</span>
+                </div>
+            </div>
+            <div class="glass-card stat-box">
+                <i class="ph ph-shield-check" style="font-size: 2rem; color: var(--secondary);"></i>
+                <div class="stat-info">
+                    <h3>Pending Verifications</h3>
+                    <p class="stat-value">12</p>
+                    <span class="stat-change positive"><i class="ph ph-trend-down"></i> 2 fewer</span>
+                </div>
+            </div>
+            <div class="glass-card stat-box">
+                <i class="ph ph-warning-circle" style="font-size: 2rem; color: #f87171;"></i>
+                <div class="stat-info">
+                    <h3>Active Disputes</h3>
+                    <p class="stat-value">3</p>
+                    <span class="stat-change negative"><i class="ph ph-trend-up"></i> 1 new</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <div class="widget-header">
+                <h3>Priority Support Tickets</h3>
+                <a href="#" class="view-all">View All</a>
+            </div>
+            <div class="table-container">
+                <table class="data-grid">
+                    <thead>
+                        <tr>
+                            <th>TICKET ID</th>
+                            <th>USER</th>
+                            <th>ISSUE</th>
+                            <th>PRIORITY</th>
+                            <th>ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="bold">#TK-8021</td>
+                            <td>Jane Doe</td>
+                            <td>Billing Error</td>
+                            <td><span class="status-pill warning" style="color:#ef4444; background:rgba(239, 68, 68, 0.1);">High</span></td>
+                            <td><a href="#" class="action-link">Resolve</a></td>
+                        </tr>
+                        <tr>
+                            <td class="bold">#TK-8022</td>
+                            <td>Mike Smith</td>
+                            <td>Court Double Booked</td>
+                            <td><span class="status-pill warning" style="color:#f59e0b; background:rgba(245, 158, 11, 0.1);">Medium</span></td>
+                            <td><a href="#" class="action-link">Resolve</a></td>
+                        </tr>
+                        <tr>
+                            <td class="bold">#TK-8023</td>
+                            <td>Sarah Lee</td>
+                            <td>Account Recovery</td>
+                            <td><span class="status-pill warning" style="color:#f59e0b; background:rgba(245, 158, 11, 0.1);">Medium</span></td>
+                            <td><a href="#" class="action-link">Resolve</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Area -->
+    <div class="dashboard-side">
+        <div class="glass-card">
+            <h3 class="widget-title">Quick Actions</h3>
+            <div class="action-grid">
+                <button class="action-box orange">
+                    <i class="ph ph-ticket"></i>
+                    <span>Assign Tickets</span>
+                </button>
+                <button class="action-box green">
+                    <i class="ph ph-shield-check"></i>
+                    <span>Verify Users</span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="glass-card flex-fill">
+            <h3 class="widget-title">Operations Log</h3>
+            <ul class="activity-feed">
+                <li>
+                    <span class="dot"></span>
+                    <div class="activity-info">
+                        <p>Ticket <strong>#TK-8019</strong> resolved by You</p>
+                        <small>15 mins ago</small>
+                    </div>
+                </li>
+                <li>
+                    <span class="dot"></span>
+                    <div class="activity-info">
+                        <p>User <strong>Alex Wong</strong> verified</p>
+                        <small>45 mins ago</small>
+                    </div>
+                </li>
+                <li>
+                    <span class="dot"></span>
+                    <div class="activity-info">
+                        <p>Dispute <strong>#DP-102</strong> escalated</p>
+                        <small>2 hours ago</small>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<style>
+.stat-box { display: flex; align-items: center; gap: 15px; }
+.stat-info h3 { font-size: 0.9rem; color: var(--text-secondary); margin: 0; }
+.stat-value { font-size: 1.8rem; font-weight: 700; margin: 5px 0; color: var(--text-primary); }
+.stat-change { font-size: 0.8rem; font-weight: 600; }
+.stat-change.positive { color: #4ade80; }
+.stat-change.negative { color: #f87171; }
+</style>
+{% endblock %}

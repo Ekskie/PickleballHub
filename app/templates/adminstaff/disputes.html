@@ -1,0 +1,31 @@
+{% extends "adminstaff/base_adminstaff.html" %}
+{% block title %}Disputes{% endblock %}
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="page-title">Disputes & Reports</h1>
+</div>
+<div class="glass-card">
+    <div class="table-container">
+        <table class="data-grid">
+            <thead>
+                <tr>
+                    <th>REPORT ID</th>
+                    <th>TYPE</th>
+                    <th>INVOLVED PARTIES</th>
+                    <th>DESCRIPTION</th>
+                    <th>ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="bold">#DP-1102</td>
+                    <td>Booking Conflict</td>
+                    <td>Player A, Facility B</td>
+                    <td>Double booked court 4 at 5 PM.</td>
+                    <td><a href="#" class="action-link">Resolve</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
