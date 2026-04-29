@@ -1,0 +1,64 @@
+{# messages_chat.html — Shared messages macro used by all role templates #}
+{% macro render_messages() %}
+<div class="dashboard-header">
+    <h1 class="page-title">Messages</h1>
+</div>
+
+<div class="messages-layout">
+    <!-- Contacts Panel -->
+    <div class="contacts-panel">
+        <div class="contacts-header">
+            <h4><i class="ph ph-chat-circle-dots"></i> Conversations</h4>
+            <button class="new-chat-btn" id="newChatBtn" title="New Conversation">
+                <i class="ph ph-plus"></i>
+            </button>
+        </div>
+        <div class="contacts-search-wrap">
+            <input class="contacts-search" type="text" id="contactsSearch" placeholder="Filter conversations…">
+        </div>
+        <div class="contacts-list" id="contactsList">
+            <!-- Dynamically populated -->
+        </div>
+    </div>
+
+    <!-- Chat Window -->
+    <div class="chat-window">
+        <div class="chat-header" id="chatHeader" style="display:none;">
+            <div class="chat-header-avatar" id="chatHeaderAvatar">?</div>
+            <div class="chat-header-info">
+                <h3 id="chatHeaderName">—</h3>
+                <span class="chat-header-sub" id="chatHeaderRole"></span>
+            </div>
+        </div>
+
+        <div class="chat-placeholder" id="chatPlaceholder">
+            <i class="ph ph-chats-circle"></i>
+            <h3>Your Messages</h3>
+            <p>Select a conversation or tap <strong>+</strong> to start one</p>
+        </div>
+
+        <div class="chat-messages" id="chatMessages" style="display:none;"></div>
+
+        <div class="chat-input-wrap" id="chatInputWrap" style="display:none;">
+            <input class="chat-input" type="text" placeholder="Type a message…" id="msgInput" autocomplete="off">
+            <button class="send-btn" id="sendMsgBtn" title="Send">
+                <i class="ph ph-paper-plane-tilt"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- New Chat Modal -->
+<div class="modal-overlay" id="newChatModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3><i class="ph ph-magnifying-glass"></i> New Conversation</h3>
+            <button class="modal-close-btn" id="modalCloseBtn"><i class="ph ph-x"></i></button>
+        </div>
+        <input class="user-search-input" type="text" placeholder="Search by name…" id="userSearchInput" autocomplete="off">
+        <div class="user-search-results" id="userSearchResults">
+            <p class="search-hint">Start typing to find a user...</p>
+        </div>
+    </div>
+</div>
+{% endmacro %}

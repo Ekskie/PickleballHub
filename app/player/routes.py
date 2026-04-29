@@ -4,7 +4,7 @@ from app.decorators import require_role
 player_bp = Blueprint('player', __name__, url_prefix='/player')
 
 
-@player_bp.route('/')
+@player_bp.route('/dashboard')
 @require_role('player')
 def dashboard():
     return render_template('player/dashboard.html')
@@ -35,7 +35,7 @@ def community():
     return render_template('player/community.html')
 
 @player_bp.route('/messages')
-@require_role('player')
+# @require_role('player')
 def messages():
     return render_template('player/messages.html')
 
@@ -43,4 +43,10 @@ def messages():
 @require_role('player')
 def notifications():
     return render_template('player/notifications.html')
+
+@player_bp.route('/tutorials')
+@require_role('player')
+def tutorials():
+    return render_template('player/tutorials.html')
+
 

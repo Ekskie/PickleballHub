@@ -5,4 +5,8 @@
 <li class="{% if request.endpoint == 'adminstaff.support' %}active{% endif %}"><a href="{{ url_for('adminstaff.support') }}"><i class="ph ph-ticket"></i> Support Tickets</a></li>
 <li class="{% if request.endpoint == 'adminstaff.verifications' %}active{% endif %}"><a href="{{ url_for('adminstaff.verifications') }}"><i class="ph ph-shield-check"></i> Verifications</a></li>
 <li class="{% if request.endpoint == 'adminstaff.disputes' %}active{% endif %}"><a href="{{ url_for('adminstaff.disputes') }}"><i class="ph ph-warning-circle"></i> Disputes</a></li>
+<li class="{% if request.endpoint == 'adminstaff.community' %}active{% endif %}"><a href="{{ url_for('adminstaff.community') }}"><i class="ph ph-users-three"></i> Community</a></li>
+<li class="{% if request.endpoint == 'adminstaff.tutorials' %}active{% endif %}"><a href="{{ url_for('adminstaff.tutorials') }}"><i class="ph ph-video"></i> Tutorials</a></li>
+<li class="{% if request.endpoint == 'adminstaff.messages' %}active{% endif %}"><a href="{{ url_for('adminstaff.messages') }}"><i class="ph ph-chat-circle-dots"></i> Messages</a></li>
 {% endblock %}
+

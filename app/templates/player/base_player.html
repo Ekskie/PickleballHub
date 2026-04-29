@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block sidebar_menu %}
+<li class="{% if request.endpoint == 'player.dashboard' %}active{% endif %}"><a href="{{ url_for('player.dashboard') }}"><i class="ph ph-squares-four"></i> Dashboard</a></li>
+<li class="{% if request.endpoint == 'player.reservation' %}active{% endif %}"><a href="{{ url_for('player.reservation') }}"><i class="ph ph-calendar-plus"></i> Court Reservation</a></li>
+<li class="{% if request.endpoint == 'player.queue' %}active{% endif %}"><a href="{{ url_for('player.queue') }}"><i class="ph ph-list-numbers"></i> Queue Monitoring</a></li>
+<li class="{% if request.endpoint == 'player.events' %}active{% endif %}"><a href="{{ url_for('player.events') }}"><i class="ph ph-trophy"></i> Events & Tournaments</a></li>
+<li class="{% if request.endpoint == 'player.community' %}active{% endif %}"><a href="{{ url_for('player.community') }}"><i class="ph ph-users"></i> Community</a></li>
+<li class="{% if request.endpoint == 'player.tutorials' %}active{% endif %}"><a href="{{ url_for('player.tutorials') }}"><i class="ph ph-video"></i> Tutorials</a></li>
+<li class="{% if request.endpoint == 'player.messages' %}active{% endif %}"><a href="{{ url_for('player.messages') }}"><i class="ph ph-chat-circle-dots"></i> Messages</a></li>
+{% endblock %}
+

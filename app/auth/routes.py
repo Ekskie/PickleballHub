@@ -3,23 +3,28 @@ from app import supabase
 
 auth_bp = Blueprint('auth', __name__, url_prefix='')
 
+# Valid roles and their dashboard endpoints
+_ROLE_DASHBOARD_MAP = {
+    'player':       'player.dashboard',
+    'superadmin':   'superadmin.dashboard',
+    'owner':        'owner.dashboard',
+    'clubadmin':    'clubadmin.dashboard',
+    'facilitystaff':'facilitystaff.dashboard',
+    'adminstaff':   'adminstaff.dashboard',
+}
+
 def _redirect_by_role(role: str):
-    """Return the correct dashboard redirect for a given role string."""
-    role = (role or 'player').strip().lower()
-    if role == 'player':
-        return redirect(url_for('player.dashboard'))
-    elif role == 'superadmin':
-        return redirect(url_for('superadmin.dashboard'))
-    elif role == 'owner':
-        return redirect(url_for('owner.dashboard'))
-    elif role == 'clubadmin':
-        return redirect(url_for('clubadmin.dashboard'))
-    elif role == 'facilitystaff':
-        return redirect(url_for('facilitystaff.dashboard'))
-    elif role == 'adminstaff':
-        return redirect(url_for('adminstaff.dashboard'))
-    # Default fallback
-    return redirect(url_for('player.dashboard'))
+    """Return the correct dashboard redirect for a given role string.
+    Unknown/legacy role strings redirect to login to avoid infinite loops.
+    """
+    role = (role or '').strip().lower()
+    endpoint = _ROLE_DASHBOARD_MAP.get(role)
+    if endpoint:
+        return redirect(url_for(endpoint))
+    # Unknown role — clear session and send to login
+    session.clear()
+    flash('Your account role is not recognised. Please contact support.', 'error')
+    return redirect(url_for('auth.login'))
 
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
@@ -73,19 +78,26 @@ def login():
                     session['last_name']  = meta.get('last_name',  '')
                     session['phone']      = meta.get('phone', '')
                     session['role']       = meta.get('role', 'player') or 'player'
+                    session['access_token'] = response.session.access_token
+                    session['refresh_token'] = response.session.refresh_token
 
-                    # Fetch role from profiles table as fallback (for accounts created via console)
+                    # Always prefer the DB profiles.role over user_metadata
+                    # (DB is the source of truth; metadata may contain old/incorrect values)
                     try:
-                        profile_resp = supabase.table('profiles').select('role').eq('id', user.id).single().execute()
-                        if profile_resp.data and profile_resp.data.get('role'):
-                            db_role = profile_resp.data['role']
-                            if db_role and db_role != 'player':
+                        profile_resp = supabase.table('profiles').select(
+                            'role, first_name, last_name, phone'
+                        ).eq('id', user.id).single().execute()
+                        if profile_resp.data:
+                            db_role = (profile_resp.data.get('role') or '').strip().lower()
+                            if db_role and db_role in _ROLE_DASHBOARD_MAP:
                                 session['role'] = db_role
-                                session['first_name'] = profile_resp.data.get('first_name', session['first_name'])
-                                session['last_name'] = profile_resp.data.get('last_name', session['last_name'])
-                                session['phone'] = profile_resp.data.get('phone', session['phone'])
-                    except:
-                        pass  # Fallback to metadata role if profile fetch fails
+                            # Also sync name/phone from profile
+                            session['first_name'] = profile_resp.data.get('first_name') or session['first_name']
+                            session['last_name']  = profile_resp.data.get('last_name')  or session['last_name']
+                            session['phone']      = profile_resp.data.get('phone')      or session['phone']
+                    except Exception as profile_err:
+                        print(f'[login] profile fetch error: {profile_err}')
+                        # Keep whatever role came from user_metadata
 
                     return _redirect_by_role(session['role'])
 
@@ -118,7 +130,7 @@ def signup():
 
         try:
             if supabase:
-                supabase.auth.sign_up({
+                sign_up_resp = supabase.auth.sign_up({
                     "email": email,
                     "password": password,
                     "options": {
@@ -132,6 +144,24 @@ def signup():
                         }
                     }
                 })
+
+                # Upsert the role into profiles so DB is always the source of truth.
+                # The Supabase trigger may create the profile with a default role;
+                # we overwrite it here to ensure the chosen role is persisted.
+                if sign_up_resp and sign_up_resp.user:
+                    try:
+                        from app import supabase_admin
+                        admin_client = supabase_admin or supabase
+                        admin_client.table('profiles').upsert({
+                            'id':         sign_up_resp.user.id,
+                            'first_name': first_name,
+                            'last_name':  last_name,
+                            'role':       role,
+                            'phone':      phone,
+                        }, on_conflict='id').execute()
+                    except Exception as upsert_err:
+                        print(f'[signup] profile upsert error: {upsert_err}')
+
                 # Store email so the login page can pre-fill the resend form
                 session['pending_email'] = email
                 return redirect(url_for('auth.login', pending_verification='1'))

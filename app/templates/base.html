@@ -73,9 +73,11 @@
             <div class="header-actions">
                 <button class="icon-btn theme-toggle" onclick="toggleTheme()"><i class="ph ph-moon"
                         id="theme-icon"></i></button>
-                <a href="{{ url_for('player.notifications') }}"><button class="icon-btn notification-bell"><i
-                            class="ph ph-bell"></i> <span class="badge"></span></button></a>
-                <a href="{{ url_for('player.profile') }}" class="user-profile" id="header-user-profile">
+                <a href="{{ url_for(current_user.role_raw ~ '.notifications') }}"><button
+                        class="icon-btn notification-bell"><i class="ph ph-bell"></i> <span
+                            class="badge"></span></button></a>
+                <a href="{{ url_for(current_user.role_raw ~ '.profile') }}" class="user-profile"
+                    id="header-user-profile">
                     <div class="avatar">{{ current_user.initials }}</div>
                     <div class="avatar-info">
                         <span class="name">{{ current_user.full_name }}</span>
@@ -89,6 +91,24 @@
         <div class="content-background"></div>
 
         <main class="content-area">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="alerts">
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    <i
+                        class="ph {% if category == 'error' %}ph-warning-circle{% elif category == 'success' %}ph-check-circle{% else %}ph-info{% endif %}"></i>
+                    <span>{{ message }}</span>
+                    <button class="alert-close" onclick="this.parentElement.style.display='none';">
+                        <i class="ph ph-x"></i>
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
             {% block content %}{% endblock %}
         </main>
     </div>
@@ -117,6 +137,28 @@
         // Ensure icon is correct on initial load
         if (document.documentElement.classList.contains('dark-mode')) {
             document.getElementById('theme-icon').classList.replace('ph-moon', 'ph-sun');
+        }
+    </script>
+
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const supabaseUrl = "{{ supabase_url }}";
+        const supabaseKey = "{{ supabase_anon_key }}";
+        const accessToken = "{{ current_user.access_token if current_user.is_logged_in else '' }}";
+        const currentUserId = "{{ current_user.id if current_user.is_logged_in else '' }}";
+
+        let supabaseClient = null;
+        if (supabaseUrl && supabaseKey) {
+            // Initialize with the access token if logged in
+            const options = accessToken ? {
+                global: {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`
+                    }
+                }
+            } : {};
+            supabaseClient = supabase.createClient(supabaseUrl, supabaseKey, options);
         }
     </script>
 </body>

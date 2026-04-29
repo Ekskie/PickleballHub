@@ -5,14 +5,14 @@
 {% block content %}
 <div class="dashboard-header">
     <h1 class="page-title">Platform Settings</h1>
-    <button class="action-box green" style="width: auto; padding: 0.5rem 1rem;">
+    <button class="action-box green display-row" style="width: auto; padding: 0.5rem 1rem;">
         <i class="ph ph-floppy-disk"></i> Save Changes
     </button>
 </div>
 
 <div class="dashboard-grid">
     <div class="dashboard-main" style="width: 100%; max-width: 800px;">
-        
+
         <!-- General Settings -->
         <div class="glass-card" style="margin-bottom: 20px;">
             <div class="widget-header">
@@ -20,12 +20,16 @@
             </div>
             <div style="padding-top: 15px;">
                 <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Platform Name</label>
-                    <input type="text" value="PickleballHub" class="form-input" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: var(--text-primary); border-radius: 8px;">
+                    <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Platform
+                        Name</label>
+                    <input type="text" value="PickleballHub" class="form-input"
+                        style="width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: var(--text-primary); border-radius: 8px;">
                 </div>
                 <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Support Email</label>
-                    <input type="email" value="support@pickleballhub.com" class="form-input" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: var(--text-primary); border-radius: 8px;">
+                    <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Support
+                        Email</label>
+                    <input type="email" value="support@pickleballhub.com" class="form-input"
+                        style="width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: var(--text-primary); border-radius: 8px;">
                 </div>
             </div>
         </div>
@@ -36,10 +40,12 @@
                 <h3><i class="ph ph-shield-check" style="margin-right: 8px;"></i> Security & Maintenance</h3>
             </div>
             <div style="padding-top: 15px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
                     <div>
                         <strong style="display: block; margin-bottom: 4px;">Maintenance Mode</strong>
-                        <span style="font-size: 0.85rem; color: var(--text-secondary);">Disables user access to the platform temporarily.</span>
+                        <span style="font-size: 0.85rem; color: var(--text-secondary);">Disables user access to the
+                            platform temporarily.</span>
                     </div>
                     <label class="toggle-switch">
                         <input type="checkbox">
@@ -49,7 +55,8 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0;">
                     <div>
                         <strong style="display: block; margin-bottom: 4px;">Require Two-Factor Authentication</strong>
-                        <span style="font-size: 0.85rem; color: var(--text-secondary);">Enforce 2FA for all administrative accounts.</span>
+                        <span style="font-size: 0.85rem; color: var(--text-secondary);">Enforce 2FA for all
+                            administrative accounts.</span>
                     </div>
                     <label class="toggle-switch">
                         <input type="checkbox" checked>
@@ -65,15 +72,18 @@
                 <h3><i class="ph ph-credit-card" style="margin-right: 8px;"></i> Payment Integrations</h3>
             </div>
             <div style="padding-top: 15px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
                     <div style="display: flex; align-items: center; gap: 15px;">
                         <i class="ph ph-stripe-logo" style="font-size: 2rem; color: #6366f1;"></i>
                         <div>
                             <strong style="display: block; margin-bottom: 4px;">Stripe Gateway</strong>
-                            <span style="font-size: 0.85rem; color: var(--text-secondary);">Primary payment processor.</span>
+                            <span style="font-size: 0.85rem; color: var(--text-secondary);">Primary payment
+                                processor.</span>
                         </div>
                     </div>
-                    <button class="action-box" style="width: auto; padding: 0.4rem 1rem; background: rgba(255,255,255,0.1); border: none; color: var(--text-primary); border-radius: 6px;">Configure</button>
+                    <button class="action-box"
+                        style="width: auto; padding: 0.4rem 1rem; background: rgba(255,255,255,0.1); border: none; color: var(--text-primary); border-radius: 6px;">Configure</button>
                 </div>
             </div>
         </div>
@@ -82,12 +92,50 @@
 </div>
 
 <style>
-/* Toggle Switch Styles */
-.toggle-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
-.toggle-switch input { opacity: 0; width: 0; height: 0; }
-.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 34px; }
-.slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-input:checked + .slider { background-color: #4ade80; }
-input:checked + .slider:before { transform: translateX(24px); }
+    /* Toggle Switch Styles */
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 26px;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.1);
+        transition: .4s;
+        border-radius: 34px;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 20px;
+        width: 20px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+    input:checked+.slider {
+        background-color: #4ade80;
+    }
+
+    input:checked+.slider:before {
+        transform: translateX(24px);
+    }
 </style>
 {% endblock %}

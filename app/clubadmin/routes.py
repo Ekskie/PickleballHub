@@ -27,3 +27,29 @@ def tournaments():
 @require_role('clubadmin')
 def leaderboard():
     return render_template('clubadmin/leaderboard.html')
+
+@clubadmin_bp.route('/profile')
+@require_role('clubadmin')
+def profile():
+    return render_template('clubadmin/profile.html')
+
+@clubadmin_bp.route('/notifications')
+@require_role('clubadmin')
+def notifications():
+    return render_template('clubadmin/notifications.html')
+
+@clubadmin_bp.route('/messages')
+@require_role('clubadmin')
+def messages():
+    return render_template('clubadmin/messages.html')
+
+@clubadmin_bp.route('/community')
+@require_role('clubadmin')
+def community():
+    return render_template('clubadmin/community.html')
+
+@clubadmin_bp.route('/tutorials')
+@require_role('clubadmin')
+def tutorials():
+    return render_template('clubadmin/tutorials.html')
+

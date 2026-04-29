@@ -26,6 +26,7 @@
     margin-bottom: 16px;
     color: white;
     background: linear-gradient(to right, #ffffff, #ff5722);
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -290,3 +291,110 @@
         width: 100%;
     }
 }
+
+/* ── Play button as a clickable button element ── */
+button.play-btn {
+    border: none;
+    cursor: pointer;
+}
+
+/* ── Level badge on thumbnail (replaces static duration) ── */
+.video-level-badge {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    right: auto;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: capitalize;
+    letter-spacing: 0.3px;
+    background: rgba(0,0,0,0.65);
+    color: white;
+    backdrop-filter: blur(4px);
+}
+
+.video-level-badge.beginner     { background: rgba(34,197,94,0.85);  }
+.video-level-badge.intermediate { background: rgba(245,158,11,0.85); }
+.video-level-badge.advanced     { background: rgba(239,68,68,0.85);  }
+
+/* ── Landing-page watch modal ───────────────────── */
+.landing-watch-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(6px);
+    animation: fadeInOverlay 0.2s ease;
+}
+
+@keyframes fadeInOverlay {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.landing-watch-box {
+    width: 100%;
+    max-width: 860px;
+    background: #0d0d0d;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+    animation: slideUp 0.22s ease;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
+.landing-watch-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: #1a1a1a;
+}
+
+.landing-watch-header span {
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: 'Outfit', sans-serif;
+}
+
+.landing-watch-close {
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.6);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+}
+
+.landing-watch-close:hover {
+    color: white;
+    background: rgba(255,255,255,0.1);
+}
+
+.landing-watch-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+}
+
+.landing-watch-frame iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}

@@ -27,3 +27,29 @@ def reports():
 @require_role('superadmin')
 def settings():
     return render_template('superadmin/settings.html')
+
+@superadmin_bp.route('/profile')
+@require_role('superadmin')
+def profile():
+    return render_template('superadmin/profile.html')
+
+@superadmin_bp.route('/notifications')
+@require_role('superadmin')
+def notifications():
+    return render_template('superadmin/notifications.html')
+
+@superadmin_bp.route('/messages')
+@require_role('superadmin')
+def messages():
+    return render_template('superadmin/messages.html')
+
+@superadmin_bp.route('/community')
+@require_role('superadmin')
+def community():
+    return render_template('superadmin/community.html')
+
+@superadmin_bp.route('/tutorials')
+@require_role('superadmin')
+def tutorials():
+    return render_template('superadmin/tutorials.html')
+

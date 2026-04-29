@@ -47,60 +47,46 @@
                     </div>
 
                     <div class="feed-list">
-                        <!-- Feed Item 1 -->
-                        <div class="feed-item">
-                            <div class="feed-header">
-                                <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200&auto=format&fit=crop"
-                                    class="feed-avatar" alt="User">
-                                <div class="feed-user-info">
-                                    <h4>Anna Cruz</h4>
-                                    <span>2 hours ago • Pangil Smashers</span>
-                                </div>
-                            </div>
-                            <div class="feed-body">
-                                <p>Just had an intense 3-set match against Paete Paddlers! The new courts are feeling
-                                    great. Anyone up for drills this weekend? 🏓🔥</p>
-                            </div>
-                            <div class="feed-footer">
-                                <a href="{{ url_for('auth.login') }}" class="feed-action-btn"><i
-                                        class="ph ph-heart"></i> 24 Likes</a>
-                                <a href="{{ url_for('auth.login') }}" class="feed-action-btn"><i
-                                        class="ph ph-chat-circle"></i> 5 Comments</a>
-                                <a href="{{ url_for('auth.login') }}" class="feed-action-btn"><i
-                                        class="ph ph-share-network"></i> Share</a>
-                            </div>
-                        </div>
 
-                        <!-- Feed Item 2 -->
-                        <div class="feed-item">
-                            <div class="feed-header">
-                                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200&auto=format&fit=crop"
-                                    class="feed-avatar" alt="User">
-                                <div class="feed-user-info">
-                                    <h4>Marcus Reyes</h4>
-                                    <span>5 hours ago • Paete Pickleball Club</span>
+                        {% if posts %}
+                            {% for post in posts %}
+                            {# ── Time-ago helper ────────────────────────────── #}
+                            {% set now_ts  = now() if now is defined else none %}
+                            <div class="feed-item">
+                                <div class="feed-header">
+                                    <div class="feed-avatar-init">{{ post.author_init }}</div>
+                                    <div class="feed-user-info">
+                                        <h4>{{ post.author_name }}</h4>
+                                        <span>{{ post.author_role }} &bull;
+                                            {{ post.created_at | community_timeago }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="feed-body">
+                                    <p>{{ post.content }}</p>
+                                </div>
+                                <div class="feed-footer">
+                                    <a href="{{ url_for('auth.login') }}" class="feed-action-btn">
+                                        <i class="ph ph-heart"></i> {{ post.likes }} Like{{ 's' if post.likes != 1 }}
+                                    </a>
+                                    <a href="{{ url_for('auth.login') }}" class="feed-action-btn">
+                                        <i class="ph ph-chat-circle"></i> {{ post.comments }} Comment{{ 's' if post.comments != 1 }}
+                                    </a>
+                                    <a href="{{ url_for('auth.login') }}" class="feed-action-btn">
+                                        <i class="ph ph-share-network"></i> Share
+                                    </a>
                                 </div>
                             </div>
-                            <div class="feed-body">
-                                <p>First time hitting an ATP in a tournament match! Huge shoutout to my partner for
-                                    setting it up perfectly. Check out the clip below!</p>
-                                <!-- Video Attachment -->
-                                <div class="feed-attachment"
-                                    style="background-image: url('https://images.unsplash.com/photo-1622281484080-69273c66f54c?q=80&w=600&auto=format&fit=crop');">
-                                    <a href="{{ url_for('auth.login') }}" class="play-overlay"><i
-                                            class="ph-fill ph-play-circle"></i></a>
-                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="feed-item" style="text-align:center; padding: 2rem;">
+                                <i class="ph ph-chats" style="font-size:2.5rem; opacity:0.3; display:block; margin-bottom:12px;"></i>
+                                <p style="color: var(--text-secondary);">Be the first to post! <a href="{{ url_for('auth.login') }}" style="color:var(--primary-orange);">Join the community</a></p>
                             </div>
-                            <div class="feed-footer">
-                                <a href="{{ url_for('auth.login') }}" class="feed-action-btn"><i
-                                        class="ph ph-heart"></i> 112 Likes</a>
-                                <a href="{{ url_for('auth.login') }}" class="feed-action-btn"><i
-                                        class="ph ph-chat-circle"></i> 18 Comments</a>
-                                <a href="{{ url_for('auth.login') }}" class="feed-action-btn"><i
-                                        class="ph ph-share-network"></i> Share</a>
-                            </div>
-                        </div>
+                        {% endif %}
+
                     </div>
+
                 </div>
 
                 <!-- Local Clubs Column -->

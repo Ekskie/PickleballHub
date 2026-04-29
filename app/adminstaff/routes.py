@@ -22,3 +22,29 @@ def verifications():
 @require_role('adminstaff')
 def disputes():
     return render_template('adminstaff/disputes.html')
+
+@adminstaff_bp.route('/profile')
+@require_role('adminstaff')
+def profile():
+    return render_template('adminstaff/profile.html')
+
+@adminstaff_bp.route('/notifications')
+@require_role('adminstaff')
+def notifications():
+    return render_template('adminstaff/notifications.html')
+
+@adminstaff_bp.route('/messages')
+@require_role('adminstaff')
+def messages():
+    return render_template('adminstaff/messages.html')
+
+@adminstaff_bp.route('/community')
+@require_role('adminstaff')
+def community():
+    return render_template('adminstaff/community.html')
+
+@adminstaff_bp.route('/tutorials')
+@require_role('adminstaff')
+def tutorials():
+    return render_template('adminstaff/tutorials.html')
+

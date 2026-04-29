@@ -22,6 +22,7 @@ body {
     margin-bottom: 16px;
     color: white;
     background: linear-gradient(to right, #ffffff, #ff5722);
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -104,6 +105,22 @@ body {
     height: 48px;
     border-radius: 50%;
     object-fit: cover;
+}
+
+/* Initials avatar for real DB posts (no photo) */
+.feed-avatar-init {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff5722, #e15623);
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    letter-spacing: 0.5px;
 }
 
 .feed-user-info {

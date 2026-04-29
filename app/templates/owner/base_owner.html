@@ -6,4 +6,6 @@
 <li class="{% if request.endpoint == 'owner.courts' %}active{% endif %}"><a href="{{ url_for('owner.courts') }}"><i class="ph ph-intersect"></i> Courts & Pricing</a></li>
 <li class="{% if request.endpoint == 'owner.staff' %}active{% endif %}"><a href="{{ url_for('owner.staff') }}"><i class="ph ph-users-three"></i> Staff Management</a></li>
 <li class="{% if request.endpoint == 'owner.earnings' %}active{% endif %}"><a href="{{ url_for('owner.earnings') }}"><i class="ph ph-wallet"></i> Earnings</a></li>
+<li class="{% if request.endpoint == 'owner.community' %}active{% endif %}"><a href="{{ url_for('owner.community') }}"><i class="ph ph-users-three"></i> Community</a></li>
+<li class="{% if request.endpoint == 'owner.messages' %}active{% endif %}"><a href="{{ url_for('owner.messages') }}"><i class="ph ph-chat-circle-dots"></i> Messages</a></li>
 {% endblock %}

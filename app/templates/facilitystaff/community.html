@@ -1,0 +1,12 @@
+{% extends "facilitystaff/base_facilitystaff.html" %}
+{% from "community_feed.html" import render_community %}
+
+{% block title %}Community{% endblock %}
+
+{% block extra_head %}
+<script src="{{ url_for('static', filename='js/community.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+{{ render_community() }}
+{% endblock %}

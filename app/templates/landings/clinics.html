@@ -48,35 +48,91 @@
                                 class="ph ph-arrow-right"></i></a>
                     </div>
                     <div class="video-grid">
-                        <!-- Video Card 1 -->
-                        <div class="video-card">
-                            <div class="video-thumbnail">
-                                <img src="https://plus.unsplash.com/premium_photo-1709048991290-1d36455a2895?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                                    alt="Dinking Tutorial">
-                                <div class="play-btn"><i class="ph-fill ph-play"></i></div>
-                                <span class="video-duration">08:45</span>
+                        {% if tutorials %}
+                            {% for t in tutorials %}
+                            <div class="video-card">
+                                <div class="video-thumbnail">
+                                    {% if t.thumb_url %}
+                                    <img src="{{ t.thumb_url }}" alt="{{ t.title }}">
+                                    {% else %}
+                                    <div style="width:100%;height:100%;background:#1a1a2e;display:flex;align-items:center;justify-content:center;">
+                                        <i class="ph ph-video" style="font-size:2.5rem;opacity:0.3;color:white;"></i>
+                                    </div>
+                                    {% endif %}
+                                    <button class="play-btn landing-watch-btn"
+                                        data-embed="{{ t.embed_url }}"
+                                        data-title="{{ t.title }}">
+                                        <i class="ph-fill ph-play"></i>
+                                    </button>
+                                    <span class="video-duration video-level-badge {{ t.level | lower }}">
+                                        {{ t.level }}
+                                    </span>
+                                </div>
+                                <div class="video-info">
+                                    <h4>{{ t.title }}</h4>
+                                    <p>{{ t.description }}</p>
+                                    <a href="{{ url_for('auth.login') }}" class="view-all" style="font-size:0.8rem; margin-top:8px; display:inline-flex; align-items:center; gap:4px;">
+                                        Login to watch more <i class="ph ph-arrow-right"></i>
+                                    </a>
+                                </div>
                             </div>
-                            <div class="video-info">
-                                <span class="video-tag beginner">Beginner</span>
-                                <h4>The Perfect Dinking Technique</h4>
-                                <p>Master the soft game at the kitchen line with these 3 fundamental drills.</p>
+                            {% endfor %}
+                        {% else %}
+                            <div class="video-card" style="grid-column:1/-1; text-align:center; padding:2rem;">
+                                <i class="ph ph-video-slash" style="font-size:2.5rem; opacity:0.3; display:block; margin-bottom:12px;"></i>
+                                <p style="color:var(--text-secondary); margin-bottom:12px;">Tutorials coming soon!</p>
+                                <a href="{{ url_for('auth.login') }}" class="btn-primary sm">Login to Get Started</a>
                             </div>
-                        </div>
-                        <!-- Video Card 2 -->
-                        <div class="video-card">
-                            <div class="video-thumbnail">
-                                <img src="https://plus.unsplash.com/premium_photo-1709048991290-1d36455a2895?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                                    alt="Serve Tutorial">
-                                <div class="play-btn"><i class="ph-fill ph-play"></i></div>
-                                <span class="video-duration">12:20</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- ── Inline Watch Modal ──────────────────── -->
+                    <div id="landingWatchModal" class="landing-watch-overlay" style="display:none;">
+                        <div class="landing-watch-box">
+                            <div class="landing-watch-header">
+                                <span id="landingWatchTitle">Tutorial</span>
+                                <button id="landingWatchClose" class="landing-watch-close">
+                                    <i class="ph ph-x"></i>
+                                </button>
                             </div>
-                            <div class="video-info">
-                                <span class="video-tag advanced">Advanced</span>
-                                <h4>Adding Topspin to Your Serve</h4>
-                                <p>Learn how to generate massive topspin for a deeply offensive serve.</p>
+                            <div class="landing-watch-frame">
+                                <iframe id="landingWatchFrame" src="" frameborder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowfullscreen></iframe>
                             </div>
                         </div>
                     </div>
+
+                    <script>
+                    (function() {
+                        const modal  = document.getElementById('landingWatchModal');
+                        const frame  = document.getElementById('landingWatchFrame');
+                        const titleEl= document.getElementById('landingWatchTitle');
+                        const closeBtn = document.getElementById('landingWatchClose');
+
+                        document.querySelectorAll('.landing-watch-btn').forEach(btn => {
+                            btn.addEventListener('click', function() {
+                                const embed = this.dataset.embed;
+                                const title = this.dataset.title;
+                                if (!embed) { return; }
+                                frame.src   = embed;
+                                titleEl.textContent = title || 'Tutorial';
+                                modal.style.display = 'flex';
+                            });
+                        });
+
+                        function closeModal() {
+                            modal.style.display = 'none';
+                            frame.src = '';
+                        }
+
+                        closeBtn.addEventListener('click', closeModal);
+                        modal.addEventListener('click', function(e) {
+                            if (e.target === modal) closeModal();
+                        });
+                    })();
+                    </script>
+
                 </div>
 
                 <!-- Right/Bottom: Clinics -->

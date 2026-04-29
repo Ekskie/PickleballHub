@@ -1,0 +1,42 @@
+{# community_feed.html — Shared community macro included by all role templates #}
+{% macro render_community() %}
+<div class="community-page-header">
+    <h1 class="page-title">Community</h1>
+    <span class="posts-count" id="posts-count-label">Loading...</span>
+</div>
+
+<!-- Create Post -->
+<div class="create-post-card">
+    <div class="create-post-top">
+        <div class="community-avatar" id="current-user-avatar">?</div>
+        <textarea id="post-textarea" class="post-textarea" placeholder="Share something with the community..." rows="2"></textarea>
+    </div>
+    <div class="create-post-footer">
+        <button id="btn-post" class="btn-post">
+            <i class="ph ph-paper-plane-tilt"></i> Post
+        </button>
+    </div>
+</div>
+
+<!-- Dynamic Posts Feed -->
+<div id="community-feed-wrapper">
+    <!-- Skeleton loader -->
+    <div class="feed-skeleton">
+        <div class="skeleton-card">
+            <div class="sk-avatar"></div>
+            <div class="sk-lines">
+                <div class="sk-line sk-line-short"></div>
+                <div class="sk-line"></div>
+                <div class="sk-line sk-line-medium"></div>
+            </div>
+        </div>
+        <div class="skeleton-card">
+            <div class="sk-avatar"></div>
+            <div class="sk-lines">
+                <div class="sk-line sk-line-short"></div>
+                <div class="sk-line"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}

@@ -5,7 +5,7 @@
 {% block content %}
 <div class="dashboard-header">
     <h1 class="page-title">Facilities Management</h1>
-    <button class="action-box navy" style="width: auto; padding: 0.5rem 1rem;">
+    <button class="action-box navy display-row" style="width: auto; padding: 0.5rem 1rem;">
         <i class="ph ph-plus"></i> Add Facility
     </button>
 </div>
@@ -17,7 +17,8 @@
             <input type="text" placeholder="Search facilities by name or location...">
         </div>
         <div class="filter-actions">
-            <select class="action-box" style="padding: 0.5rem; border: none; background: rgba(255,255,255,0.05); color: var(--text-primary); cursor: pointer; border-radius: 8px;">
+            <select class="action-box"
+                style="padding: 0.5rem; border: none; background: rgba(255,255,255,0.05); color: var(--text-primary); cursor: pointer; border-radius: 8px;">
                 <option value="all">All Statuses</option>
                 <option value="active">Active</option>
                 <option value="pending">Pending</option>
@@ -46,7 +47,8 @@
                     <td><span class="status-pill success">Active</span></td>
                     <td>
                         <a href="#" class="action-link" title="Edit"><i class="ph ph-pencil-simple"></i></a>
-                        <a href="#" class="action-link disabled-action" title="Suspend" style="color: #ef4444;"><i class="ph ph-prohibit"></i></a>
+                        <a href="#" class="action-link disabled-action" title="Suspend" style="color: #ef4444;"><i
+                                class="ph ph-prohibit"></i></a>
                     </td>
                 </tr>
                 <tr>
@@ -54,9 +56,11 @@
                     <td>Austin, TX</td>
                     <td>owner@picklepro.com</td>
                     <td>Apr 18, 2025</td>
-                    <td><span class="status-pill warning" style="color:#f59e0b; background:rgba(245,158,11,0.1)">Pending</span></td>
+                    <td><span class="status-pill warning"
+                            style="color:#f59e0b; background:rgba(245,158,11,0.1)">Pending</span></td>
                     <td>
-                        <a href="#" class="action-link" title="Approve" style="color: #4ade80;"><i class="ph ph-check-circle"></i></a>
+                        <a href="#" class="action-link" title="Approve" style="color: #4ade80;"><i
+                                class="ph ph-check-circle"></i></a>
                         <a href="#" class="action-link" title="Edit"><i class="ph ph-pencil-simple"></i></a>
                     </td>
                 </tr>
@@ -68,7 +72,8 @@
                     <td><span class="status-pill success">Active</span></td>
                     <td>
                         <a href="#" class="action-link" title="Edit"><i class="ph ph-pencil-simple"></i></a>
-                        <a href="#" class="action-link disabled-action" title="Suspend" style="color: #ef4444;"><i class="ph ph-prohibit"></i></a>
+                        <a href="#" class="action-link disabled-action" title="Suspend" style="color: #ef4444;"><i
+                                class="ph ph-prohibit"></i></a>
                     </td>
                 </tr>
                 <tr>
@@ -76,9 +81,11 @@
                     <td>Chicago, IL</td>
                     <td>admin@downtownclub.com</td>
                     <td>Jan 10, 2025</td>
-                    <td><span class="status-pill disabled" style="color:#ef4444; background:rgba(239,68,68,0.1)">Suspended</span></td>
+                    <td><span class="status-pill disabled"
+                            style="color:#ef4444; background:rgba(239,68,68,0.1)">Suspended</span></td>
                     <td>
-                        <a href="#" class="action-link" title="Restore" style="color: #4ade80;"><i class="ph ph-arrow-counter-clockwise"></i></a>
+                        <a href="#" class="action-link" title="Restore" style="color: #4ade80;"><i
+                                class="ph ph-arrow-counter-clockwise"></i></a>
                         <a href="#" class="action-link" title="Edit"><i class="ph ph-pencil-simple"></i></a>
                     </td>
                 </tr>

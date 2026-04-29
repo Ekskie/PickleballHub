@@ -61,7 +61,11 @@ def create_app():
         }
 
         if not user_id:
-            return dict(current_user=guest)
+            return dict(
+                current_user=guest,
+                supabase_url=supabase_url,
+                supabase_anon_key=supabase_key
+            )
 
         # --- 1. Try Supabase (admin client, bypasses RLS) ---
         client = supabase_admin or supabase
@@ -90,7 +94,8 @@ def create_app():
                         'role_raw':     role,
                         'id':           user_id,
                         'is_logged_in': True,
-                    })
+                        'access_token': session.get('access_token', ''),
+                    }, supabase_url=supabase_url, supabase_anon_key=supabase_key)
             except Exception as exc:
                 print(f"[context_processor] Supabase error: {exc}", file=sys.stderr)
 
@@ -112,6 +117,33 @@ def create_app():
             'role_raw':     role,
             'id':           user_id,
             'is_logged_in': True,
-        })
+            'access_token': session.get('access_token', ''),
+        }, supabase_url=supabase_url, supabase_anon_key=supabase_key)
+
+    # ── Template Filters ──────────────────────────────────────────────────────
+    @app.template_filter('community_timeago')
+    def community_timeago(iso_str):
+        """Convert an ISO timestamp to a human-readable relative time string."""
+        import datetime
+        try:
+            dt = datetime.datetime.fromisoformat(str(iso_str).replace('Z', '+00:00'))
+            now = datetime.datetime.now(datetime.timezone.utc)
+            diff = now - dt
+            seconds = int(diff.total_seconds())
+            if seconds < 60:
+                return 'just now'
+            minutes = seconds // 60
+            if minutes < 60:
+                return f'{minutes}m ago'
+            hours = minutes // 60
+            if hours < 24:
+                return f'{hours}h ago'
+            days = hours // 24
+            if days < 7:
+                return f'{days}d ago'
+            return dt.strftime('%b ') + str(dt.day)
+        except Exception:
+            return ''
 
     return app
+

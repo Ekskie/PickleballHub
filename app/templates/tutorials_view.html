@@ -1,0 +1,91 @@
+{# tutorials_view.html — shared Jinja2 macro used by player/admin tutorials pages #}
+
+{% macro render_tutorials(can_manage=False, role_prefix='player') %}
+<div class="dashboard-header">
+    <h1 class="page-title"><i class="ph ph-video" style="color:var(--primary-orange);"></i> Tutorials & Clinics</h1>
+    {% if can_manage %}
+    <button class="btn-primary-action" id="addTutorialBtn">
+        <i class="ph ph-plus"></i> Add Tutorial
+    </button>
+    {% endif %}
+</div>
+
+<!-- Controls row -->
+<div class="tutorials-controls">
+    <div class="tutorials-search-wrap">
+        <i class="ph ph-magnifying-glass"></i>
+        <input type="text" id="tutorialsSearch" placeholder="Search tutorials..." class="tutorials-search-input">
+    </div>
+    <select id="levelFilter" class="tutorials-level-select">
+        <option value="all">All Levels</option>
+        <option value="Beginner">Beginner</option>
+        <option value="Intermediate">Intermediate</option>
+        <option value="Advanced">Advanced</option>
+    </select>
+    <span class="tutorials-count-label" id="tutorialsCount">Loading...</span>
+</div>
+
+<!-- Tutorials grid -->
+<div class="tutorials-grid" id="tutorialsGrid">
+    <!-- Dynamically populated by tutorials.js -->
+</div>
+
+<!-- ── Watch Modal ──────────────────────────────────────────────── -->
+<div class="modal-overlay" id="watchModal">
+    <div class="watch-modal-box">
+        <div class="watch-modal-header">
+            <h3 id="watchTitle">Tutorial</h3>
+            <button class="modal-close-btn" id="closeWatch"><i class="ph ph-x"></i></button>
+        </div>
+        <div class="watch-frame-wrap">
+            <iframe
+                id="watchFrame"
+                src=""
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen>
+            </iframe>
+        </div>
+    </div>
+</div>
+
+{% if can_manage %}
+<!-- ── Add Tutorial Modal (admin only) ─────────────────────────── -->
+<div class="modal-overlay" id="addTutorialModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3><i class="ph ph-youtube-logo"></i> Add Tutorial</h3>
+            <button class="modal-close-btn" id="closeTutorialModal"><i class="ph ph-x"></i></button>
+        </div>
+        <form id="addTutorialForm">
+            <div class="form-group">
+                <label>Title <span style="color:#ef4444">*</span></label>
+                <input type="text" id="tTitle" class="form-input-field" placeholder="e.g. Mastering the Third Shot Drop" required>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="tDesc" class="form-input-field" rows="2" placeholder="Brief description of what the tutorial covers..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>YouTube URL <span style="color:#ef4444">*</span></label>
+                <input type="url" id="tUrl" class="form-input-field" placeholder="https://www.youtube.com/watch?v=..." required>
+            </div>
+            <div class="form-group">
+                <label>Skill Level</label>
+                <select id="tLevel" class="form-input-field">
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate" selected>Intermediate</option>
+                    <option value="Advanced">Advanced</option>
+                </select>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+                <button type="button" class="btn-cancel" id="closeTutorialModalAlt" onclick="document.getElementById('addTutorialModal').classList.remove('open')">Cancel</button>
+                <button type="submit" class="btn-submit" id="submitTutorialBtn">
+                    <i class="ph ph-plus"></i> Add Tutorial
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endmacro %}

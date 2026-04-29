@@ -1,0 +1,12 @@
+{% extends "superadmin/base_superadmin.html" %}
+{% from "tutorials_view.html" import render_tutorials %}
+
+{% block title %}Tutorials & Clinics{% endblock %}
+
+{% block extra_head %}
+<script src="{{ url_for('static', filename='js/tutorials.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+{{ render_tutorials(can_manage=True, role_prefix='superadmin') }}
+{% endblock %}

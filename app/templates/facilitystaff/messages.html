@@ -1,0 +1,12 @@
+{% extends "facilitystaff/base_facilitystaff.html" %}
+{% from "messages_chat.html" import render_messages %}
+
+{% block title %}Messages{% endblock %}
+
+{% block extra_head %}
+<script src="{{ url_for('static', filename='js/messages.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+{{ render_messages() }}
+{% endblock %}
