@@ -70,7 +70,7 @@ def community():
         if client:
             # Fetch recent posts with author profile info
             resp = client.table('community_posts').select(
-                'id, content, created_at, '
+                'id, content, created_at, image_url, '
                 'author:profiles!community_posts_author_id_fkey(first_name, last_name, role)'
             ).order('created_at', desc=True).limit(50).execute()
 
@@ -106,6 +106,7 @@ def community():
                         'id':          post['id'],
                         'content':     post['content'],
                         'created_at':  post['created_at'],
+                        'image_url':   post.get('image_url') or '',
                         'author_name': f"{first} {last}".strip() or 'Community Member',
                         'author_init': ((first[:1] + last[:1]).upper()) or 'CM',
                         'author_role': role,

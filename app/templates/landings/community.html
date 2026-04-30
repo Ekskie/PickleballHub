@@ -65,6 +65,12 @@
                                 <div class="feed-body">
                                     <p>{{ post.content }}</p>
                                 </div>
+                                {% if post.image_url %}
+                                <div class="feed-post-img-wrap">
+                                    <img src="{{ post.image_url }}" alt="Post image" class="feed-post-img"
+                                         loading="lazy" />
+                                </div>
+                                {% endif %}
                                 <div class="feed-footer">
                                     <a href="{{ url_for('auth.login') }}" class="feed-action-btn">
                                         <i class="ph ph-heart"></i> {{ post.likes }} Like{{ 's' if post.likes != 1 }}
@@ -76,6 +82,7 @@
                                         <i class="ph ph-share-network"></i> Share
                                     </a>
                                 </div>
+
                             </div>
                             {% endfor %}
                         {% else %}

@@ -1,0 +1,139 @@
+{% extends "player/base_player.html" %}
+{% block title %}{{ ev.title }}{% endblock %}
+
+{% block extra_head %}
+<style>
+.event-detail-wrapper { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+.event-detail-hero { background:var(--card-bg); border:1px solid var(--card-border); border-radius:14px; padding:28px; box-shadow:var(--shadow-card); }
+.event-detail-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
+.event-type-badge { font-size:0.7rem; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; padding:4px 10px; border-radius:4px; }
+.badge-tournament { color:var(--primary-orange); background:var(--primary-orange-light); }
+.badge-social     { color:#0369a1; background:#e0f2fe; }
+.badge-training   { color:#7c3aed; background:#ede9fe; }
+.badge-league     { color:#b45309; background:#fef3c7; }
+html.dark-mode .badge-social { background:rgba(3,105,161,0.15); }
+html.dark-mode .badge-training { background:rgba(124,58,237,0.15); }
+html.dark-mode .badge-league { background:rgba(180,83,9,0.15); }
+.event-detail-title { font-size:1.5rem; font-weight:800; color:var(--text-primary); line-height:1.3; margin-bottom:14px; }
+.event-detail-meta { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.detail-meta-item { display:flex; align-items:center; gap:8px; font-size:0.85rem; color:var(--text-secondary); }
+.detail-meta-item i { color:var(--primary-orange); font-size:1.1rem; }
+.event-desc-card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:14px; padding:22px; }
+.event-desc-card h3 { font-size:0.85rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); margin-bottom:10px; }
+.event-desc-card p { font-size:0.9rem; color:var(--text-secondary); line-height:1.7; }
+.event-register-card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:14px; padding:22px; }
+.capacity-bar { height:6px; background:var(--border-color); border-radius:3px; overflow:hidden; margin:10px 0 4px; }
+.capacity-fill { height:100%; background:var(--primary-orange); border-radius:3px; transition:width 0.4s; }
+.capacity-fill.near-full { background:#f59e0b; }
+.capacity-fill.full { background:#ef4444; }
+.capacity-label { font-size:0.78rem; color:var(--text-muted); margin-bottom:14px; }
+.btn-join-big { width:100%; padding:14px; background:var(--primary-orange); color:white; border:none; border-radius:10px; font-size:0.95rem; font-weight:700; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; }
+.btn-join-big:hover { background:var(--primary-orange-hover); transform:translateY(-1px); }
+.btn-registered-big { width:100%; padding:14px; background:rgba(74,222,128,0.12); color:#4ade80; border:1.5px solid rgba(74,222,128,0.3); border-radius:10px; font-size:0.95rem; font-weight:700; cursor:default; display:flex; align-items:center; justify-content:center; gap:8px; }
+.btn-cancel { width:100%; padding:10px; background:transparent; color:var(--text-muted); border:1px solid var(--border-color); border-radius:8px; font-size:0.82rem; font-weight:600; cursor:pointer; margin-top:8px; transition:all 0.2s; }
+.btn-cancel:hover { border-color:#ef4444; color:#ef4444; }
+.organizer-row { display:flex; align-items:center; gap:10px; padding:12px; background:var(--input-bg); border-radius:8px; margin-top:10px; }
+.organizer-avatar { width:36px; height:36px; border-radius:50%; background:var(--primary-orange); color:white; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9rem; }
+.organizer-info .label { font-size:0.72rem; color:var(--text-muted); font-weight:600; }
+.organizer-info .name { font-size:0.9rem; font-weight:600; color:var(--text-primary); }
+.back-link { display:inline-flex; align-items:center; gap:6px; font-size:0.85rem; color:var(--text-muted); text-decoration:none; margin-bottom:16px; }
+.back-link:hover { color:var(--primary-orange); }
+.fee-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:4px; font-size:0.8rem; font-weight:700; }
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('player.events') }}" class="back-link"><i class="ph ph-arrow-left"></i> Back to Events</a>
+
+<div class="event-detail-wrapper">
+    <!-- Hero Card -->
+    <div class="event-detail-hero">
+        <div class="event-detail-top">
+            <span class="event-type-badge badge-{{ ev.type }}">{{ ev.type|capitalize }}</span>
+            {% if ev.status == 'full' %}
+                <span class="status-pill" style="background:rgba(239,68,68,0.1);color:#ef4444;">Full</span>
+            {% elif ev.status == 'registration_open' %}
+                <span class="status-pill success">Registration Open</span>
+            {% else %}
+                <span class="status-pill">{{ ev.status|replace('_',' ')|capitalize }}</span>
+            {% endif %}
+        </div>
+        <div class="event-detail-title">{{ ev.title }}</div>
+        <div class="event-detail-meta">
+            <div class="detail-meta-item"><i class="ph ph-calendar-blank"></i> {{ ev.event_date }}</div>
+            <div class="detail-meta-item"><i class="ph ph-clock"></i> {{ ev.start_time[:5] }} – {{ ev.end_time[:5] }}</div>
+            <div class="detail-meta-item">
+                <i class="ph ph-buildings"></i>
+                {{ ev.facilities.name if ev.facilities else 'TBA' }}
+            </div>
+            <div class="detail-meta-item">
+                <i class="ph ph-map-pin"></i>
+                {{ ev.facilities.location if ev.facilities and ev.facilities.location else ev.location_label or 'TBA' }}
+            </div>
+            {% if ev.location_label %}
+            <div class="detail-meta-item"><i class="ph ph-intersect"></i> {{ ev.location_label }}</div>
+            {% endif %}
+            <div class="detail-meta-item">
+                <i class="ph ph-currency-dollar"></i>
+                {% if ev.entry_fee and ev.entry_fee > 0 %}
+                    <span class="fee-badge" style="background:rgba(99,102,241,0.12);color:#818cf8;">${{ '%.2f'|format(ev.entry_fee|float) }} Entry Fee</span>
+                {% else %}
+                    <span class="fee-badge" style="background:rgba(74,222,128,0.12);color:#4ade80;">Free Event</span>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if ev.profiles %}
+        {% set org = ev.profiles %}
+        <div class="organizer-row" style="margin-top:16px;">
+            <div class="organizer-avatar">{{ (org.first_name or 'O')[0]|upper }}</div>
+            <div class="organizer-info">
+                <div class="label">Organized by</div>
+                <div class="name">{{ org.first_name }} {{ org.last_name }}</div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Description -->
+    {% if ev.description %}
+    <div class="event-desc-card">
+        <h3>About This Event</h3>
+        <p>{{ ev.description }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Registration -->
+    <div class="event-register-card">
+        <h3 style="font-size:0.85rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:8px;">Registration</h3>
+        {% set pct = ((reg_count / ev.max_players) * 100)|int if ev.max_players else 0 %}
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.9rem;font-weight:600;color:var(--text-primary);">
+            <span>{{ reg_count }} registered</span>
+            <span style="color:var(--text-muted);">{{ ev.max_players }} max</span>
+        </div>
+        <div class="capacity-bar">
+            <div class="capacity-fill {% if pct >= 90 %}full{% elif pct >= 70 %}near-full{% endif %}" style="width:{{ pct }}%;"></div>
+        </div>
+        <div class="capacity-label">{{ ev.max_players - reg_count }} spot{{ 's' if (ev.max_players - reg_count) != 1 else '' }} remaining</div>
+
+        {% if is_registered %}
+            <div class="btn-registered-big"><i class="ph ph-check-circle"></i> You're Registered!</div>
+            <form method="POST" action="{{ url_for('player.unregister_event', event_id=ev.id) }}" style="margin:0;">
+                <button type="submit" class="btn-cancel" onclick="return confirm('Cancel your registration?')">
+                    <i class="ph ph-x-circle"></i> Cancel Registration
+                </button>
+            </form>
+        {% elif ev.status == 'registration_open' and reg_count < ev.max_players %}
+            <form method="POST" action="{{ url_for('player.register_event', event_id=ev.id) }}" style="margin:0;">
+                <button type="submit" class="btn-join-big"><i class="ph ph-trophy"></i> Register Now</button>
+            </form>
+        {% elif ev.status == 'full' %}
+            <form method="POST" action="{{ url_for('player.register_event', event_id=ev.id) }}" style="margin:0;">
+                <button type="submit" class="btn-join-big" style="background:#f59e0b;"><i class="ph ph-list-checks"></i> Join Waitlist</button>
+            </form>
+        {% else %}
+            <button class="btn-join-big" style="opacity:0.5;cursor:not-allowed;" disabled>Registration Not Open</button>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

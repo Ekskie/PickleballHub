@@ -143,24 +143,32 @@
     <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const supabaseUrl = "{{ supabase_url }}";
-        const supabaseKey = "{{ supabase_anon_key }}";
-        const accessToken = "{{ current_user.access_token if current_user.is_logged_in else '' }}";
-        const currentUserId = "{{ current_user.id if current_user.is_logged_in else '' }}";
+        const supabaseUrl    = "{{ supabase_url }}";
+        const supabaseKey    = "{{ supabase_anon_key }}";
+        const accessToken    = "{{ current_user.access_token if current_user.is_logged_in else '' }}";
+        const currentUserId  = "{{ current_user.id if current_user.is_logged_in else '' }}";
 
         let supabaseClient = null;
         if (supabaseUrl && supabaseKey) {
-            // Initialize with the access token if logged in
-            const options = accessToken ? {
-                global: {
-                    headers: {
-                        Authorization: `Bearer ${accessToken}`
-                    }
-                }
-            } : {};
-            supabaseClient = supabase.createClient(supabaseUrl, supabaseKey, options);
+            /*
+             * We manage authentication server-side (Flask session + Supabase JWT).
+             * Telling the JS client NOT to persist or auto-refresh the session stops it
+             * from acquiring localStorage locks and overwriting our Authorization header
+             * with an empty/stale cached token — which is what caused the 401s.
+             */
+            supabaseClient = supabase.createClient(supabaseUrl, supabaseKey, {
+                auth: {
+                    persistSession:    false,   // don't cache session in localStorage
+                    autoRefreshToken:  false,   // don't try to silently refresh
+                    detectSessionInUrl: false,  // don't parse hash fragments
+                },
+                global: accessToken ? {
+                    headers: { Authorization: `Bearer ${accessToken}` }
+                } : {}
+            });
         }
     </script>
+
 </body>
 
 </html>

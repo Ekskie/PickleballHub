@@ -1,0 +1,292 @@
+{% extends "owner/base_owner.html" %}
+{% block title %}Create Event{% endblock %}
+
+{% block extra_head %}
+<style>
+.create-event-wrapper { max-width: 780px; margin: 0 auto; }
+.steps-bar { display:flex; align-items:center; gap:0; margin-bottom:32px; }
+.step-item { display:flex; align-items:center; gap:8px; flex:1; }
+.step-circle { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:700; flex-shrink:0; background:var(--input-bg); border:2px solid var(--border-color); color:var(--text-muted); transition:all 0.3s; }
+.step-circle.active { background:var(--primary-orange); border-color:var(--primary-orange); color:white; }
+.step-circle.done { background:rgba(74,222,128,0.15); border-color:#4ade80; color:#4ade80; }
+.step-label { font-size:0.78rem; font-weight:600; color:var(--text-muted); transition:color 0.3s; }
+.step-item.active .step-label { color:var(--text-primary); }
+.step-connector { flex:1; height:2px; background:var(--border-color); margin:0 8px; }
+.step-connector.done { background:#4ade80; }
+.form-section { display:none; }
+.form-section.active { display:block; animation:fadeIn 0.25s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.section-title { font-size:1rem; font-weight:700; color:var(--text-primary); margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+.section-title i { color:var(--primary-orange); font-size:1.2rem; }
+.form-group { margin-bottom:18px; }
+.form-group label { display:block; font-size:0.8rem; font-weight:600; color:var(--text-secondary); margin-bottom:7px; }
+.form-group label span.required { color:#ef4444; margin-left:2px; }
+.form-group input,.form-group select,.form-group textarea {
+    width:100%; padding:10px 14px; background:var(--input-bg); border:1px solid var(--border-color);
+    border-radius:8px; color:var(--text-primary); font-size:0.9rem; font-family:inherit;
+    box-sizing:border-box; transition:border-color 0.2s;
+}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus { outline:none; border-color:var(--primary-orange); }
+.form-group textarea { resize:vertical; min-height:90px; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.form-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+.courts-select-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px; margin-top:6px; }
+.court-checkbox-card { display:flex; align-items:center; gap:10px; padding:12px 14px; background:var(--input-bg); border:1.5px solid var(--border-color); border-radius:10px; cursor:pointer; transition:all 0.2s; }
+.court-checkbox-card:hover { border-color:var(--primary-orange); }
+.court-checkbox-card input[type=checkbox] { accent-color:var(--primary-orange); width:16px; height:16px; }
+.court-checkbox-card.selected { border-color:var(--primary-orange); background:var(--primary-orange-light); }
+.court-card-info { display:flex; flex-direction:column; gap:2px; }
+.court-card-name { font-size:0.85rem; font-weight:600; color:var(--text-primary); }
+.court-card-sub { font-size:0.72rem; color:var(--text-muted); }
+.step-nav { display:flex; justify-content:space-between; align-items:center; margin-top:28px; padding-top:20px; border-top:1px solid var(--border-color); }
+.btn-nav { padding:10px 22px; border-radius:8px; font-size:0.87rem; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; display:flex; align-items:center; gap:6px; }
+.btn-nav-secondary { background:transparent; border:1px solid var(--border-color); color:var(--text-secondary); }
+.btn-nav-secondary:hover { border-color:var(--text-muted); color:var(--text-primary); }
+.btn-nav-primary { background:var(--primary-orange); color:white; }
+.btn-nav-primary:hover { background:var(--primary-orange-hover); }
+.btn-nav-success { background:#22c55e; color:white; }
+.btn-nav-success:hover { background:#16a34a; }
+.review-card { background:var(--input-bg); border:1px solid var(--border-color); border-radius:10px; padding:18px; margin-bottom:14px; }
+.review-card h4 { font-size:0.8rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px; }
+.review-row { display:flex; justify-content:space-between; align-items:center; font-size:0.87rem; margin-bottom:6px; }
+.review-row .label { color:var(--text-muted); }
+.review-row .value { font-weight:600; color:var(--text-primary); }
+.loading-courts { padding:16px; text-align:center; color:var(--text-muted); font-size:0.85rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div>
+        <h1 class="page-title">Create New Event</h1>
+        <p style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">Fill in the details to publish a new event for players to join</p>
+    </div>
+    <a href="{{ url_for('owner.events') }}" style="display:inline-flex;align-items:center;gap:6px;font-size:0.85rem;color:var(--text-muted);text-decoration:none;">
+        <i class="ph ph-arrow-left"></i> Back to Events
+    </a>
+</div>
+
+<div class="create-event-wrapper">
+    <!-- Steps Bar -->
+    <div class="steps-bar">
+        <div class="step-item active" id="stepItem1">
+            <div class="step-circle active" id="stepCircle1">1</div>
+            <span class="step-label">Event Info</span>
+        </div>
+        <div class="step-connector" id="stepConn1"></div>
+        <div class="step-item" id="stepItem2">
+            <div class="step-circle" id="stepCircle2">2</div>
+            <span class="step-label">Venue & Courts</span>
+        </div>
+        <div class="step-connector" id="stepConn2"></div>
+        <div class="step-item" id="stepItem3">
+            <div class="step-circle" id="stepCircle3">3</div>
+            <span class="step-label">Capacity & Fees</span>
+        </div>
+        <div class="step-connector" id="stepConn3"></div>
+        <div class="step-item" id="stepItem4">
+            <div class="step-circle" id="stepCircle4">4</div>
+            <span class="step-label">Review & Publish</span>
+        </div>
+    </div>
+
+    <div class="glass-card" style="padding:28px;">
+        <form method="POST" action="{{ url_for('owner.create_event') }}" id="createEventForm">
+
+            <!-- STEP 1: Event Info -->
+            <div class="form-section active" id="step1">
+                <div class="section-title"><i class="ph ph-trophy"></i> Event Information</div>
+                <div class="form-group">
+                    <label>Event Title <span class="required">*</span></label>
+                    <input type="text" name="title" id="fieldTitle" placeholder="e.g. Weekend Doubles Championship" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Event Type <span class="required">*</span></label>
+                        <select name="type" id="fieldType">
+                            <option value="tournament">🏆 Tournament</option>
+                            <option value="social">🤝 Social</option>
+                            <option value="training">🎯 Training</option>
+                            <option value="league">🏅 League</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Event Date <span class="required">*</span></label>
+                        <input type="date" name="event_date" id="fieldDate" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Start Time <span class="required">*</span></label>
+                        <input type="time" name="start_time" id="fieldStartTime" required>
+                    </div>
+                    <div class="form-group">
+                        <label>End Time <span class="required">*</span></label>
+                        <input type="time" name="end_time" id="fieldEndTime" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" id="fieldDesc" placeholder="Describe the event, rules, format, what to bring..."></textarea>
+                </div>
+                <div class="step-nav">
+                    <span></span>
+                    <button type="button" class="btn-nav btn-nav-primary" onclick="goStep(2)">Next: Venue <i class="ph ph-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <!-- STEP 2: Venue & Courts -->
+            <div class="form-section" id="step2">
+                <div class="section-title"><i class="ph ph-buildings"></i> Venue & Courts</div>
+                <div class="form-group">
+                    <label>Facility <span class="required">*</span></label>
+                    <select name="facility_id" id="fieldFacility" onchange="loadCourts(this.value)" required>
+                        <option value="">Select a facility...</option>
+                        {% for f in facilities %}
+                        <option value="{{ f.id }}" data-location="{{ f.location|e }}">{{ f.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Courts to Book <small style="color:var(--text-muted);">(select one or more)</small></label>
+                    <div class="courts-select-grid" id="courtsGrid">
+                        <div class="loading-courts"><i class="ph ph-buildings"></i> Select a facility first</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Location Label <small style="color:var(--text-muted);">(shown to players on the event card)</small></label>
+                    <input type="text" name="location_label" id="fieldLocationLabel" placeholder="e.g. Court 1 & 2, Main Arena">
+                </div>
+                <div class="step-nav">
+                    <button type="button" class="btn-nav btn-nav-secondary" onclick="goStep(1)"><i class="ph ph-arrow-left"></i> Back</button>
+                    <button type="button" class="btn-nav btn-nav-primary" onclick="goStep(3)">Next: Capacity <i class="ph ph-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <!-- STEP 3: Capacity & Fees -->
+            <div class="form-section" id="step3">
+                <div class="section-title"><i class="ph ph-users"></i> Capacity & Fees</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Max Players <span class="required">*</span></label>
+                        <input type="number" name="max_players" id="fieldMaxPlayers" min="2" max="512" value="16" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Entry Fee ($) <small style="color:var(--text-muted);">0 = Free</small></label>
+                        <input type="number" name="entry_fee" id="fieldEntryFee" min="0" step="0.01" value="0">
+                    </div>
+                </div>
+                <div class="step-nav">
+                    <button type="button" class="btn-nav btn-nav-secondary" onclick="goStep(2)"><i class="ph ph-arrow-left"></i> Back</button>
+                    <button type="button" class="btn-nav btn-nav-primary" onclick="goStep(4)">Review <i class="ph ph-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <!-- STEP 4: Review & Publish -->
+            <div class="form-section" id="step4">
+                <div class="section-title"><i class="ph ph-check-circle"></i> Review & Publish</div>
+                <div class="review-card">
+                    <h4>Event Details</h4>
+                    <div class="review-row"><span class="label">Title</span><span class="value" id="rvTitle">—</span></div>
+                    <div class="review-row"><span class="label">Type</span><span class="value" id="rvType">—</span></div>
+                    <div class="review-row"><span class="label">Date</span><span class="value" id="rvDate">—</span></div>
+                    <div class="review-row"><span class="label">Time</span><span class="value" id="rvTime">—</span></div>
+                </div>
+                <div class="review-card">
+                    <h4>Venue</h4>
+                    <div class="review-row"><span class="label">Facility</span><span class="value" id="rvFacility">—</span></div>
+                    <div class="review-row"><span class="label">Location Label</span><span class="value" id="rvLocation">—</span></div>
+                </div>
+                <div class="review-card">
+                    <h4>Registration</h4>
+                    <div class="review-row"><span class="label">Max Players</span><span class="value" id="rvMax">—</span></div>
+                    <div class="review-row"><span class="label">Entry Fee</span><span class="value" id="rvFee">—</span></div>
+                </div>
+                <div class="step-nav">
+                    <button type="button" class="btn-nav btn-nav-secondary" onclick="goStep(3)"><i class="ph ph-arrow-left"></i> Back</button>
+                    <button type="submit" class="btn-nav btn-nav-success"><i class="ph ph-rocket-launch"></i> Publish Event</button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script>
+let currentStep = 1;
+
+function goStep(n) {
+    document.getElementById(`step${currentStep}`).classList.remove('active');
+    // Mark previous steps as done
+    for (let i = 1; i < n; i++) {
+        document.getElementById(`stepCircle${i}`).classList.remove('active');
+        document.getElementById(`stepCircle${i}`).classList.add('done');
+        document.getElementById(`stepCircle${i}`).innerHTML = '<i class="ph ph-check" style="font-size:0.9rem;"></i>';
+        document.getElementById(`stepItem${i}`).classList.remove('active');
+        if (i < 4) document.getElementById(`stepConn${i}`).classList.add('done');
+    }
+    document.getElementById(`stepCircle${n}`).classList.add('active');
+    document.getElementById(`stepItem${n}`).classList.add('active');
+    document.getElementById(`step${n}`).classList.add('active');
+    currentStep = n;
+    if (n === 4) populateReview();
+}
+
+function populateReview() {
+    const facilitySelect = document.getElementById('fieldFacility');
+    document.getElementById('rvTitle').textContent = document.getElementById('fieldTitle').value || '—';
+    document.getElementById('rvType').textContent   = document.getElementById('fieldType').value || '—';
+    document.getElementById('rvDate').textContent   = document.getElementById('fieldDate').value || '—';
+    document.getElementById('rvTime').textContent   = `${document.getElementById('fieldStartTime').value} – ${document.getElementById('fieldEndTime').value}`;
+    document.getElementById('rvFacility').textContent  = facilitySelect.options[facilitySelect.selectedIndex]?.text || '—';
+    document.getElementById('rvLocation').textContent  = document.getElementById('fieldLocationLabel').value || '—';
+    document.getElementById('rvMax').textContent  = document.getElementById('fieldMaxPlayers').value;
+    const fee = parseFloat(document.getElementById('fieldEntryFee').value || 0);
+    document.getElementById('rvFee').textContent = fee === 0 ? 'Free' : `$${fee.toFixed(2)}`;
+}
+
+async function loadCourts(facilityId) {
+    const grid = document.getElementById('courtsGrid');
+    if (!facilityId) {
+        grid.innerHTML = '<div class="loading-courts"><i class="ph ph-buildings"></i> Select a facility first</div>';
+        return;
+    }
+    grid.innerHTML = '<div class="loading-courts"><i class="ph ph-spinner" style="animation:spin 1s linear infinite;display:inline-block;"></i> Loading courts...</div>';
+    try {
+        const res = await fetch(`/owner/api/courts_by_facility/${facilityId}`);
+        const courts = await res.json();
+        if (!courts.length) {
+            grid.innerHTML = '<div class="loading-courts">No active courts in this facility. <a href="/owner/courts">Add courts</a>.</div>';
+            return;
+        }
+        grid.innerHTML = courts.map(c => `
+            <label class="court-checkbox-card" id="courtCard_${c.id}">
+                <input type="checkbox" name="court_ids" value="${c.id}" onchange="toggleCourtCard(this)">
+                <div class="court-card-info">
+                    <span class="court-card-name">${c.name}</span>
+                    <span class="court-card-sub">${c.type} · $${parseFloat(c.hourly_rate).toFixed(2)}/hr</span>
+                </div>
+            </label>
+        `).join('');
+        // Auto-fill location label if empty
+        const locField = document.getElementById('fieldLocationLabel');
+        if (!locField.value) {
+            const opt = document.getElementById('fieldFacility').options;
+            const selected = opt[document.getElementById('fieldFacility').selectedIndex];
+            locField.value = selected?.dataset?.location || '';
+        }
+    } catch(e) {
+        grid.innerHTML = '<div class="loading-courts" style="color:#ef4444;">Failed to load courts.</div>';
+    }
+}
+
+function toggleCourtCard(cb) {
+    cb.closest('.court-checkbox-card').classList.toggle('selected', cb.checked);
+}
+
+// Spinning animation
+const style = document.createElement('style');
+style.textContent = '@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }';
+document.head.appendChild(style);
+</script>
+{% endblock %}

@@ -1,272 +1,346 @@
 {% extends "player/base_player.html" %}
-
 {% block title %}Court Reservation{% endblock %}
 
 {% block extra_head %}
 <style>
-    .reservation-page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 24px;
-    }
-    .date-picker-wrap {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 0.875rem;
-        color: var(--text-secondary);
-        font-weight: 500;
-    }
-    .date-picker-wrap input[type="date"] {
-        border: 1px solid var(--border-color);
-        background: var(--card-bg);
-        color: var(--text-primary);
-        font-size: 0.875rem;
-        padding: 8px 12px;
-        border-radius: 8px;
-        outline: none;
-        cursor: pointer;
-        font-family: inherit;
-    }
-    .date-picker-wrap input[type="date"]:focus {
-        border-color: var(--primary-orange);
-    }
-
-    /* Legend */
-    .court-legend {
-        display: flex;
-        align-items: center;
-        gap: 24px;
-        margin-bottom: 20px;
-    }
-    .legend-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 0.8rem;
-        color: var(--text-secondary);
-        font-weight: 500;
-    }
-    .legend-dot {
-        width: 18px;
-        height: 18px;
-        border-radius: 50%;
-        border: 2px solid var(--border-color);
-        background: var(--card-bg);
-    }
-    .legend-dot.booked {
-        background: var(--input-bg);
-        border-color: var(--border-color);
-    }
-    .legend-dot.selected {
-        background: var(--primary-orange);
-        border-color: var(--primary-orange);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .legend-dot.selected::after {
-        content: '✓';
-        color: white;
-        font-size: 10px;
-        font-weight: 700;
-    }
-
-    /* Booking Table */
-    .booking-table-wrap {
-        overflow-x: auto;
-    }
-    .booking-table {
-        width: 100%;
-        border-collapse: collapse;
-        min-width: 600px;
-    }
-    .booking-table th {
-        padding: 14px 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: var(--text-secondary);
-        text-align: center;
-        border-bottom: 1px solid var(--border-color);
-    }
-    .booking-table th:first-child {
-        text-align: left;
-        width: 110px;
-    }
-    .booking-table td {
-        padding: 0;
-        border-bottom: 1px solid var(--border-color);
-        border-right: 1px solid var(--border-color);
-        text-align: center;
-    }
-    .booking-table td:first-child {
-        padding: 14px 20px;
-        font-size: 0.8rem;
-        font-weight: 500;
-        color: var(--text-muted);
-        text-align: left;
-        border-right: 1px solid var(--border-color);
-        background: var(--bg-color);
-        white-space: nowrap;
-    }
-    .booking-table tr:last-child td {
-        border-bottom: none;
-    }
-    .slot-btn {
-        display: block;
-        width: 100%;
-        padding: 16px 8px;
-        border: none;
-        background: transparent;
-        font-size: 0.7rem;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-        cursor: pointer;
-        transition: background 0.2s, color 0.2s;
-        color: var(--text-muted);
-    }
-    .slot-btn.available:hover {
-        background: var(--primary-orange-light);
-        color: var(--primary-orange);
-    }
-    .slot-btn.reserved {
-        background: var(--input-bg);
-        color: var(--text-muted);
-        cursor: not-allowed;
-        font-weight: 500;
-    }
-    .slot-btn.selected-slot {
-        background: var(--primary-orange);
-        color: white;
-    }
+/* ── Wizard Steps ── */
+.wizard-steps { display:flex; align-items:center; gap:0; margin-bottom:32px; }
+.step-item { display:flex; align-items:center; gap:10px; }
+.step-num { width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;border:2px solid var(--border-color);color:var(--text-muted);background:var(--card-bg);transition:all .3s; }
+.step-item.active .step-num { background:var(--primary-orange);border-color:var(--primary-orange);color:#fff; }
+.step-item.done .step-num { background:var(--btn-green);border-color:var(--btn-green);color:#fff; }
+.step-label { font-size:0.8rem;font-weight:600;color:var(--text-muted); }
+.step-item.active .step-label,.step-item.done .step-label { color:var(--text-primary); }
+.step-line { flex:1;height:2px;background:var(--border-color);margin:0 8px;min-width:32px; }
+.step-line.done { background:var(--btn-green); }
+/* ── Panels ── */
+.wizard-panel { display:none; }
+.wizard-panel.active { display:block; animation:postFadeIn .3s ease; }
+/* ── Facility / Court Cards ── */
+.facility-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px; }
+.facility-card { background:var(--card-bg);border:2px solid var(--card-border);border-radius:12px;padding:20px;cursor:pointer;transition:all .2s; }
+.facility-card:hover { border-color:var(--primary-orange);box-shadow:var(--shadow-hover); }
+.facility-card.selected { border-color:var(--primary-orange);background:var(--primary-orange-light); }
+.facility-card h4 { font-size:.95rem;font-weight:700;margin-bottom:4px; }
+.facility-card .fac-loc { font-size:.78rem;color:var(--text-muted);display:flex;align-items:center;gap:4px;margin-bottom:8px; }
+.facility-card .fac-hours { font-size:.75rem;color:var(--text-secondary);display:flex;align-items:center;gap:4px; }
+.court-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px; }
+.court-card { background:var(--card-bg);border:2px solid var(--card-border);border-radius:12px;padding:18px;cursor:pointer;transition:all .2s; }
+.court-card:hover { border-color:var(--primary-orange);box-shadow:var(--shadow-hover); }
+.court-card.selected { border-color:var(--primary-orange);background:var(--primary-orange-light); }
+.court-card h4 { font-size:.9rem;font-weight:700;margin-bottom:6px; }
+.type-pill { display:inline-flex;align-items:center;gap:4px;font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:8px; }
+.type-pill.indoor { background:rgba(59,130,246,.12);color:#3B82F6; }
+.type-pill.outdoor { background:rgba(41,163,86,.12);color:#29A356; }
+.court-rate { font-size:1rem;font-weight:700;color:var(--primary-orange); }
+.court-rate small { font-size:.7rem;font-weight:400;color:var(--text-muted); }
+/* ── Step 3 Layout ── */
+.step3-layout { display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start; }
+@media(max-width:900px){ .step3-layout{grid-template-columns:1fr;} }
+.date-row { display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap; }
+.date-row label { font-size:.85rem;font-weight:600;color:var(--text-secondary); }
+.date-row input[type=date] { border:1px solid var(--border-color);background:var(--card-bg);color:var(--text-primary);padding:8px 12px;border-radius:8px;outline:none;font-family:inherit;font-size:.875rem; }
+.date-row input[type=date]:focus { border-color:var(--primary-orange); }
+/* ── Slot Grid ── */
+.slot-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px; }
+.slot-btn { padding:10px 6px;border:1.5px solid var(--border-color);border-radius:8px;background:var(--card-bg);font-size:.75rem;font-weight:600;cursor:pointer;text-align:center;transition:all .2s;font-family:inherit;color:var(--text-secondary); }
+.slot-btn:hover:not(.booked) { border-color:var(--primary-orange);color:var(--primary-orange); }
+.slot-btn.selected { background:var(--primary-orange);border-color:var(--primary-orange);color:#fff; }
+.slot-btn.booked { background:var(--input-bg);color:var(--text-muted);cursor:not-allowed;opacity:.6; }
+.slot-legend { display:flex;gap:16px;margin-bottom:14px;flex-wrap:wrap; }
+.leg-item { display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--text-muted); }
+.leg-dot { width:12px;height:12px;border-radius:3px; }
+.leg-dot.avail { background:var(--card-bg);border:1.5px solid var(--border-color); }
+.leg-dot.sel { background:var(--primary-orange); }
+.leg-dot.bkd { background:var(--input-bg);border:1.5px solid var(--border-color);opacity:.6; }
+/* ── Summary Card ── */
+.summary-card { background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:20px;box-shadow:var(--shadow-card);position:sticky;top:24px; }
+.summary-card h3 { font-size:.95rem;font-weight:700;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border-color); }
+.summary-row { display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;font-size:.82rem; }
+.summary-row .s-label { color:var(--text-muted); }
+.summary-row .s-val { font-weight:600;color:var(--text-primary);text-align:right;max-width:160px; }
+.summary-total { display:flex;justify-content:space-between;align-items:center;padding-top:14px;margin-top:4px;border-top:2px solid var(--border-color); }
+.summary-total .t-label { font-size:.85rem;font-weight:700; }
+.summary-total .t-val { font-size:1.2rem;font-weight:800;color:var(--primary-orange); }
+.btn-confirm { width:100%;padding:13px;background:var(--primary-orange);color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:16px;transition:background .2s,transform .15s; }
+.btn-confirm:hover { background:var(--primary-orange-hover);transform:translateY(-1px); }
+.btn-confirm:disabled { opacity:.5;cursor:not-allowed;transform:none; }
+.empty-state { text-align:center;padding:40px;color:var(--text-muted); }
+.empty-state i { font-size:2.5rem;opacity:.4;display:block;margin-bottom:12px; }
+/* back btn */
+.btn-back { display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid var(--border-color);border-radius:8px;background:var(--card-bg);color:var(--text-secondary);font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s; }
+.btn-back:hover { border-color:var(--primary-orange);color:var(--primary-orange); }
+.panel-action-row { display:flex;justify-content:space-between;align-items:center;margin-bottom:20px; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="reservation-page-header">
-    <h1 class="page-title">Court Reservation</h1>
-    <div class="date-picker-wrap">
-        <span>Select Date:</span>
-        <input type="date" value="2025-04-28">
+<!-- Header -->
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+    <div>
+        <h1 class="page-title"><i class="ph ph-tennis-ball"></i> Court Reservation</h1>
+        <p style="color:var(--text-muted);font-size:.85rem;margin-top:4px;">Book a court in 3 easy steps</p>
+    </div>
+    <a href="{{ url_for('player.my_reservations') }}" class="btn-back">
+        <i class="ph ph-calendar-check"></i> My Reservations
+    </a>
+</div>
+
+<!-- Wizard Steps -->
+<div class="wizard-steps">
+    <div class="step-item active" id="si-1">
+        <div class="step-num">1</div>
+        <span class="step-label">Facility</span>
+    </div>
+    <div class="step-line" id="sl-1"></div>
+    <div class="step-item" id="si-2">
+        <div class="step-num">2</div>
+        <span class="step-label">Court</span>
+    </div>
+    <div class="step-line" id="sl-2"></div>
+    <div class="step-item" id="si-3">
+        <div class="step-num">3</div>
+        <span class="step-label">Time Slot</span>
     </div>
 </div>
 
-<div class="glass-card">
-    <div class="court-legend">
-        <div class="legend-item">
-            <div class="legend-dot"></div>
-            <span>Available</span>
+<!-- Step 1: Choose Facility -->
+<div class="wizard-panel active glass-card" id="panel-1">
+    <h3 style="font-size:1rem;font-weight:700;margin-bottom:16px;"><i class="ph ph-building" style="color:var(--primary-orange)"></i> Choose a Facility</h3>
+    {% if facilities %}
+    <div class="facility-grid">
+        {% for f in facilities %}
+        <div class="facility-card" data-id="{{ f.id }}"
+             data-name="{{ f.name }}"
+             data-open="{{ f.open_time or '08:00' }}"
+             data-close="{{ f.close_time or '21:00' }}"
+             data-slot="{{ f.slot_duration_minutes or 60 }}"
+             onclick="selectFacility(this)">
+            <h4>{{ f.name }}</h4>
+            <div class="fac-loc"><i class="ph ph-map-pin"></i>{{ f.location or 'Location not set' }}</div>
+            {% if f.description %}<p style="font-size:.78rem;color:var(--text-secondary);margin-bottom:8px;">{{ f.description }}</p>{% endif %}
+            <div class="fac-hours"><i class="ph ph-clock"></i>{{ (f.open_time or '08:00')[:5] }} – {{ (f.close_time or '21:00')[:5] }}</div>
         </div>
-        <div class="legend-item">
-            <div class="legend-dot booked"></div>
-            <span>Booked</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-dot selected"></div>
-            <span>Selected</span>
-        </div>
+        {% endfor %}
     </div>
+    {% else %}
+    <div class="empty-state"><i class="ph ph-building"></i><p>No active facilities available yet.</p></div>
+    {% endif %}
+</div>
 
-    <div class="booking-table-wrap">
-        <table class="booking-table">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th>Court 1</th>
-                    <th>Court 2</th>
-                    <th>Court 3</th>
-                    <th>Court 4</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>08:00 AM</td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                    <td><button class="slot-btn reserved">RESERVED</button></td>
-                </tr>
-                <tr>
-                    <td>09:00 AM</td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                    <td><button class="slot-btn reserved">RESERVED</button></td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                </tr>
-                <tr>
-                    <td>10:00 AM</td>
-                    <td><button class="slot-btn reserved">RESERVED</button></td>
-                    <td><button class="slot-btn reserved">RESERVED</button></td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                </tr>
-                <tr>
-                    <td>11:00 AM</td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                </tr>
-                <tr>
-                    <td>12:00 PM</td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                </tr>
-                <tr>
-                    <td>01:00 PM</td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                    <td><button class="slot-btn reserved">RESERVED</button></td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                </tr>
-                <tr>
-                    <td>02:00 PM</td>
-                    <td><button class="slot-btn reserved">RESERVED</button></td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                </tr>
-                <tr>
-                    <td>03:00 PM</td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                    <td><button class="slot-btn reserved">RESERVED</button></td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                </tr>
-                <tr>
-                    <td>04:00 PM</td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                    <td><button class="slot-btn reserved">RESERVED</button></td>
-                </tr>
-                <tr>
-                    <td>05:00 PM</td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                    <td><button class="slot-btn available">AVAILABLE</button></td>
-                    <td><button class="slot-btn reserved">RESERVED</button></td>
-                </tr>
-            </tbody>
-        </table>
+<!-- Step 2: Choose Court -->
+<div class="wizard-panel glass-card" id="panel-2">
+    <div class="panel-action-row">
+        <h3 style="font-size:1rem;font-weight:700;"><i class="ph ph-tennis-ball" style="color:var(--primary-orange)"></i> Choose a Court — <span id="s2-fac-name" style="color:var(--primary-orange)"></span></h3>
+        <button class="btn-back" onclick="goStep(1)"><i class="ph ph-arrow-left"></i> Back</button>
+    </div>
+    <div id="courts-loading" style="text-align:center;padding:30px;color:var(--text-muted);"><i class="ph ph-circle-notch" style="animation:spin .8s linear infinite;font-size:1.5rem"></i></div>
+    <div class="court-grid" id="court-grid" style="display:none;"></div>
+</div>
+
+<!-- Step 3: Time Slot -->
+<div class="wizard-panel" id="panel-3">
+    <div class="step3-layout">
+        <div class="glass-card" style="margin-bottom:0;">
+            <div class="panel-action-row">
+                <h3 style="font-size:1rem;font-weight:700;"><i class="ph ph-calendar" style="color:var(--primary-orange)"></i> Pick Date & Time</h3>
+                <button class="btn-back" onclick="goStep(2)"><i class="ph ph-arrow-left"></i> Back</button>
+            </div>
+            <div class="date-row">
+                <label>Date:</label>
+                <input type="date" id="slot-date" min="" onchange="loadSlots()">
+            </div>
+            <div class="slot-legend">
+                <div class="leg-item"><div class="leg-dot avail"></div> Available</div>
+                <div class="leg-item"><div class="leg-dot sel"></div> Selected</div>
+                <div class="leg-item"><div class="leg-dot bkd"></div> Booked</div>
+            </div>
+            <div id="slot-grid-wrap">
+                <p style="color:var(--text-muted);font-size:.85rem;">Select a date to see available slots.</p>
+            </div>
+        </div>
+        <!-- Summary -->
+        <div class="summary-card">
+            <h3><i class="ph ph-receipt" style="color:var(--primary-orange)"></i> Booking Summary</h3>
+            <div class="summary-row"><span class="s-label">Facility</span><span class="s-val" id="sum-facility">—</span></div>
+            <div class="summary-row"><span class="s-label">Court</span><span class="s-val" id="sum-court">—</span></div>
+            <div class="summary-row"><span class="s-label">Date</span><span class="s-val" id="sum-date">—</span></div>
+            <div class="summary-row"><span class="s-label">Time</span><span class="s-val" id="sum-time">—</span></div>
+            <div class="summary-row"><span class="s-label">Duration</span><span class="s-val" id="sum-hours">—</span></div>
+            <div class="summary-row"><span class="s-label">Rate</span><span class="s-val" id="sum-rate">—</span></div>
+            <div class="summary-total">
+                <span class="t-label">Total</span>
+                <span class="t-val" id="sum-total">₱0.00</span>
+            </div>
+            <form method="POST" action="{{ url_for('player.book_reservation') }}" id="booking-form">
+                <input type="hidden" name="facility_id" id="inp-facility-id">
+                <input type="hidden" name="court_id"    id="inp-court-id">
+                <input type="hidden" name="date"        id="inp-date">
+                <input type="hidden" name="start_time"  id="inp-start">
+                <input type="hidden" name="end_time"    id="inp-end">
+                <input type="hidden" name="total_hours" id="inp-hours">
+                <input type="hidden" name="hourly_rate" id="inp-rate">
+                <input type="hidden" name="total_amount" id="inp-total">
+                <button type="submit" class="btn-confirm" id="btn-confirm" disabled>
+                    <i class="ph ph-lock-key-open"></i> Confirm &amp; Pay
+                </button>
+            </form>
+            <p id="sum-hint" style="font-size:.72rem;color:var(--text-muted);text-align:center;margin-top:8px;">Select at least one time slot to continue</p>
+        </div>
     </div>
 </div>
 
 <script>
-    document.querySelectorAll('.slot-btn.available').forEach(btn => {
-        btn.addEventListener('click', function() {
-            // Deselect if already selected
-            if (this.classList.contains('selected-slot')) {
-                this.classList.remove('selected-slot');
-                this.textContent = 'AVAILABLE';
-                return;
-            }
-            this.classList.add('selected-slot');
-            this.textContent = '✓ SELECTED';
-        });
+// State
+let state = { facility:null, court:null, selectedSlots:[], bookedSlots:[], openTime:'08:00', closeTime:'21:00' };
+
+function fmt12(h){ let ap=h<12?'AM':'PM',h12=h%12||12; return `${String(h12).padStart(2,'0')}:00 ${ap}`; }
+
+/* ── Step navigation ── */
+function goStep(n){
+    document.querySelectorAll('.wizard-panel').forEach((p,i)=>{ p.classList.toggle('active',i+1===n); });
+    [1,2,3].forEach(i=>{
+        let si=document.getElementById(`si-${i}`);
+        si.classList.toggle('active',i===n);
+        si.classList.toggle('done',i<n);
     });
+    [1,2].forEach(i=>{ let sl=document.getElementById(`sl-${i}`); sl?.classList.toggle('done',i<n); });
+}
+
+/* ── Step 1: Facility ── */
+function selectFacility(card){
+    document.querySelectorAll('.facility-card').forEach(c=>c.classList.remove('selected'));
+    card.classList.add('selected');
+    state.facility = { id:card.dataset.id, name:card.dataset.name, open:card.dataset.open, close:card.dataset.close };
+    state.openTime = card.dataset.open.substring(0,5);
+    state.closeTime = card.dataset.close.substring(0,5);
+    document.getElementById('s2-fac-name').textContent = card.dataset.name;
+    document.getElementById('inp-facility-id').value = card.dataset.id;
+    document.getElementById('sum-facility').textContent = card.dataset.name;
+    loadCourts(card.dataset.id);
+    goStep(2);
+}
+
+/* ── Step 2: Courts ── */
+async function loadCourts(fid){
+    document.getElementById('courts-loading').style.display='block';
+    document.getElementById('court-grid').style.display='none';
+    const res = await fetch(`/player/reservation/api/courts?facility_id=${fid}`);
+    const courts = await res.json();
+    const grid = document.getElementById('court-grid');
+    grid.innerHTML = '';
+    if(!courts.length){ grid.innerHTML='<div class="empty-state"><i class="ph ph-tennis-ball"></i><p>No courts available in this facility.</p></div>'; }
+    courts.forEach(c=>{
+        const div=document.createElement('div');
+        div.className='court-card';
+        div.dataset.id=c.id; div.dataset.name=c.name; div.dataset.rate=c.hourly_rate;
+        div.innerHTML=`
+            <h4>${c.name}</h4>
+            <span class="type-pill ${c.type}">${c.type==='indoor'?'<i class="ph ph-house"></i>':'<i class="ph ph-sun"></i>'} ${c.type}</span>
+            <div class="court-rate">₱${parseFloat(c.hourly_rate).toFixed(2)}<small>/hour</small></div>`;
+        div.onclick=()=>selectCourt(div);
+        grid.appendChild(div);
+    });
+    document.getElementById('courts-loading').style.display='none';
+    grid.style.display='grid';
+}
+
+function selectCourt(card){
+    document.querySelectorAll('.court-card').forEach(c=>c.classList.remove('selected'));
+    card.classList.add('selected');
+    state.court = { id:card.dataset.id, name:card.dataset.name, rate:parseFloat(card.dataset.rate) };
+    document.getElementById('inp-court-id').value = card.dataset.id;
+    document.getElementById('inp-rate').value = card.dataset.rate;
+    document.getElementById('sum-court').textContent = card.dataset.name;
+    document.getElementById('sum-rate').textContent = '₱'+parseFloat(card.dataset.rate).toFixed(2)+'/hr';
+    // Set min date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('slot-date').min = today;
+    document.getElementById('slot-date').value = today;
+    state.selectedSlots = [];
+    loadSlots();
+    goStep(3);
+}
+
+/* ── Step 3: Time Slots ── */
+async function loadSlots(){
+    const date = document.getElementById('slot-date').value;
+    if(!date||!state.court) return;
+    state.selectedSlots=[];
+    updateSummary();
+    document.getElementById('slot-grid-wrap').innerHTML='<div style="text-align:center;padding:20px;color:var(--text-muted)"><i class="ph ph-circle-notch" style="animation:spin .8s linear infinite;font-size:1.5rem"></i></div>';
+
+    const res=await fetch(`/player/reservation/api/slots?court_id=${state.court.id}&date=${date}`);
+    const booked=await res.json();
+    state.bookedSlots=booked;
+    state.currentDate=date;
+    renderSlots(date,booked);
+}
+
+function renderSlots(date,booked){
+    const openH=parseInt(state.openTime),closeH=parseInt(state.closeTime);
+    // Build set of booked hours
+    const bookedHrs=new Set();
+    booked.forEach(b=>{
+        const sh=parseInt(b.start_time),eh=parseInt(b.end_time);
+        for(let h=sh;h<eh;h++) bookedHrs.add(h);
+    });
+    const grid=document.createElement('div');
+    grid.className='slot-grid';
+    const now=new Date(), todayStr=now.toISOString().split('T')[0];
+    const curH=now.getHours();
+    for(let h=openH;h<closeH;h++){
+        const isPast = date===todayStr && h<=curH;
+        const isBooked=bookedHrs.has(h)||isPast;
+        const btn=document.createElement('button');
+        btn.type='button';
+        btn.className='slot-btn'+(isBooked?' booked':'');
+        btn.dataset.hour=h;
+        btn.innerHTML=`${fmt12(h)}<br><small style="font-weight:400;opacity:.7">${isPast?'Past':isBooked?'Booked':'Available'}</small>`;
+        if(!isBooked) btn.onclick=()=>toggleSlot(btn,h);
+        grid.appendChild(btn);
+    }
+    document.getElementById('slot-grid-wrap').innerHTML='';
+    document.getElementById('slot-grid-wrap').appendChild(grid);
+}
+
+function toggleSlot(btn,h){
+    const idx=state.selectedSlots.indexOf(h);
+    if(idx>=0){ state.selectedSlots.splice(idx,1); btn.classList.remove('selected'); }
+    else { state.selectedSlots.push(h); btn.classList.add('selected'); }
+    updateSummary();
+}
+
+function updateSummary(){
+    const slots=state.selectedSlots.sort((a,b)=>a-b);
+    const date=document.getElementById('slot-date').value;
+    if(!slots.length){
+        document.getElementById('sum-date').textContent=date||'—';
+        document.getElementById('sum-time').textContent='—';
+        document.getElementById('sum-hours').textContent='—';
+        document.getElementById('sum-total').textContent='₱0.00';
+        document.getElementById('inp-total').value=0;
+        document.getElementById('btn-confirm').disabled=true;
+        document.getElementById('sum-hint').style.display='block';
+        return;
+    }
+    const startH=slots[0], endH=slots[slots.length-1]+1;
+    const totalHrs=slots.length;
+    const total=totalHrs*state.court.rate;
+    const pad=n=>String(n).padStart(2,'0');
+    document.getElementById('sum-date').textContent=date;
+    document.getElementById('sum-time').textContent=`${fmt12(startH)} – ${fmt12(endH)}`;
+    document.getElementById('sum-hours').textContent=`${totalHrs} hour${totalHrs!==1?'s':''}`;
+    document.getElementById('sum-total').textContent='₱'+total.toFixed(2);
+    document.getElementById('inp-date').value=date;
+    document.getElementById('inp-start').value=`${pad(startH)}:00`;
+    document.getElementById('inp-end').value=`${pad(endH)}:00`;
+    document.getElementById('inp-hours').value=totalHrs;
+    document.getElementById('inp-total').value=total.toFixed(2);
+    document.getElementById('btn-confirm').disabled=false;
+    document.getElementById('sum-hint').style.display='none';
+}
+
+document.getElementById('slot-date')?.addEventListener('change',loadSlots);
 </script>
 {% endblock %}

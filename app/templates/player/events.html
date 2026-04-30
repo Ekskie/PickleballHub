@@ -4,260 +4,152 @@
 
 {% block extra_head %}
 <style>
-    .events-page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-    .joined-count {
-        font-size: 0.875rem;
-        color: var(--text-muted);
-        font-weight: 500;
-    }
-
-    /* Filter Pills */
-    .filter-pills {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 24px;
-        flex-wrap: wrap;
-    }
-    .filter-pill {
-        padding: 7px 18px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        cursor: pointer;
-        border: 1px solid var(--border-color);
-        background: var(--card-bg);
-        color: var(--text-secondary);
-        transition: all 0.2s;
-    }
-    .filter-pill.active {
-        background: var(--primary-orange);
-        color: white;
-        border-color: var(--primary-orange);
-    }
-    .filter-pill:hover:not(.active) {
-        border-color: var(--text-muted);
-        color: var(--text-primary);
-    }
-
-    /* Events Grid */
-    .events-cards-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
-    }
-
-    .event-card-full {
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: var(--shadow-card);
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        transition: box-shadow 0.2s;
-    }
-    .event-card-full:hover {
-        box-shadow: var(--shadow-hover);
-    }
-
-    .event-card-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-    }
-    .event-type-badge {
-        font-size: 0.65rem;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-        padding: 3px 8px;
-        border-radius: 4px;
-    }
-    .badge-tournament { color: var(--primary-orange); background: var(--primary-orange-light); }
-    .badge-social     { color: #0369a1; background: #e0f2fe; }
-    .badge-training   { color: #7c3aed; background: #ede9fe; }
-    .badge-league     { color: #b45309; background: #fef3c7; }
-
-    html.dark-mode .badge-social   { background: rgba(3,105,161,0.15); }
-    html.dark-mode .badge-training { background: rgba(124,58,237,0.15); }
-    html.dark-mode .badge-league   { background: rgba(180,83,9,0.15); }
-
-    .event-reg-badge {
-        font-size: 0.65rem;
-        font-weight: 600;
-        padding: 3px 8px;
-        border-radius: 4px;
-    }
-    .reg-open   { background: var(--btn-green-light); color: var(--btn-green); }
-    .reg-soon   { background: var(--input-bg); color: var(--text-muted); border: 1px solid var(--border-color); }
-
-    html.dark-mode .reg-open { background: rgba(41,163,86,0.15); color: #4ade80; }
-
-    .event-card-full h3 {
-        font-size: 1rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        line-height: 1.3;
-    }
-    .event-meta {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-    .event-meta-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 0.8rem;
-        color: var(--text-secondary);
-    }
-    .event-meta-row i {
-        font-size: 1rem;
-        color: var(--text-muted);
-    }
-
-    .btn-join-now {
-        width: 100%;
-        padding: 11px;
-        background: var(--primary-orange);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background 0.2s, transform 0.2s;
-        margin-top: auto;
-    }
-    .btn-join-now:hover {
-        background: var(--primary-orange-hover);
-        transform: translateY(-1px);
-    }
-    .btn-notify-me {
-        width: 100%;
-        padding: 11px;
-        background: transparent;
-        color: var(--text-secondary);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: border-color 0.2s, color 0.2s;
-        margin-top: auto;
-    }
-    .btn-notify-me:hover {
-        border-color: var(--text-muted);
-        color: var(--text-primary);
-    }
+.events-page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+.joined-count { font-size:0.875rem; color:var(--text-muted); font-weight:500; }
+.filter-pills { display:flex; gap:8px; margin-bottom:24px; flex-wrap:wrap; }
+.filter-pill { padding:7px 18px; border-radius:20px; font-size:0.8rem; font-weight:600; cursor:pointer; border:1px solid var(--border-color); background:var(--card-bg); color:var(--text-secondary); transition:all 0.2s; }
+.filter-pill.active { background:var(--primary-orange); color:white; border-color:var(--primary-orange); }
+.filter-pill:hover:not(.active) { border-color:var(--text-muted); color:var(--text-primary); }
+.events-cards-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+.event-card-full { background:var(--card-bg); border:1px solid var(--card-border); border-radius:12px; padding:20px; box-shadow:var(--shadow-card); display:flex; flex-direction:column; gap:12px; transition:box-shadow 0.2s,transform 0.2s; }
+.event-card-full:hover { box-shadow:var(--shadow-hover); transform:translateY(-2px); }
+.event-card-top { display:flex; justify-content:space-between; align-items:flex-start; }
+.event-type-badge { font-size:0.65rem; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; padding:3px 8px; border-radius:4px; }
+.badge-tournament { color:var(--primary-orange); background:var(--primary-orange-light); }
+.badge-social     { color:#0369a1; background:#e0f2fe; }
+.badge-training   { color:#7c3aed; background:#ede9fe; }
+.badge-league     { color:#b45309; background:#fef3c7; }
+html.dark-mode .badge-social   { background:rgba(3,105,161,0.15); }
+html.dark-mode .badge-training { background:rgba(124,58,237,0.15); }
+html.dark-mode .badge-league   { background:rgba(180,83,9,0.15); }
+.event-reg-badge { font-size:0.65rem; font-weight:600; padding:3px 8px; border-radius:4px; }
+.reg-open { background:var(--btn-green-light); color:var(--btn-green); }
+.reg-full { background:rgba(239,68,68,0.1); color:#ef4444; }
+.reg-soon { background:var(--input-bg); color:var(--text-muted); border:1px solid var(--border-color); }
+html.dark-mode .reg-open { background:rgba(41,163,86,0.15); color:#4ade80; }
+.event-card-full h3 { font-size:1rem; font-weight:700; color:var(--text-primary); line-height:1.3; }
+.event-meta { display:flex; flex-direction:column; gap:6px; }
+.event-meta-row { display:flex; align-items:center; gap:8px; font-size:0.8rem; color:var(--text-secondary); }
+.event-meta-row i { font-size:1rem; color:var(--text-muted); }
+.event-capacity-bar { height:4px; background:var(--border-color); border-radius:2px; overflow:hidden; }
+.event-capacity-fill { height:100%; background:var(--primary-orange); border-radius:2px; transition:width 0.4s; }
+.event-capacity-fill.near-full { background:#f59e0b; }
+.event-capacity-fill.full { background:#ef4444; }
+.event-capacity-label { font-size:0.72rem; color:var(--text-muted); margin-top:4px; }
+.btn-join-now { width:100%; padding:11px; background:var(--primary-orange); color:white; border:none; border-radius:8px; font-size:0.85rem; font-weight:600; cursor:pointer; transition:background 0.2s,transform 0.2s; margin-top:auto; }
+.btn-join-now:hover { background:var(--primary-orange-hover); transform:translateY(-1px); }
+.btn-registered { width:100%; padding:11px; background:rgba(74,222,128,0.12); color:#4ade80; border:1.5px solid rgba(74,222,128,0.3); border-radius:8px; font-size:0.85rem; font-weight:600; cursor:default; margin-top:auto; display:flex; align-items:center; justify-content:center; gap:6px; }
+.btn-notify-me { width:100%; padding:11px; background:transparent; color:var(--text-secondary); border:1px solid var(--border-color); border-radius:8px; font-size:0.85rem; font-weight:600; cursor:pointer; transition:border-color 0.2s,color 0.2s; margin-top:auto; }
+.btn-notify-me:hover { border-color:var(--text-muted); color:var(--text-primary); }
+.btn-detail-link { display:block; text-align:center; font-size:0.78rem; color:var(--text-muted); text-decoration:none; margin-top:-4px; }
+.btn-detail-link:hover { color:var(--primary-orange); }
+.empty-events { grid-column:1/-1; text-align:center; padding:60px 20px; }
+.empty-events i { font-size:3.5rem; color:var(--text-muted); }
+.empty-events h3 { font-size:1.1rem; color:var(--text-primary); margin:12px 0 8px; }
+.empty-events p { font-size:0.85rem; color:var(--text-muted); }
+.entry-fee-tag { font-size:0.72rem; font-weight:700; padding:2px 7px; border-radius:4px; background:rgba(99,102,241,0.12); color:#818cf8; }
+@media (max-width:900px) { .events-cards-grid { grid-template-columns:repeat(2,1fr); } }
+@media (max-width:580px) { .events-cards-grid { grid-template-columns:1fr; } }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="events-page-header">
     <h1 class="page-title">Events & Tournaments</h1>
-    <span class="joined-count">0 joined</span>
+    <span class="joined-count"><i class="ph ph-check-circle"></i> {{ joined_count }} joined</span>
 </div>
 
 <div class="filter-pills">
-    <button class="filter-pill active" onclick="filterEvents('all', this)">All</button>
-    <button class="filter-pill" onclick="filterEvents('tournament', this)">Tournament</button>
-    <button class="filter-pill" onclick="filterEvents('social', this)">Social</button>
-    <button class="filter-pill" onclick="filterEvents('training', this)">Training</button>
-    <button class="filter-pill" onclick="filterEvents('league', this)">League</button>
+    <button class="filter-pill active" onclick="filterEvents('all',this)">All</button>
+    <button class="filter-pill" onclick="filterEvents('tournament',this)">Tournament</button>
+    <button class="filter-pill" onclick="filterEvents('social',this)">Social</button>
+    <button class="filter-pill" onclick="filterEvents('training',this)">Training</button>
+    <button class="filter-pill" onclick="filterEvents('league',this)">League</button>
 </div>
 
 <div class="events-cards-grid" id="eventsGrid">
+    {% if events %}
+        {% for ev in events %}
+        {% set pct = ((ev.registered_count / ev.max_players) * 100)|int if ev.max_players else 0 %}
+        <div class="event-card-full" data-type="{{ ev.type }}">
+            <div class="event-card-top">
+                <span class="event-type-badge badge-{{ ev.type }}">{{ ev.type|capitalize }}</span>
+                {% if ev.status == 'full' %}
+                    <span class="event-reg-badge reg-full">Full</span>
+                {% elif ev.status == 'registration_open' %}
+                    <span class="event-reg-badge reg-open">Registration Open</span>
+                {% else %}
+                    <span class="event-reg-badge reg-soon">Coming Soon</span>
+                {% endif %}
+            </div>
 
-    <div class="event-card-full" data-type="tournament">
-        <div class="event-card-top">
-            <span class="event-type-badge badge-tournament">Tournament</span>
-            <span class="event-reg-badge reg-open">Registration Open</span>
-        </div>
-        <h3>Weekend Doubles Championship</h3>
-        <div class="event-meta">
-            <div class="event-meta-row"><i class="ph ph-calendar-blank"></i> May 3, 2025</div>
-            <div class="event-meta-row"><i class="ph ph-map-pin"></i> Main Arena</div>
-            <div class="event-meta-row"><i class="ph ph-users"></i> 32 players</div>
-        </div>
-        <button class="btn-join-now">Join Now</button>
-    </div>
+            <h3>{{ ev.title }}</h3>
 
-    <div class="event-card-full" data-type="social">
-        <div class="event-card-top">
-            <span class="event-type-badge badge-social">Social</span>
-            <span class="event-reg-badge reg-open">Registration Open</span>
-        </div>
-        <h3>Community Pickleball Night</h3>
-        <div class="event-meta">
-            <div class="event-meta-row"><i class="ph ph-calendar-blank"></i> April 22, 2025</div>
-            <div class="event-meta-row"><i class="ph ph-map-pin"></i> Court 1 & 2</div>
-            <div class="event-meta-row"><i class="ph ph-users"></i> 16 players</div>
-        </div>
-        <button class="btn-join-now">Join Now</button>
-    </div>
+            <div class="event-meta">
+                <div class="event-meta-row"><i class="ph ph-calendar-blank"></i> {{ ev.event_date }}</div>
+                <div class="event-meta-row"><i class="ph ph-clock"></i> {{ ev.start_time[:5] }} – {{ ev.end_time[:5] }}</div>
+                <div class="event-meta-row">
+                    <i class="ph ph-map-pin"></i>
+                    {% if ev.facilities %}{{ ev.facilities.name }}{% endif %}
+                    {% if ev.location_label %} · {{ ev.location_label }}{% endif %}
+                    {% if not ev.facilities and not ev.location_label %}—{% endif %}
+                </div>
+                <div class="event-meta-row">
+                    <i class="ph ph-users"></i> {{ ev.registered_count }} / {{ ev.max_players }} players
+                    {% if ev.entry_fee and ev.entry_fee > 0 %}
+                        &nbsp;<span class="entry-fee-tag">${{ '%.2f'|format(ev.entry_fee|float) }} entry</span>
+                    {% else %}
+                        &nbsp;<span class="entry-fee-tag" style="background:rgba(74,222,128,0.12);color:#4ade80;">Free</span>
+                    {% endif %}
+                </div>
+            </div>
 
-    <div class="event-card-full" data-type="tournament">
-        <div class="event-card-top">
-            <span class="event-type-badge badge-tournament">Tournament</span>
-            <span class="event-reg-badge reg-soon">Coming Soon</span>
-        </div>
-        <h3>Spring Singles Open</h3>
-        <div class="event-meta">
-            <div class="event-meta-row"><i class="ph ph-calendar-blank"></i> May 15, 2025</div>
-            <div class="event-meta-row"><i class="ph ph-map-pin"></i> Main Arena</div>
-            <div class="event-meta-row"><i class="ph ph-users"></i> 24 players</div>
-        </div>
-        <button class="btn-notify-me">Notify Me</button>
-    </div>
+            <!-- Capacity bar -->
+            <div>
+                <div class="event-capacity-bar">
+                    <div class="event-capacity-fill {% if pct >= 90 %}full{% elif pct >= 70 %}near-full{% endif %}" style="width:{{ pct }}%;"></div>
+                </div>
+                <div class="event-capacity-label">{{ pct }}% full</div>
+            </div>
 
-    <div class="event-card-full" data-type="training">
-        <div class="event-card-top">
-            <span class="event-type-badge badge-training">Training</span>
-            <span class="event-reg-badge reg-open">Registration Open</span>
-        </div>
-        <h3>Beginner Training Session</h3>
-        <div class="event-meta">
-            <div class="event-meta-row"><i class="ph ph-calendar-blank"></i> April 30, 2025</div>
-            <div class="event-meta-row"><i class="ph ph-map-pin"></i> Court 3</div>
-            <div class="event-meta-row"><i class="ph ph-users"></i> 12 players</div>
-        </div>
-        <button class="btn-join-now">Join Now</button>
-    </div>
+            {% if ev.id in registered_ids %}
+                <div class="btn-registered"><i class="ph ph-check-circle"></i> Registered</div>
+                <form method="POST" action="{{ url_for('player.unregister_event', event_id=ev.id) }}" style="margin:0;">
+                    <button type="submit" class="btn-notify-me" style="margin-top:-6px;font-size:0.78rem;padding:7px;" onclick="return confirm('Unregister from this event?')">
+                        Cancel Registration
+                    </button>
+                </form>
+            {% elif ev.status == 'registration_open' %}
+                <form method="POST" action="{{ url_for('player.register_event', event_id=ev.id) }}" style="margin:0;">
+                    <button type="submit" class="btn-join-now">Join Now</button>
+                </form>
+            {% elif ev.status == 'full' %}
+                <form method="POST" action="{{ url_for('player.register_event', event_id=ev.id) }}" style="margin:0;">
+                    <button type="submit" class="btn-notify-me">Join Waitlist</button>
+                </form>
+            {% else %}
+                <button class="btn-notify-me" disabled>Coming Soon</button>
+            {% endif %}
 
-    <div class="event-card-full" data-type="league">
-        <div class="event-card-top">
-            <span class="event-type-badge badge-league">League</span>
-            <span class="event-reg-badge reg-soon">Coming Soon</span>
+            <a href="{{ url_for('player.event_detail', event_id=ev.id) }}" class="btn-detail-link">View Details →</a>
         </div>
-        <h3>City League – Round 2</h3>
-        <div class="event-meta">
-            <div class="event-meta-row"><i class="ph ph-calendar-blank"></i> June 1, 2025</div>
-            <div class="event-meta-row"><i class="ph ph-map-pin"></i> Main Arena</div>
-            <div class="event-meta-row"><i class="ph ph-users"></i> 48 players</div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-events">
+            <i class="ph ph-trophy"></i>
+            <h3>No Events Available</h3>
+            <p>There are no upcoming events right now. Check back soon!</p>
         </div>
-        <button class="btn-notify-me">Notify Me</button>
-    </div>
-
+    {% endif %}
 </div>
 
 <script>
-    function filterEvents(type, btn) {
-        document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
-        btn.classList.add('active');
-        document.querySelectorAll('.event-card-full').forEach(card => {
-            if (type === 'all' || card.dataset.type === type) {
-                card.style.display = '';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-    }
+function filterEvents(type, btn) {
+    document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.event-card-full').forEach(card => {
+        card.style.display = (type === 'all' || card.dataset.type === type) ? '' : 'none';
+    });
+}
 </script>
 {% endblock %}
