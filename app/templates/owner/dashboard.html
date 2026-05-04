@@ -16,24 +16,24 @@
                 <i class="ph ph-wallet" style="font-size: 2rem; color: #4ade80;"></i>
                 <div class="stat-info">
                     <h3>Today's Earnings</h3>
-                    <p class="stat-value">$1,250</p>
-                    <span class="stat-change positive"><i class="ph ph-trend-up"></i> 15%</span>
+                    <p class="stat-value">₱{{ "{:,.2f}".format(total_earnings) }}</p>
+                    <span class="stat-change" style="color:var(--text-secondary);">From court bookings</span>
                 </div>
             </div>
             <div class="glass-card stat-box">
                 <i class="ph ph-calendar-check" style="font-size: 2rem; color: var(--primary);"></i>
                 <div class="stat-info">
                     <h3>Total Bookings</h3>
-                    <p class="stat-value">42</p>
-                    <span class="stat-change positive"><i class="ph ph-trend-up"></i> 5%</span>
+                    <p class="stat-value">{{ total_bookings }}</p>
+                    <span class="stat-change" style="color:var(--text-secondary);">All time</span>
                 </div>
             </div>
             <div class="glass-card stat-box">
                 <i class="ph ph-users-three" style="font-size: 2rem; color: var(--secondary);"></i>
                 <div class="stat-info">
                     <h3>Active Staff</h3>
-                    <p class="stat-value">8</p>
-                    <span class="stat-change" style="color:var(--text-secondary);"><i class="ph ph-minus"></i> No change</span>
+                    <p class="stat-value">{{ active_staff }}</p>
+                    <span class="stat-change" style="color:var(--text-secondary);">Assigned to your facilities</span>
                 </div>
             </div>
         </div>
@@ -55,27 +55,32 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td class="bold">John Doe</td>
-                            <td>Court 1 (Indoor)</td>
-                            <td>5:00 - 6:00 PM</td>
-                            <td><span class="status-pill success">Paid</span></td>
-                            <td>$25.00</td>
-                        </tr>
-                        <tr>
-                            <td class="bold">Emma Watson</td>
-                            <td>Court 3 (Outdoor)</td>
-                            <td>6:00 - 7:30 PM</td>
-                            <td><span class="status-pill success">Paid</span></td>
-                            <td>$35.00</td>
-                        </tr>
-                        <tr>
-                            <td class="bold">Chris Pratt</td>
-                            <td>Court 2 (Indoor)</td>
-                            <td>7:00 - 8:00 PM</td>
-                            <td><span class="status-pill warning">Pending</span></td>
-                            <td>$25.00</td>
-                        </tr>
+                        {% if recent_bookings %}
+                            {% for b in recent_bookings %}
+                            <tr>
+                                <td class="bold">
+                                    {{ b.profiles.first_name if b.profiles else 'Unknown' }} 
+                                    {{ b.profiles.last_name if b.profiles else '' }}
+                                </td>
+                                <td>{{ b.courts.name if b.courts else 'Court' }} ({{ b.courts.type if b.courts else 'N/A' }})</td>
+                                <td>{{ b.date }} <br> <small>{{ b.start_time[:5] }} - {{ b.end_time[:5] }}</small></td>
+                                <td>
+                                    {% if b.status in ['confirmed', 'completed'] %}
+                                        <span class="status-pill success">Paid</span>
+                                    {% elif b.status == 'pending_payment' %}
+                                        <span class="status-pill warning">Pending</span>
+                                    {% else %}
+                                        <span class="status-pill" style="background:var(--input-bg);color:var(--text-muted);">{{ b.status|capitalize }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>₱{{ "{:,.2f}".format(b.total_amount) }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 20px;">No recent bookings found.</td>
+                            </tr>
+                        {% endif %}
                     </tbody>
                 </table>
             </div>

@@ -2,31 +2,65 @@
 {% block title %}Verifications{% endblock %}
 {% block content %}
 <div class="dashboard-header">
-    <h1 class="page-title">Pending Verifications</h1>
+    <h1 class="page-title">Facility KYC Verifications</h1>
 </div>
 <div class="glass-card">
     <div class="table-container">
         <table class="data-grid">
             <thead>
                 <tr>
-                    <th>ENTITY NAME</th>
-                    <th>TYPE</th>
-                    <th>SUBMITTED</th>
+                    <th>FACILITY NAME</th>
+                    <th>OWNER</th>
+                    <th>CREATED AT</th>
                     <th>DOCUMENTS</th>
+                    <th>STATUS</th>
                     <th>ACTIONS</th>
                 </tr>
             </thead>
             <tbody>
+                {% for f in facilities %}
                 <tr>
-                    <td class="bold">Oasis Pickleball Club</td>
-                    <td>Facility</td>
-                    <td>2 hours ago</td>
-                    <td><i class="ph ph-file-pdf" style="color: #ef4444;"></i> License.pdf</td>
+                    <td class="bold">{{ f.name }}</td>
+                    <td>{{ f.profiles.first_name }} {{ f.profiles.last_name }}</td>
+                    <td>{{ f.created_at | community_timeago }}</td>
                     <td>
-                        <button class="action-box green" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto;"><i class="ph ph-check"></i> Approve</button>
-                        <button class="action-box red" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto; background: rgba(239, 68, 68, 0.2); color: #ef4444;"><i class="ph ph-x"></i> Reject</button>
+                        {% if f.kyc_document_url %}
+                        <a href="{{ f.kyc_document_url }}" target="_blank" class="action-link" style="color:var(--primary-orange);"><i class="ph ph-file-text"></i> View Document</a>
+                        {% else %}
+                        <span style="color:var(--text-muted);">None provided</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if f.kyc_status == 'verified' %}
+                            <span class="status-pill success" style="background: rgba(16,185,129,0.1); color: #10b981;">Verified</span>
+                        {% elif f.kyc_status == 'pending_approval' %}
+                            <span class="status-pill warning" style="background: rgba(245,158,11,0.1); color: #f59e0b;">Pending</span>
+                        {% elif f.kyc_status == 'rejected' %}
+                            <span class="status-pill danger" style="background: rgba(239,68,68,0.1); color: #ef4444;">Rejected</span>
+                        {% else %}
+                            <span class="status-pill" style="background: rgba(255,255,255,0.1);">Unverified</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form method="POST" action="{{ url_for('adminstaff.update_kyc_status', facility_id=f.id) }}" style="display:inline-block; margin:0;">
+                            <input type="hidden" name="status" value="verified">
+                            <button type="submit" class="action-box green" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto;" onclick="return confirm('Approve this facility?');"><i class="ph ph-check"></i> Approve</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('adminstaff.update_kyc_status', facility_id=f.id) }}" style="display:inline-block; margin:0;">
+                            <input type="hidden" name="status" value="rejected">
+                            <button type="submit" class="action-box red" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto; background: rgba(239, 68, 68, 0.2); color: #ef4444;" onclick="return confirm('Reject this facility?');"><i class="ph ph-x"></i> Reject</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('adminstaff.update_kyc_status', facility_id=f.id) }}" style="display:inline-block; margin:0;">
+                            <input type="hidden" name="status" value="unverified">
+                            <button type="submit" class="action-box" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto; background: rgba(255, 255, 255, 0.1); color: var(--text-primary);" onclick="return confirm('Reset status to Unverified?');"><i class="ph ph-arrow-counter-clockwise"></i> Reset</button>
+                        </form>
                     </td>
                 </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" style="text-align:center; padding:2rem; color:var(--text-muted);">No facilities found.</td>
+                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>

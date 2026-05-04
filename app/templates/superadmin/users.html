@@ -5,87 +5,76 @@
 {% block content %}
 <div class="dashboard-header">
     <h1 class="page-title">User Management</h1>
+    <button class="action-box green" style="width:auto;padding:0.5rem 1.1rem;" onclick="document.getElementById('addAdminStaffModal').style.display='flex'">
+        <i class="ph ph-plus-circle"></i> Add Admin Staff
+    </button>
 </div>
 
 <div class="glass-card">
-    <div class="widget-header">
-        <div class="header-search" style="flex: 1; max-width: 400px; margin-right: 15px;">
-            <i class="ph ph-magnifying-glass"></i>
-            <input type="text" placeholder="Search by name, email, or role...">
-        </div>
-        <div class="filter-actions">
-            <select class="action-box" style="padding: 0.5rem; border: none; background: rgba(255,255,255,0.05); color: var(--text-primary); cursor: pointer; border-radius: 8px;">
-                <option value="all">All Roles</option>
-                <option value="player">Player</option>
-                <option value="owner">Facility Owner</option>
-                <option value="clubadmin">Club Admin</option>
-                <option value="staff">Staff</option>
-            </select>
-        </div>
-    </div>
     <div class="table-container">
         <table class="data-grid">
             <thead>
                 <tr>
-                    <th>USER</th>
+                    <th>NAME</th>
                     <th>ROLE</th>
-                    <th>EMAIL</th>
                     <th>DATE JOINED</th>
-                    <th>STATUS</th>
                     <th>ACTIONS</th>
                 </tr>
             </thead>
             <tbody>
+                {% for staff in adminstaff %}
                 <tr>
                     <td class="bold">
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <div class="avatar" style="width: 32px; height: 32px; font-size: 0.8rem;">JD</div>
-                            Jane Doe
+                            <div class="avatar" style="width: 32px; height: 32px; font-size: 0.8rem;">{{ staff.first_name[0] }}{{ staff.last_name[0] if staff.last_name else '' }}</div>
+                            {{ staff.first_name }} {{ staff.last_name }}
                         </div>
                     </td>
-                    <td><span class="role-pill"><i class="ph ph-identification-card"></i> Player</span></td>
-                    <td>jane.doe@example.com</td>
-                    <td>Mar 12, 2025</td>
-                    <td><span class="status-pill success">Active</span></td>
+                    <td><span class="role-pill" style="background: rgba(16,185,129,0.1); color: #10b981;"><i class="ph ph-shield-star"></i> Admin Staff</span></td>
+                    <td>{{ staff.created_at | community_timeago }}</td>
                     <td>
-                        <a href="#" class="action-link" title="Edit Role"><i class="ph ph-user-gear"></i></a>
                         <a href="#" class="action-link" title="Deactivate" style="color: #ef4444;"><i class="ph ph-user-minus"></i></a>
                     </td>
                 </tr>
+                {% else %}
                 <tr>
-                    <td class="bold">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div class="avatar" style="width: 32px; height: 32px; font-size: 0.8rem; background: var(--secondary);">MS</div>
-                            Mike Smith
-                        </div>
-                    </td>
-                    <td><span class="role-pill" style="background: rgba(245,158,11,0.1); color: #f59e0b;"><i class="ph ph-building"></i> Owner</span></td>
-                    <td>mike@picklepro.com</td>
-                    <td>Feb 05, 2025</td>
-                    <td><span class="status-pill success">Active</span></td>
-                    <td>
-                        <a href="#" class="action-link" title="Edit Role"><i class="ph ph-user-gear"></i></a>
-                        <a href="#" class="action-link" title="Deactivate" style="color: #ef4444;"><i class="ph ph-user-minus"></i></a>
-                    </td>
+                    <td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-muted);">No Admin Staff found.</td>
                 </tr>
-                <tr>
-                    <td class="bold">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div class="avatar" style="width: 32px; height: 32px; font-size: 0.8rem; background: var(--primary);">SL</div>
-                            Sarah Lee
-                        </div>
-                    </td>
-                    <td><span class="role-pill"><i class="ph ph-identification-card"></i> Player</span></td>
-                    <td>sarah.l@example.com</td>
-                    <td>Apr 22, 2025</td>
-                    <td><span class="status-pill warning" style="color:#f59e0b; background:rgba(245,158,11,0.1)">Unverified</span></td>
-                    <td>
-                        <a href="#" class="action-link" title="Edit Role"><i class="ph ph-user-gear"></i></a>
-                        <a href="#" class="action-link" title="Deactivate" style="color: #ef4444;"><i class="ph ph-user-minus"></i></a>
-                    </td>
-                </tr>
+                {% endfor %}
             </tbody>
         </table>
+    </div>
+</div>
+
+<!-- ADD ADMIN STAFF MODAL -->
+<div class="modal-overlay" id="addAdminStaffModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:1000; align-items:center; justify-content:center;">
+    <div class="modal-content" style="background: var(--surface); padding: 2rem; border-radius: var(--radius-lg); width: 100%; max-width: 500px; box-shadow: var(--shadow-lg);">
+        <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="margin: 0; font-size: 1.25rem;"><i class="ph ph-user-plus" style="color:var(--primary-orange);"></i> Add Admin Staff</h3>
+            <button class="icon-btn" onclick="document.getElementById('addAdminStaffModal').style.display='none'" style="background: none; border: none; cursor: pointer; color: var(--text-muted);"><i class="ph ph-x"></i></button>
+        </div>
+        <form method="POST" action="{{ url_for('superadmin.add_adminstaff') }}">
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.85rem; font-weight: 600;">First Name *</label>
+                <input type="text" name="first_name" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary); outline: none;">
+            </div>
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.85rem; font-weight: 600;">Last Name</label>
+                <input type="text" name="last_name" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary); outline: none;">
+            </div>
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.85rem; font-weight: 600;">Email Address *</label>
+                <input type="email" name="email" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary); outline: none;">
+            </div>
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.85rem; font-weight: 600;">Temporary Password *</label>
+                <input type="password" name="password" required minlength="6" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary); outline: none;">
+            </div>
+            <div class="form-actions" style="display: flex; justify-content: flex-end; gap: 1rem;">
+                <button type="button" class="action-box" onclick="document.getElementById('addAdminStaffModal').style.display='none'" style="padding: 0.6rem 1.2rem; background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; width: auto; font-size: 0.9rem;">Cancel</button>
+                <button type="submit" class="action-box green" style="padding: 0.6rem 1.2rem; cursor: pointer; width: auto; font-size: 0.9rem;"><i class="ph ph-check"></i> Create Account</button>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}

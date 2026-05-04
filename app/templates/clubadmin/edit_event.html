@@ -1,5 +1,5 @@
-{% extends "owner/base_owner.html" %}
-{% block title %}Create Event{% endblock %}
+{% extends "clubadmin/base_clubadmin.html" %}
+{% block title %}Edit Event{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -58,10 +58,10 @@
 {% block content %}
 <div class="dashboard-header">
     <div>
-        <h1 class="page-title">Create New Event</h1>
+        <h1 class="page-title">Edit Event</h1>
         <p style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">Fill in the details to publish a new event for players to join</p>
     </div>
-    <a href="{{ url_for('owner.events') }}" style="display:inline-flex;align-items:center;gap:6px;font-size:0.85rem;color:var(--text-muted);text-decoration:none;">
+    <a href="{{ url_for('clubadmin.events') }}" style="display:inline-flex;align-items:center;gap:6px;font-size:0.85rem;color:var(--text-muted);text-decoration:none;">
         <i class="ph ph-arrow-left"></i> Back to Events
     </a>
 </div>
@@ -91,47 +91,47 @@
     </div>
 
     <div class="glass-card" style="padding:28px;">
-        <form method="POST" action="{{ url_for('owner.create_event') }}" id="createEventForm" enctype="multipart/form-data">
+        <form method="POST" action="{{ url_for('clubadmin.edit_event', event_id=event.id) }}" id="createEventForm" enctype="multipart/form-data">
 
             <!-- STEP 1: Event Info -->
             <div class="form-section active" id="step1">
                 <div class="section-title"><i class="ph ph-trophy"></i> Event Information</div>
                 <div class="form-group">
                     <label>Event Title <span class="required">*</span></label>
-                    <input type="text" name="title" id="fieldTitle" placeholder="e.g. Weekend Doubles Championship" required>
+                    <input type="text" name="title" id="fieldTitle" value="{{ event.title }}" required>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label>Event Type <span class="required">*</span></label>
                         <select name="type" id="fieldType">
-                            <option value="tournament">🏆 Tournament</option>
-                            <option value="social">🤝 Social</option>
-                            <option value="training">🎯 Training</option>
-                            <option value="league">🏅 League</option>
+                            <option value="tournament" {% if event.type == "tournament" %}selected{% endif %}>🏆 Tournament</option>
+                            <option value="social" {% if event.type == "social" %}selected{% endif %}>🤝 Social</option>
+                            <option value="training" {% if event.type == "training" %}selected{% endif %}>🎯 Training</option>
+                            <option value="league" {% if event.type == "league" %}selected{% endif %}>🏅 League</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Event Date <span class="required">*</span></label>
-                        <input type="date" name="event_date" id="fieldDate" required>
+                        <input type="date" name="event_date" id="fieldDate" value="{{ event.event_date }}" required>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label>Start Time <span class="required">*</span></label>
-                        <input type="time" name="start_time" id="fieldStartTime" required>
+                        <input type="time" name="start_time" id="fieldStartTime" value="{{ event.start_time }}" required>
                     </div>
                     <div class="form-group">
                         <label>End Time <span class="required">*</span></label>
-                        <input type="time" name="end_time" id="fieldEndTime" required>
+                        <input type="time" name="end_time" id="fieldEndTime" value="{{ event.end_time }}" required>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label>Format <span class="required">*</span></label>
                         <select name="format" id="fieldFormat">
-                            <option value="Singles">Singles</option>
-                            <option value="Doubles">Doubles</option>
-                            <option value="Mixed Doubles">Mixed Doubles</option>
+                            <option value="Singles" {% if event.format == "Singles" %}selected{% endif %}>Singles</option>
+                            <option value="Doubles" {% if event.format == "Doubles" %}selected{% endif %}>Doubles</option>
+                            <option value="Mixed Doubles" {% if event.format == "Mixed Doubles" %}selected{% endif %}>Mixed Doubles</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -141,7 +141,7 @@
                 </div>
                 <div class="form-group">
                     <label>Description</label>
-                    <textarea name="description" id="fieldDesc" placeholder="Describe the event, rules, format, what to bring..."></textarea>
+                    <textarea name="description" id="fieldDesc">{{ event.description }}</textarea>
                 </div>
                 <div class="step-nav">
                     <span></span>
@@ -157,7 +157,7 @@
                     <select name="facility_id" id="fieldFacility" onchange="loadCourts(this.value)" required>
                         <option value="">Select a facility...</option>
                         {% for f in facilities %}
-                        <option value="{{ f.id }}" data-location="{{ f.location|e }}">{{ f.name }}</option>
+                        <option value="{{ f.id }}" {% if event.facility_id == f.id %}selected{% endif %} data-location="{{ f.location|e }}">{{ f.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -169,7 +169,7 @@
                 </div>
                 <div class="form-group">
                     <label>Location Label <small style="color:var(--text-muted);">(shown to players on the event card)</small></label>
-                    <input type="text" name="location_label" id="fieldLocationLabel" placeholder="e.g. Court 1 & 2, Main Arena">
+                    <input type="text" name="location_label" id="fieldLocationLabel" value="{{ event.location_label }}">
                 </div>
                 <div class="step-nav">
                     <button type="button" class="btn-nav btn-nav-secondary" onclick="goStep(1)"><i class="ph ph-arrow-left"></i> Back</button>
@@ -183,7 +183,7 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Max Players <span class="required">*</span></label>
-                        <input type="number" name="max_players" id="fieldMaxPlayers" min="2" max="512" value="16" required>
+                        <input type="number" name="max_players" id="fieldMaxPlayers" min="2" max="512" value="{{ event.max_players }}" required>
                     </div>
                     <div class="form-group">
                         <label>Registration Type</label>
@@ -200,11 +200,11 @@
                 <div class="form-row">
                     <div class="form-group" id="fee_wrapper">
                         <label>Entry Fee (₱) <span class="required">*</span></label>
-                        <input type="number" name="entry_fee" id="fieldEntryFee" min="0" step="0.01" value="0">
+                        <input type="number" name="entry_fee" id="fieldEntryFee" min="0" step="0.01" value="{{ event.entry_fee }}">
                     </div>
                     <div class="form-group">
                         <label>Prize Pool (₱) <small style="color:var(--text-muted);">Optional</small></label>
-                        <input type="number" name="prize_pool" id="fieldPrizePool" min="0" step="0.01" value="0">
+                        <input type="number" name="prize_pool" id="fieldPrizePool" min="0" step="0.01" value="{{ event.prize_pool }}">
                     </div>
                 </div>
                 <div class="step-nav">
@@ -284,7 +284,7 @@ async function loadCourts(facilityId) {
     }
     grid.innerHTML = '<div class="loading-courts"><i class="ph ph-spinner" style="animation:spin 1s linear infinite;display:inline-block;"></i> Loading courts...</div>';
     try {
-        const res = await fetch(`/owner/api/courts_by_facility/${facilityId}`);
+        const res = await fetch(`/clubadmin/api/courts_by_facility/${facilityId}`);
         const courts = await res.json();
         if (!courts.length) {
             grid.innerHTML = '<div class="loading-courts">No active courts in this facility. <a href="/owner/courts">Add courts</a>.</div>';

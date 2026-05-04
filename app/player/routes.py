@@ -11,13 +11,83 @@ def get_db():
 @player_bp.route('/dashboard')
 @require_role('player')
 def dashboard():
-    return render_template('player/dashboard.html')
+    player_id = session.get('user_id')
+    db = get_db()
+    next_reservation = None
+    available_courts = []
+    upcoming_events = []
+    recent_activities = []
+    
+    try:
+        # Fetch next confirmed reservation
+        res_resp = db.table('court_reservations').select(
+            'id, date, start_time, end_time, status, courts(name), facilities(name, location)'
+        ).eq('player_id', player_id).in_('status', ['confirmed']).order('date').order('start_time').limit(1).execute()
+        if res_resp.data:
+            next_reservation = res_resp.data[0]
+
+        # Fetch some available courts (mock query)
+        court_resp = db.table('courts').select('id, name, type, hourly_rate, status').eq('status', 'active').limit(4).execute()
+        available_courts = court_resp.data or []
+
+        # Fetch upcoming events
+        ev_resp = db.table('events').select('id, title, event_date').in_('status', ['upcoming', 'registration_open']).order('event_date').limit(3).execute()
+        upcoming_events = ev_resp.data or []
+
+        # Fetch recent activities (notifications)
+        act_resp = db.table('notifications').select('id, title, created_at').eq('user_id', player_id).order('created_at', desc=True).limit(4).execute()
+        recent_activities = act_resp.data or []
+
+    except Exception as e:
+        flash(f"Error loading dashboard data: {e}", "error")
+
+    return render_template(
+        'player/dashboard.html',
+        next_reservation=next_reservation,
+        available_courts=available_courts,
+        upcoming_events=upcoming_events,
+        recent_activities=recent_activities
+    )
 
 
-@player_bp.route('/profile')
+@player_bp.route('/profile', methods=['GET', 'POST'])
 @require_role('player')
 def profile():
-    return render_template('player/profile.html')
+    player_id = session.get('user_id')
+    db = get_db()
+    
+    if request.method == 'POST':
+        first_name = request.form.get('first_name', '').strip()
+        last_name = request.form.get('last_name', '').strip()
+        phone = request.form.get('phone', '').strip()
+        
+        try:
+            db.table('profiles').update({
+                'first_name': first_name,
+                'last_name': last_name,
+                'phone': phone
+            }).eq('id', player_id).execute()
+            
+            session['first_name'] = first_name
+            session['last_name'] = last_name
+            session['phone'] = phone
+            
+            flash("Profile updated successfully.", "success")
+        except Exception as e:
+            flash(f"Error updating profile: {e}", "error")
+        return redirect(url_for('player.profile'))
+
+    stats = {'courts': 0, 'events': 0, 'tournaments': 0}
+    try:
+        r_resp = db.table('court_reservations').select('id', count='exact').eq('player_id', player_id).execute()
+        stats['courts'] = r_resp.count or 0
+        
+        e_resp = db.table('event_registrations').select('id', count='exact').eq('player_id', player_id).execute()
+        stats['events'] = e_resp.count or 0
+    except Exception:
+        pass
+        
+    return render_template('player/profile.html', stats=stats)
 
 
 @player_bp.route('/reservation')
@@ -27,7 +97,7 @@ def reservation():
     facilities = []
     try:
         resp = db.table('facilities').select(
-            'id, name, location, description, open_time, close_time, slot_duration_minutes'
+            'id, name, location, description, open_time, close_time, slot_duration_minutes, kyc_status'
         ).eq('status', 'active').order('name').execute()
         facilities = resp.data or []
     except Exception as e:
@@ -192,7 +262,26 @@ def confirm_payment(reservation_id):
 @player_bp.route('/queue')
 @require_role('player')
 def queue():
-    return render_template('player/queue_monitoring.html')
+    player_id = session.get('user_id')
+    db = get_db()
+    queues = []
+    my_queue = None
+    
+    try:
+        resp = db.table('court_queues').select(
+            'id, status, estimated_wait_mins, player_id, courts(name), profiles(first_name, last_name)'
+        ).in_('status', ['waiting', 'next']).order('joined_at').execute()
+        queues = resp.data or []
+        
+        for idx, q in enumerate(queues):
+            q['position'] = idx + 1
+            if q['player_id'] == player_id:
+                my_queue = q
+                
+    except Exception:
+        pass
+        
+    return render_template('player/queue_monitoring.html', queues=queues, my_queue=my_queue)
 
 
 @player_bp.route('/events')
@@ -206,7 +295,7 @@ def events():
     try:
         # Fetch upcoming + open events with facility info
         ev_resp = db.table('events').select(
-            'id, title, type, event_date, start_time, end_time, max_players, entry_fee, location_label, status, '
+            'id, title, type, format, prize_pool, image_url, event_date, start_time, end_time, max_players, entry_fee, location_label, status, '
             'facilities(name, location)'
         ).in_('status', ['registration_open', 'upcoming', 'full']).order('event_date', desc=False).execute()
         events_list = ev_resp.data or []
@@ -239,8 +328,8 @@ def register_event(event_id):
     player_id = session.get('user_id')
     db = get_db()
     try:
-        # Check event capacity
-        ev_resp = db.table('events').select('max_players, title, status').eq('id', event_id).single().execute()
+        # Check event capacity and fee
+        ev_resp = db.table('events').select('max_players, title, status, entry_fee').eq('id', event_id).single().execute()
         if not ev_resp.data:
             flash('Event not found.', 'error')
             return redirect(url_for('player.events'))
@@ -252,11 +341,18 @@ def register_event(event_id):
         else:
             reg_count_resp = db.table('event_registrations').select('id', count='exact').eq('event_id', event_id).eq('status', 'registered').execute()
             count = reg_count_resp.count or 0
-            status = 'waitlisted' if count >= ev['max_players'] else 'registered'
+            
             if count >= ev['max_players']:
                 flash(f'Event is full! You have been waitlisted for "{ev["title"]}".', 'warning')
                 # Mark event as full
                 db.table('events').update({'status': 'full'}).eq('id', event_id).execute()
+                status = 'waitlisted'
+            else:
+                # Room available! Check if it's a paid event.
+                if ev.get('entry_fee') and ev['entry_fee'] > 0:
+                    status = 'pending_payment'
+                else:
+                    status = 'registered'
 
         db.table('event_registrations').upsert({
             'event_id': event_id,
@@ -264,13 +360,75 @@ def register_event(event_id):
             'status': status,
         }, on_conflict='event_id,player_id').execute()
 
-        if status == 'registered':
+        if status == 'pending_payment':
+            flash(f'Please complete your payment to secure your spot for "{ev["title"]}".', 'info')
+            return redirect(url_for('player.tournament_payment', event_id=event_id))
+        elif status == 'registered':
             flash(f'Successfully registered for "{ev["title"]}"!', 'success')
 
     except Exception as e:
         flash(f'Error registering: {e}', 'error')
 
     return redirect(url_for('player.events'))
+
+
+@player_bp.route('/events/<event_id>/payment', methods=['GET', 'POST'])
+@require_role('player')
+def tournament_payment(event_id):
+    player_id = session.get('user_id')
+    db = get_db()
+    
+    if request.method == 'POST':
+        gcash_ref = request.form.get('gcash_ref', '').strip()
+        if not gcash_ref:
+            flash('Please enter your GCash reference number.', 'error')
+            return redirect(url_for('player.tournament_payment', event_id=event_id))
+            
+        try:
+            # Check capacity again before confirming payment
+            ev_resp = db.table('events').select('max_players, title, status').eq('id', event_id).single().execute()
+            ev = ev_resp.data
+            
+            reg_count_resp = db.table('event_registrations').select('id', count='exact').eq('event_id', event_id).eq('status', 'registered').execute()
+            count = reg_count_resp.count or 0
+            
+            if count >= ev['max_players']:
+                # Full! Put them on waitlist
+                db.table('event_registrations').update({
+                    'status': 'waitlisted'
+                }).eq('event_id', event_id).eq('player_id', player_id).execute()
+                flash('We received your payment, but the event just filled up! You are now on the waitlist and will be contacted.', 'warning')
+            else:
+                # Secure their spot
+                db.table('event_registrations').update({
+                    'status': 'registered'
+                }).eq('event_id', event_id).eq('player_id', player_id).execute()
+                flash('Payment confirmed! You are now officially registered.', 'success')
+                
+        except Exception as e:
+            flash(f'Payment error: {e}', 'error')
+            
+        return redirect(url_for('player.event_detail', event_id=event_id))
+        
+    # GET method
+    try:
+        ev_resp = db.table('events').select('title, entry_fee').eq('id', event_id).single().execute()
+        event = ev_resp.data
+        if not event:
+            flash('Event not found.', 'error')
+            return redirect(url_for('player.events'))
+            
+        # Check their current status
+        my_reg = db.table('event_registrations').select('status').eq('event_id', event_id).eq('player_id', player_id).single().execute()
+        if not my_reg.data or my_reg.data['status'] != 'pending_payment':
+            flash('No pending payment found for this event.', 'info')
+            return redirect(url_for('player.event_detail', event_id=event_id))
+            
+    except Exception as e:
+        flash(f'Error: {e}', 'error')
+        return redirect(url_for('player.events'))
+        
+    return render_template('player/tournament_payment.html', event=event, event_id=event_id)
 
 
 @player_bp.route('/events/<event_id>/unregister', methods=['POST'])
@@ -296,7 +454,7 @@ def event_detail(event_id):
     reg_count = 0
     try:
         ev_resp = db.table('events').select(
-            'id, title, type, description, event_date, start_time, end_time, max_players, entry_fee, '
+            'id, title, type, format, prize_pool, image_url, description, event_date, start_time, end_time, max_players, entry_fee, '
             'location_label, status, created_at, facilities(name, location), profiles!organizer_id(first_name, last_name)'
         ).eq('id', event_id).single().execute()
         ev = ev_resp.data
@@ -304,9 +462,12 @@ def event_detail(event_id):
         reg_count_resp = db.table('event_registrations').select('id', count='exact').eq('event_id', event_id).eq('status', 'registered').execute()
         reg_count = reg_count_resp.count or 0
 
+        player_status = None
         if player_id:
             my_resp = db.table('event_registrations').select('status').eq('event_id', event_id).eq('player_id', player_id).execute()
-            is_registered = bool(my_resp.data and my_resp.data[0]['status'] == 'registered')
+            if my_resp.data:
+                player_status = my_resp.data[0]['status']
+                is_registered = (player_status == 'registered')
 
     except Exception as e:
         flash(f'Error: {e}', 'error')
@@ -316,7 +477,7 @@ def event_detail(event_id):
         flash('Event not found.', 'error')
         return redirect(url_for('player.events'))
 
-    return render_template('player/event_detail.html', ev=ev, is_registered=is_registered, reg_count=reg_count)
+    return render_template('player/event_detail.html', ev=ev, is_registered=is_registered, reg_count=reg_count, player_status=player_status)
 
 
 @player_bp.route('/community')
@@ -334,7 +495,28 @@ def messages():
 @player_bp.route('/notifications')
 @require_role('player')
 def notifications():
-    return render_template('player/notifications.html')
+    player_id = session.get('user_id')
+    db = get_db()
+    notifs = []
+    
+    try:
+        resp = db.table('notifications').select('*').eq('user_id', player_id).order('created_at', desc=True).execute()
+        notifs = resp.data or []
+    except Exception:
+        pass
+        
+    return render_template('player/notifications.html', notifications=notifs)
+
+@player_bp.route('/notifications/mark_read', methods=['POST'])
+@require_role('player')
+def mark_notifications_read():
+    player_id = session.get('user_id')
+    db = get_db()
+    try:
+        db.table('notifications').update({'is_read': True}).eq('user_id', player_id).eq('is_read', False).execute()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @player_bp.route('/tutorials')

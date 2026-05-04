@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "player/base_player.html" %}
 
 {% block title %}Profile Management{% endblock %}
 
@@ -245,19 +245,30 @@
 
     <!-- Left: Profile Card -->
     <div class="glass-card">
-        <div class="profile-card">
+        <form method="POST" action="{{ url_for(request.blueprint ~ '.profile') }}" class="profile-card">
             <div class="profile-avatar">{{ current_user.initials }}</div>
-            <h2>{{ current_user.full_name }}</h2>
-            <p class="player-id">Player ID: PBH-544A69CB</p>
+            
+            <div style="width: 100%; margin-bottom: 15px; text-align: left;">
+                <label style="font-size: 0.8rem; color: var(--text-muted);">First Name</label>
+                <input type="text" name="first_name" value="{{ current_user.first_name }}" required 
+                       style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg); color: var(--text-primary); margin-bottom: 10px;">
+                
+                <label style="font-size: 0.8rem; color: var(--text-muted);">Last Name</label>
+                <input type="text" name="last_name" value="{{ current_user.last_name }}" required 
+                       style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg); color: var(--text-primary);">
+            </div>
+            
+            <p class="player-id" style="margin-top: 0;">Player ID: PBH-{{ current_user.id[:8] | upper if current_user.id else '544A69CB' }}</p>
 
             <div class="profile-contact">
                 <div class="contact-row">
                     <i class="ph ph-envelope"></i>
-                    <span>{{ current_user.email or '—' }}</span>
+                    <span>{{ current_user.email or '—' }} (Read-only)</span>
                 </div>
                 <div class="contact-row">
                     <i class="ph ph-phone"></i>
-                    <span>{{ current_user.phone or '—' }}</span>
+                    <input type="text" name="phone" value="{{ current_user.phone or '' }}" placeholder="Phone Number" 
+                           style="width: 100%; padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--input-bg); color: var(--text-primary);">
                 </div>
                 <div class="contact-row">
                     <i class="ph ph-shield-check"></i>
@@ -265,10 +276,10 @@
                 </div>
             </div>
 
-            <button class="btn-edit-profile">
-                <i class="ph ph-pencil-simple"></i> Edit Profile
+            <button type="submit" class="btn-edit-profile" style="background: var(--btn-navy); color: white; border: none;">
+                <i class="ph ph-floppy-disk"></i> Save Profile
             </button>
-        </div>
+        </form>
     </div>
 
     <!-- Right: Statistics & Activity -->
@@ -277,15 +288,15 @@
 
         <div class="stat-boxes">
             <div class="stat-box orange">
-                <span class="stat-value">8</span>
-                <span class="stat-label">Courts Available</span>
+                <span class="stat-value">{{ stats.courts if stats else 0 }}</span>
+                <span class="stat-label">Courts Booked</span>
             </div>
             <div class="stat-box navy">
-                <span class="stat-value">3</span>
+                <span class="stat-value">{{ stats.events if stats else 0 }}</span>
                 <span class="stat-label">Events Joined</span>
             </div>
             <div class="stat-box green">
-                <span class="stat-value">2</span>
+                <span class="stat-value">{{ stats.tournaments if stats else 0 }}</span>
                 <span class="stat-label">Tournaments</span>
             </div>
         </div>

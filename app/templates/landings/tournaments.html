@@ -44,168 +44,93 @@
             </div>
 
             <div class="tournaments-grid">
-                <!-- Tournament 1 -->
-                <div class="tournament-card">
-                    <div class="tournament-banner"
-                        style="background-image: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(22,25,33,1) 100%), url('https://plus.unsplash.com/premium_photo-1709048991290-1d36455a2895?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');">
-                        <div class="badge-status registration-open">
-                            <i class="ph-fill ph-check-circle"></i> Open
+                {% if events %}
+                    {% for event in events %}
+                    <div class="tournament-card">
+                        <div class="tournament-banner"
+                            style="background-image: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(22,25,33,1) 100%), url('{{ event.image_url if event.image_url else 'https://plus.unsplash.com/premium_photo-1709048991290-1d36455a2895?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' }}');">
+                            {% if event.status == 'registration_open' %}
+                            <div class="badge-status registration-open">
+                                <i class="ph-fill ph-check-circle"></i> Registration Open
+                            </div>
+                            {% else %}
+                            <div class="badge-status upcoming">
+                                <i class="ph-fill ph-clock"></i> {{ event.status | replace('_', ' ') | title }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="tournament-content">
+                            <div class="tournament-header">
+                                <h3 class="tournament-title">{{ event.title }}</h3>
+                                <span class="tournament-org">
+                                    Hosted by 
+                                    {% if event.facilities %}{{ event.facilities.name }}{% else %}{{ event.profiles.first_name }} {{ event.profiles.last_name }}{% endif %}
+                                </span>
+                            </div>
+                            <div class="tournament-details">
+                                <div class="detail-item">
+                                    <i class="ph ph-calendar"></i>
+                                    <div class="detail-text">
+                                        <h5>Date</h5>
+                                        <p>{{ event.event_date }}</p>
+                                    </div>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="ph ph-map-pin"></i>
+                                    <div class="detail-text">
+                                        <h5>Location</h5>
+                                        <p>{{ event.location_label or 'TBA' }}</p>
+                                    </div>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="ph ph-users"></i>
+                                    <div class="detail-text">
+                                        <h5>Format</h5>
+                                        <p>{{ event.format if event.format else (event.type | title) }}</p>
+                                    </div>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="ph ph-medal"></i>
+                                    <div class="detail-text">
+                                        <h5>Players</h5>
+                                        <p>Max {{ event.max_players }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tournament-footer">
+                                <div class="prize-pool">
+                                    {% if event.prize_pool and event.prize_pool > 0 %}
+                                    <span class="prize-label">Prize Pool</span>
+                                    <span class="prize-amount" style="color: #4ade80;">₱{{ "{:,.2f}".format(event.prize_pool) }}</span>
+                                    {% else %}
+                                    <span class="prize-label">Entry Fee</span>
+                                    {% if event.entry_fee and event.entry_fee > 0 %}
+                                    <span class="prize-amount">₱{{ "{:,.2f}".format(event.entry_fee) }}</span>
+                                    {% else %}
+                                    <span class="prize-amount" style="color:var(--text-secondary)">Free</span>
+                                    {% endif %}
+                                    {% endif %}
+                                </div>
+                                {% if event.status == 'registration_open' %}
+                                <a href="{{ url_for('auth.login') }}" class="btn-register">Register</a>
+                                {% else %}
+                                <a href="#" class="btn-register"
+                                    style="background: rgba(255,255,255,0.1); color: var(--text-secondary); cursor: not-allowed; pointer-events: none;">Coming
+                                    Soon</a>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
-                    <div class="tournament-content">
-                        <div class="tournament-header">
-                            <h3 class="tournament-title">Laguna Summer Slam 2026</h3>
-                            <span class="tournament-org">Hosted by Paete Pickleball Club</span>
+                    {% endfor %}
+                {% else %}
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 60px 40px; background: rgba(255,255,255,0.03); border-radius: 16px; border: 1px solid var(--border-color);">
+                        <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto;">
+                            <i class="ph ph-calendar-blank" style="font-size: 2rem; color: var(--text-secondary);"></i>
                         </div>
-                        <div class="tournament-details">
-                            <div class="detail-item">
-                                <i class="ph ph-calendar"></i>
-                                <div class="detail-text">
-                                    <h5>Date</h5>
-                                    <p>May 28 - May 30</p>
-                                </div>
-                            </div>
-                            <div class="detail-item">
-                                <i class="ph ph-map-pin"></i>
-                                <div class="detail-text">
-                                    <h5>Location</h5>
-                                    <p>Paete Central</p>
-                                </div>
-                            </div>
-                            <div class="detail-item">
-                                <i class="ph ph-users"></i>
-                                <div class="detail-text">
-                                    <h5>Format</h5>
-                                    <p>Men's / Women's Doubles</p>
-                                </div>
-                            </div>
-                            <div class="detail-item">
-                                <i class="ph ph-medal"></i>
-                                <div class="detail-text">
-                                    <h5>Skill Levels</h5>
-                                    <p>3.0 to 4.5+</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="tournament-footer">
-                            <div class="prize-pool">
-                                <span class="prize-label">Prize Pool</span>
-                                <span class="prize-amount">₱50,000</span>
-                            </div>
-                            <a href="{{ url_for('auth.login') }}" class="btn-register">Register</a>
-                        </div>
+                        <h3 style="color: var(--text-primary); margin-bottom: 12px; font-size: 1.25rem;">No Tournaments Currently Open</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6; max-width: 400px; margin: 0 auto;">Check back later for upcoming district tournaments and competitive events in Laguna.</p>
                     </div>
-                </div>
-
-                <!-- Tournament 2 -->
-                <div class="tournament-card">
-                    <div class="tournament-banner"
-                        style="background-image: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(22,25,33,1) 100%), url('https://plus.unsplash.com/premium_photo-1709048991290-1d36455a2895?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');">
-                        <div class="badge-status registration-open">
-                            <i class="ph-fill ph-check-circle"></i> Open
-                        </div>
-                    </div>
-                    <div class="tournament-content">
-                        <div class="tournament-header">
-                            <h3 class="tournament-title">Pakil District Open</h3>
-                            <span class="tournament-org">Hosted by Pakil Sports Org</span>
-                        </div>
-                        <div class="tournament-details">
-                            <div class="detail-item">
-                                <i class="ph ph-calendar"></i>
-                                <div class="detail-text">
-                                    <h5>Date</h5>
-                                    <p>June 15 - June 16</p>
-                                </div>
-                            </div>
-                            <div class="detail-item">
-                                <i class="ph ph-map-pin"></i>
-                                <div class="detail-text">
-                                    <h5>Location</h5>
-                                    <p>Pakil Indoor Arena</p>
-                                </div>
-                            </div>
-                            <div class="detail-item">
-                                <i class="ph ph-users"></i>
-                                <div class="detail-text">
-                                    <h5>Format</h5>
-                                    <p>Mixed Doubles</p>
-                                </div>
-                            </div>
-                            <div class="detail-item">
-                                <i class="ph ph-medal"></i>
-                                <div class="detail-text">
-                                    <h5>Skill Levels</h5>
-                                    <p>Open / Advanced</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="tournament-footer">
-                            <div class="prize-pool">
-                                <span class="prize-label">Prize Pool</span>
-                                <span class="prize-amount">₱35,000</span>
-                            </div>
-                            <a href="{{ url_for('auth.login') }}" class="btn-register">Register</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tournament 3 -->
-                <div class="tournament-card" style="opacity: 0.8;">
-                    <div class="tournament-banner"
-                        style="background-image: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(22,25,33,1) 100%), url('https://plus.unsplash.com/premium_photo-1709048991290-1d36455a2895?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');">
-                        <div class="badge-status upcoming">
-                            <i class="ph-fill ph-clock"></i> Upcoming
-                        </div>
-                    </div>
-                    <div class="tournament-content">
-                        <div class="tournament-header">
-                            <h3 class="tournament-title">Pangil Invitational Cup</h3>
-                            <span class="tournament-org">Hosted by Pangil LGU</span>
-                        </div>
-                        <div class="tournament-details">
-                            <div class="detail-item">
-                                <i class="ph ph-calendar"></i>
-                                <div class="detail-text">
-                                    <h5>Date</h5>
-                                    <p>August 5 - August 7</p>
-                                </div>
-                            </div>
-                            <div class="detail-item">
-                                <i class="ph ph-map-pin"></i>
-                                <div class="detail-text">
-                                    <h5>Location</h5>
-                                    <p>Eco Park Courts</p>
-                                </div>
-                            </div>
-                            <div class="detail-item">
-                                <i class="ph ph-users"></i>
-                                <div class="detail-text">
-                                    <h5>Format</h5>
-                                    <p>Singles</p>
-                                </div>
-                            </div>
-                            <div class="detail-item">
-                                <i class="ph ph-medal"></i>
-                                <div class="detail-text">
-                                    <h5>Skill Levels</h5>
-                                    <p>Beginner (2.0 - 3.0)</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="tournament-footer">
-                            <div class="prize-pool">
-                                <span class="prize-label">Prize Pool</span>
-                                <span class="prize-amount" style="color:var(--text-secondary)">TBA</span>
-                            </div>
-                            <a href="#" class="btn-register"
-                                style="background: rgba(255,255,255,0.1); color: var(--text-secondary); cursor: not-allowed; pointer-events: none;">Coming
-                                Soon</a>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
+                {% endif %}            </div>
         </section>
 
         <!-- Utilizing existing stats footer -->

@@ -1,4 +1,4 @@
-{% extends "owner/base_owner.html" %}
+{% extends "clubadmin/base_clubadmin.html" %}
 {% block title %}Create Event{% endblock %}
 
 {% block extra_head %}
@@ -61,7 +61,7 @@
         <h1 class="page-title">Create New Event</h1>
         <p style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">Fill in the details to publish a new event for players to join</p>
     </div>
-    <a href="{{ url_for('owner.events') }}" style="display:inline-flex;align-items:center;gap:6px;font-size:0.85rem;color:var(--text-muted);text-decoration:none;">
+    <a href="{{ url_for('clubadmin.events') }}" style="display:inline-flex;align-items:center;gap:6px;font-size:0.85rem;color:var(--text-muted);text-decoration:none;">
         <i class="ph ph-arrow-left"></i> Back to Events
     </a>
 </div>
@@ -91,7 +91,7 @@
     </div>
 
     <div class="glass-card" style="padding:28px;">
-        <form method="POST" action="{{ url_for('owner.create_event') }}" id="createEventForm" enctype="multipart/form-data">
+        <form method="POST" action="{{ url_for('clubadmin.create_event') }}" id="createEventForm" enctype="multipart/form-data">
 
             <!-- STEP 1: Event Info -->
             <div class="form-section active" id="step1">
@@ -284,7 +284,7 @@ async function loadCourts(facilityId) {
     }
     grid.innerHTML = '<div class="loading-courts"><i class="ph ph-spinner" style="animation:spin 1s linear infinite;display:inline-block;"></i> Loading courts...</div>';
     try {
-        const res = await fetch(`/owner/api/courts_by_facility/${facilityId}`);
+        const res = await fetch(`/clubadmin/api/courts_by_facility/${facilityId}`);
         const courts = await res.json();
         if (!courts.length) {
             grid.innerHTML = '<div class="loading-courts">No active courts in this facility. <a href="/owner/courts">Add courts</a>.</div>';

@@ -61,7 +61,16 @@
                     <div class="facility-name">{{ f.name }}</div>
                     {% if f.location %}<div class="facility-loc"><i class="ph ph-map-pin"></i> {{ f.location }}</div>{% endif %}
                 </div>
-                <span class="status-pill {% if f.status == 'active' %}success{% else %}warning{% endif %}">{{ f.status|capitalize }}</span>
+                <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-end;">
+                    <span class="status-pill {% if f.status == 'active' %}success{% else %}warning{% endif %}">{{ f.status|capitalize }}</span>
+                    {% if f.kyc_status == 'verified' %}
+                        <span class="status-pill success" style="background: rgba(16,185,129,0.1); color: #10b981; font-size: 0.7rem;"><i class="ph ph-shield-check"></i> KYC Verified</span>
+                    {% elif f.kyc_status == 'pending_approval' %}
+                        <span class="status-pill warning" style="background: rgba(245,158,11,0.1); color: #f59e0b; font-size: 0.7rem;"><i class="ph ph-hourglass-high"></i> Pending KYC</span>
+                    {% else %}
+                        <span class="status-pill danger" style="background: rgba(239,68,68,0.1); color: #ef4444; font-size: 0.7rem;"><i class="ph ph-shield-warning"></i> Unverified</span>
+                    {% endif %}
+                </div>
             </div>
             {% if f.description %}<p style="font-size:0.82rem;color:var(--text-muted);line-height:1.5;">{{ f.description }}</p>{% endif %}
             <div class="facility-meta-row">
@@ -81,6 +90,11 @@
                 <a href="{{ url_for('owner.courts') }}?facility={{ f.id }}" class="btn-sm btn-sm-primary" style="text-decoration:none;">
                     <i class="ph ph-intersect"></i> View Courts
                 </a>
+                {% if f.kyc_status == 'unverified' %}
+                <button class="btn-sm btn-sm-outline" onclick="openKycModal('{{ f.id }}')" title="Submit KYC">
+                    <i class="ph ph-shield-check"></i>
+                </button>
+                {% endif %}
                 <form method="POST" action="{{ url_for('owner.delete_facility', facility_id=f.id) }}" onsubmit="return confirm('Delete this facility? All courts will also be removed.');" style="margin:0;">
                     <button type="submit" class="btn-sm btn-sm-danger"><i class="ph ph-trash"></i></button>
                 </form>
@@ -149,6 +163,29 @@
     </div>
 </div>
 
+<!-- KYC MODAL -->
+<div class="modal-overlay" id="kycModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3><i class="ph ph-shield-check" style="color:var(--primary-orange);"></i> Submit KYC Verification</h3>
+            <button class="modal-close" onclick="closeModal('kycModal')"><i class="ph ph-x"></i></button>
+        </div>
+        <form method="POST" id="kycForm" action="" enctype="multipart/form-data">
+            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                Please upload a valid business registration or facility ownership document to verify your facility.
+            </p>
+            <div class="form-group">
+                <label>Document (PDF, JPG, PNG) *</label>
+                <input type="file" name="kyc_document" accept=".pdf,image/*" required style="background: var(--input-bg); border: 1px solid var(--border-color); padding: 0.5rem; border-radius: 8px; width: 100%; color: var(--text-primary);">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-sm btn-sm-outline" onclick="closeModal('kycModal')">Cancel</button>
+                <button type="submit" class="btn-sm btn-sm-primary"><i class="ph ph-upload-simple"></i> Upload</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
@@ -162,6 +199,10 @@ function openEditFacility(id, name, location, desc, status, open, close) {
     document.getElementById('editFacilityOpen').value = open || '08:00';
     document.getElementById('editFacilityClose').value = close || '21:00';
     openModal('editFacilityModal');
+}
+function openKycModal(id) {
+    document.getElementById('kycForm').action = `/owner/facilities/${id}/kyc`;
+    openModal('kycModal');
 }
 </script>
 {% endblock %}

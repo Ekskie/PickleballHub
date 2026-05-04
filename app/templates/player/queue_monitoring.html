@@ -142,12 +142,20 @@
 
 <!-- Your position card -->
 <div class="queue-position-card">
-    <div class="queue-circle">#3</div>
+    {% if my_queue %}
+    <div class="queue-circle">#{{ my_queue.position }}</div>
     <div class="queue-details">
         <h2>Your Queue Position</h2>
-        <p>Estimated wait: ~25 min</p>
-        <p>Assigned to: Court 2</p>
+        <p>Estimated wait: ~{{ my_queue.estimated_wait_mins }} min</p>
+        <p>Assigned to: {{ my_queue.courts.name if my_queue.courts else 'Unassigned' }}</p>
     </div>
+    {% else %}
+    <div class="queue-circle" style="font-size: 1.2rem; text-align: center;">--</div>
+    <div class="queue-details">
+        <h2>Not in Queue</h2>
+        <p>You are not currently in any court queue.</p>
+    </div>
+    {% endif %}
 </div>
 
 <!-- Current queue table -->
@@ -167,41 +175,32 @@
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td>1</td>
-                <td class="player-name">Juan Dela Cruz</td>
-                <td class="court-mono">Court 1</td>
-                <td><span class="pill-next">Next</span></td>
-                <td>~5 min</td>
-            </tr>
-            <tr>
-                <td>2</td>
-                <td class="player-name">Maria Santos</td>
-                <td class="court-mono">Court 1</td>
-                <td><span class="pill-waiting">Waiting</span></td>
-                <td>~15 min</td>
-            </tr>
-            <tr class="queue-row-you">
-                <td>3</td>
-                <td class="player-name">You <span class="you-label">(You)</span></td>
-                <td class="court-mono">Court 2</td>
-                <td><span class="pill-waiting">Waiting</span></td>
-                <td>~25 min</td>
-            </tr>
-            <tr>
-                <td>4</td>
-                <td class="player-name">Pedro Reyes</td>
-                <td class="court-mono">Court 2</td>
-                <td><span class="pill-waiting">Waiting</span></td>
-                <td>~35 min</td>
-            </tr>
-            <tr>
-                <td>5</td>
-                <td class="player-name">Ana Garcia</td>
-                <td class="court-mono">Court 3</td>
-                <td><span class="pill-waiting">Waiting</span></td>
-                <td>~45 min</td>
-            </tr>
+            {% if queues %}
+                {% for q in queues %}
+                <tr class="{% if my_queue and q.id == my_queue.id %}queue-row-you{% endif %}">
+                    <td>{{ q.position }}</td>
+                    <td class="player-name">
+                        {{ q.profiles.first_name if q.profiles else 'Player' }} {{ q.profiles.last_name if q.profiles else '' }}
+                        {% if my_queue and q.id == my_queue.id %}<span class="you-label">(You)</span>{% endif %}
+                    </td>
+                    <td class="court-mono">{{ q.courts.name if q.courts else 'Pending' }}</td>
+                    <td>
+                        {% if q.status == 'next' %}
+                        <span class="pill-next">Next</span>
+                        {% else %}
+                        <span class="pill-waiting">Waiting</span>
+                        {% endif %}
+                    </td>
+                    <td>~{{ q.estimated_wait_mins }} min</td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 30px;">
+                        No players currently in the queue.
+                    </td>
+                </tr>
+            {% endif %}
         </tbody>
     </table>
 </div>

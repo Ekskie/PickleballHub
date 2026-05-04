@@ -1,4 +1,4 @@
-{% extends "facilitystaff/base_facilitystaff.html" %}
+{% extends "owner/base_owner.html" %}
 
 {% block title %}Queue Management{% endblock %}
 
@@ -49,20 +49,20 @@
                             <td>
                                 <div style="display: flex; gap: 8px;">
                                     {% if q.status == 'waiting' %}
-                                        <form method="POST" action="{{ url_for('facilitystaff.update_queue') }}" style="margin:0;">
+                                        <form method="POST" action="{{ url_for('owner.update_queue') }}" style="margin:0;">
                                             <input type="hidden" name="queue_id" value="{{ q.id }}">
                                             <input type="hidden" name="status" value="next">
                                             <button type="submit" class="action-box green" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto; cursor:pointer; border:none; color:white;">Call Next</button>
                                         </form>
                                     {% endif %}
                                     {% if q.status == 'next' %}
-                                        <form method="POST" action="{{ url_for('facilitystaff.update_queue') }}" style="margin:0;">
+                                        <form method="POST" action="{{ url_for('owner.update_queue') }}" style="margin:0;">
                                             <input type="hidden" name="queue_id" value="{{ q.id }}">
                                             <input type="hidden" name="status" value="completed">
                                             <button type="submit" class="action-box navy" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto; cursor:pointer; border:none; color:white;">Playing</button>
                                         </form>
                                     {% endif %}
-                                    <form method="POST" action="{{ url_for('facilitystaff.update_queue') }}" onsubmit="return confirm('Remove player from queue?');" style="margin:0;">
+                                    <form method="POST" action="{{ url_for('owner.update_queue') }}" onsubmit="return confirm('Remove player from queue?');" style="margin:0;">
                                         <input type="hidden" name="queue_id" value="{{ q.id }}">
                                         <input type="hidden" name="status" value="cancelled">
                                         <button type="submit" class="action-box red" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto; background: #fee2e2; color: #ef4444; border:none; cursor:pointer;"><i class="ph ph-trash"></i></button>

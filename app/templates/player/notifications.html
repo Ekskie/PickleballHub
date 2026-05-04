@@ -1,4 +1,5 @@
-{% extends "base.html" %}
+{% extends "player/base_player.html" %}
+
 
 {% block title %}Notifications{% endblock %}
 
@@ -10,16 +11,19 @@
         align-items: center;
         margin-bottom: 24px;
     }
+
     .notif-title-wrap {
         display: flex;
         align-items: baseline;
         gap: 10px;
     }
+
     .unread-label {
         font-size: 0.875rem;
         color: var(--primary-orange);
         font-weight: 600;
     }
+
     .mark-all-btn {
         display: flex;
         align-items: center;
@@ -34,6 +38,7 @@
         font-family: inherit;
         transition: color 0.2s;
     }
+
     .mark-all-btn:hover {
         color: var(--primary-orange-hover);
     }
@@ -44,6 +49,7 @@
         flex-direction: column;
         gap: 12px;
     }
+
     .notif-item {
         display: flex;
         align-items: flex-start;
@@ -56,17 +62,21 @@
         transition: box-shadow 0.2s;
         position: relative;
     }
+
     .notif-item.unread {
         background: var(--primary-orange-light);
         border-color: rgba(225, 86, 35, 0.15);
     }
+
     html.dark-mode .notif-item.unread {
         background: rgba(225, 86, 35, 0.07);
         border-color: rgba(225, 86, 35, 0.2);
     }
+
     .notif-item:hover {
         box-shadow: var(--shadow-hover);
     }
+
     .notif-icon-wrap {
         width: 42px;
         height: 42px;
@@ -78,28 +88,51 @@
         justify-content: center;
         flex-shrink: 0;
     }
-    .notif-icon-wrap.orange { background: var(--primary-orange-light); border-color: rgba(225,86,35,0.15); }
-    .notif-icon-wrap.orange i { color: var(--primary-orange); }
-    .notif-icon-wrap.navy { background: rgba(26,33,59,0.08); border-color: rgba(26,33,59,0.1); }
-    .notif-icon-wrap.navy i { color: var(--btn-navy); }
-    html.dark-mode .notif-icon-wrap.navy i { color: #93c5fd; }
-    .notif-icon-wrap i { font-size: 1.2rem; }
+
+    .notif-icon-wrap.orange {
+        background: var(--primary-orange-light);
+        border-color: rgba(225, 86, 35, 0.15);
+    }
+
+    .notif-icon-wrap.orange i {
+        color: var(--primary-orange);
+    }
+
+    .notif-icon-wrap.navy {
+        background: rgba(26, 33, 59, 0.08);
+        border-color: rgba(26, 33, 59, 0.1);
+    }
+
+    .notif-icon-wrap.navy i {
+        color: var(--btn-navy);
+    }
+
+    html.dark-mode .notif-icon-wrap.navy i {
+        color: #93c5fd;
+    }
+
+    .notif-icon-wrap i {
+        font-size: 1.2rem;
+    }
 
     .notif-content {
         flex: 1;
         min-width: 0;
     }
+
     .notif-content h4 {
         font-size: 0.9rem;
         font-weight: 700;
         color: var(--text-primary);
         margin-bottom: 4px;
     }
+
     .notif-content p {
         font-size: 0.8rem;
         color: var(--text-secondary);
         margin: 0;
     }
+
     .notif-right {
         display: flex;
         flex-direction: column;
@@ -107,11 +140,13 @@
         gap: 8px;
         flex-shrink: 0;
     }
+
     .notif-time {
         font-size: 0.75rem;
         color: var(--text-muted);
         white-space: nowrap;
     }
+
     .notif-dismiss {
         background: none;
         border: none;
@@ -122,6 +157,7 @@
         transition: color 0.2s;
         line-height: 1;
     }
+
     .notif-dismiss:hover {
         color: var(--text-primary);
     }
@@ -132,68 +168,42 @@
 <div class="notif-page-header">
     <div class="notif-title-wrap">
         <h1 class="page-title">Notifications</h1>
-        <span class="unread-label">(2 unread)</span>
+        {% set unread_count = notifications | selectattr('is_read', 'equalto', false) | list | length %}
+        <span class="unread-label">({{ unread_count }} unread)</span>
     </div>
-    <button class="mark-all-btn"><i class="ph ph-check-circle"></i> Mark all as read</button>
+    <button class="mark-all-btn" onclick="markAllRead()"><i class="ph ph-check-circle"></i> Mark all as read</button>
 </div>
 
 <div class="notif-list">
 
-    <div class="notif-item unread">
-        <div class="notif-icon-wrap orange">
-            <i class="ph ph-check-circle"></i>
+    {% if notifications %}
+        {% for n in notifications %}
+        <div class="notif-item {% if not n.is_read %}unread{% endif %}" data-id="{{ n.id }}">
+            <div class="notif-icon-wrap {% if n.type == 'success' or n.type == 'warning' %}orange{% else %}navy{% endif %}">
+                {% if n.type == 'success' %}
+                    <i class="ph ph-check-circle"></i>
+                {% elif n.type == 'warning' %}
+                    <i class="ph ph-warning"></i>
+                {% else %}
+                    <i class="ph ph-bell"></i>
+                {% endif %}
+            </div>
+            <div class="notif-content">
+                <h4>{{ n.title }}</h4>
+                <p>{{ n.message }}</p>
+            </div>
+            <div class="notif-right">
+                <span class="notif-time">{{ n.created_at | community_timeago }}</span>
+                <button class="notif-dismiss" onclick="dismissNotif(this)"><i class="ph ph-x"></i></button>
+            </div>
         </div>
-        <div class="notif-content">
-            <h4>Reservation Confirmed!</h4>
-            <p>Court 2 – April 18, 5:00 PM</p>
+        {% endfor %}
+    {% else %}
+        <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+            <i class="ph ph-bell-slash" style="font-size: 3rem; margin-bottom: 10px;"></i>
+            <p>No notifications yet.</p>
         </div>
-        <div class="notif-right">
-            <span class="notif-time">10 min ago</span>
-            <button class="notif-dismiss" onclick="dismissNotif(this)"><i class="ph ph-x"></i></button>
-        </div>
-    </div>
-
-    <div class="notif-item unread">
-        <div class="notif-icon-wrap orange">
-            <i class="ph ph-trophy"></i>
-        </div>
-        <div class="notif-content">
-            <h4>Tournament Update</h4>
-            <p>New schedule posted for Weekend Doubles</p>
-        </div>
-        <div class="notif-right">
-            <span class="notif-time">1 hour ago</span>
-            <button class="notif-dismiss" onclick="dismissNotif(this)"><i class="ph ph-x"></i></button>
-        </div>
-    </div>
-
-    <div class="notif-item">
-        <div class="notif-icon-wrap navy">
-            <i class="ph ph-calendar-blank"></i>
-        </div>
-        <div class="notif-content">
-            <h4>Event Reminder</h4>
-            <p>Pickleball Night – April 22</p>
-        </div>
-        <div class="notif-right">
-            <span class="notif-time">3 hours ago</span>
-            <button class="notif-dismiss" onclick="dismissNotif(this)"><i class="ph ph-x"></i></button>
-        </div>
-    </div>
-
-    <div class="notif-item">
-        <div class="notif-icon-wrap navy">
-            <i class="ph ph-bell"></i>
-        </div>
-        <div class="notif-content">
-            <h4>Court Available</h4>
-            <p>Court 4 just opened up for tomorrow 3 PM</p>
-        </div>
-        <div class="notif-right">
-            <span class="notif-time">5 hours ago</span>
-            <button class="notif-dismiss" onclick="dismissNotif(this)"><i class="ph ph-x"></i></button>
-        </div>
-    </div>
+    {% endif %}
 
 </div>
 
@@ -206,9 +216,16 @@
         setTimeout(() => item.remove(), 300);
     }
 
-    document.querySelector('.mark-all-btn').addEventListener('click', function() {
-        document.querySelectorAll('.notif-item.unread').forEach(el => el.classList.remove('unread'));
-        document.querySelector('.unread-label').textContent = '(0 unread)';
-    });
+    function markAllRead() {
+        fetch("{{ url_for(request.blueprint ~ '.mark_notifications_read') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        }).then(res => res.json()).then(data => {
+            if(data.success) {
+                document.querySelectorAll('.notif-item.unread').forEach(el => el.classList.remove('unread'));
+                document.querySelector('.unread-label').textContent = '(0 unread)';
+            }
+        });
+    }
 </script>
 {% endblock %}

@@ -245,59 +245,76 @@
 
     <!-- Left: Profile Card -->
     <div class="glass-card">
-        <div class="profile-card">
+        <form method="POST" action="{{ url_for(request.blueprint ~ '.profile') }}" class="profile-card">
             <div class="profile-avatar">{{ current_user.initials }}</div>
-            <h2>{{ current_user.full_name }}</h2>
-            <p class="player-id">ID: {{ current_user.id }}</p>
+            
+            <div style="width: 100%; margin-bottom: 15px; text-align: left;">
+                <label style="font-size: 0.8rem; color: var(--text-muted);">First Name</label>
+                <input type="text" name="first_name" value="{{ current_user.first_name }}" required 
+                       style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg); color: var(--text-primary); margin-bottom: 10px;">
+                
+                <label style="font-size: 0.8rem; color: var(--text-muted);">Last Name</label>
+                <input type="text" name="last_name" value="{{ current_user.last_name }}" required 
+                       style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg); color: var(--text-primary);">
+            </div>
+            
+            <p class="player-id" style="margin-top: 0;">Player ID: PBH-{{ current_user.id[:8] | upper if current_user.id else '544A69CB' }}</p>
 
             <div class="profile-contact">
                 <div class="contact-row">
                     <i class="ph ph-envelope"></i>
-                    <span>{{ current_user.email or '—' }}</span>
+                    <span>{{ current_user.email or '—' }} (Read-only)</span>
                 </div>
                 <div class="contact-row">
                     <i class="ph ph-phone"></i>
-                    <span>{{ current_user.phone or '—' }}</span>
+                    <input type="text" name="phone" value="{{ current_user.phone or '' }}" placeholder="Phone Number" 
+                           style="width: 100%; padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--input-bg); color: var(--text-primary);">
                 </div>
                 <div class="contact-row">
                     <i class="ph ph-shield-check"></i>
-                    <span class="membership-badge">{{ current_user.role }}</span>
+                    <span class="membership-badge">Free</span>
                 </div>
             </div>
 
-            <button class="btn-edit-profile">
-                <i class="ph ph-pencil-simple"></i> Edit Profile
+            <button type="submit" class="btn-edit-profile" style="background: var(--btn-navy); color: white; border: none;">
+                <i class="ph ph-floppy-disk"></i> Save Profile
             </button>
-        </div>
+        </form>
     </div>
 
     <!-- Right: Statistics & Activity -->
     <div class="glass-card">
-        <p class="stats-section-title">Account Information</p>
+        <p class="stats-section-title">Player Statistics</p>
 
         <div class="stat-boxes">
             <div class="stat-box orange">
-                <span class="stat-value">{{ current_user.role|length }}</span>
-                <span class="stat-label">Role</span>
+                <span class="stat-value">{{ stats.courts if stats else 0 }}</span>
+                <span class="stat-label">Courts Booked</span>
             </div>
             <div class="stat-box navy">
-                <span class="stat-value"><i class="ph-bold ph-check"></i></span>
-                <span class="stat-label">Verified</span>
+                <span class="stat-value">{{ stats.events if stats else 0 }}</span>
+                <span class="stat-label">Events Joined</span>
             </div>
             <div class="stat-box green">
-                <span class="stat-value">Active</span>
-                <span class="stat-label">Status</span>
+                <span class="stat-value">{{ stats.tournaments if stats else 0 }}</span>
+                <span class="stat-label">Tournaments</span>
             </div>
         </div>
 
-        <p class="fairness-label">Account Settings</p>
-        <p class="fairness-note">Manage your account preferences and security settings.</p>
+        <p class="fairness-label">Fairness Rating</p>
+        <div class="fairness-bar-wrap">
+            <div class="fairness-track">
+                <div class="fairness-fill"></div>
+            </div>
+            <span class="fairness-score">0.85</span>
+        </div>
+        <p class="fairness-note">Your fairness score is based on peak-time booking frequency. Higher is better.</p>
 
-        <p class="recent-activity-title">Quick Actions</p>
+        <p class="recent-activity-title">Recent Activity</p>
         <ul class="activity-list">
-            <li><span class="dot"></span> Change Password</li>
-            <li><span class="dot"></span> Update Email Address</li>
-            <li><span class="dot"></span> Manage Notifications</li>
+            <li><span class="dot"></span> Booked Court 2 – Apr 28</li>
+            <li><span class="dot"></span> Joined Weekend Doubles</li>
+            <li><span class="dot"></span> Completed session – Court 1</li>
         </ul>
     </div>
 

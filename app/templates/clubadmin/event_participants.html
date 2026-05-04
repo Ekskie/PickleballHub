@@ -1,0 +1,71 @@
+{% extends "clubadmin/base_clubadmin.html" %}
+{% block title %}Event Participants{% endblock %}
+
+{% block content %}
+<div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h1 class="page-title">{{ event.title }}</h1>
+        <p style="color: var(--text-muted);"><i class="ph ph-calendar"></i> {{ event.event_date }}</p>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <a href="{{ url_for('clubadmin.edit_event', event_id=event.id) }}" class="btn-primary" style="text-decoration: none; padding: 8px 16px;">
+            <i class="ph ph-pencil-simple"></i> Edit Event
+        </a>
+        <form action="{{ url_for('clubadmin.delete_event', event_id=event.id) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Are you sure you want to delete this event? This action cannot be undone and will notify all participants.');">
+            <button type="submit" class="btn-secondary" style="border-color: #ef4444; color: #ef4444; padding: 8px 16px; background: transparent;">
+                <i class="ph ph-trash"></i> Delete
+            </button>
+        </form>
+        <a href="{{ url_for('clubadmin.events') }}" class="btn-secondary" style="text-decoration: none; padding: 8px 16px;">
+            <i class="ph ph-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
+<div class="glass-card" style="margin-top: 20px;">
+    <h3 class="widget-title">Registered Participants</h3>
+    <div class="table-container">
+        <table class="data-grid">
+            <thead>
+                <tr>
+                    <th>NAME</th>
+                    <th>EMAIL</th>
+                    <th>PHONE</th>
+                    <th>STATUS</th>
+                    <th>REGISTERED ON</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if participants %}
+                    {% for p in participants %}
+                    <tr>
+                        <td class="bold">
+                            {{ p.profiles.first_name if p.profiles else 'Unknown' }} 
+                            {{ p.profiles.last_name if p.profiles else '' }}
+                        </td>
+                        <td>{{ p.profiles.email if p.profiles else 'N/A' }}</td>
+                        <td>{{ p.profiles.phone if p.profiles else 'N/A' }}</td>
+                        <td>
+                            {% if p.status == 'registered' %}
+                                <span class="status-pill success">Registered</span>
+                            {% elif p.status == 'waitlisted' %}
+                                <span class="status-pill warning">Waitlisted</span>
+                            {% else %}
+                                <span class="status-pill" style="background:var(--input-bg);color:var(--text-muted);">{{ p.status|capitalize }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ p.registered_at[:10] }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 30px; color: var(--text-muted);">
+                            No participants have registered for this event yet.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -58,8 +58,22 @@ def _extract_yt_id(url):
 
 @main_bp.route('/tournaments')
 def tournaments():
-    """Render the public tournaments page."""
-    return render_template('landings/tournaments.html')
+    """Render the public tournaments page with real DB tournaments."""
+    events = []
+    try:
+        client = supabase_admin or supabase
+        if client:
+            resp = client.table('events').select(
+                'id, title, type, format, prize_pool, image_url, event_date, start_time, end_time, location_label, entry_fee, status, max_players, description, '
+                'facilities(name), profiles!organizer_id(first_name, last_name)'
+            ).eq('type', 'tournament').order('event_date', desc=False).execute()
+
+            if resp.data:
+                events = resp.data
+    except Exception as e:
+        print(f'[tournaments landing] DB error: {e}')
+
+    return render_template('landings/tournaments.html', events=events)
 
 @main_bp.route('/community')
 def community():

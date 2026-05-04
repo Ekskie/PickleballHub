@@ -32,63 +32,59 @@
                 <tr>
                     <th>FACILITY NAME</th>
                     <th>LOCATION</th>
-                    <th>OWNER / CONTACT</th>
-                    <th>JOIN DATE</th>
+                    <th>OWNER</th>
+                    <th>DOCUMENTS</th>
                     <th>STATUS</th>
                     <th>ACTIONS</th>
                 </tr>
             </thead>
             <tbody>
+                {% for f in facilities %}
                 <tr>
-                    <td class="bold">Metro Sports Hub</td>
-                    <td>New York, NY</td>
-                    <td>metro.admin@example.com</td>
-                    <td>Apr 20, 2025</td>
-                    <td><span class="status-pill success">Active</span></td>
+                    <td class="bold">{{ f.name }}</td>
+                    <td>{{ f.location }}</td>
+                    <td>{{ f.profiles.first_name }} {{ f.profiles.last_name }}</td>
                     <td>
-                        <a href="#" class="action-link" title="Edit"><i class="ph ph-pencil-simple"></i></a>
-                        <a href="#" class="action-link disabled-action" title="Suspend" style="color: #ef4444;"><i
-                                class="ph ph-prohibit"></i></a>
+                        {% if f.kyc_document_url %}
+                        <a href="{{ f.kyc_document_url }}" target="_blank" class="action-link" style="color:var(--primary-orange);"><i class="ph ph-file-text"></i> View Document</a>
+                        {% else %}
+                        <span style="color:var(--text-muted);">None</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                            <span class="status-pill {% if f.status == 'active' %}success{% else %}warning{% endif %}">{{ f.status|capitalize }}</span>
+                            {% if f.kyc_status == 'verified' %}
+                                <span class="status-pill success" style="background: rgba(16,185,129,0.1); color: #10b981; font-size: 0.7rem;"><i class="ph ph-shield-check"></i> Verified</span>
+                            {% elif f.kyc_status == 'pending_approval' %}
+                                <span class="status-pill warning" style="background: rgba(245,158,11,0.1); color: #f59e0b; font-size: 0.7rem;"><i class="ph ph-hourglass-high"></i> Pending</span>
+                            {% elif f.kyc_status == 'rejected' %}
+                                <span class="status-pill danger" style="background: rgba(239,68,68,0.1); color: #ef4444; font-size: 0.7rem;"><i class="ph ph-shield-warning"></i> Rejected</span>
+                            {% else %}
+                                <span class="status-pill" style="background: rgba(255,255,255,0.1); font-size: 0.7rem;"><i class="ph ph-shield-warning"></i> Unverified</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <form method="POST" action="{{ url_for('superadmin.update_kyc_status', facility_id=f.id) }}" style="display:inline-block; margin:0;">
+                            <input type="hidden" name="status" value="verified">
+                            <button type="submit" class="action-btn" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto; background: rgba(16, 185, 129, 0.1); color: #10b981;" onclick="return confirm('Approve this facility?');"><i class="ph ph-check"></i> Approve</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('superadmin.update_kyc_status', facility_id=f.id) }}" style="display:inline-block; margin:0;">
+                            <input type="hidden" name="status" value="rejected">
+                            <button type="submit" class="action-btn" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto; background: rgba(239, 68, 68, 0.2); color: #ef4444;" onclick="return confirm('Reject this facility?');"><i class="ph ph-x"></i> Reject</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('superadmin.update_kyc_status', facility_id=f.id) }}" style="display:inline-block; margin:0;">
+                            <input type="hidden" name="status" value="unverified">
+                            <button type="submit" class="action-btn" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto; background: rgba(255, 255, 255, 0.1); color: var(--text-primary);" onclick="return confirm('Reset status to Unverified?');"><i class="ph ph-arrow-counter-clockwise"></i> Reset</button>
+                        </form>
                     </td>
                 </tr>
+                {% else %}
                 <tr>
-                    <td class="bold">Pickle Pro Arena</td>
-                    <td>Austin, TX</td>
-                    <td>owner@picklepro.com</td>
-                    <td>Apr 18, 2025</td>
-                    <td><span class="status-pill warning"
-                            style="color:#f59e0b; background:rgba(245,158,11,0.1)">Pending</span></td>
-                    <td>
-                        <a href="#" class="action-link" title="Approve" style="color: #4ade80;"><i
-                                class="ph ph-check-circle"></i></a>
-                        <a href="#" class="action-link" title="Edit"><i class="ph ph-pencil-simple"></i></a>
-                    </td>
+                    <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">No facilities found.</td>
                 </tr>
-                <tr>
-                    <td class="bold">Westside Courts</td>
-                    <td>Los Angeles, CA</td>
-                    <td>westside@lgu.gov</td>
-                    <td>Apr 15, 2025</td>
-                    <td><span class="status-pill success">Active</span></td>
-                    <td>
-                        <a href="#" class="action-link" title="Edit"><i class="ph ph-pencil-simple"></i></a>
-                        <a href="#" class="action-link disabled-action" title="Suspend" style="color: #ef4444;"><i
-                                class="ph ph-prohibit"></i></a>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="bold">Downtown Club</td>
-                    <td>Chicago, IL</td>
-                    <td>admin@downtownclub.com</td>
-                    <td>Jan 10, 2025</td>
-                    <td><span class="status-pill disabled"
-                            style="color:#ef4444; background:rgba(239,68,68,0.1)">Suspended</span></td>
-                    <td>
-                        <a href="#" class="action-link" title="Restore" style="color: #4ade80;"><i
-                                class="ph ph-arrow-counter-clockwise"></i></a>
-                        <a href="#" class="action-link" title="Edit"><i class="ph ph-pencil-simple"></i></a>
-                    </td>
-                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>

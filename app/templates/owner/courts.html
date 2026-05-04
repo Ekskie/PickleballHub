@@ -3,35 +3,217 @@
 
 {% block extra_head %}
 <style>
-.courts-toolbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
-.courts-toolbar .left { display:flex; align-items:center; gap:12px; }
-.filter-select { padding:8px 14px; background:var(--input-bg); border:1px solid var(--border-color); border-radius:8px; color:var(--text-primary); font-size:0.85rem; font-family:inherit; cursor:pointer; }
-.filter-select:focus { outline:none; border-color:var(--primary-orange); }
-.court-type-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:4px; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; }
-.badge-indoor  { background:rgba(99,102,241,0.12); color:#818cf8; }
-.badge-outdoor { background:rgba(34,197,94,0.12);  color:#22c55e; }
-.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:1000; align-items:center; justify-content:center; }
-.modal-overlay.open { display:flex; }
-.modal-box { background:var(--sidebar-bg); border:1px solid var(--card-border); border-radius:16px; padding:28px; width:100%; max-width:460px; box-shadow:0 20px 60px rgba(0,0,0,0.4); animation:slideUp 0.25s ease; }
-@keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
-.modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-.modal-header h3 { font-size:1.1rem; font-weight:700; color:var(--text-primary); }
-.modal-close { background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1.3rem; padding:4px; border-radius:6px; }
-.modal-close:hover { color:var(--text-primary); }
-.form-group { margin-bottom:16px; }
-.form-group label { display:block; font-size:0.8rem; font-weight:600; color:var(--text-secondary); margin-bottom:6px; }
-.form-group input,.form-group select { width:100%; padding:10px 14px; background:var(--input-bg); border:1px solid var(--border-color); border-radius:8px; color:var(--text-primary); font-size:0.9rem; font-family:inherit; box-sizing:border-box; transition:border-color 0.2s; }
-.form-group input:focus,.form-group select:focus { outline:none; border-color:var(--primary-orange); }
-.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-.modal-footer { display:flex; justify-content:flex-end; gap:10px; margin-top:22px; }
-.btn-sm { padding:7px 14px; border-radius:8px; font-size:0.8rem; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; display:flex; align-items:center; gap:5px; }
-.btn-sm-outline { background:transparent; border:1px solid var(--border-color); color:var(--text-secondary); }
-.btn-sm-outline:hover { border-color:var(--text-muted); color:var(--text-primary); }
-.btn-sm-primary { background:var(--primary-orange); color:white; }
-.btn-sm-primary:hover { background:var(--primary-orange-hover); }
-.btn-sm-danger { background:rgba(239,68,68,0.1); color:#ef4444; border:1px solid rgba(239,68,68,0.2); }
-.btn-sm-danger:hover { background:rgba(239,68,68,0.2); }
-.empty-row td { text-align:center; padding:48px 20px; color:var(--text-muted); font-size:0.9rem; }
+    .courts-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .courts-toolbar .left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .filter-select {
+        padding: 8px 14px;
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        color: var(--text-primary);
+        font-size: 0.85rem;
+        font-family: inherit;
+        cursor: pointer;
+    }
+
+    .filter-select:focus {
+        outline: none;
+        border-color: var(--primary-orange);
+    }
+
+    .court-type-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 9px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .badge-indoor {
+        background: rgba(99, 102, 241, 0.12);
+        color: #818cf8;
+    }
+
+    .badge-outdoor {
+        background: rgba(34, 197, 94, 0.12);
+        color: #22c55e;
+    }
+
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-overlay.open {
+        display: flex;
+    }
+
+    .modal-box {
+        background: var(--sidebar-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 16px;
+        padding: 28px;
+        width: 100%;
+        max-width: 460px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        animation: slideUp 0.25s ease;
+    }
+
+    @keyframes slideUp {
+        from {
+            transform: translateY(20px);
+            opacity: 0
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1
+        }
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .modal-header h3 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 1.3rem;
+        padding: 4px;
+        border-radius: 6px;
+    }
+
+    .modal-close:hover {
+        color: var(--text-primary);
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 6px;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 10px 14px;
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        font-family: inherit;
+        box-sizing: border-box;
+        transition: border-color 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: var(--primary-orange);
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 22px;
+    }
+
+    .btn-sm {
+        padding: 7px 14px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .btn-sm-outline {
+        background: transparent;
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+    }
+
+    .btn-sm-outline:hover {
+        border-color: var(--text-muted);
+        color: var(--text-primary);
+    }
+
+    .btn-sm-primary {
+        background: var(--primary-orange);
+        color: white;
+    }
+
+    .btn-sm-primary:hover {
+        background: var(--primary-orange-hover);
+    }
+
+    .btn-sm-danger {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .btn-sm-danger:hover {
+        background: rgba(239, 68, 68, 0.2);
+    }
+
+    .empty-row td {
+        text-align: center;
+        padding: 48px 20px;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
 </style>
 {% endblock %}
 
@@ -39,7 +221,8 @@
 <div class="dashboard-header">
     <div>
         <h1 class="page-title">Courts & Pricing</h1>
-        <p style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">{{ courts|length }} court{{ 's' if courts|length != 1 else '' }} total</p>
+        <p style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">{{ courts|length }} court{{ 's' if
+            courts|length != 1 else '' }} total</p>
     </div>
     {% if facilities %}
     <button class="action-box navy" style="width:auto;padding:0.5rem 1.1rem;" onclick="openModal('addCourtModal')">
@@ -52,8 +235,10 @@
 <div class="glass-card" style="text-align:center;padding:50px 20px;">
     <i class="ph ph-buildings" style="font-size:3rem;color:var(--text-muted);"></i>
     <h3 style="margin:12px 0 8px;color:var(--text-primary);">No Facilities Yet</h3>
-    <p style="color:var(--text-muted);font-size:0.87rem;max-width:320px;margin:0 auto 18px;">You need to add a facility before you can create courts.</p>
-    <a href="{{ url_for('owner.facilities') }}" class="btn-sm btn-sm-primary" style="display:inline-flex;text-decoration:none;">
+    <p style="color:var(--text-muted);font-size:0.87rem;max-width:320px;margin:0 auto 18px;">You need to add a facility
+        before you can create courts.</p>
+    <a href="{{ url_for('owner.facilities') }}" class="btn-sm btn-sm-primary"
+        style="display:inline-flex;text-decoration:none;">
         <i class="ph ph-plus-circle"></i> Add Facility First
     </a>
 </div>
@@ -64,7 +249,8 @@
         <select class="filter-select" id="facilityFilter" onchange="filterByFacility(this.value)">
             <option value="">All Facilities</option>
             {% for f in facilities %}
-            <option value="{{ f.id }}" {% if request.args.get('facility') == f.id %}selected{% endif %}>{{ f.name }}</option>
+            <option value="{{ f.id }}" {% if request.args.get('facility')==f.id %}selected{% endif %}>{{ f.name }}
+            </option>
             {% endfor %}
         </select>
     </div>
@@ -85,19 +271,20 @@
             </thead>
             <tbody>
                 {% if courts %}
-                    {% for c in courts %}
-                    <tr class="court-row" data-facility="{{ c.facility_id }}">
-                        <td class="bold">{{ c.name }}</td>
-                        <td>{{ c.facilities.name if c.facilities else '—' }}</td>
-                        <td><span class="court-type-badge badge-{{ c.type }}">{{ c.type|capitalize }}</span></td>
-                        <td>${{ '%.2f'|format(c.hourly_rate|float) }} / hr</td>
-                        <td>
-                            <span class="status-pill {% if c.status == 'active' %}success{% elif c.status == 'maintenance' %}warning{% else %}danger{% endif %}">
-                                {{ c.status|capitalize }}
-                            </span>
-                        </td>
-                        <td style="display:flex;gap:8px;align-items:center;">
-                            <button class="btn-sm btn-sm-outline" onclick="openEditCourt(
+                {% for c in courts %}
+                <tr class="court-row" data-facility="{{ c.facility_id }}">
+                    <td class="bold">{{ c.name }}</td>
+                    <td>{{ c.facilities.name if c.facilities else '—' }}</td>
+                    <td><span class="court-type-badge badge-{{ c.type }}">{{ c.type|capitalize }}</span></td>
+                    <td>₱{{ '%.2f'|format(c.hourly_rate|float) }} / hr</td>
+                    <td>
+                        <span
+                            class="status-pill {% if c.status == 'active' %}success{% elif c.status == 'maintenance' %}warning{% else %}danger{% endif %}">
+                            {{ c.status|capitalize }}
+                        </span>
+                    </td>
+                    <td style="display:flex;gap:8px;align-items:center;">
+                        <button class="btn-sm btn-sm-outline" onclick="openEditCourt(
                                 '{{ c.id }}',
                                 '{{ c.facility_id }}',
                                 '{{ c.name|e }}',
@@ -105,14 +292,19 @@
                                 '{{ c.hourly_rate }}',
                                 '{{ c.status }}'
                             )"><i class="ph ph-pencil-simple"></i> Edit</button>
-                            <form method="POST" action="{{ url_for('owner.delete_court', court_id=c.id) }}" onsubmit="return confirm('Delete court {{ c.name }}?');" style="margin:0;">
-                                <button type="submit" class="btn-sm btn-sm-danger"><i class="ph ph-trash"></i></button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
+                        <form method="POST" action="{{ url_for('owner.delete_court', court_id=c.id) }}"
+                            onsubmit="return confirm('Delete court {{ c.name }}?');" style="margin:0;">
+                            <button type="submit" class="btn-sm btn-sm-danger"><i class="ph ph-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
                 {% else %}
-                    <tr class="empty-row"><td colspan="6"><i class="ph ph-intersect" style="font-size:2rem;display:block;margin-bottom:8px;"></i>No courts yet. Add your first court above.</td></tr>
+                <tr class="empty-row">
+                    <td colspan="6"><i class="ph ph-intersect"
+                            style="font-size:2rem;display:block;margin-bottom:8px;"></i>No courts yet. Add your first
+                        court above.</td>
+                </tr>
                 {% endif %}
             </tbody>
         </table>
@@ -135,20 +327,30 @@
                     {% for f in facilities %}<option value="{{ f.id }}">{{ f.name }}</option>{% endfor %}
                 </select>
             </div>
-            <div class="form-group"><label>Court Name *</label><input type="text" name="name" placeholder="e.g. Court 1 (Championship)" required></div>
+            <div class="form-group"><label>Court Name *</label><input type="text" name="name"
+                    placeholder="e.g. Court 1 (Championship)" required></div>
             <div class="form-row">
                 <div class="form-group">
                     <label>Type</label>
-                    <select name="type"><option value="indoor">Indoor</option><option value="outdoor">Outdoor</option></select>
+                    <select name="type">
+                        <option value="indoor">Indoor</option>
+                        <option value="outdoor">Outdoor</option>
+                    </select>
                 </div>
-                <div class="form-group"><label>Hourly Rate ($)</label><input type="number" name="hourly_rate" step="0.01" min="0" placeholder="0.00" value="0"></div>
+                <div class="form-group"><label>Hourly Rate (₱)</label><input type="number" name="hourly_rate"
+                        step="0.01" min="0" placeholder="0.00" value="0"></div>
             </div>
             <div class="form-group">
                 <label>Status</label>
-                <select name="status"><option value="active">Active</option><option value="maintenance">Maintenance</option><option value="closed">Closed</option></select>
+                <select name="status">
+                    <option value="active">Active</option>
+                    <option value="maintenance">Maintenance</option>
+                    <option value="closed">Closed</option>
+                </select>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn-sm btn-sm-outline" onclick="closeModal('addCourtModal')">Cancel</button>
+                <button type="button" class="btn-sm btn-sm-outline"
+                    onclick="closeModal('addCourtModal')">Cancel</button>
                 <button type="submit" class="btn-sm btn-sm-primary"><i class="ph ph-check"></i> Save Court</button>
             </div>
         </form>
@@ -169,13 +371,18 @@
                     {% for f in facilities %}<option value="{{ f.id }}">{{ f.name }}</option>{% endfor %}
                 </select>
             </div>
-            <div class="form-group"><label>Court Name *</label><input type="text" name="name" id="editCourtName" required></div>
+            <div class="form-group"><label>Court Name *</label><input type="text" name="name" id="editCourtName"
+                    required></div>
             <div class="form-row">
                 <div class="form-group">
                     <label>Type</label>
-                    <select name="type" id="editCourtType"><option value="indoor">Indoor</option><option value="outdoor">Outdoor</option></select>
+                    <select name="type" id="editCourtType">
+                        <option value="indoor">Indoor</option>
+                        <option value="outdoor">Outdoor</option>
+                    </select>
                 </div>
-                <div class="form-group"><label>Hourly Rate ($)</label><input type="number" name="hourly_rate" id="editCourtRate" step="0.01" min="0"></div>
+                <div class="form-group"><label>Hourly Rate (₱)</label><input type="number" name="hourly_rate"
+                        id="editCourtRate" step="0.01" min="0"></div>
             </div>
             <div class="form-group">
                 <label>Status</label>
@@ -186,7 +393,8 @@
                 </select>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn-sm btn-sm-outline" onclick="closeModal('editCourtModal')">Cancel</button>
+                <button type="button" class="btn-sm btn-sm-outline"
+                    onclick="closeModal('editCourtModal')">Cancel</button>
                 <button type="submit" class="btn-sm btn-sm-primary"><i class="ph ph-check"></i> Update Court</button>
             </div>
         </form>
@@ -194,30 +402,30 @@
 </div>
 
 <script>
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); }));
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+    document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); }));
 
-function openEditCourt(id, facilityId, name, type, rate, status) {
-    document.getElementById('editCourtForm').action = `/owner/courts/${id}/edit`;
-    document.getElementById('editCourtFacility').value = facilityId;
-    document.getElementById('editCourtName').value = name;
-    document.getElementById('editCourtType').value = type;
-    document.getElementById('editCourtRate').value = rate;
-    document.getElementById('editCourtStatus').value = status;
-    openModal('editCourtModal');
-}
+    function openEditCourt(id, facilityId, name, type, rate, status) {
+        document.getElementById('editCourtForm').action = `/owner/courts/${id}/edit`;
+        document.getElementById('editCourtFacility').value = facilityId;
+        document.getElementById('editCourtName').value = name;
+        document.getElementById('editCourtType').value = type;
+        document.getElementById('editCourtRate').value = rate;
+        document.getElementById('editCourtStatus').value = status;
+        openModal('editCourtModal');
+    }
 
-function filterByFacility(facilityId) {
-    document.querySelectorAll('.court-row').forEach(row => {
-        row.style.display = (!facilityId || row.dataset.facility === facilityId) ? '' : 'none';
-    });
-}
-// Apply filter from URL param on load
-const urlFacility = new URLSearchParams(window.location.search).get('facility');
-if (urlFacility) {
-    document.getElementById('facilityFilter').value = urlFacility;
-    filterByFacility(urlFacility);
-}
+    function filterByFacility(facilityId) {
+        document.querySelectorAll('.court-row').forEach(row => {
+            row.style.display = (!facilityId || row.dataset.facility === facilityId) ? '' : 'none';
+        });
+    }
+    // Apply filter from URL param on load
+    const urlFacility = new URLSearchParams(window.location.search).get('facility');
+    if (urlFacility) {
+        document.getElementById('facilityFilter').value = urlFacility;
+        filterByFacility(urlFacility);
+    }
 </script>
 {% endblock %}

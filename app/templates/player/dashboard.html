@@ -14,21 +14,32 @@
 
         <!-- Hero Widget: Next Reservation -->
         <div class="glass-card full-width">
+            {% if next_reservation %}
             <div class="reservation-grid">
                 <div class="court-image">
                     <img src="{{ url_for('static', filename='images/court-hero.jpg') }}" alt="Pickleball Court">
                 </div>
                 <div class="reservation-info">
                     <p class="small-caps">UPCOMING RESERVATION</p>
-                    <h2>Court 2</h2>
+                    <h2>{{ next_reservation.courts.name if next_reservation.courts else 'Court' }}</h2>
                     <div class="info-row">
-                        <span><i class="ph ph-map-pin"></i> Main Facility</span>
-                        <span><i class="ph ph-calendar"></i> April 28, 2025</span>
+                        <span><i class="ph ph-map-pin"></i> {{ next_reservation.facilities.name if next_reservation.facilities else 'Facility' }}</span>
+                        <span><i class="ph ph-calendar"></i> {{ next_reservation.date }}</span>
                     </div>
-                    <div class="info-time">5:00 PM - 6:00 PM</div>
+                    <div class="info-time">{{ next_reservation.start_time }} - {{ next_reservation.end_time }}</div>
                     <span class="status-badge success"><i class="ph ph-check-circle"></i> Confirmed</span>
                 </div>
             </div>
+            {% else %}
+            <div class="reservation-grid" style="display: flex; align-items: center; justify-content: center; min-height: 150px;">
+                <div class="reservation-info text-center" style="text-align: center;">
+                    <p class="small-caps">NO UPCOMING RESERVATIONS</p>
+                    <h2>Ready to Play?</h2>
+                    <br>
+                    <a href="{{ url_for('player.reservation') }}" class="btn-pay" style="display: inline-block; padding: 10px 20px; background: var(--btn-navy); color: white; border-radius: 8px; text-decoration: none;">Book a Court</a>
+                </div>
+            </div>
+            {% endif %}
         </div>
 
         <!-- Available Courts Data Grid -->
@@ -48,30 +59,18 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td class="bold">Court 1</td>
-                            <td>3:00 - 4:00 PM</td>
-                            <td><span class="status-pill success">Available</span></td>
-                            <td><a href="#" class="action-link">Book</a></td>
-                        </tr>
-                        <tr>
-                            <td class="bold">Court 2</td>
-                            <td>4:00 - 5:00 PM</td>
-                            <td><span class="status-pill disabled">Booked</span></td>
-                            <td><a href="#" class="action-link disabled-action">View</a></td>
-                        </tr>
-                        <tr>
-                            <td class="bold">Court 3</td>
-                            <td>5:00 - 6:00 PM</td>
-                            <td><span class="status-pill success">Available</span></td>
-                            <td><a href="#" class="action-link">Book</a></td>
-                        </tr>
-                        <tr>
-                            <td class="bold">Court 4</td>
-                            <td>3:30 - 5:00 PM</td>
-                            <td><span class="status-pill success">Available</span></td>
-                            <td><a href="#" class="action-link">Book</a></td>
-                        </tr>
+                        {% if available_courts %}
+                            {% for c in available_courts %}
+                            <tr>
+                                <td class="bold">{{ c.name }}</td>
+                                <td>{{ c.type | capitalize }}</td>
+                                <td><span class="status-pill success">Available</span></td>
+                                <td><a href="{{ url_for('player.reservation') }}" class="action-link">Book</a></td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="4" class="text-center" style="text-align: center; padding: 20px;">No available courts currently.</td></tr>
+                        {% endif %}
                     </tbody>
                 </table>
             </div>
@@ -84,18 +83,16 @@
                 <a href="#" class="view-all">View All</a>
             </div>
             <div class="events-grid">
-                <div class="event-card">
-                    <h4>Weekend Doubles</h4>
-                    <p>May 3, 2025</p>
-                </div>
-                <div class="event-card">
-                    <h4>City Tournament</h4>
-                    <p>May 10, 2025</p>
-                </div>
-                <div class="event-card">
-                    <h4>Community Playday</h4>
-                    <p>May 20, 2025</p>
-                </div>
+                {% if upcoming_events %}
+                    {% for e in upcoming_events %}
+                    <div class="event-card">
+                        <h4>{{ e.title }}</h4>
+                        <p>{{ e.event_date }}</p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="padding: 10px;">No upcoming events.</p>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -129,34 +126,19 @@
         <div class="glass-card flex-fill">
             <h3 class="widget-title">Activity Feed</h3>
             <ul class="activity-feed">
-                <li>
-                    <span class="dot"></span>
-                    <div class="activity-info">
-                        <p><strong>Maria Santos</strong> joined a tournament</p>
-                        <small>10 mins ago</small>
-                    </div>
-                </li>
-                <li>
-                    <span class="dot"></span>
-                    <div class="activity-info">
-                        <p>You booked Court 2</p>
-                        <small>1 hour ago</small>
-                    </div>
-                </li>
-                <li>
-                    <span class="dot"></span>
-                    <div class="activity-info">
-                        <p>Summer Open! registrations live</p>
-                        <small>3 hours ago</small>
-                    </div>
-                </li>
-                <li>
-                    <span class="dot"></span>
-                    <div class="activity-info">
-                        <p>New community event posted</p>
-                        <small>5 hours ago</small>
-                    </div>
-                </li>
+                {% if recent_activities %}
+                    {% for a in recent_activities %}
+                    <li>
+                        <span class="dot"></span>
+                        <div class="activity-info">
+                            <p><strong>System</strong> {{ a.title }}</p>
+                            <small>{{ a.created_at | community_timeago }}</small>
+                        </div>
+                    </li>
+                    {% endfor %}
+                {% else %}
+                    <li><p style="color: var(--text-muted); font-size: 0.85rem;">No recent activity.</p></li>
+                {% endif %}
             </ul>
         </div>
     </div>
