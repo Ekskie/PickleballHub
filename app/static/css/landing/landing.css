@@ -54,6 +54,60 @@
     font-family: inherit;
 }
 
+.search-input-wrapper {
+    flex: 1;
+    position: relative;
+}
+
+.search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-top: none;
+    border-radius: 0 0 16px 16px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 100;
+    display: none;
+    margin-top: -8px;
+    padding-top: 8px;
+}
+
+.search-suggestions.active {
+    display: block;
+}
+
+.suggestion-item {
+    padding: 12px 24px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.2s, color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover {
+    background: rgba(255, 87, 34, 0.1);
+    color: var(--primary-orange);
+}
+
+.suggestion-icon {
+    font-size: 1.2rem;
+}
+
+.suggestion-text {
+    flex: 1;
+}
+
 .search-btn {
     background: var(--primary-orange);
     color: white;

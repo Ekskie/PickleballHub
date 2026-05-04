@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request, jsonify, session
 from app import supabase_admin, supabase
 import random
 
@@ -131,3 +131,96 @@ def community():
         print(f'[community landing] DB error: {e}')
 
     return render_template('landings/community.html', posts=posts)
+
+
+@main_bp.route('/courts')
+def courts_listing():
+    """Display available courts for browsing and booking."""
+    search_query = request.args.get('search', '')
+    courts = []
+    try:
+        client = supabase_admin or supabase
+        if client:
+            # Fetch all active courts with facility info
+            resp = client.table('courts').select(
+                'id, name, type, hourly_rate, status, '
+                'facility_id, facilities(id, name, location)'
+            ).eq('status', 'active').execute()
+
+            if resp.data:
+                courts_data = resp.data
+                
+                # Filter by search query if provided
+                if search_query.strip():
+                    search_lower = search_query.lower()
+                    courts_data = [
+                        c for c in courts_data
+                        if (search_lower in c.get('name', '').lower() or 
+                            search_lower in c.get('facilities', {}).get('name', '').lower() or
+                            search_lower in c.get('facilities', {}).get('location', '').lower())
+                    ]
+                
+                # Format courts for display
+                for court in courts_data:
+                    facility = court.get('facilities') or {}
+                    courts.append({
+                        'id': court['id'],
+                        'name': court.get('name', 'Unknown Court'),
+                        'type': court.get('type', 'indoor').capitalize(),
+                        'hourly_rate': float(court.get('hourly_rate', 0)),
+                        'facility_name': facility.get('name', 'Unknown Facility'),
+                        'facility_location': facility.get('location', 'Laguna'),
+                        'facility_id': facility.get('id'),
+                    })
+    except Exception as e:
+        print(f'[courts_listing] DB error: {e}')
+
+    return render_template(
+        'landings/courts.html',
+        courts=courts,
+        search_query=search_query,
+        courts_count=len(courts)
+    )
+
+
+@main_bp.route('/api/courts/search')
+def api_courts_search():
+    """API endpoint for court search suggestions (autocomplete)."""
+    query = request.args.get('q', '').strip()
+    
+    if len(query) < 2:
+        return jsonify([])
+    
+    suggestions = []
+    try:
+        client = supabase_admin or supabase
+        if client:
+            query_lower = query.lower()
+            
+            # Fetch active courts with facility info
+            resp = client.table('courts').select(
+                'id, name, type, hourly_rate, '
+                'facility_id, facilities(id, name, location)'
+            ).eq('status', 'active').limit(10).execute()
+
+            if resp.data:
+                for court in resp.data:
+                    facility = court.get('facilities') or {}
+                    court_name = court.get('name', '')
+                    facility_name = facility.get('name', '')
+                    location = facility.get('location', '')
+                    
+                    # Check if query matches court name, facility name, or location
+                    if (query_lower in court_name.lower() or
+                        query_lower in facility_name.lower() or
+                        query_lower in location.lower()):
+                        
+                        suggestions.append({
+                            'id': court['id'],
+                            'label': f"{court_name} at {facility_name}",
+                            'full_name': f"{court_name} ({facility_name}, {location})"
+                        })
+    except Exception as e:
+        print(f'[api_courts_search] DB error: {e}')
+    
+    return jsonify(suggestions[:5])  # Limit to 5 suggestions

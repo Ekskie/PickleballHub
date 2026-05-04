@@ -6,7 +6,7 @@
         </div>
     </a>
     <div class="nav-links">
-        <a href="{{ url_for('main.index') }}" {% if request.endpoint=='main.index' %}class="active"
+        <a href="{{ url_for('main.index') }}" {% if request.endpoint=='main.index' or request.endpoint=='main.courts_listing' %}class="active"
             style="color: var(--primary-orange); font-weight: 600;" {% endif %}>Find Courts</a>
         <a href="{{ url_for('main.tournaments') }}" {% if request.endpoint=='main.tournaments' %}class="active"
             style="color: var(--primary-orange); font-weight: 600;" {% endif %}>Tournaments</a>

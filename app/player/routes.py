@@ -249,12 +249,27 @@ def confirm_payment(reservation_id):
         return redirect(url_for('player.payment', reservation_id=reservation_id))
     db = get_db()
     try:
+        # Get reservation details for queue insertion
+        res_resp = db.table('court_reservations').select('facility_id, court_id').eq('id', reservation_id).single().execute()
+        res_data = res_resp.data
+
         db.table('court_reservations').update({
             'status': 'confirmed',
             'gcash_ref': gcash_ref,
         }).eq('id', reservation_id).eq('player_id', player_id).eq(
             'status', 'pending_payment').execute()
-        flash('Payment confirmed! Your court is booked.', 'success')
+
+        if res_data:
+            # Insert into court_queues
+            db.table('court_queues').insert({
+                'player_id': player_id,
+                'facility_id': res_data['facility_id'],
+                'court_id': res_data['court_id'],
+                'status': 'waiting',
+                'estimated_wait_mins': 15
+            }).execute()
+
+        flash('Payment confirmed! Your court is booked and you are added to the queue.', 'success')
     except Exception as e:
         flash(f'Payment error: {e}', 'error')
     return redirect(url_for('player.my_reservations'))
