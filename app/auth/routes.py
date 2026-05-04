@@ -134,7 +134,7 @@ def signup():
                     "email": email,
                     "password": password,
                     "options": {
-                        "redirect_to": url_for('auth.login', _external=True),
+                        "email_redirect_to": url_for('auth.login', _external=True),
                         "data": {
                             "first_name":  first_name,
                             "last_name":   last_name,
@@ -188,7 +188,10 @@ def resend_verification():
         if supabase:
             supabase.auth.resend({
                 "type": "signup",
-                "email": email
+                "email": email,
+                "options": {
+                    "email_redirect_to": url_for('auth.login', _external=True)
+                }
             })
             session['pending_email'] = email
             flash(f'Verification email resent to {email}. Please check your inbox.', 'success')
@@ -216,7 +219,7 @@ def forgot_password():
                 supabase.auth.reset_password_for_email(
                     email,
                     options={
-                        "redirect_to": url_for('auth.reset_password', _external=True)
+                        "email_redirect_to": url_for('auth.reset_password', _external=True)
                     }
                 )
             # Always show the "sent" state — don't leak whether email exists
