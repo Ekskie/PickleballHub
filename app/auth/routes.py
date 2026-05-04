@@ -134,7 +134,7 @@ def signup():
                     "email": email,
                     "password": password,
                     "options": {
-                        "emailRedirectTo": url_for('auth.login', _external=True),
+                        "redirect_to": url_for('auth.login', _external=True),
                         "data": {
                             "first_name":  first_name,
                             "last_name":   last_name,
