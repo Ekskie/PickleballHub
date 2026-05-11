@@ -81,7 +81,7 @@
                     <i class="ph ph-device-mobile-camera"></i> Pay via GCash
                 </a>
                 {% endif %}
-                {% if status in ['pending_payment','confirmed'] %}
+                {% if status in ['pending_payment','confirmed'] and r.can_cancel %}
                 <form method="POST" action="{{ url_for('player.cancel_reservation', reservation_id=r.id) }}"
                       onsubmit="return confirm('Cancel this reservation?');" style="margin:0;">
                     <button type="submit" class="btn-cancel"><i class="ph ph-x-circle"></i> Cancel</button>

@@ -71,7 +71,14 @@
 .btn-back { display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid var(--border-color);border-radius:8px;background:var(--card-bg);color:var(--text-secondary);font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s; }
 .btn-back:hover { border-color:var(--primary-orange);color:var(--primary-orange); }
 .panel-action-row { display:flex;justify-content:space-between;align-items:center;margin-bottom:20px; }
+/* Map Modal */
+#map-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center; }
+#map-modal.active { display:flex; }
+#facility-map { width:100%; height:300px; border-radius:8px; margin-top:10px; background:#e0e0e0; }
 </style>
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -116,12 +123,20 @@
              data-close="{{ f.close_time or '21:00' }}"
              data-slot="{{ f.slot_duration_minutes or 60 }}"
              onclick="selectFacility(this)">
+            {% if f.image_url %}
+            <div style="height: 120px; border-radius: 8px; margin-bottom: 12px; background: url('{{ f.image_url }}') center/cover no-repeat;"></div>
+            {% endif %}
             <h4>{{ f.name }}
                 {% if f.kyc_status == 'verified' %}
                     <span class="status-pill success" style="margin-left: 8px; font-size: 0.6rem; padding: 2px 6px; background: rgba(16,185,129,0.1); color: #10b981;"><i class="ph ph-shield-check"></i> Verified</span>
                 {% endif %}
             </h4>
-            <div class="fac-loc"><i class="ph ph-map-pin"></i>{{ f.location or 'Location not set' }}</div>
+            <div class="fac-loc">
+                <i class="ph ph-map-pin"></i>{{ f.location or 'Location not set' }}
+                {% if f.latitude and f.longitude %}
+                <button type="button" onclick="event.stopPropagation(); showMapModal({{ f.latitude }}, {{ f.longitude }}, '{{ f.name | escape }}')" style="background:none; border:none; color:var(--primary-orange); cursor:pointer; text-decoration:underline; font-size: 0.75rem; margin-left: 8px;"><i class="ph ph-map-trifold"></i> Map</button>
+                {% endif %}
+            </div>
             {% if f.description %}<p style="font-size:.78rem;color:var(--text-secondary);margin-bottom:8px;">{{ f.description }}</p>{% endif %}
             <div class="fac-hours"><i class="ph ph-clock"></i>{{ (f.open_time or '08:00')[:5] }} – {{ (f.close_time or '21:00')[:5] }}</div>
         </div>
@@ -153,6 +168,8 @@
             <div class="date-row">
                 <label>Date:</label>
                 <input type="date" id="slot-date" min="" onchange="loadSlots()">
+                <label style="margin-left: 20px;">Party Size:</label>
+                <input type="number" id="slot-party-size" min="1" max="10" value="1" onchange="updateSummary()" style="border:1px solid var(--border-color);background:var(--card-bg);color:var(--text-primary);padding:8px 12px;border-radius:8px;outline:none;font-family:inherit;font-size:.875rem;width:80px;">
             </div>
             <div class="slot-legend">
                 <div class="leg-item"><div class="leg-dot avail"></div> Available</div>
@@ -184,6 +201,7 @@
                 <input type="hidden" name="end_time"    id="inp-end">
                 <input type="hidden" name="total_hours" id="inp-hours">
                 <input type="hidden" name="hourly_rate" id="inp-rate">
+                <input type="hidden" name="party_size"  id="inp-party-size" value="1">
                 <input type="hidden" name="total_amount" id="inp-total">
                 <button type="submit" class="btn-confirm" id="btn-confirm" disabled>
                     <i class="ph ph-lock-key-open"></i> Confirm &amp; Pay
@@ -330,21 +348,61 @@ function updateSummary(){
     }
     const startH=slots[0], endH=slots[slots.length-1]+1;
     const totalHrs=slots.length;
-    const total=totalHrs*state.court.rate;
-    const pad=n=>String(n).padStart(2,'0');
-    document.getElementById('sum-date').textContent=date;
-    document.getElementById('sum-time').textContent=`${fmt12(startH)} – ${fmt12(endH)}`;
-    document.getElementById('sum-hours').textContent=`${totalHrs} hour${totalHrs!==1?'s':''}`;
-    document.getElementById('sum-total').textContent='₱'+total.toFixed(2);
-    document.getElementById('inp-date').value=date;
-    document.getElementById('inp-start').value=`${pad(startH)}:00`;
-    document.getElementById('inp-end').value=`${pad(endH)}:00`;
-    document.getElementById('inp-hours').value=totalHrs;
-    document.getElementById('inp-total').value=total.toFixed(2);
-    document.getElementById('btn-confirm').disabled=false;
-    document.getElementById('sum-hint').style.display='none';
+    const partySize = parseInt(document.getElementById('slot-party-size').value) || 1;
+    const total = totalHrs * state.court.rate * partySize;
+    const pad = n => String(n).padStart(2,'0');
+    document.getElementById('sum-date').textContent = date;
+    document.getElementById('sum-time').textContent = `${fmt12(startH)} – ${fmt12(endH)}`;
+    document.getElementById('sum-hours').textContent = `${totalHrs} hour${totalHrs!==1?'s':''}`;
+    document.getElementById('sum-total').textContent = '₱'+total.toFixed(2);
+    document.getElementById('inp-date').value = date;
+    document.getElementById('inp-start').value = `${pad(startH)}:00`;
+    document.getElementById('inp-end').value = `${pad(endH)}:00`;
+    document.getElementById('inp-hours').value = totalHrs;
+    document.getElementById('inp-party-size').value = partySize;
+    document.getElementById('inp-total').value = total.toFixed(2);
+    document.getElementById('btn-confirm').disabled = false;
+    document.getElementById('sum-hint').style.display = 'none';
 }
 
-document.getElementById('slot-date')?.addEventListener('change',loadSlots);
+document.getElementById('slot-date')?.addEventListener('change', loadSlots);
+
+/* ── Leaflet Map Modal ── */
+let currentMap = null;
+let currentMarker = null;
+
+function showMapModal(lat, lng, name) {
+    document.getElementById('map-modal').classList.add('active');
+    
+    if (!currentMap) {
+        currentMap = L.map('facility-map').setView([lat, lng], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(currentMap);
+        currentMarker = L.marker([lat, lng]).addTo(currentMap);
+    } else {
+        currentMap.setView([lat, lng], 15);
+        currentMarker.setLatLng([lat, lng]);
+    }
+    currentMarker.bindPopup(`<b>${name}</b>`).openPopup();
+    
+    // Invalidate size to ensure it renders correctly inside the modal
+    setTimeout(() => {
+        currentMap.invalidateSize();
+    }, 100);
+}
+
+function closeMapModal() {
+    document.getElementById('map-modal').classList.remove('active');
+}
 </script>
+
+<!-- Map Modal HTML -->
+<div id="map-modal">
+    <div class="glass-card" style="width: 90%; max-width: 600px; position: relative;">
+        <button onclick="closeMapModal()" style="position: absolute; top: 15px; right: 15px; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center;"><i class="ph ph-x"></i></button>
+        <h3 style="margin-bottom: 10px; font-size: 1.1rem; color: var(--text-primary);">Facility Location</h3>
+        <div id="facility-map"></div>
+    </div>
+</div>
 {% endblock %}

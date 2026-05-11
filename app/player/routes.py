@@ -1,6 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 from app.decorators import require_role
 from app import supabase_admin, supabase
+from datetime import datetime, timedelta, timezone
+
+PH_TZ = timezone(timedelta(hours=8))
+
+from app import supabase_admin, supabase
 
 player_bp = Blueprint('player', __name__, url_prefix='/player')
 
@@ -153,6 +158,7 @@ def book_reservation():
     total_hours = request.form.get('total_hours', 1)
     hourly_rate = request.form.get('hourly_rate', 0)
     total_amount = request.form.get('total_amount', 0)
+    party_size  = request.form.get('party_size', 1)
 
     if not all([court_id, facility_id, date, start_time, end_time]):
         flash('Missing reservation details. Please try again.', 'error')
@@ -170,6 +176,7 @@ def book_reservation():
             'total_hours':  float(total_hours),
             'hourly_rate':  float(hourly_rate),
             'total_amount': float(total_amount),
+            'party_size':   int(party_size),
             'status':       'pending_payment',
         }).execute()
 
@@ -195,7 +202,35 @@ def my_reservations():
             'status, gcash_ref, created_at, '
             'courts(name, type), facilities(name, location)'
         ).eq('player_id', player_id).order('created_at', desc=True).execute()
-        reservations = resp.data or []
+        raw_reservations = resp.data or []
+        
+        now = datetime.now(PH_TZ)
+        for r in raw_reservations:
+            r['can_cancel'] = False
+            if r['status'] in ['pending_payment', 'confirmed']:
+                try:
+                    start_time_str = f"{r['date']} {r['start_time']}"
+                    end_time_str = f"{r['date']} {r['end_time']}"
+                    
+                    try:
+                        start_dt = datetime.strptime(start_time_str, '%Y-%m-%d %H:%M:%S').replace(tzinfo=PH_TZ)
+                        end_dt = datetime.strptime(end_time_str, '%Y-%m-%d %H:%M:%S').replace(tzinfo=PH_TZ)
+                    except ValueError:
+                        start_dt = datetime.strptime(start_time_str, '%Y-%m-%d %H:%M').replace(tzinfo=PH_TZ)
+                        end_dt = datetime.strptime(end_time_str, '%Y-%m-%d %H:%M').replace(tzinfo=PH_TZ)
+                        
+                    if now >= end_dt:
+                        db.table('court_reservations').update({'status': 'completed'}).eq('id', r['id']).execute()
+                        r['status'] = 'completed'
+                    elif now < start_dt:
+                        r['can_cancel'] = True
+                        
+                except Exception as e:
+                    print("Error processing reservation dates:", e)
+                    r['can_cancel'] = True
+            
+            reservations.append(r)
+            
     except Exception as e:
         flash(f'Error loading reservations: {e}', 'error')
     return render_template('player/my_reservations.html', reservations=reservations)
@@ -207,10 +242,15 @@ def cancel_reservation(reservation_id):
     player_id = session.get('user_id')
     db = get_db()
     try:
-        db.table('court_reservations').update({'status': 'cancelled'}).eq(
+        resp = db.table('court_reservations').update({'status': 'cancelled'}).eq(
             'id', reservation_id).eq('player_id', player_id).in_(
             'status', ['pending_payment', 'confirmed']).execute()
-        flash('Reservation cancelled.', 'success')
+            
+        if resp.data:
+            db.table('court_queues').update({'status': 'cancelled'}).eq('reservation_id', reservation_id).execute()
+            flash('Reservation cancelled.', 'success')
+        else:
+            flash('Could not cancel reservation. It may have already started.', 'error')
     except Exception as e:
         flash(f'Error cancelling: {e}', 'error')
     return redirect(url_for('player.my_reservations'))
@@ -265,8 +305,9 @@ def confirm_payment(reservation_id):
                 'player_id': player_id,
                 'facility_id': res_data['facility_id'],
                 'court_id': res_data['court_id'],
+                'reservation_id': reservation_id,
                 'status': 'waiting',
-                'estimated_wait_mins': 15
+                'estimated_wait_mins': 0
             }).execute()
 
         flash('Payment confirmed! Your court is booked and you are added to the queue.', 'success')
@@ -274,29 +315,96 @@ def confirm_payment(reservation_id):
         flash(f'Payment error: {e}', 'error')
     return redirect(url_for('player.my_reservations'))
 
+def get_processed_queues(db, player_id=None):
+    """Fetch queues for today, process wait times, and auto-complete games 15 mins past end time."""
+    try:
+        resp = db.table('court_queues').select(
+            'id, status, estimated_wait_mins, joined_at, player_id, courts(name), profiles(first_name, last_name), court_reservations!inner(date, start_time, end_time)'
+        ).in_('status', ['waiting', 'next', 'playing']).order('joined_at').execute()
+        raw_queues = resp.data or []
+    except Exception as e:
+        print("Error fetching queues:", e)
+        return [], None
+        
+    today_str = datetime.now(PH_TZ).strftime('%Y-%m-%d')
+    now = datetime.now(PH_TZ)
+    queues = []
+    my_queue = None
+    
+    # Process each queue item
+    for q in raw_queues:
+        res = q.get('court_reservations')
+        if not res or res.get('date') != today_str:
+            continue
+            
+        start_time_str = f"{today_str} {res.get('start_time')}"
+        end_time_str = f"{today_str} {res.get('end_time')}"
+        try:
+            start_dt = datetime.strptime(start_time_str, '%Y-%m-%d %H:%M:%S').replace(tzinfo=PH_TZ)
+            end_dt = datetime.strptime(end_time_str, '%Y-%m-%d %H:%M:%S').replace(tzinfo=PH_TZ)
+        except ValueError:
+            # Handle cases where time might not have seconds
+            start_dt = datetime.strptime(start_time_str, '%Y-%m-%d %H:%M').replace(tzinfo=PH_TZ)
+            end_dt = datetime.strptime(end_time_str, '%Y-%m-%d %H:%M').replace(tzinfo=PH_TZ)
+
+        # Auto-complete if they are 'playing' and 15 mins past end time
+        if q['status'] == 'playing' and now > (end_dt + timedelta(minutes=15)):
+            try:
+                db.table('court_queues').update({'status': 'completed'}).eq('id', q['id']).execute()
+            except Exception:
+                pass
+            continue # Skip rendering this one as it's completed
+            
+        # Calculate dynamic wait time or time remaining
+        if q['status'] in ['waiting', 'next']:
+            wait_mins = int((start_dt - now).total_seconds() / 60)
+            q['estimated_wait_mins'] = max(0, wait_mins)
+            q['time_type'] = 'Wait'
+            # Update the absolute time for the JS countdown
+            q['target_time'] = start_dt.isoformat()
+        elif q['status'] == 'playing':
+            rem_mins = int((end_dt - now).total_seconds() / 60)
+            q['estimated_wait_mins'] = max(0, rem_mins)
+            q['time_type'] = 'Remaining'
+            q['target_time'] = end_dt.isoformat()
+            
+        queues.append(q)
+
+    # Sort queues: Playing first, then Next, then Waiting
+    status_order = {'playing': 0, 'next': 1, 'waiting': 2}
+    queues.sort(key=lambda x: (status_order.get(x['status'], 3), x.get('court_reservations', {}).get('start_time', '')))
+
+    # Assign positions (only for waiting/next)
+    pos = 1
+    for q in queues:
+        if q['status'] != 'playing':
+            q['position'] = pos
+            pos += 1
+        else:
+            q['position'] = '-'
+            
+        if q['player_id'] == player_id:
+            my_queue = q
+            
+    return queues, my_queue
+
+
 @player_bp.route('/queue')
 @require_role('player')
 def queue():
     player_id = session.get('user_id')
     db = get_db()
-    queues = []
-    my_queue = None
-    
-    try:
-        resp = db.table('court_queues').select(
-            'id, status, estimated_wait_mins, player_id, courts(name), profiles(first_name, last_name)'
-        ).in_('status', ['waiting', 'next']).order('joined_at').execute()
-        queues = resp.data or []
-        
-        for idx, q in enumerate(queues):
-            q['position'] = idx + 1
-            if q['player_id'] == player_id:
-                my_queue = q
-                
-    except Exception:
-        pass
-        
+    queues, my_queue = get_processed_queues(db, player_id)
     return render_template('player/queue_monitoring.html', queues=queues, my_queue=my_queue)
+
+
+@player_bp.route('/queue/partial')
+@require_role('player')
+def queue_partial():
+    player_id = session.get('user_id')
+    db = get_db()
+    queues, my_queue = get_processed_queues(db, player_id)
+    return render_template('player/partials/queue_content.html', queues=queues, my_queue=my_queue)
 
 
 @player_bp.route('/events')

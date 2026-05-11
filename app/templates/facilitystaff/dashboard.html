@@ -15,35 +15,18 @@
             <div class="widget-header">
                 <h3>Live Court Status</h3>
             </div>
-            <div class="stats-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 15px;">
-                <div class="glass-card stat-box" style="background: rgba(239, 68, 68, 0.05); border-left: 4px solid #ef4444;">
+            <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+                {% for court in court_status_list %}
+                <div class="glass-card stat-box" style="background: {% if court.color == 'negative' %}rgba(239, 68, 68, 0.05){% elif court.color == 'positive' %}rgba(74, 222, 128, 0.05){% else %}rgba(245, 158, 11, 0.05){% endif %}; border-left: 4px solid {% if court.color == 'negative' %}#ef4444{% elif court.color == 'positive' %}#4ade80{% else %}#f59e0b{% endif %};">
                     <div class="stat-info">
-                        <h3>Court 1</h3>
-                        <p class="stat-value" style="font-size: 1.2rem;">In Use</p>
-                        <span class="stat-change negative">Ends in 15m</span>
+                        <h3>{{ court.name }}</h3>
+                        <p class="stat-value" style="font-size: 1.2rem;">{{ court.status }}</p>
+                        <span class="stat-change {{ court.color }}">{{ court.sub_text }}</span>
                     </div>
                 </div>
-                <div class="glass-card stat-box" style="background: rgba(74, 222, 128, 0.05); border-left: 4px solid #4ade80;">
-                    <div class="stat-info">
-                        <h3>Court 2</h3>
-                        <p class="stat-value" style="font-size: 1.2rem;">Available</p>
-                        <span class="stat-change positive">Ready</span>
-                    </div>
-                </div>
-                <div class="glass-card stat-box" style="background: rgba(239, 68, 68, 0.05); border-left: 4px solid #ef4444;">
-                    <div class="stat-info">
-                        <h3>Court 3</h3>
-                        <p class="stat-value" style="font-size: 1.2rem;">In Use</p>
-                        <span class="stat-change negative">Ends in 45m</span>
-                    </div>
-                </div>
-                <div class="glass-card stat-box" style="background: rgba(245, 158, 11, 0.05); border-left: 4px solid #f59e0b;">
-                    <div class="stat-info">
-                        <h3>Court 4</h3>
-                        <p class="stat-value" style="font-size: 1.2rem;">Maintenance</p>
-                        <span class="stat-change" style="color: #f59e0b;">Until 2:00 PM</span>
-                    </div>
-                </div>
+                {% else %}
+                <p>No courts assigned to your facility.</p>
+                {% endfor %}
             </div>
         </div>
 
@@ -64,20 +47,37 @@
                         </tr>
                     </thead>
                     <tbody>
+                        {% for q in queues %}
                         <tr>
-                            <td class="bold">1</td>
-                            <td>Alex Johnson</td>
-                            <td>2</td>
-                            <td><span class="status-pill warning">12 mins</span></td>
-                            <td><button class="action-link" style="border:none; background:none; cursor:pointer;">Assign Court</button></td>
+                            <td class="bold">{{ loop.index }}</td>
+                            <td>{{ q.profiles.first_name if q.player_id else q.guest_name }} {{ q.profiles.last_name if q.player_id else '(Walk-in)' }}</td>
+                            <td>{{ q.party_size | default(1) }}</td>
+                            <td>
+                                <span class="status-pill {% if q.status == 'playing' %}success{% elif q.status == 'next' %}warning{% else %}disabled{% endif %}">
+                                    {% if q.status == 'playing' %}Playing{% else %}{{ q.estimated_wait_mins }} mins{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                {% if q.status == 'waiting' %}
+                                <form action="{{ url_for('facilitystaff.update_queue') }}" method="POST" style="margin:0;">
+                                    <input type="hidden" name="queue_id" value="{{ q.id }}">
+                                    <input type="hidden" name="status" value="next">
+                                    <button type="submit" class="action-link" style="border:none; background:none; cursor:pointer;">Call Next</button>
+                                </form>
+                                {% elif q.status == 'next' %}
+                                <form action="{{ url_for('facilitystaff.update_queue') }}" method="POST" style="margin:0;">
+                                    <input type="hidden" name="queue_id" value="{{ q.id }}">
+                                    <input type="hidden" name="status" value="playing">
+                                    <button type="submit" class="action-link" style="border:none; background:none; cursor:pointer; color: var(--btn-green);">Start Game</button>
+                                </form>
+                                {% endif %}
+                            </td>
                         </tr>
+                        {% else %}
                         <tr>
-                            <td class="bold">2</td>
-                            <td>Sam Smith</td>
-                            <td>4</td>
-                            <td><span class="status-pill success">5 mins</span></td>
-                            <td><button class="action-link" style="border:none; background:none; cursor:pointer;">Assign Court</button></td>
+                            <td colspan="5" style="text-align: center;">Queue is empty.</td>
                         </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
@@ -89,10 +89,12 @@
         <div class="glass-card">
             <h3 class="widget-title">Desk Actions</h3>
             <div class="action-grid">
-                <button class="action-box orange">
-                    <i class="ph ph-user-plus"></i>
-                    <span>Walk-In</span>
-                </button>
+                <a href="{{ url_for('facilitystaff.walkin') }}" style="text-decoration: none;">
+                    <button class="action-box orange" style="width: 100%;">
+                        <i class="ph ph-user-plus"></i>
+                        <span>Walk-In</span>
+                    </button>
+                </a>
                 <button class="action-box green">
                     <i class="ph ph-qr-code"></i>
                     <span>Scan Pass</span>

@@ -7,23 +7,75 @@
 <div class="dashboard-grid">
     <div class="dashboard-main" style="max-width: 600px;">
         <div class="glass-card">
-            <form>
+            <form method="POST" action="{{ url_for('facilitystaff.walkin') }}" id="walkin-form">
                 <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Player Name</label>
-                    <input type="text" class="form-input" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: var(--text-primary); border-radius: 8px;">
+                    <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Guest Name *</label>
+                    <input type="text" name="guest_name" required class="form-input" style="width: 100%; padding: 10px; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px;" placeholder="John Doe">
                 </div>
                 <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Contact Number</label>
-                    <input type="tel" class="form-input" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: var(--text-primary); border-radius: 8px;">
+                    <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Contact Number (Optional)</label>
+                    <input type="tel" name="guest_phone" class="form-input" style="width: 100%; padding: 10px; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px;" placeholder="09123456789">
                 </div>
+                
                 <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Party Size</label>
-                    <input type="number" value="1" min="1" max="4" class="form-input" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: var(--text-primary); border-radius: 8px;">
+                    <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Select Court *</label>
+                    <select name="court_id" id="court_select" required class="form-input" style="width: 100%; padding: 10px; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px;">
+                        <option value="" data-rate="0">-- Select Court --</option>
+                        {% for court in courts %}
+                        <option value="{{ court.id }}" data-rate="{{ court.hourly_rate }}">{{ court.name }} (₱{{ court.hourly_rate }}/hr)</option>
+                        {% endfor %}
+                    </select>
                 </div>
-                <button type="button" class="action-box green" style="width: 100%; padding: 1rem;">
-                    Add to Queue & Take Payment
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Duration (Hours)</label>
+                        <select name="duration" id="duration_select" class="form-input" style="width: 100%; padding: 10px; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px;">
+                            <option value="1">1 Hour</option>
+                            <option value="1.5">1.5 Hours</option>
+                            <option value="2">2 Hours</option>
+                            <option value="3">3 Hours</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Party Size</label>
+                        <input type="number" name="party_size" id="party_size" value="1" min="1" max="10" required class="form-input" style="width: 100%; padding: 10px; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px;">
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 20px; padding: 15px; background: rgba(41, 163, 86, 0.1); border-radius: 8px; border: 1px solid rgba(41, 163, 86, 0.3);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; color: var(--btn-green);">
+                        <span style="font-weight: 600;">Total Amount due now:</span>
+                        <span style="font-size: 1.25rem; font-weight: 700;" id="total_price_display">₱0.00</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="action-box green" style="width: 100%; padding: 1rem; border: none; cursor: pointer;">
+                    <i class="ph ph-check-circle" style="font-size: 1.2rem; margin-right: 8px; display: inline-block; vertical-align: middle;"></i>
+                    <span style="font-size: 1rem; display: inline-block; vertical-align: middle;">Add to Queue & Take Payment</span>
                 </button>
             </form>
+            
+            <script>
+                const courtSelect = document.getElementById('court_select');
+                const durationSelect = document.getElementById('duration_select');
+                const partySizeInput = document.getElementById('party_size');
+                const totalPriceDisplay = document.getElementById('total_price_display');
+                
+                function calculateTotal() {
+                    const selectedOption = courtSelect.options[courtSelect.selectedIndex];
+                    const rate = parseFloat(selectedOption.getAttribute('data-rate') || 0);
+                    const duration = parseFloat(durationSelect.value || 1);
+                    const partySize = parseInt(partySizeInput.value || 1);
+                    
+                    const total = rate * duration * partySize;
+                    totalPriceDisplay.textContent = '₱' + total.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+                }
+                
+                courtSelect.addEventListener('change', calculateTotal);
+                durationSelect.addEventListener('change', calculateTotal);
+                partySizeInput.addEventListener('input', calculateTotal);
+            </script>
         </div>
     </div>
 </div>

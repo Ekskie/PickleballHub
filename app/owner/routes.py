@@ -72,7 +72,7 @@ def facilities():
     facilities_list = []
     try:
         resp = db.table('facilities').select(
-            'id, name, location, description, status, open_time, close_time, created_at, kyc_status'
+            'id, name, location, description, status, open_time, close_time, created_at, kyc_status, latitude, longitude, image_url'
         ).eq('owner_id', owner_id).order('created_at', desc=True).execute()
         facilities_data = resp.data or []
 
@@ -97,6 +97,9 @@ def add_facility():
     status    = request.form.get('status', 'active')
     open_time = request.form.get('open_time', '08:00')
     close_time = request.form.get('close_time', '21:00')
+    latitude  = request.form.get('latitude')
+    longitude = request.form.get('longitude')
+    image_url = request.form.get('image_url', '').strip()
 
     if not name:
         flash('Facility name is required.', 'error')
@@ -112,6 +115,9 @@ def add_facility():
             'status': status,
             'open_time': open_time,
             'close_time': close_time,
+            'latitude': float(latitude) if latitude else None,
+            'longitude': float(longitude) if longitude else None,
+            'image_url': image_url if image_url else None,
         }).execute()
         flash(f'Facility "{name}" added successfully!', 'success')
     except Exception as e:
@@ -130,6 +136,9 @@ def edit_facility(facility_id):
     status     = request.form.get('status', 'active')
     open_time  = request.form.get('open_time', '08:00')
     close_time = request.form.get('close_time', '21:00')
+    latitude   = request.form.get('latitude')
+    longitude  = request.form.get('longitude')
+    image_url  = request.form.get('image_url', '').strip()
 
     db = get_db()
     try:
@@ -140,6 +149,9 @@ def edit_facility(facility_id):
             'status': status,
             'open_time': open_time,
             'close_time': close_time,
+            'latitude': float(latitude) if latitude else None,
+            'longitude': float(longitude) if longitude else None,
+            'image_url': image_url if image_url else None,
         }).eq('id', facility_id).eq('owner_id', owner_id).execute()
         flash(f'Facility updated successfully!', 'success')
     except Exception as e:

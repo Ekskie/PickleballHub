@@ -2,13 +2,70 @@
 {% block title %}Court Schedule{% endblock %}
 {% block content %}
 <div class="dashboard-header">
-    <h1 class="page-title">Today's Schedule</h1>
+    <h1 class="page-title">Court Schedule</h1>
     <div class="header-actions">
-        <input type="date" class="form-input" style="padding: 0.5rem; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: var(--text-primary); border-radius: 8px;">
+        <form method="GET" action="{{ url_for('facilitystaff.schedule') }}" id="date-form">
+            <input type="date" name="date" value="{{ date }}" class="form-input" style="padding: 0.5rem; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: var(--text-primary); border-radius: 8px;" onchange="document.getElementById('date-form').submit();">
+        </form>
     </div>
 </div>
+
+{% if facilities %}
+    {% for fac in facilities %}
+    <div class="glass-card" style="margin-bottom: 30px;">
+        <h2 style="font-size: 1.2rem; margin-bottom: 15px; color: var(--primary-orange);">{{ fac.facilities.name }} - {{ date }}</h2>
+        
+        <div class="table-container" style="overflow-x: auto;">
+            <table class="data-grid" style="min-width: 800px;">
+                <thead>
+                    <tr>
+                        <th style="width: 150px;">COURT</th>
+                        <th>SCHEDULED BOOKINGS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set fac_courts = courts | selectattr('facility_id', 'equalto', fac.facility_id) | list %}
+                    {% if fac_courts %}
+                        {% for court in fac_courts %}
+                        <tr>
+                            <td class="bold">{{ court.name }}</td>
+                            <td>
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    {% set court_res = reservations | selectattr('court_id', 'equalto', court.id) | list %}
+                                    {% if court_res %}
+                                        {% for res in court_res %}
+                                            {% set start = res.start_time[:5] %}
+                                            {% set end = res.end_time[:5] %}
+                                            <div style="background: rgba(225, 86, 35, 0.1); border: 1px solid var(--primary-orange); padding: 8px 12px; border-radius: 8px; font-size: 0.85rem;">
+                                                <div style="font-weight: 600; color: var(--primary-orange); margin-bottom: 4px;">{{ start }} - {{ end }}</div>
+                                                <div style="color: var(--text-primary);">
+                                                    {{ res.profiles.first_name if res.profiles else 'Unknown' }} {{ res.profiles.last_name if res.profiles else '' }}
+                                                </div>
+                                                <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; text-transform: uppercase;">
+                                                    {{ res.status }}
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <span style="color: var(--text-muted); font-size: 0.85rem; padding: 8px;">No bookings scheduled.</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="2" style="text-align:center; padding: 20px;">No courts found.</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
 <div class="glass-card" style="min-height: 400px; display: flex; align-items: center; justify-content: center; flex-direction: column;">
-    <i class="ph ph-calendar-blank" style="font-size: 4rem; color: var(--text-secondary); margin-bottom: 20px;"></i>
-    <p style="color: var(--text-secondary);">Interactive court timeline will be rendered here.</p>
+    <i class="ph ph-warning-circle" style="font-size: 4rem; color: var(--text-secondary); margin-bottom: 20px;"></i>
+    <h3 style="margin-bottom: 10px;">No Facilities Assigned</h3>
+    <p style="color: var(--text-muted);">You are not assigned to manage any facilities yet.</p>
 </div>
+{% endif %}
 {% endblock %}

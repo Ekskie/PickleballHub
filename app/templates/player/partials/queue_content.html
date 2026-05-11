@@ -1,0 +1,72 @@
+<!-- Your position card -->
+<div class="queue-position-card">
+    {% if my_queue %}
+    <div class="queue-circle">#{{ my_queue.position }}</div>
+    <div class="queue-details">
+        <h2>Your Queue Position</h2>
+        <p>Estimated wait: <span class="wait-time-display" data-target-time="{{ my_queue.target_time }}" data-time-type="{{ my_queue.time_type }}">~{{ my_queue.estimated_wait_mins }} min</span></p>
+        <p>Assigned to: {{ my_queue.courts.name if my_queue.courts else 'Unassigned' }}</p>
+    </div>
+    {% else %}
+    <div class="queue-circle" style="font-size: 1.2rem; text-align: center;">--</div>
+    <div class="queue-details">
+        <h2>Not in Queue</h2>
+        <p>You are not currently in any court queue.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Current queue table -->
+<div class="glass-card">
+    <div class="queue-table-header">
+        <i class="ph ph-list-numbers"></i>
+        <h3>Current Queue</h3>
+    </div>
+    <table class="queue-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Player</th>
+                <th>Court</th>
+                <th>Status</th>
+                <th>Est. Wait</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if queues %}
+                {% for q in queues %}
+                <tr class="{% if my_queue and q.id == my_queue.id %}queue-row-you{% endif %}">
+                    <td>{{ q.position }}</td>
+                    <td class="player-name">
+                        {{ q.profiles.first_name if q.profiles else 'Player' }} {{ q.profiles.last_name if q.profiles else '' }}
+                        {% if my_queue and q.id == my_queue.id %}<span class="you-label">(You)</span>{% endif %}
+                    </td>
+                    <td class="court-mono">{{ q.courts.name if q.courts else 'Pending' }}</td>
+                    <td>
+                        {% if q.status == 'playing' %}
+                        <span class="status-pill" style="background:var(--primary-orange);color:white;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;">Playing</span>
+                        {% elif q.status == 'next' %}
+                        <span class="pill-next">Next</span>
+                        {% else %}
+                        <span class="pill-waiting">Waiting</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if q.status == 'playing' %}
+                        <span class="wait-time-display" style="color:var(--primary-orange);font-weight:bold;" data-target-time="{{ q.target_time }}" data-time-type="Remaining">{{ q.estimated_wait_mins }} min left</span>
+                        {% else %}
+                        <span class="wait-time-display" data-target-time="{{ q.target_time }}" data-time-type="Wait">~{{ q.estimated_wait_mins }} min</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 30px;">
+                        No players currently in the queue.
+                    </td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>

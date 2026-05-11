@@ -140,68 +140,72 @@
     <h1 class="page-title">Queue Monitoring</h1>
 </div>
 
-<!-- Your position card -->
-<div class="queue-position-card">
-    {% if my_queue %}
-    <div class="queue-circle">#{{ my_queue.position }}</div>
-    <div class="queue-details">
-        <h2>Your Queue Position</h2>
-        <p>Estimated wait: ~{{ my_queue.estimated_wait_mins }} min</p>
-        <p>Assigned to: {{ my_queue.courts.name if my_queue.courts else 'Unassigned' }}</p>
-    </div>
-    {% else %}
-    <div class="queue-circle" style="font-size: 1.2rem; text-align: center;">--</div>
-    <div class="queue-details">
-        <h2>Not in Queue</h2>
-        <p>You are not currently in any court queue.</p>
-    </div>
-    {% endif %}
+<div id="queue-container">
+    {% include 'player/partials/queue_content.html' %}
 </div>
 
-<!-- Current queue table -->
-<div class="glass-card">
-    <div class="queue-table-header">
-        <i class="ph ph-list-numbers"></i>
-        <h3>Current Queue</h3>
-    </div>
-    <table class="queue-table">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Player</th>
-                <th>Court</th>
-                <th>Status</th>
-                <th>Est. Wait</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% if queues %}
-                {% for q in queues %}
-                <tr class="{% if my_queue and q.id == my_queue.id %}queue-row-you{% endif %}">
-                    <td>{{ q.position }}</td>
-                    <td class="player-name">
-                        {{ q.profiles.first_name if q.profiles else 'Player' }} {{ q.profiles.last_name if q.profiles else '' }}
-                        {% if my_queue and q.id == my_queue.id %}<span class="you-label">(You)</span>{% endif %}
-                    </td>
-                    <td class="court-mono">{{ q.courts.name if q.courts else 'Pending' }}</td>
-                    <td>
-                        {% if q.status == 'next' %}
-                        <span class="pill-next">Next</span>
-                        {% else %}
-                        <span class="pill-waiting">Waiting</span>
-                        {% endif %}
-                    </td>
-                    <td>~{{ q.estimated_wait_mins }} min</td>
-                </tr>
-                {% endfor %}
-            {% else %}
-                <tr>
-                    <td colspan="5" style="text-align: center; padding: 30px;">
-                        No players currently in the queue.
-                    </td>
-                </tr>
-            {% endif %}
-        </tbody>
-    </table>
-</div>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // --- 1. Client-side Realtime Countdown ---
+        function updateWaitTimes() {
+            const displays = document.querySelectorAll('.wait-time-display');
+            displays.forEach(el => {
+                const targetTimeStr = el.getAttribute('data-target-time');
+                const timeType = el.getAttribute('data-time-type');
+                
+                if (targetTimeStr) {
+                    const targetTime = new Date(targetTimeStr + (targetTimeStr.includes('Z') || targetTimeStr.includes('+') ? '' : 'Z'));
+                    const now = new Date();
+                    
+                    let diffMs = 0;
+                    if (timeType === 'Wait') {
+                        diffMs = targetTime - now;
+                    } else if (timeType === 'Remaining') {
+                        diffMs = targetTime - now;
+                    }
+                    
+                    let diffMins = Math.floor(diffMs / 60000);
+                    if (diffMins < 0) diffMins = 0;
+                    
+                    if (timeType === 'Remaining') {
+                        el.innerText = `${diffMins} min left`;
+                    } else {
+                        el.innerText = `~${diffMins} min`;
+                    }
+                }
+            });
+        }
+
+        // Run immediately and every 1 minute
+        updateWaitTimes();
+        setInterval(updateWaitTimes, 60000);
+
+        // --- 2. Supabase Realtime Subscription ---
+        if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+            const queueChannel = supabaseClient.channel('custom-all-channel')
+                .on(
+                    'postgres_changes',
+                    { event: '*', schema: 'public', table: 'court_queues' },
+                    (payload) => {
+                        console.log('Queue change received!', payload);
+                        // Fetch the updated queue partial HTML
+                        fetch("{{ url_for('player.queue_partial') }}")
+                            .then(response => response.text())
+                            .then(html => {
+                                document.getElementById('queue-container').innerHTML = html;
+                                // Re-run the wait time calculation for the new DOM elements
+                                updateWaitTimes();
+                            })
+                            .catch(error => console.error('Error fetching updated queue:', error));
+                    }
+                )
+                .subscribe();
+                
+            // Optional: cleanup on page leave
+            window.addEventListener("beforeunload", () => {
+                supabaseClient.removeChannel(queueChannel);
+            });
+        }
+    });
+</script>
 {% endblock %}

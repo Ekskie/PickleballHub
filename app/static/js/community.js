@@ -5,27 +5,27 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!supabaseClient) { console.error('[Community] Supabase not init.'); return; }
 
     /* ── DOM refs ─────────────────────────────────── */
-    const feedWrapper      = document.getElementById('community-feed-wrapper');
-    const postTextarea     = document.getElementById('post-textarea');
-    const postBtn          = document.getElementById('btn-post');
-    const postsCountEl     = document.getElementById('posts-count-label');
-    const currentAvatarEl  = document.getElementById('current-user-avatar');
-    const imageInput       = document.getElementById('post-image-input');
+    const feedWrapper = document.getElementById('community-feed-wrapper');
+    const postTextarea = document.getElementById('post-textarea');
+    const postBtn = document.getElementById('btn-post');
+    const postsCountEl = document.getElementById('posts-count-label');
+    const currentAvatarEl = document.getElementById('current-user-avatar');
+    const imageInput = document.getElementById('post-image-input');
     const imagePreviewWrap = document.getElementById('post-image-preview-wrap');
-    const imagePreview     = document.getElementById('post-image-preview');
-    const removeImageBtn   = document.getElementById('btn-remove-image');
-    const refreshBtn       = document.getElementById('btn-refresh-feed');
-    const smartBanner      = document.getElementById('smart-feed-banner');
-    const smartMsg         = document.getElementById('smart-feed-message');
-    const closeBanner      = document.getElementById('btn-close-banner');
-    const shareOverlay     = document.getElementById('share-modal-overlay');
-    const closeShare       = document.getElementById('btn-close-share');
-    const sharePreview     = document.getElementById('share-post-preview');
-    const shareCopyLink    = document.getElementById('share-copy-link');
-    const shareTwitter     = document.getElementById('share-twitter');
-    const shareFacebook    = document.getElementById('share-facebook');
-    const shareCopyText    = document.getElementById('share-copy-text');
-    const copiedToast      = document.getElementById('share-copied-toast');
+    const imagePreview = document.getElementById('post-image-preview');
+    const removeImageBtn = document.getElementById('btn-remove-image');
+    const refreshBtn = document.getElementById('btn-refresh-feed');
+    const smartBanner = document.getElementById('smart-feed-banner');
+    const smartMsg = document.getElementById('smart-feed-message');
+    const closeBanner = document.getElementById('btn-close-banner');
+    const shareOverlay = document.getElementById('share-modal-overlay');
+    const closeShare = document.getElementById('btn-close-share');
+    const sharePreview = document.getElementById('share-post-preview');
+    const shareCopyLink = document.getElementById('share-copy-link');
+    const shareTwitter = document.getElementById('share-twitter');
+    const shareFacebook = document.getElementById('share-facebook');
+    const shareCopyText = document.getElementById('share-copy-text');
+    const copiedToast = document.getElementById('share-copied-toast');
 
     /* ── State ────────────────────────────────────── */
     let selectedImageFile = null;
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ── Helpers ─────────────────────────────────── */
     function escapeHTML(str = '') {
         return String(str).replace(/[&<>'"]/g, t => (
-            {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[t]
+            { '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[t]
         ));
     }
 
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentAvatarEl.textContent = ini;
                 currentUserName = `${data.first_name || ''} ${data.last_name || ''}`.trim();
             }
-        } catch (_) {}
+        } catch (_) { }
     })();
 
     /* ══════════════════════════════════════════════
@@ -226,17 +226,17 @@ document.addEventListener('DOMContentLoaded', () => {
        RENDER POST CARD
     ══════════════════════════════════════════════ */
     function renderPostCard(post, featured = false) {
-        const author       = post.author || {};
+        const author = post.author || {};
         const postInitials = initials(author.first_name, author.last_name);
-        const fullName     = `${author.first_name || 'Unknown'} ${author.last_name || ''}`.trim();
-        const role         = author.role ? author.role.replace(/_/g, ' ') : '';
-        const hasLiked     = post.post_likes?.some(l => l.profile_id === currentUserId);
-        const likesCount   = post.post_likes?.length ?? 0;
+        const fullName = `${author.first_name || 'Unknown'} ${author.last_name || ''}`.trim();
+        const role = author.role ? author.role.replace(/_/g, ' ') : '';
+        const hasLiked = post.post_likes?.some(l => l.profile_id === currentUserId);
+        const likesCount = post.post_likes?.length ?? 0;
         const commentsCount = post.community_comments?.length ?? 0;
-        const isOwner      = post.author_id === currentUserId;
-        const avatarColors = ['#1A213B','#29A356','#3B82F6','#8B5CF6','#E15623','#0EA5E9'];
-        const colorIdx     = (author.first_name?.charCodeAt(0) || 0) % avatarColors.length;
-        const avatarColor  = avatarColors[colorIdx];
+        const isOwner = post.author_id === currentUserId;
+        const avatarColors = ['#1A213B', '#29A356', '#3B82F6', '#8B5CF6', '#E15623', '#0EA5E9'];
+        const colorIdx = (author.first_name?.charCodeAt(0) || 0) % avatarColors.length;
+        const avatarColor = avatarColors[colorIdx];
 
         const card = document.createElement('div');
         card.className = `feed-post-card${featured ? ' feed-post-featured' : ''}`;
@@ -368,7 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (shareTwitter) {
         shareTwitter.addEventListener('click', () => {
-            const text = encodeURIComponent(`${currentSharePost?.content.substring(0,200)} — via PickleballHub`);
+            const text = encodeURIComponent(`${currentSharePost?.content.substring(0, 200)} — via PickleballHub`);
             window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
         });
     }

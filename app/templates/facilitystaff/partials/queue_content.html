@@ -1,0 +1,104 @@
+{% if facilities %}
+    {% for fac in facilities %}
+    <div class="glass-card queue-table-wrapper" style="margin-bottom: 30px;">
+        <h2 style="font-size: 1.2rem; margin-bottom: 15px; color: var(--primary-orange);">{{ fac.facilities.name }} Queue</h2>
+        <div class="table-container">
+            <table class="data-grid">
+                <thead>
+                    <tr>
+                        <th>POSITION</th>
+                        <th>PLAYER</th>
+                        <th>STATUS</th>
+                        <th>ASSIGNED COURT</th>
+                        <th>WAIT TIME</th>
+                        <th>ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set fac_queues = queues | selectattr('facility_id', 'equalto', fac.facility_id) | list %}
+                    
+                    {% if fac_queues %}
+                        {% for q in fac_queues %}
+                        <tr>
+                            <td class="bold">
+                                {% if q.status == 'playing' %}
+                                    <span style="color:var(--primary-orange);">-</span>
+                                {% else %}
+                                    {{ loop.index }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ q.profiles.first_name if q.profiles else 'Unknown' }} 
+                                {{ q.profiles.last_name if q.profiles else '' }}
+                            </td>
+                            <td>
+                                {% if q.status == 'playing' %}
+                                    <span class="status-pill" style="background:var(--primary-orange);color:white;">Playing</span>
+                                {% elif q.status == 'next' %}
+                                    <span class="status-pill" style="background:var(--btn-green-light);color:var(--btn-green);">Next Up</span>
+                                {% else %}
+                                    <span class="status-pill warning">Waiting</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% set court = courts | selectattr('id', 'equalto', q.court_id) | first %}
+                                {{ court.name if court else 'Any Available' }}
+                            </td>
+                            <td>
+                                {% if q.status == 'playing' %}
+                                    <span class="wait-time-display" style="color:var(--primary-orange);font-weight:bold;" data-target-time="{{ q.target_time }}" data-time-type="Remaining">{{ q.estimated_wait_mins }} min left</span>
+                                {% else %}
+                                    <span class="wait-time-display" data-target-time="{{ q.target_time }}" data-time-type="Wait">~{{ q.estimated_wait_mins }} mins</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 8px;">
+                                    {% if q.status == 'waiting' %}
+                                        <form method="POST" action="{{ url_for('facilitystaff.update_queue') }}" style="margin:0;">
+                                            <input type="hidden" name="queue_id" value="{{ q.id }}">
+                                            <input type="hidden" name="status" value="next">
+                                            <button type="submit" class="action-box green" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto; cursor:pointer; border:none; color:white;">Call Next</button>
+                                        </form>
+                                    {% endif %}
+                                    {% if q.status == 'next' %}
+                                        <form method="POST" action="{{ url_for('facilitystaff.update_queue') }}" style="margin:0;">
+                                            <input type="hidden" name="queue_id" value="{{ q.id }}">
+                                            <input type="hidden" name="status" value="playing">
+                                            <button type="submit" class="action-box navy" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto; cursor:pointer; border:none; color:white;">Start Game</button>
+                                        </form>
+                                    {% endif %}
+                                    {% if q.status == 'playing' %}
+                                        <form method="POST" action="{{ url_for('facilitystaff.update_queue') }}" style="margin:0;">
+                                            <input type="hidden" name="queue_id" value="{{ q.id }}">
+                                            <input type="hidden" name="status" value="completed">
+                                            <button type="submit" class="action-box navy" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto; cursor:pointer; border:none; color:white;">Complete</button>
+                                        </form>
+                                    {% endif %}
+                                    <form method="POST" action="{{ url_for('facilitystaff.update_queue') }}" onsubmit="return confirm('Remove player from queue?');" style="margin:0;">
+                                        <input type="hidden" name="queue_id" value="{{ q.id }}">
+                                        <input type="hidden" name="status" value="cancelled">
+                                        <button type="submit" class="action-box red" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto; background: #fee2e2; color: #ef4444; border:none; cursor:pointer;"><i class="ph ph-trash"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 20px; color: var(--text-muted);">
+                                No players in queue for this facility.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="glass-card" style="text-align: center; padding: 40px;">
+        <i class="ph ph-warning-circle" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 15px;"></i>
+        <h3 style="margin-bottom: 10px;">No Facilities Assigned</h3>
+        <p style="color: var(--text-muted);">You are not assigned to manage any facility queues yet. Please contact your facility owner.</p>
+    </div>
+{% endif %}

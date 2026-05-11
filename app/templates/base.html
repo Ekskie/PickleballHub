@@ -21,6 +21,116 @@
             document.documentElement.classList.add('dark-mode');
         }
     </script>
+    <style>
+        /* Toast Notification Styles */
+        #toast-container {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: var(--surface);
+            color: var(--text-primary);
+            border-left: 4px solid var(--primary-orange);
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 280px;
+            max-width: 380px;
+            animation: slideInRight 0.3s ease-out forwards;
+            transition: opacity 0.3s ease;
+        }
+
+        .toast.success {
+            border-left-color: var(--btn-green);
+        }
+
+        .toast.error {
+            border-left-color: #ef4444;
+        }
+
+        .toast.info {
+            border-left-color: var(--btn-blue);
+        }
+
+        .toast.warning {
+            border-left-color: #f59e0b;
+        }
+
+        .toast-icon {
+            font-size: 1.5rem;
+        }
+
+        .toast.success .toast-icon {
+            color: var(--btn-green);
+        }
+
+        .toast.error .toast-icon {
+            color: #ef4444;
+        }
+
+        .toast.info .toast-icon {
+            color: var(--btn-blue);
+        }
+
+        .toast.warning .toast-icon {
+            color: #f59e0b;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 2px;
+        }
+
+        .toast-message {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .toast-close:hover {
+            background: var(--hover-bg);
+            color: var(--text-primary);
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(120%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
     {% block extra_head %}{% endblock %}
 </head>
 
@@ -64,6 +174,7 @@
 
     <!-- Main Content Wrapper -->
     <div class="main-wrapper">
+        <div id="toast-container"></div>
         <!-- Reusable Header -->
         <header class="top-header">
             <div class="header-search">
@@ -73,7 +184,8 @@
             <div class="header-actions">
                 <button class="icon-btn theme-toggle" onclick="toggleTheme()"><i class="ph ph-moon"
                         id="theme-icon"></i></button>
-                <button class="icon-btn support-btn" onclick="document.getElementById('support-modal').style.display='flex'" title="Help & Support">
+                <button class="icon-btn support-btn"
+                    onclick="document.getElementById('support-modal').style.display='flex'" title="Help & Support">
                     <i class="ph ph-headset"></i>
                 </button>
                 <a href="{{ url_for(current_user.role_raw ~ '.notifications') }}"><button
@@ -117,24 +229,37 @@
     </div>
 
     <!-- Customer Support Modal -->
-    <div id="support-modal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
-        <div class="modal-content" style="background: var(--surface); padding: 2rem; border-radius: var(--radius-lg); width: 100%; max-width: 500px; box-shadow: var(--shadow-lg);">
-            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <div id="support-modal" class="modal-overlay"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div class="modal-content"
+            style="background: var(--card-bg); padding: 2rem; border-radius: 12px; width: 100%; max-width: 500px; box-shadow: var(--shadow-hover);">
+            <div class="modal-header"
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                 <h2 style="margin: 0; font-size: 1.25rem;">Help & Support Station</h2>
-                <button class="icon-btn" onclick="document.getElementById('support-modal').style.display='none'" style="background: none; border: none; cursor: pointer; color: var(--text-muted);"><i class="ph ph-x"></i></button>
+                <button class="icon-btn" onclick="document.getElementById('support-modal').style.display='none'"
+                    style="background: none; border: none; cursor: pointer; color: var(--text-muted);"><i
+                        class="ph ph-x"></i></button>
             </div>
             <form action="{{ url_for('support.submit_ticket') }}" method="POST">
                 <div class="form-group" style="margin-bottom: 1rem;">
-                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.85rem; font-weight: 600;">Subject</label>
-                    <input type="text" name="subject" required placeholder="What do you need help with?" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary); outline: none;">
+                    <label
+                        style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.85rem; font-weight: 600;">Subject</label>
+                    <input type="text" name="subject" required placeholder="What do you need help with?"
+                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary); outline: none;">
                 </div>
                 <div class="form-group" style="margin-bottom: 1.5rem;">
-                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.85rem; font-weight: 600;">Message</label>
-                    <textarea name="message" rows="4" required placeholder="Describe your issue or feedback..." style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary); resize: vertical; outline: none;"></textarea>
+                    <label
+                        style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.85rem; font-weight: 600;">Message</label>
+                    <textarea name="message" rows="4" required placeholder="Describe your issue or feedback..."
+                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary); resize: vertical; outline: none;"></textarea>
                 </div>
                 <div class="form-actions" style="display: flex; justify-content: flex-end; gap: 1rem;">
-                    <button type="button" class="action-box" onclick="document.getElementById('support-modal').style.display='none'" style="padding: 0.6rem 1.2rem; background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; width: auto; font-size: 0.9rem;">Cancel</button>
-                    <button type="submit" class="action-box green" style="padding: 0.6rem 1.2rem; cursor: pointer; width: auto; font-size: 0.9rem;"><i class="ph ph-paper-plane-tilt"></i> Submit Ticket</button>
+                    <button type="button" class="action-box"
+                        onclick="document.getElementById('support-modal').style.display='none'"
+                        style="padding: 0.6rem 1.2rem; background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; width: auto; font-size: 0.9rem;">Cancel</button>
+                    <button type="submit" class="action-box green"
+                        style="padding: 0.6rem 1.2rem; cursor: pointer; width: auto; font-size: 0.9rem;"><i
+                            class="ph ph-paper-plane-tilt"></i> Submit Ticket</button>
                 </div>
             </form>
         </div>
@@ -170,10 +295,10 @@
     <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const supabaseUrl    = "{{ supabase_url }}";
-        const supabaseKey    = "{{ supabase_anon_key }}";
-        const accessToken    = "{{ current_user.access_token if current_user.is_logged_in else '' }}";
-        const currentUserId  = "{{ current_user.id if current_user.is_logged_in else '' }}";
+        const supabaseUrl = "{{ supabase_url }}";
+        const supabaseKey = "{{ supabase_anon_key }}";
+        const accessToken = "{{ current_user.access_token if current_user.is_logged_in else '' }}";
+        const currentUserId = "{{ current_user.id if current_user.is_logged_in else '' }}";
 
         let supabaseClient = null;
         if (supabaseUrl && supabaseKey) {
@@ -185,8 +310,8 @@
              */
             supabaseClient = supabase.createClient(supabaseUrl, supabaseKey, {
                 auth: {
-                    persistSession:    false,   // don't cache session in localStorage
-                    autoRefreshToken:  false,   // don't try to silently refresh
+                    persistSession: false,   // don't cache session in localStorage
+                    autoRefreshToken: false,   // don't try to silently refresh
                     detectSessionInUrl: false,  // don't parse hash fragments
                 },
                 global: accessToken ? {
@@ -194,6 +319,116 @@
                 } : {}
             });
         }
+
+        // --- Notification Sound Synthesizer ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function playNotificationSound() {
+            if (!audioCtx) {
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+            oscillator.frequency.exponentialRampToValueAtTime(1760, audioCtx.currentTime + 0.1); // A6
+
+            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + 0.05);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + 0.2);
+        }
+
+        // --- Toast System ---
+        function showToast(title, message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+
+            let iconClass = 'ph-info';
+            if (type === 'success') iconClass = 'ph-check-circle';
+            else if (type === 'error') iconClass = 'ph-warning-circle';
+            else if (type === 'warning') iconClass = 'ph-warning';
+
+            toast.innerHTML = `
+                <i class="ph ${iconClass} toast-icon"></i>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close"><i class="ph ph-x"></i></button>
+            `;
+
+            container.appendChild(toast);
+            playNotificationSound();
+
+            const closeBtn = toast.querySelector('.toast-close');
+            closeBtn.onclick = () => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            };
+
+            // Auto dismiss after 5 seconds
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.style.opacity = '0';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 5000);
+        }
+
+        // --- Supabase Realtime Notifications ---
+        document.addEventListener("DOMContentLoaded", () => {
+            if (supabaseClient && currentUserId) {
+                // Fetch initial unread count
+                supabaseClient
+                    .from('notifications')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('user_id', currentUserId)
+                    .eq('is_read', false)
+                    .then(({ count, error }) => {
+                        if (!error && count > 0) {
+                            const badge = document.querySelector('.notification-bell .badge');
+                            if (badge) {
+                                badge.textContent = count;
+                                badge.style.display = 'flex';
+                            }
+                        }
+                    });
+
+                // Listen for new notifications
+                supabaseClient.channel('realtime-notifications')
+                    .on(
+                        'postgres_changes',
+                        { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${currentUserId}` },
+                        (payload) => {
+                            const newNotif = payload.new;
+                            showToast(newNotif.title, newNotif.message, newNotif.type || 'info');
+
+                            // Update badge count
+                            const badge = document.querySelector('.notification-bell .badge');
+                            if (badge) {
+                                const currentCount = parseInt(badge.textContent || '0');
+                                badge.textContent = currentCount + 1;
+                                badge.style.display = 'flex';
+                            }
+                        }
+                    )
+                    .subscribe();
+            }
+        });
     </script>
 
 </body>

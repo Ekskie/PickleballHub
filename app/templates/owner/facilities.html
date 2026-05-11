@@ -26,7 +26,10 @@
 .empty-state p { font-size:0.85rem; color:var(--text-muted); max-width:300px; }
 .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:1000; align-items:center; justify-content:center; }
 .modal-overlay.open { display:flex; }
-.modal-box { background:var(--sidebar-bg); border:1px solid var(--card-border); border-radius:16px; padding:28px; width:100%; max-width:480px; box-shadow:0 20px 60px rgba(0,0,0,0.4); animation:slideUp 0.25s ease; }
+.modal-box { background:var(--sidebar-bg); border:1px solid var(--card-border); border-radius:16px; padding:28px; width:100%; max-width:480px; box-shadow:0 20px 60px rgba(0,0,0,0.4); animation:slideUp 0.25s ease; max-height: 90vh; overflow-y: auto; }
+.modal-box-large { max-width: 800px; }
+.modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.modal-grid-full { grid-column: 1 / -1; }
 @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
 .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
 .modal-header h3 { font-size:1.1rem; font-weight:700; color:var(--text-primary); }
@@ -38,7 +41,11 @@
 .form-group input:focus,.form-group select:focus,.form-group textarea:focus { outline:none; border-color:var(--primary-orange); }
 .form-group textarea { resize:vertical; min-height:80px; }
 .modal-footer { display:flex; justify-content:flex-end; gap:10px; margin-top:22px; }
+.map-picker { width: 100%; height: 200px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 8px; z-index: 1; }
 </style>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -84,7 +91,7 @@
                 </div>
             </div>
             <div class="facility-card-actions">
-                <button class="btn-sm btn-sm-outline" onclick="openEditFacility('{{ f.id }}','{{ f.name|e }}','{{ f.location|e }}','{{ f.description|e }}','{{ f.status }}','{{ (f.open_time or '08:00')[:5] }}','{{ (f.close_time or '21:00')[:5] }}')">
+                <button class="btn-sm btn-sm-outline" onclick="openEditFacility('{{ f.id }}','{{ f.name|e }}','{{ f.location|e }}','{{ f.description|e }}','{{ f.status }}','{{ (f.open_time or '08:00')[:5] }}','{{ (f.close_time or '21:00')[:5] }}', '{{ f.latitude or '' }}', '{{ f.longitude or '' }}', '{{ f.image_url or '' }}')">
                     <i class="ph ph-pencil-simple"></i> Edit
                 </button>
                 <a href="{{ url_for('owner.courts') }}?facility={{ f.id }}" class="btn-sm btn-sm-primary" style="text-decoration:none;">
@@ -115,21 +122,40 @@
 
 <!-- ADD FACILITY MODAL -->
 <div class="modal-overlay" id="addFacilityModal">
-    <div class="modal-box">
+    <div class="modal-box modal-box-large">
         <div class="modal-header">
             <h3><i class="ph ph-buildings" style="color:var(--primary-orange);"></i> Add New Facility</h3>
             <button class="modal-close" onclick="closeModal('addFacilityModal')"><i class="ph ph-x"></i></button>
         </div>
         <form method="POST" action="{{ url_for('owner.add_facility') }}">
-            <div class="form-group"><label>Facility Name *</label><input type="text" name="name" placeholder="e.g. Oasis Pickleball Club" required></div>
-            <div class="form-group"><label>Location / Address</label><input type="text" name="location" placeholder="e.g. 123 Main St, Springfield"></div>
-            <div class="form-group"><label>Description</label><textarea name="description" placeholder="Brief description..."></textarea></div>
-            <div class="form-group"><label>Status</label><select name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-                <div class="form-group"><label><i class="ph ph-clock"></i> Opening Time</label><input type="time" name="open_time" value="08:00" required></div>
-                <div class="form-group"><label><i class="ph ph-clock"></i> Closing Time</label><input type="time" name="close_time" value="21:00" required></div>
+            <div class="modal-grid">
+                <!-- Left Column -->
+                <div>
+                    <div class="form-group"><label>Facility Name *</label><input type="text" name="name" placeholder="e.g. Oasis Pickleball Club" required></div>
+                    <div class="form-group"><label>Location / Address</label><input type="text" name="location" placeholder="e.g. 123 Main St, Springfield"></div>
+                    <div class="form-group"><label>Description</label><textarea name="description" placeholder="Brief description..."></textarea></div>
+                    <div class="form-group"><label>Image URL (Optional)</label><input type="url" name="image_url" placeholder="https://example.com/image.jpg"></div>
+                    
+                    <div class="form-group"><label>Status</label><select name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <div class="form-group"><label><i class="ph ph-clock"></i> Opening Time</label><input type="time" name="open_time" value="08:00" required></div>
+                        <div class="form-group"><label><i class="ph ph-clock"></i> Closing Time</label><input type="time" name="close_time" value="21:00" required></div>
+                    </div>
+                </div>
+                
+                <!-- Right Column (Map) -->
+                <div>
+                    <div class="form-group" style="height: 100%; display: flex; flex-direction: column;">
+                        <label>Pin Location on Map</label>
+                        <input type="hidden" name="latitude" id="add_lat">
+                        <input type="hidden" name="longitude" id="add_lng">
+                        <div id="add-map" class="map-picker" style="flex-grow: 1; min-height: 250px;"></div>
+                        <small style="color:var(--text-muted);font-size:0.75rem; margin-top: 8px;">Click on the map to set the facility's exact location.</small>
+                    </div>
+                </div>
             </div>
-            <div class="modal-footer">
+
+            <div class="modal-footer modal-grid-full">
                 <button type="button" class="btn-sm btn-sm-outline" onclick="closeModal('addFacilityModal')">Cancel</button>
                 <button type="submit" class="btn-sm btn-sm-primary"><i class="ph ph-check"></i> Save Facility</button>
             </div>
@@ -139,23 +165,42 @@
 
 <!-- EDIT FACILITY MODAL -->
 <div class="modal-overlay" id="editFacilityModal">
-    <div class="modal-box">
+    <div class="modal-box modal-box-large">
         <div class="modal-header">
             <h3><i class="ph ph-pencil-simple" style="color:var(--primary-orange);"></i> Edit Facility</h3>
             <button class="modal-close" onclick="closeModal('editFacilityModal')"><i class="ph ph-x"></i></button>
         </div>
         <form method="POST" id="editFacilityForm" action="">
-            <div class="form-group"><label>Facility Name *</label><input type="text" name="name" id="editFacilityName" required></div>
-            <div class="form-group"><label>Location / Address</label><input type="text" name="location" id="editFacilityLocation"></div>
-            <div class="form-group"><label>Description</label><textarea name="description" id="editFacilityDesc"></textarea></div>
-            <div class="form-group"><label>Status</label>
-                <select name="status" id="editFacilityStatus"><option value="active">Active</option><option value="inactive">Inactive</option></select>
+            <div class="modal-grid">
+                <!-- Left Column -->
+                <div>
+                    <div class="form-group"><label>Facility Name *</label><input type="text" name="name" id="editFacilityName" required></div>
+                    <div class="form-group"><label>Location / Address</label><input type="text" name="location" id="editFacilityLocation"></div>
+                    <div class="form-group"><label>Description</label><textarea name="description" id="editFacilityDesc"></textarea></div>
+                    <div class="form-group"><label>Image URL (Optional)</label><input type="url" name="image_url" id="editFacilityImage" placeholder="https://example.com/image.jpg"></div>
+                    
+                    <div class="form-group"><label>Status</label>
+                        <select name="status" id="editFacilityStatus"><option value="active">Active</option><option value="inactive">Inactive</option></select>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <div class="form-group"><label><i class="ph ph-clock"></i> Opening Time</label><input type="time" name="open_time" id="editFacilityOpen" value="08:00" required></div>
+                        <div class="form-group"><label><i class="ph ph-clock"></i> Closing Time</label><input type="time" name="close_time" id="editFacilityClose" value="21:00" required></div>
+                    </div>
+                </div>
+                
+                <!-- Right Column (Map) -->
+                <div>
+                    <div class="form-group" style="height: 100%; display: flex; flex-direction: column;">
+                        <label>Pin Location on Map</label>
+                        <input type="hidden" name="latitude" id="edit_lat">
+                        <input type="hidden" name="longitude" id="edit_lng">
+                        <div id="edit-map" class="map-picker" style="flex-grow: 1; min-height: 250px;"></div>
+                        <small style="color:var(--text-muted);font-size:0.75rem; margin-top: 8px;">Click on the map to update the facility's exact location.</small>
+                    </div>
+                </div>
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-                <div class="form-group"><label><i class="ph ph-clock"></i> Opening Time</label><input type="time" name="open_time" id="editFacilityOpen" value="08:00" required></div>
-                <div class="form-group"><label><i class="ph ph-clock"></i> Closing Time</label><input type="time" name="close_time" id="editFacilityClose" value="21:00" required></div>
-            </div>
-            <div class="modal-footer">
+
+            <div class="modal-footer modal-grid-full">
                 <button type="button" class="btn-sm btn-sm-outline" onclick="closeModal('editFacilityModal')">Cancel</button>
                 <button type="submit" class="btn-sm btn-sm-primary"><i class="ph ph-check"></i> Update Facility</button>
             </div>
@@ -187,10 +232,62 @@
 </div>
 
 <script>
-function openModal(id) { document.getElementById(id).classList.add('open'); }
+let addMap, editMap;
+let addMarker, editMarker;
+const defaultLat = 14.2831; // Default to Laguna, PH
+const defaultLng = 121.0963;
+
+function initAddMap() {
+    if (!addMap) {
+        addMap = L.map('add-map').setView([defaultLat, defaultLng], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(addMap);
+        
+        addMap.on('click', function(e) {
+            if (addMarker) addMap.removeLayer(addMarker);
+            addMarker = L.marker(e.latlng).addTo(addMap);
+            document.getElementById('add_lat').value = e.latlng.lat;
+            document.getElementById('add_lng').value = e.latlng.lng;
+        });
+    }
+    setTimeout(() => addMap.invalidateSize(), 100);
+}
+
+function initEditMap(lat, lng) {
+    if (!editMap) {
+        editMap = L.map('edit-map').setView([lat || defaultLat, lng || defaultLng], lat ? 15 : 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(editMap);
+        
+        editMap.on('click', function(e) {
+            if (editMarker) editMap.removeLayer(editMarker);
+            editMarker = L.marker(e.latlng).addTo(editMap);
+            document.getElementById('edit_lat').value = e.latlng.lat;
+            document.getElementById('edit_lng').value = e.latlng.lng;
+        });
+    } else {
+        editMap.setView([lat || defaultLat, lng || defaultLng], lat ? 15 : 12);
+    }
+    
+    if (editMarker) editMap.removeLayer(editMarker);
+    if (lat && lng) {
+        editMarker = L.marker([lat, lng]).addTo(editMap);
+        document.getElementById('edit_lat').value = lat;
+        document.getElementById('edit_lng').value = lng;
+    } else {
+        document.getElementById('edit_lat').value = '';
+        document.getElementById('edit_lng').value = '';
+    }
+    
+    setTimeout(() => editMap.invalidateSize(), 100);
+}
+
+function openModal(id) { 
+    document.getElementById(id).classList.add('open'); 
+    if (id === 'addFacilityModal') initAddMap();
+}
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); }));
-function openEditFacility(id, name, location, desc, status, open, close) {
+
+function openEditFacility(id, name, location, desc, status, open, close, lat, lng, image_url) {
     document.getElementById('editFacilityForm').action = `/owner/facilities/${id}/edit`;
     document.getElementById('editFacilityName').value = name;
     document.getElementById('editFacilityLocation').value = location;
@@ -198,8 +295,12 @@ function openEditFacility(id, name, location, desc, status, open, close) {
     document.getElementById('editFacilityStatus').value = status;
     document.getElementById('editFacilityOpen').value = open || '08:00';
     document.getElementById('editFacilityClose').value = close || '21:00';
+    document.getElementById('editFacilityImage').value = image_url || '';
+    
     openModal('editFacilityModal');
+    initEditMap(lat ? parseFloat(lat) : null, lng ? parseFloat(lng) : null);
 }
+
 function openKycModal(id) {
     document.getElementById('kycForm').action = `/owner/facilities/${id}/kyc`;
     openModal('kycModal');
