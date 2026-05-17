@@ -5,8 +5,25 @@ from datetime import datetime, timedelta, timezone
 
 PH_TZ = timezone(timedelta(hours=8))
 
+from flask import g
+import os
+from supabase import create_client
+
+_cached_db = None
+
 def get_db():
-    return supabase_admin or supabase
+    global _cached_db
+    if _cached_db is None:
+        import os
+        import httpx
+        from supabase import create_client, ClientOptions
+        url = os.environ.get('SUPABASE_URL')
+        key = os.environ.get('SERVICE_ROLE_KEY') or os.environ.get('SUPABASE_KEY')
+        if url and key:
+            http_client = httpx.Client(http2=False, limits=httpx.Limits(keepalive_expiry=10.0), timeout=30.0)
+            options = ClientOptions(httpx_client=http_client)
+            _cached_db = create_client(url, key, options=options)
+    return _cached_db
 
 
 superadmin_bp = Blueprint('superadmin', __name__, url_prefix='/superadmin')
@@ -302,3 +319,4 @@ def community():
 @require_role('superadmin')
 def tutorials():
     return render_template('superadmin/tutorials.html')
+

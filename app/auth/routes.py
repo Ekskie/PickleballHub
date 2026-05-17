@@ -1,5 +1,22 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-from app import supabase
+import os
+from flask import g
+from supabase import create_client
+
+_cached_db = None
+
+def get_db():
+    global _cached_db
+    if _cached_db is None:
+        import os
+        import httpx
+        from supabase import create_client, ClientOptions
+        url = os.environ.get('SUPABASE_URL')
+        key = os.environ.get('SERVICE_ROLE_KEY') or os.environ.get('SUPABASE_KEY')
+        http_client = httpx.Client(http2=False, limits=httpx.Limits(keepalive_expiry=10.0), timeout=30.0)
+        options = ClientOptions(httpx_client=http_client)
+        _cached_db = create_client(url, key, options=options)
+    return _cached_db
 
 auth_bp = Blueprint('auth', __name__, url_prefix='')
 
@@ -41,8 +58,8 @@ def login():
 
         if token_hash and token_type in ['email', 'signup']:
             try:
-                if supabase:
-                    resp = supabase.auth.verify_otp({
+                if get_db():
+                    resp = get_db().auth.verify_otp({
                         "token_hash": token_hash,
                         "type": token_type
                     })
@@ -62,8 +79,8 @@ def login():
         password = request.form.get('password')
 
         try:
-            if supabase:
-                response = supabase.auth.sign_in_with_password({
+            if get_db():
+                response = get_db().auth.sign_in_with_password({
                     "email": email,
                     "password": password
                 })
@@ -84,7 +101,7 @@ def login():
                     # Always prefer the DB profiles.role over user_metadata
                     # (DB is the source of truth; metadata may contain old/incorrect values)
                     try:
-                        profile_resp = supabase.table('profiles').select(
+                        profile_resp = get_db().table('profiles').select(
                             'role, first_name, last_name, phone'
                         ).eq('id', user.id).single().execute()
                         if profile_resp.data:
@@ -129,8 +146,8 @@ def signup():
         proficiency = request.form.get('proficiency') if role == 'player' else None
 
         try:
-            if supabase:
-                sign_up_resp = supabase.auth.sign_up({
+            if get_db():
+                sign_up_resp = get_db().auth.sign_up({
                     "email": email,
                     "password": password,
                     "options": {
@@ -150,8 +167,7 @@ def signup():
                 # we overwrite it here to ensure the chosen role is persisted.
                 if sign_up_resp and sign_up_resp.user:
                     try:
-                        from app import supabase_admin
-                        admin_client = supabase_admin or supabase
+                        admin_client = get_db()
                         admin_client.table('profiles').upsert({
                             'id':         sign_up_resp.user.id,
                             'first_name': first_name,
@@ -185,8 +201,8 @@ def resend_verification():
         return redirect(url_for('auth.login', pending_verification='1'))
 
     try:
-        if supabase:
-            supabase.auth.resend({
+        if get_db():
+            get_db().auth.resend({
                 "type": "signup",
                 "email": email,
                 "options": {
@@ -215,8 +231,8 @@ def forgot_password():
             return render_template('landings/forgot_password.html')
 
         try:
-            if supabase:
-                supabase.auth.reset_password_for_email(
+            if get_db():
+                get_db().auth.reset_password_for_email(
                     email,
                     options={
                         "email_redirect_to": url_for('auth.reset_password', _external=True)
@@ -245,8 +261,8 @@ def reset_password():
         # ── Path A: PKCE flow — ?token_hash=xxx&type=recovery ────────────────
         if token_hash and token_type == 'recovery':
             try:
-                if supabase:
-                    resp = supabase.auth.verify_otp({
+                if get_db():
+                    resp = get_db().auth.verify_otp({
                         "token_hash": token_hash,
                         "type": "recovery"
                     })
@@ -265,9 +281,9 @@ def reset_password():
         # (tokens were in the URL hash; JS extracted and forwarded them here)
         if access_token and token_type == 'recovery':
             try:
-                if supabase:
+                if get_db():
                     # Authenticate the client with the token so update_user will work
-                    supabase.auth.set_session(access_token, refresh_token)
+                    get_db().auth.set_session(access_token, refresh_token)
                     session['reset_access_token']  = access_token
                     session['reset_refresh_token'] = refresh_token
                     return render_template('landings/reset_password.html',
@@ -310,10 +326,10 @@ def reset_password():
                                refresh_token=refresh_token)
 
     try:
-        if supabase:
+        if get_db():
             # Restore the authenticated session then update the password
-            supabase.auth.set_session(access_token, refresh_token)
-            supabase.auth.update_user({"password": password})
+            get_db().auth.set_session(access_token, refresh_token)
+            get_db().auth.update_user({"password": password})
 
             # Clear the reset tokens from session
             session.pop('reset_access_token', None)
@@ -338,9 +354,10 @@ def reset_password():
 @auth_bp.route('/logout')
 def logout():
     session.clear()
-    if supabase:
+    if get_db():
         try:
-            supabase.auth.sign_out()
+            get_db().auth.sign_out()
         except Exception:
             pass
     return redirect(url_for('auth.login'))
+

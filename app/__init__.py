@@ -69,8 +69,22 @@ def create_app():
                 supabase_anon_key=supabase_key
             )
 
-        # --- 1. Try Supabase (admin client, bypasses RLS) ---
-        client = supabase_admin or supabase
+        # --- 1. Try Supabase (cached admin client, bypasses RLS) ---
+        global _cached_admin_db
+        if '_cached_admin_db' not in globals():
+            _cached_admin_db = None
+            
+        if _cached_admin_db is None:
+            import os
+            import httpx
+            from supabase import create_client, ClientOptions
+            url = os.environ.get('SUPABASE_URL')
+            key = os.environ.get('SERVICE_ROLE_KEY') or os.environ.get('SUPABASE_KEY')
+            if url and key:
+                http_client = httpx.Client(http2=False, limits=httpx.Limits(keepalive_expiry=10.0), timeout=30.0)
+                _cached_admin_db = create_client(url, key, options=ClientOptions(httpx_client=http_client))
+                
+        client = _cached_admin_db
         if client:
             try:
                 resp = client.table('profiles').select(

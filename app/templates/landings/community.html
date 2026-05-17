@@ -103,49 +103,36 @@
                                 style="color: #00C6ff;"></i> Featured Local Clubs</h3>
                     </div>
 
-                    <!-- Club 1 -->
-                    <div class="club-card">
-                        <div class="club-image"
-                            style="background-image: url('https://images.unsplash.com/photo-1554068865-24cecd4e34f8?q=80&w=400&auto=format&fit=crop');">
-                        </div>
-                        <div class="club-content">
-                            <div class="club-header">
-                                <div>
-                                    <h4 class="club-title">Paete Paddlers</h4>
-                                    <span class="club-location"><i class="ph-fill ph-map-pin"></i> Paete Central</span>
+                    {% if clubs %}
+                        {% for club in clubs %}
+                        <div class="club-card">
+                            <div class="club-image"
+                                style="background-image: url('{{ club.logo_url or 'https://images.unsplash.com/photo-1554068865-24cecd4e34f8?q=80&w=400&auto=format&fit=crop' }}');">
+                            </div>
+                            <div class="club-content">
+                                <div class="club-header">
+                                    <div>
+                                        <h4 class="club-title">{{ club.name }}</h4>
+                                        <span class="club-location"><i class="ph-fill ph-map-pin"></i> Local Club</span>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="club-stats">
-                                <span class="club-stat"><i class="ph-fill ph-users"></i> 150+ Members</span>
-                                <span class="club-stat"><i class="ph-fill ph-star"></i> Pro Affiliated</span>
-                            </div>
-                            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 16px;">The
-                                definitive community for competitive players in Paete. Regular drills on weekends.</p>
-                            <a href="{{ url_for('auth.login') }}" class="btn-join">Join Group</a>
-                        </div>
-                    </div>
-
-                    <!-- Club 2 -->
-                    <div class="club-card">
-                        <div class="club-image"
-                            style="background-image: url('https://plus.unsplash.com/premium_photo-1663102377017-024c0840b3ff?q=80&w=400&auto=format&fit=crop');">
-                        </div>
-                        <div class="club-content">
-                            <div class="club-header">
-                                <div>
-                                    <h4 class="club-title">Pakil Smashers</h4>
-                                    <span class="club-location"><i class="ph-fill ph-map-pin"></i> Pakil Indoor</span>
+                                <div class="club-stats">
+                                    <span class="club-stat"><i class="ph-fill ph-users"></i> Member Community</span>
+                                    <span class="club-stat"><i class="ph-fill ph-star"></i> Verified</span>
                                 </div>
+                                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 16px;">
+                                    {{ club.description or 'A local pickleball community.' }}
+                                </p>
+                                <a href="{{ url_for('auth.login') }}" class="btn-join">Join Group</a>
                             </div>
-                            <div class="club-stats">
-                                <span class="club-stat"><i class="ph-fill ph-users"></i> 85 Members</span>
-                                <span class="club-stat"><i class="ph-fill ph-hand-heart"></i> Beginner Friendly</span>
-                            </div>
-                            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 16px;">Welcoming
-                                new players to learn the ropes. Nightly social play sessions.</p>
-                            <a href="{{ url_for('auth.login') }}" class="btn-join">Join Group</a>
                         </div>
-                    </div>
+                        {% endfor %}
+                    {% else %}
+                        <div style="text-align:center; padding: 2rem;">
+                            <i class="ph ph-users-three" style="font-size:2.5rem; opacity:0.3; display:block; margin-bottom:12px;"></i>
+                            <p style="color: var(--text-secondary);">No featured clubs right now. Check back soon!</p>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </section>

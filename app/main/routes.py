@@ -1,9 +1,26 @@
-from flask import Blueprint, render_template, request, jsonify, session
-from app import supabase_admin, supabase
+from flask import Blueprint, render_template, request, jsonify, session, g
+import os
+from supabase import create_client
 import random
 
 # Create a new blueprint for public-facing pages
 main_bp = Blueprint('main', __name__)
+
+_cached_db = None
+
+def get_db():
+    global _cached_db
+    if _cached_db is None:
+        import os
+        import httpx
+        from supabase import create_client, ClientOptions
+        url = os.environ.get('SUPABASE_URL')
+        key = os.environ.get('SERVICE_ROLE_KEY') or os.environ.get('SUPABASE_KEY')
+        if url and key:
+            http_client = httpx.Client(http2=False, limits=httpx.Limits(keepalive_expiry=10.0), timeout=30.0)
+            options = ClientOptions(httpx_client=http_client)
+            _cached_db = create_client(url, key, options=options)
+    return _cached_db
 
 @main_bp.route('/')
 def index():
@@ -15,7 +32,7 @@ def clinics():
     """Render the public clinics and tutorials page with real DB tutorials."""
     tutorials = []
     try:
-        client = supabase_admin or supabase
+        client = get_db()
         if client:
             resp = client.table('tutorials').select(
                 'id, title, description, youtube_url, level'
@@ -61,7 +78,7 @@ def tournaments():
     """Render the public tournaments page with real DB tournaments."""
     events = []
     try:
-        client = supabase_admin or supabase
+        client = get_db()
         if client:
             resp = client.table('events').select(
                 'id, title, type, format, prize_pool, image_url, event_date, start_time, end_time, location_label, entry_fee, status, max_players, description, '
@@ -79,8 +96,9 @@ def tournaments():
 def community():
     """Render the public community page with real posts from the DB."""
     posts = []
+    clubs = []
     try:
-        client = supabase_admin or supabase
+        client = get_db()
         if client:
             # Fetch recent posts with author profile info
             resp = client.table('community_posts').select(
@@ -127,10 +145,17 @@ def community():
                         'likes':       like_map.get(post['id'], 0),
                         'comments':    comment_map.get(post['id'], 0),
                     })
+
+            # Fetch 3 active clubs
+            club_resp = client.table('clubs').select('id, name, description, logo_url, created_at').eq('status', 'active').limit(10).execute()
+            if club_resp.data:
+                clubs_pool = club_resp.data
+                clubs = clubs_pool if len(clubs_pool) <= 3 else random.sample(clubs_pool, 3)
+
     except Exception as e:
         print(f'[community landing] DB error: {e}')
 
-    return render_template('landings/community.html', posts=posts)
+    return render_template('landings/community.html', posts=posts, clubs=clubs)
 
 
 @main_bp.route('/courts')
