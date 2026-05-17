@@ -1,6 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify, flash
 from app.decorators import require_role
 from app import supabase_admin, supabase
+from datetime import datetime, timedelta, timezone
+
+PH_TZ = timezone(timedelta(hours=8))
 
 owner_bp = Blueprint('owner', __name__, url_prefix='/owner')
 
@@ -99,13 +102,32 @@ def add_facility():
     close_time = request.form.get('close_time', '21:00')
     latitude  = request.form.get('latitude')
     longitude = request.form.get('longitude')
-    image_url = request.form.get('image_url', '').strip()
 
     if not name:
         flash('Facility name is required.', 'error')
         return redirect(url_for('owner.facilities'))
 
     db = get_db()
+
+    # Handle image upload
+    image_url = None
+    image_file = request.files.get('facility_image')
+    if image_file and image_file.filename:
+        try:
+            import time
+            ext = image_file.filename.rsplit('.', 1)[-1].lower()
+            filename = f"facility_{owner_id}_{int(time.time())}.{ext}"
+            file_bytes = image_file.read()
+            db.storage.from_('facility-images').upload(
+                file=file_bytes,
+                path=filename,
+                file_options={"content-type": image_file.content_type}
+            )
+            image_url = db.storage.from_('facility-images').get_public_url(filename)
+        except Exception as e:
+            print(f"Facility image upload error: {e}")
+            flash('Warning: Image could not be uploaded.', 'warning')
+
     try:
         db.table('facilities').insert({
             'owner_id': owner_id,
@@ -117,7 +139,7 @@ def add_facility():
             'close_time': close_time,
             'latitude': float(latitude) if latitude else None,
             'longitude': float(longitude) if longitude else None,
-            'image_url': image_url if image_url else None,
+            'image_url': image_url,
         }).execute()
         flash(f'Facility "{name}" added successfully!', 'success')
     except Exception as e:
@@ -138,21 +160,40 @@ def edit_facility(facility_id):
     close_time = request.form.get('close_time', '21:00')
     latitude   = request.form.get('latitude')
     longitude  = request.form.get('longitude')
-    image_url  = request.form.get('image_url', '').strip()
 
     db = get_db()
+
+    update_data = {
+        'name': name,
+        'location': location,
+        'description': desc,
+        'status': status,
+        'open_time': open_time,
+        'close_time': close_time,
+        'latitude': float(latitude) if latitude else None,
+        'longitude': float(longitude) if longitude else None,
+    }
+
+    # Handle image upload
+    image_file = request.files.get('facility_image')
+    if image_file and image_file.filename:
+        try:
+            import time
+            ext = image_file.filename.rsplit('.', 1)[-1].lower()
+            filename = f"facility_{facility_id}_{int(time.time())}.{ext}"
+            file_bytes = image_file.read()
+            db.storage.from_('facility-images').upload(
+                file=file_bytes,
+                path=filename,
+                file_options={"content-type": image_file.content_type}
+            )
+            update_data['image_url'] = db.storage.from_('facility-images').get_public_url(filename)
+        except Exception as e:
+            print(f"Facility image upload error: {e}")
+            flash('Warning: Image could not be uploaded.', 'warning')
+
     try:
-        db.table('facilities').update({
-            'name': name,
-            'location': location,
-            'description': desc,
-            'status': status,
-            'open_time': open_time,
-            'close_time': close_time,
-            'latitude': float(latitude) if latitude else None,
-            'longitude': float(longitude) if longitude else None,
-            'image_url': image_url if image_url else None,
-        }).eq('id', facility_id).eq('owner_id', owner_id).execute()
+        db.table('facilities').update(update_data).eq('id', facility_id).eq('owner_id', owner_id).execute()
         flash(f'Facility updated successfully!', 'success')
     except Exception as e:
         flash(f'Error updating facility: {e}', 'error')
@@ -233,7 +274,7 @@ def courts():
 
         # Courts with facility name joined
         court_resp = db.table('courts').select(
-            'id, name, type, hourly_rate, status, facility_id, facilities(name)'
+            'id, name, type, hourly_rate, status, facility_id, image_url, facilities(name)'
         ).eq('owner_id', owner_id).order('created_at', desc=True).execute()
         courts_list = court_resp.data or []
     except Exception as e:
@@ -257,6 +298,26 @@ def add_court():
         return redirect(url_for('owner.courts'))
 
     db = get_db()
+
+    # Handle court image upload
+    image_url = None
+    image_file = request.files.get('court_image')
+    if image_file and image_file.filename:
+        try:
+            import time
+            ext = image_file.filename.rsplit('.', 1)[-1].lower()
+            filename = f"court_{owner_id}_{int(time.time())}.{ext}"
+            file_bytes = image_file.read()
+            db.storage.from_('court-images').upload(
+                file=file_bytes,
+                path=filename,
+                file_options={"content-type": image_file.content_type}
+            )
+            image_url = db.storage.from_('court-images').get_public_url(filename)
+        except Exception as e:
+            print(f"Court image upload error: {e}")
+            flash('Warning: Court image could not be uploaded.', 'warning')
+
     try:
         db.table('courts').insert({
             'owner_id': owner_id,
@@ -265,6 +326,7 @@ def add_court():
             'type': court_type,
             'hourly_rate': float(hourly_rate),
             'status': status,
+            'image_url': image_url,
         }).execute()
         flash(f'Court "{name}" added successfully!', 'success')
     except Exception as e:
@@ -284,14 +346,35 @@ def edit_court(court_id):
     status      = request.form.get('status', 'active')
 
     db = get_db()
+
+    update_data = {
+        'facility_id': facility_id,
+        'name': name,
+        'type': court_type,
+        'hourly_rate': float(hourly_rate),
+        'status': status,
+    }
+
+    # Handle court image upload
+    image_file = request.files.get('court_image')
+    if image_file and image_file.filename:
+        try:
+            import time
+            ext = image_file.filename.rsplit('.', 1)[-1].lower()
+            filename = f"court_{court_id}_{int(time.time())}.{ext}"
+            file_bytes = image_file.read()
+            db.storage.from_('court-images').upload(
+                file=file_bytes,
+                path=filename,
+                file_options={"content-type": image_file.content_type}
+            )
+            update_data['image_url'] = db.storage.from_('court-images').get_public_url(filename)
+        except Exception as e:
+            print(f"Court image upload error: {e}")
+            flash('Warning: Court image could not be uploaded.', 'warning')
+
     try:
-        db.table('courts').update({
-            'facility_id': facility_id,
-            'name': name,
-            'type': court_type,
-            'hourly_rate': float(hourly_rate),
-            'status': status,
-        }).eq('id', court_id).eq('owner_id', owner_id).execute()
+        db.table('courts').update(update_data).eq('id', court_id).eq('owner_id', owner_id).execute()
         flash('Court updated!', 'success')
     except Exception as e:
         flash(f'Error updating court: {e}', 'error')
@@ -431,6 +514,139 @@ def event_participants(event_id):
         flash(f'Error loading participants: {e}', 'error')
         
     return render_template('owner/event_participants.html', event=event_details, participants=participants)
+
+@owner_bp.route('/tournaments/<event_id>/manage')
+@require_role('owner')
+def tournament_manage(event_id):
+    owner_id = session.get('user_id')
+    db = get_db()
+    
+    try:
+        # Verify ownership
+        fac_resp = db.table('facilities').select('id').eq('owner_id', owner_id).execute()
+        fac_ids = [f['id'] for f in (fac_resp.data or [])]
+        if not fac_ids:
+            flash("Unauthorized.", "error")
+            return redirect(url_for('owner.events'))
+            
+        ev_resp = db.table('events').select('*').eq('id', event_id).in_('facility_id', fac_ids).eq('type', 'tournament').single().execute()
+        event = ev_resp.data
+        if not event:
+            flash("Tournament not found.", "error")
+            return redirect(url_for('owner.events'))
+            
+        # Get all tournaments for dropdown
+        all_t_resp = db.table('events').select('id, title').in_('facility_id', fac_ids).eq('type', 'tournament').execute()
+        all_tournaments = all_t_resp.data or []
+        
+        # Get participants
+        reg_resp = db.table('event_registrations').select(
+            'player_id, profiles!player_id(first_name, last_name)'
+        ).eq('event_id', event_id).eq('status', 'registered').execute()
+        participants = reg_resp.data or []
+        
+        # Get matches
+        matches_resp = db.table('tournament_matches').select(
+            'id, round_number, match_number, player1_id, player2_id, winner_id, player1_score, player2_score, status, played_at, '
+            'player1:profiles!player1_id(id, first_name, last_name), '
+            'player2:profiles!player2_id(id, first_name, last_name), '
+            'winner:profiles!winner_id(id, first_name, last_name)'
+        ).eq('event_id', event_id).order('round_number').order('match_number').execute()
+        matches = matches_resp.data or []
+        
+        has_bracket = len(matches) > 0
+        
+        return render_template('owner/tournament_manage.html', 
+                               event=event, 
+                               all_tournaments=all_tournaments,
+                               participants=participants,
+                               matches=matches,
+                               has_bracket=has_bracket)
+                               
+    except Exception as e:
+        flash(f"Error loading tournament manage: {e}", "error")
+        return redirect(url_for('owner.events'))
+
+@owner_bp.route('/tournaments/<event_id>/bracket/generate', methods=['POST'])
+@require_role('owner')
+def bracket_generate(event_id):
+    owner_id = session.get('user_id')
+    db = get_db()
+    
+    try:
+        # Verify ownership
+        fac_resp = db.table('facilities').select('id').eq('owner_id', owner_id).execute()
+        fac_ids = [f['id'] for f in (fac_resp.data or [])]
+        db.table('events').select('id').eq('id', event_id).in_('facility_id', fac_ids).single().execute()
+        
+        # Get participants
+        reg_resp = db.table('event_registrations').select('player_id').eq('event_id', event_id).eq('status', 'registered').execute()
+        players = [r['player_id'] for r in (reg_resp.data or [])]
+        
+        if len(players) < 2:
+            flash("Not enough players to generate a bracket.", "warning")
+            return redirect(url_for('owner.tournament_manage', event_id=event_id))
+            
+        import random
+        random.shuffle(players)
+        
+        matches_to_insert = []
+        match_num = 1
+        for i in range(0, len(players), 2):
+            p1 = players[i]
+            p2 = players[i+1] if i+1 < len(players) else None
+            
+            matches_to_insert.append({
+                'event_id': event_id,
+                'round_number': 1,
+                'match_number': match_num,
+                'player1_id': p1,
+                'player2_id': p2,
+                'status': 'pending' if p2 else 'completed',
+                'winner_id': p1 if not p2 else None # Bye
+            })
+            match_num += 1
+            
+        if matches_to_insert:
+            db.table('tournament_matches').insert(matches_to_insert).execute()
+            
+        flash("Bracket generated successfully!", "success")
+        
+    except Exception as e:
+        flash(f"Error generating bracket: {e}", "error")
+        
+    return redirect(url_for('owner.tournament_manage', event_id=event_id))
+
+@owner_bp.route('/tournaments/<event_id>/matches/<match_id>/score', methods=['POST'])
+@require_role('owner')
+def match_score(event_id, match_id):
+    owner_id = session.get('user_id')
+    db = get_db()
+    
+    p1_score = request.form.get('player1_score', type=int)
+    p2_score = request.form.get('player2_score', type=int)
+    winner_id = request.form.get('winner_id') or None  # empty string → NULL (valid UUID expected)
+    
+    try:
+        # Verify ownership
+        fac_resp = db.table('facilities').select('id').eq('owner_id', owner_id).execute()
+        fac_ids = [f['id'] for f in (fac_resp.data or [])]
+        db.table('events').select('id').eq('id', event_id).in_('facility_id', fac_ids).single().execute()
+        
+        db.table('tournament_matches').update({
+            'player1_score': p1_score,
+            'player2_score': p2_score,
+            'winner_id': winner_id,
+            'status': 'completed',
+            'played_at': datetime.now(PH_TZ).isoformat()
+        }).eq('id', match_id).eq('event_id', event_id).execute()
+        
+        flash("Score recorded successfully.", "success")
+        
+    except Exception as e:
+        flash(f"Error recording score: {e}", "error")
+        
+    return redirect(url_for('owner.tournament_manage', event_id=event_id))
 
 # ── Create Event ───────────────────────────────────────────────────────────────
 @owner_bp.route('/events/create', methods=['GET'])

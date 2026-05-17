@@ -102,7 +102,7 @@ def reservation():
     facilities = []
     try:
         resp = db.table('facilities').select(
-            'id, name, location, description, open_time, close_time, slot_duration_minutes, kyc_status'
+            'id, name, location, description, open_time, close_time, slot_duration_minutes, kyc_status, image_url, latitude, longitude'
         ).eq('status', 'active').order('name').execute()
         facilities = resp.data or []
     except Exception as e:
@@ -119,7 +119,7 @@ def api_reservation_courts():
     db = get_db()
     try:
         resp = db.table('courts').select(
-            'id, name, type, hourly_rate, status'
+            'id, name, type, hourly_rate, status, image_url'
         ).eq('facility_id', facility_id).eq('status', 'active').order('name').execute()
         return jsonify(resp.data or [])
     except Exception as e:
@@ -200,7 +200,7 @@ def my_reservations():
         resp = db.table('court_reservations').select(
             'id, date, start_time, end_time, total_hours, hourly_rate, total_amount, '
             'status, gcash_ref, created_at, '
-            'courts(name, type), facilities(name, location)'
+            'courts(name, type, image_url), facilities(name, location)'
         ).eq('player_id', player_id).order('created_at', desc=True).execute()
         raw_reservations = resp.data or []
         
@@ -319,12 +319,15 @@ def get_processed_queues(db, player_id=None):
     """Fetch queues for today, process wait times, and auto-complete games 15 mins past end time."""
     try:
         resp = db.table('court_queues').select(
-            'id, status, estimated_wait_mins, joined_at, player_id, courts(name), profiles(first_name, last_name), court_reservations!inner(date, start_time, end_time)'
+            'id, status, estimated_wait_mins, joined_at, player_id, facility_id, '
+            'courts(name), profiles(first_name, last_name), '
+            'facilities(id, name), '
+            'court_reservations!inner(date, start_time, end_time)'
         ).in_('status', ['waiting', 'next', 'playing']).order('joined_at').execute()
         raw_queues = resp.data or []
     except Exception as e:
         print("Error fetching queues:", e)
-        return [], None
+        return [], None, {}
         
     today_str = datetime.now(PH_TZ).strftime('%Y-%m-%d')
     now = datetime.now(PH_TZ)
@@ -343,7 +346,6 @@ def get_processed_queues(db, player_id=None):
             start_dt = datetime.strptime(start_time_str, '%Y-%m-%d %H:%M:%S').replace(tzinfo=PH_TZ)
             end_dt = datetime.strptime(end_time_str, '%Y-%m-%d %H:%M:%S').replace(tzinfo=PH_TZ)
         except ValueError:
-            # Handle cases where time might not have seconds
             start_dt = datetime.strptime(start_time_str, '%Y-%m-%d %H:%M').replace(tzinfo=PH_TZ)
             end_dt = datetime.strptime(end_time_str, '%Y-%m-%d %H:%M').replace(tzinfo=PH_TZ)
 
@@ -353,14 +355,13 @@ def get_processed_queues(db, player_id=None):
                 db.table('court_queues').update({'status': 'completed'}).eq('id', q['id']).execute()
             except Exception:
                 pass
-            continue # Skip rendering this one as it's completed
+            continue
             
         # Calculate dynamic wait time or time remaining
         if q['status'] in ['waiting', 'next']:
             wait_mins = int((start_dt - now).total_seconds() / 60)
             q['estimated_wait_mins'] = max(0, wait_mins)
             q['time_type'] = 'Wait'
-            # Update the absolute time for the JS countdown
             q['target_time'] = start_dt.isoformat()
         elif q['status'] == 'playing':
             rem_mins = int((end_dt - now).total_seconds() / 60)
@@ -374,19 +375,47 @@ def get_processed_queues(db, player_id=None):
     status_order = {'playing': 0, 'next': 1, 'waiting': 2}
     queues.sort(key=lambda x: (status_order.get(x['status'], 3), x.get('court_reservations', {}).get('start_time', '')))
 
-    # Assign positions (only for waiting/next)
+    # Group by facility and assign per-facility positions
+    facilities_queues = {}  # {facility_name: {'facility': {...}, 'queues': [...], 'my_queue': None}}
+    
+    pos_by_facility = {}
+    for q in queues:
+        fac = q.get('facilities') or {}
+        fac_id = q.get('facility_id') or fac.get('id') or 'unknown'
+        fac_name = fac.get('name') or 'Unknown Facility'
+        
+        if fac_id not in facilities_queues:
+            facilities_queues[fac_id] = {
+                'facility_id': fac_id,
+                'facility_name': fac_name,
+                'queues': [],
+                'my_queue': None
+            }
+            pos_by_facility[fac_id] = 1
+        
+        # Assign per-facility position
+        if q['status'] != 'playing':
+            q['position'] = pos_by_facility[fac_id]
+            pos_by_facility[fac_id] += 1
+        else:
+            q['position'] = '-'
+        
+        if q['player_id'] == player_id:
+            my_queue = q
+            facilities_queues[fac_id]['my_queue'] = q
+        
+        facilities_queues[fac_id]['queues'].append(q)
+
+    # Also build flat list with global positions for backwards compat
     pos = 1
     for q in queues:
         if q['status'] != 'playing':
-            q['position'] = pos
+            q['global_position'] = pos
             pos += 1
         else:
-            q['position'] = '-'
+            q['global_position'] = '-'
             
-        if q['player_id'] == player_id:
-            my_queue = q
-            
-    return queues, my_queue
+    return queues, my_queue, facilities_queues
 
 
 @player_bp.route('/queue')
@@ -394,8 +423,8 @@ def get_processed_queues(db, player_id=None):
 def queue():
     player_id = session.get('user_id')
     db = get_db()
-    queues, my_queue = get_processed_queues(db, player_id)
-    return render_template('player/queue_monitoring.html', queues=queues, my_queue=my_queue)
+    queues, my_queue, facilities_queues = get_processed_queues(db, player_id)
+    return render_template('player/queue_monitoring.html', queues=queues, my_queue=my_queue, facilities_queues=facilities_queues)
 
 
 @player_bp.route('/queue/partial')
@@ -403,8 +432,8 @@ def queue():
 def queue_partial():
     player_id = session.get('user_id')
     db = get_db()
-    queues, my_queue = get_processed_queues(db, player_id)
-    return render_template('player/partials/queue_content.html', queues=queues, my_queue=my_queue)
+    queues, my_queue, facilities_queues = get_processed_queues(db, player_id)
+    return render_template('player/partials/queue_content.html', queues=queues, my_queue=my_queue, facilities_queues=facilities_queues)
 
 
 @player_bp.route('/events')
@@ -646,3 +675,127 @@ def mark_notifications_read():
 @require_role('player')
 def tutorials():
     return render_template('player/tutorials.html')
+
+# ── Clubs ───────────────────────────────────────────────────────────────────────
+@player_bp.route('/clubs')
+@require_role('player')
+def clubs():
+    player_id = session.get('user_id')
+    db = get_db()
+    clubs_list = []
+    try:
+        # Fetch all active clubs
+        resp = db.table('clubs').select(
+            'id, name, description, logo_url, location, membership_type, membership_fee, profiles!admin_id(first_name, last_name)'
+        ).eq('status', 'active').order('created_at', desc=True).execute()
+        clubs_list = resp.data or []
+        
+        # Attach member count and player's status
+        for c in clubs_list:
+            # count
+            count_resp = db.table('club_memberships').select('id', count='exact').eq('club_id', c['id']).eq('status', 'active').execute()
+            c['member_count'] = count_resp.count or 0
+            
+            # my status
+            my_resp = db.table('club_memberships').select('status').eq('club_id', c['id']).eq('player_id', player_id).execute()
+            c['my_status'] = my_resp.data[0]['status'] if my_resp.data else None
+
+    except Exception as e:
+        flash(f"Error loading clubs: {e}", "error")
+        
+    return render_template('player/clubs.html', clubs=clubs_list)
+
+@player_bp.route('/my-clubs')
+@require_role('player')
+def my_clubs():
+    player_id = session.get('user_id')
+    db = get_db()
+    my_clubs_list = []
+    try:
+        resp = db.table('club_memberships').select(
+            'status, joined_at, clubs(id, name, description, logo_url, membership_type)'
+        ).eq('player_id', player_id).neq('status', 'rejected').order('joined_at', desc=True).execute()
+        my_clubs_list = resp.data or []
+    except Exception as e:
+        flash(f"Error loading my clubs: {e}", "error")
+        
+    return render_template('player/my_clubs.html', my_clubs=my_clubs_list)
+
+@player_bp.route('/clubs/<club_id>/join', methods=['POST'])
+@require_role('player')
+def join_club(club_id):
+    player_id = session.get('user_id')
+    db = get_db()
+    
+    try:
+        club_resp = db.table('clubs').select('membership_type').eq('id', club_id).single().execute()
+        if not club_resp.data:
+            flash("Club not found.", "error")
+            return redirect(url_for('player.clubs'))
+            
+        mem_type = club_resp.data['membership_type']
+        
+        # If paid, redirect to payment page
+        if mem_type == 'paid':
+            return redirect(url_for('player.club_payment', club_id=club_id))
+            
+        # If free, join instantly
+        db.table('club_memberships').upsert({
+            'club_id': club_id,
+            'player_id': player_id,
+            'status': 'active'
+        }, on_conflict='club_id,player_id').execute()
+        
+        flash("You have successfully joined the club!", "success")
+        
+    except Exception as e:
+        flash(f"Error joining club: {e}", "error")
+        
+    return redirect(url_for('player.my_clubs'))
+
+@player_bp.route('/clubs/<club_id>/payment', methods=['GET', 'POST'])
+@require_role('player')
+def club_payment(club_id):
+    player_id = session.get('user_id')
+    db = get_db()
+    
+    try:
+        club_resp = db.table('clubs').select('id, name, membership_fee').eq('id', club_id).single().execute()
+        club = club_resp.data
+        if not club:
+            flash("Club not found.", "error")
+            return redirect(url_for('player.clubs'))
+            
+        if request.method == 'POST':
+            gcash_ref = request.form.get('gcash_ref', '').strip()
+            if not gcash_ref:
+                flash("GCash Reference Number is required.", "error")
+                return redirect(url_for('player.club_payment', club_id=club_id))
+                
+            db.table('club_memberships').upsert({
+                'club_id': club_id,
+                'player_id': player_id,
+                'status': 'pending',
+                'gcash_ref': gcash_ref
+            }, on_conflict='club_id,player_id').execute()
+            
+            flash("Payment submitted! Waiting for admin approval.", "success")
+            return redirect(url_for('player.my_clubs'))
+            
+    except Exception as e:
+        flash(f"Error: {e}", "error")
+        return redirect(url_for('player.clubs'))
+        
+    return render_template('player/club_payment.html', club=club)
+
+@player_bp.route('/clubs/<club_id>/leave', methods=['POST'])
+@require_role('player')
+def leave_club(club_id):
+    player_id = session.get('user_id')
+    db = get_db()
+    try:
+        db.table('club_memberships').delete().eq('club_id', club_id).eq('player_id', player_id).execute()
+        flash("You have left the club.", "success")
+    except Exception as e:
+        flash(f"Error leaving club: {e}", "error")
+    return redirect(url_for('player.my_clubs'))

@@ -132,12 +132,116 @@
     html.dark-mode .pill-waiting {
         background: rgba(225, 86, 35, 0.15);
     }
+
+    /* ===== Facility Tabs ===== */
+    .fac-tabs-wrapper {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        box-shadow: var(--shadow-card);
+        overflow: hidden;
+    }
+    .fac-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0;
+        border-bottom: 2px solid var(--border-color);
+        background: var(--sidebar-bg, var(--card-bg));
+        padding: 0 8px;
+    }
+    .fac-tab {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 12px 18px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        background: transparent;
+        border: none;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -2px;
+        cursor: pointer;
+        transition: color 0.2s, border-color 0.2s;
+        white-space: nowrap;
+    }
+    .fac-tab:hover {
+        color: var(--text-primary);
+    }
+    .fac-tab.active {
+        color: var(--primary-orange);
+        border-bottom-color: var(--primary-orange);
+    }
+    .fac-tab i {
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+    .fac-tab-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 6px;
+        border-radius: 10px;
+        background: var(--border-color);
+        color: var(--text-muted);
+        font-size: 0.7rem;
+        font-weight: 700;
+        transition: background 0.2s, color 0.2s;
+    }
+    .fac-tab.active .fac-tab-badge {
+        background: var(--primary-orange-light);
+        color: var(--primary-orange);
+    }
+    .fac-tab-you-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--primary-orange);
+        flex-shrink: 0;
+        animation: pulse-dot 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50%       { opacity: 0.5; transform: scale(0.7); }
+    }
+
+    /* Panels */
+    .fac-panel {
+        display: none;
+        padding: 20px 24px 24px;
+    }
+    .fac-panel.active {
+        display: block;
+    }
+
+    /* Per-facility your-position bar */
+    .fac-my-position-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--primary-orange-light);
+        color: var(--text-primary);
+        border-radius: 8px;
+        padding: 10px 16px;
+        font-size: 0.875rem;
+        margin-bottom: 16px;
+    }
+    html.dark-mode .fac-my-position-bar {
+        background: rgba(225, 86, 35, 0.15);
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="dashboard-header">
     <h1 class="page-title">Queue Monitoring</h1>
+    <p style="color:var(--text-muted);font-size:0.875rem;margin-top:4px;">
+        <i class="ph ph-buildings"></i>
+        Queues are organized per facility &mdash; switch tabs to see each location's queue separately.
+    </p>
 </div>
 
 <div id="queue-container">
@@ -180,7 +284,30 @@
         updateWaitTimes();
         setInterval(updateWaitTimes, 60000);
 
-        // --- 2. Supabase Realtime Subscription ---
+        // --- 2. Facility Tab Switching ---
+        function initTabs() {
+            const tabs = document.querySelectorAll('.fac-tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const targetId = tab.getAttribute('data-target');
+                    // Deactivate all
+                    document.querySelectorAll('.fac-tab').forEach(t => {
+                        t.classList.remove('active');
+                        t.setAttribute('aria-selected', 'false');
+                    });
+                    document.querySelectorAll('.fac-panel').forEach(p => p.classList.remove('active'));
+                    // Activate clicked
+                    tab.classList.add('active');
+                    tab.setAttribute('aria-selected', 'true');
+                    const panel = document.getElementById(targetId);
+                    if (panel) panel.classList.add('active');
+                });
+            });
+        }
+
+        initTabs();
+
+        // --- 3. Supabase Realtime Subscription ---
         if (typeof supabaseClient !== 'undefined' && supabaseClient) {
             const queueChannel = supabaseClient.channel('custom-all-channel')
                 .on(
@@ -188,20 +315,18 @@
                     { event: '*', schema: 'public', table: 'court_queues' },
                     (payload) => {
                         console.log('Queue change received!', payload);
-                        // Fetch the updated queue partial HTML
                         fetch("{{ url_for('player.queue_partial') }}")
                             .then(response => response.text())
                             .then(html => {
                                 document.getElementById('queue-container').innerHTML = html;
-                                // Re-run the wait time calculation for the new DOM elements
                                 updateWaitTimes();
+                                initTabs();
                             })
                             .catch(error => console.error('Error fetching updated queue:', error));
                     }
                 )
                 .subscribe();
                 
-            // Optional: cleanup on page leave
             window.addEventListener("beforeunload", () => {
                 supabaseClient.removeChannel(queueChannel);
             });

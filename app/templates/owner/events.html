@@ -78,9 +78,16 @@ html.dark-mode .badge-league   { background:rgba(180,83,9,0.15); }
             </div>
             <div class="event-footer">
                 <span class="event-reg-count"><i class="ph ph-users"></i> {{ ev.registered_count }} / {{ ev.max_players }} registered</span>
-                <a href="{{ url_for('owner.event_participants', event_id=ev.id) }}" class="btn-sm btn-sm-outline" style="padding: 4px 10px; font-size: 0.75rem;">
-                    View
-                </a>
+                <div style="display: flex; gap: 8px;">
+                    <a href="{{ url_for('owner.event_participants', event_id=ev.id) }}" class="btn-sm btn-sm-outline" style="padding: 4px 10px; font-size: 0.75rem;">
+                        View
+                    </a>
+                    {% if ev.type == 'tournament' %}
+                    <a href="{{ url_for('owner.tournament_manage', event_id=ev.id) }}" class="btn-sm btn-sm-primary" style="padding: 4px 10px; font-size: 0.75rem; background: var(--btn-navy);">
+                        <i class="ph ph-tree-structure"></i> Bracket
+                    </a>
+                    {% endif %}
+                </div>
             </div>
         </div>
         {% endfor %}

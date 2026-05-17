@@ -17,4 +17,16 @@
         href="{{ url_for('clubadmin.tutorials') }}"><i class="ph ph-video"></i> Tutorials</a></li>
 <li class="{% if request.endpoint == 'clubadmin.messages' %}active{% endif %}"><a
         href="{{ url_for('clubadmin.messages') }}"><i class="ph ph-chat-circle-dots"></i> Messages</a></li>
+        
+<div style="margin: 20px 0; border-top: 1px solid var(--border-color);"></div>
+
+<li class="{% if request.endpoint == 'clubadmin.club_setup' %}active{% endif %}"><a
+        href="{{ url_for('clubadmin.club_setup') }}"><i class="ph ph-gear"></i> Club Setup</a></li>
+{% endblock %}
+
+{% block custom_profile_name %}
+<div class="user-info">
+    <span class="user-name">{{ g.club.name if g.club else current_user.full_name }}</span>
+    <span class="user-role">{{ 'Club Admin' if g.club else current_user.role }}</span>
+</div>
 {% endblock %}

@@ -3,33 +3,59 @@
 
 {% block extra_head %}
 <style>
+/* ── Header ── */
 .res-header { display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px; }
-.res-tabs { display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap; }
+
+/* ── Tabs ── */
+.res-tabs { display:flex;gap:6px;margin-bottom:22px;flex-wrap:wrap; }
 .res-tab { padding:7px 16px;border-radius:20px;border:1px solid var(--border-color);background:var(--card-bg);color:var(--text-muted);font-size:.8rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s; }
 .res-tab.active,.res-tab:hover { background:var(--primary-orange);border-color:var(--primary-orange);color:#fff; }
-.res-card { background:var(--card-bg);border:1px solid var(--card-border);border-radius:14px;padding:20px;margin-bottom:14px;box-shadow:var(--shadow-card);transition:box-shadow .2s;display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap; }
-.res-card:hover { box-shadow:var(--shadow-hover); }
-.res-icon { width:48px;height:48px;border-radius:10px;background:var(--primary-orange-light);color:var(--primary-orange);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0; }
-.res-body { flex:1;min-width:200px; }
-.res-body h4 { font-size:.95rem;font-weight:700;margin-bottom:2px; }
-.res-facility { font-size:.78rem;color:var(--text-muted);margin-bottom:10px;display:flex;align-items:center;gap:4px; }
-.res-meta { display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px; }
-.res-meta-item { display:flex;align-items:center;gap:5px;font-size:.8rem;color:var(--text-secondary); }
-.res-meta-item i { color:var(--primary-orange); }
-.res-actions { display:flex;gap:8px;flex-wrap:wrap;align-items:center; }
-.res-status { padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:700;letter-spacing:.3px; }
-.res-status.confirmed { background:rgba(41,163,86,.12);color:#29A356; }
-.res-status.pending_payment { background:rgba(251,191,36,.12);color:#d97706; }
-.res-status.cancelled { background:rgba(239,68,68,.1);color:#ef4444; }
-.res-status.completed { background:var(--input-bg);color:var(--text-muted); }
+
+/* ── Reservation Card ── */
+.res-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:18px; }
+.res-card { background:var(--card-bg);border:1px solid var(--card-border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-card);transition:box-shadow .2s,transform .2s;display:flex;flex-direction:column; }
+.res-card:hover { box-shadow:var(--shadow-hover);transform:translateY(-2px); }
+
+/* Court image banner */
+.res-img-banner { height:150px;position:relative;overflow:hidden;background:linear-gradient(135deg,#1e3a5f,#2d6a9f);flex-shrink:0; }
+.res-img-banner img { width:100%;height:100%;object-fit:cover;display:block; }
+.res-img-placeholder { display:flex;align-items:center;justify-content:center;height:100%; }
+.res-img-placeholder i { font-size:3rem;color:rgba(255,255,255,.3); }
+.res-img-overlay { position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.7) 0%,rgba(0,0,0,.15) 60%,transparent 100%);display:flex;flex-direction:column;justify-content:flex-end;padding:14px 16px; }
+.res-court-name { font-size:1rem;font-weight:700;color:#fff;margin:0 0 2px; }
+.res-fac-name { font-size:.75rem;color:rgba(255,255,255,.8);display:flex;align-items:center;gap:4px; }
+.res-status-badge { position:absolute;top:12px;right:12px;padding:4px 12px;border-radius:20px;font-size:.68rem;font-weight:800;letter-spacing:.4px;backdrop-filter:blur(6px); }
+.res-status-badge.confirmed   { background:rgba(41,163,86,.85);color:#fff; }
+.res-status-badge.pending_payment { background:rgba(217,119,6,.9);color:#fff; }
+.res-status-badge.cancelled   { background:rgba(239,68,68,.85);color:#fff; }
+.res-status-badge.completed   { background:rgba(100,116,139,.8);color:#fff; }
+
+/* Card body */
+.res-body { padding:16px 18px;display:flex;flex-direction:column;gap:12px;flex:1; }
+.res-meta { display:grid;grid-template-columns:1fr 1fr;gap:8px; }
+.res-meta-item { display:flex;align-items:center;gap:6px;font-size:.8rem;color:var(--text-secondary); }
+.res-meta-item i { color:var(--primary-orange);font-size:.95rem;flex-shrink:0; }
+.res-meta-item strong { color:var(--text-primary); }
+
+/* Price + actions row */
+.res-footer { display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;border-top:1px solid var(--card-border);padding-top:12px; }
+.res-amount { font-size:1.2rem;font-weight:800;color:var(--primary-orange); }
+.res-amount small { font-size:.7rem;font-weight:400;color:var(--text-muted);display:block;margin-top:-2px; }
+.res-actions { display:flex;gap:8px;flex-wrap:wrap; }
 .btn-pay { display:inline-flex;align-items:center;gap:6px;padding:7px 16px;background:var(--primary-orange);color:#fff;border:none;border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:none;transition:background .2s; }
 .btn-pay:hover { background:var(--primary-orange-hover); }
 .btn-cancel { display:inline-flex;align-items:center;gap:6px;padding:7px 16px;background:transparent;color:#ef4444;border:1px solid #ef4444;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s; }
 .btn-cancel:hover { background:rgba(239,68,68,.1); }
-.res-amount { font-size:1.15rem;font-weight:800;color:var(--primary-orange);margin-left:auto;text-align:right;flex-shrink:0; }
-.res-amount small { display:block;font-size:.7rem;font-weight:400;color:var(--text-muted); }
-.empty-state { text-align:center;padding:60px 24px;color:var(--text-muted); }
-.empty-state i { font-size:3rem;opacity:.35;display:block;margin-bottom:14px; }
+
+/* Empty state */
+.empty-state { text-align:center;padding:70px 24px;color:var(--text-muted); }
+.empty-state i { font-size:3.5rem;opacity:.3;display:block;margin-bottom:16px; }
+.empty-state p { font-size:.95rem;margin-bottom:16px; }
+
+/* Type pill */
+.type-pill-sm { display:inline-flex;align-items:center;gap:3px;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:20px; }
+.type-pill-sm.indoor  { background:rgba(59,130,246,.12);color:#3B82F6; }
+.type-pill-sm.outdoor { background:rgba(41,163,86,.12);color:#29A356; }
 </style>
 {% endblock %}
 
@@ -46,7 +72,7 @@
 
 <!-- Tabs -->
 <div class="res-tabs">
-    <button class="res-tab active" onclick="filterRes('all',this)">All</button>
+    <button class="res-tab active" onclick="filterRes('all',this)">All <span style="opacity:.7;font-weight:400;">({{ reservations|length }})</span></button>
     <button class="res-tab" onclick="filterRes('pending_payment',this)"><i class="ph ph-hourglass-low"></i> Pending Payment</button>
     <button class="res-tab" onclick="filterRes('confirmed',this)"><i class="ph ph-check-circle"></i> Confirmed</button>
     <button class="res-tab" onclick="filterRes('completed',this)"><i class="ph ph-tennis-ball"></i> Completed</button>
@@ -56,49 +82,91 @@
 <!-- Reservation Cards -->
 <div id="res-list">
 {% if reservations %}
+<div class="res-grid">
     {% for r in reservations %}
     {% set court  = r.courts or {} %}
     {% set fac    = r.facilities or {} %}
     {% set status = r.status %}
     <div class="res-card" data-status="{{ status }}">
-        <div class="res-icon">
-            <i class="ph ph-tennis-ball"></i>
+
+        <!-- Court Image Banner -->
+        <div class="res-img-banner">
+            {% if court.image_url %}
+            <img src="{{ court.image_url }}" alt="{{ court.name or 'Court' }}">
+            {% else %}
+            <div class="res-img-placeholder"><i class="ph ph-intersect"></i></div>
+            {% endif %}
+            <div class="res-img-overlay">
+                <p class="res-court-name">{{ court.name or 'Court' }}</p>
+                <p class="res-fac-name"><i class="ph ph-building"></i> {{ fac.name or '' }}{% if fac.location %} — {{ fac.location }}{% endif %}</p>
+            </div>
+            <!-- Status badge -->
+            <span class="res-status-badge {{ status }}">{{ status.replace('_',' ')|upper }}</span>
         </div>
+
+        <!-- Card Body -->
         <div class="res-body">
-            <h4>{{ court.name or 'Court' }}</h4>
-            <div class="res-facility"><i class="ph ph-building"></i>{{ fac.name or '' }} — {{ fac.location or '' }}</div>
             <div class="res-meta">
-                <div class="res-meta-item"><i class="ph ph-calendar"></i>{{ r.date }}</div>
-                <div class="res-meta-item"><i class="ph ph-clock"></i>{{ r.start_time[:5] }} – {{ r.end_time[:5] }}</div>
-                <div class="res-meta-item"><i class="ph ph-hourglass"></i>{{ r.total_hours|int }} hr{{ 's' if r.total_hours != 1 }}</div>
-                <div class="res-meta-item"><i class="ph ph-tag"></i>{{ court.type or '' }}</div>
-                {% if r.gcash_ref %}<div class="res-meta-item"><i class="ph ph-receipt"></i>Ref: {{ r.gcash_ref }}</div>{% endif %}
+                <div class="res-meta-item">
+                    <i class="ph ph-calendar"></i>
+                    <span><strong>{{ r.date }}</strong></span>
+                </div>
+                <div class="res-meta-item">
+                    <i class="ph ph-clock"></i>
+                    <span><strong>{{ r.start_time[:5] }} – {{ r.end_time[:5] }}</strong></span>
+                </div>
+                <div class="res-meta-item">
+                    <i class="ph ph-hourglass"></i>
+                    <span>{{ r.total_hours|int }} hr{{ 's' if r.total_hours != 1 }}</span>
+                </div>
+                <div class="res-meta-item">
+                    <i class="ph ph-tag"></i>
+                    <span>
+                        {% if court.type %}
+                        <span class="type-pill-sm {{ court.type }}">
+                            {% if court.type == 'indoor' %}<i class="ph ph-house"></i>{% else %}<i class="ph ph-sun"></i>{% endif %}
+                            {{ court.type|capitalize }}
+                        </span>
+                        {% endif %}
+                    </span>
+                </div>
+                {% if r.gcash_ref %}
+                <div class="res-meta-item" style="grid-column:1/-1;">
+                    <i class="ph ph-receipt"></i>
+                    <span>GCash Ref: <strong>{{ r.gcash_ref }}</strong></span>
+                </div>
+                {% endif %}
             </div>
-            <div class="res-actions">
-                <span class="res-status {{ status }}">{{ status.replace('_',' ')|upper }}</span>
-                {% if status == 'pending_payment' %}
-                <a href="{{ url_for('player.payment', reservation_id=r.id) }}" class="btn-pay">
-                    <i class="ph ph-device-mobile-camera"></i> Pay via GCash
-                </a>
-                {% endif %}
-                {% if status in ['pending_payment','confirmed'] and r.can_cancel %}
-                <form method="POST" action="{{ url_for('player.cancel_reservation', reservation_id=r.id) }}"
-                      onsubmit="return confirm('Cancel this reservation?');" style="margin:0;">
-                    <button type="submit" class="btn-cancel"><i class="ph ph-x-circle"></i> Cancel</button>
-                </form>
-                {% endif %}
+
+            <!-- Footer: price + actions -->
+            <div class="res-footer">
+                <div class="res-amount">
+                    ₱{{ '%.2f'|format(r.total_amount) }}
+                    <small>{{ r.total_hours|int }} hr × ₱{{ '%.2f'|format(r.hourly_rate) }}</small>
+                </div>
+                <div class="res-actions">
+                    {% if status == 'pending_payment' %}
+                    <a href="{{ url_for('player.payment', reservation_id=r.id) }}" class="btn-pay">
+                        <i class="ph ph-device-mobile-camera"></i> Pay Now
+                    </a>
+                    {% endif %}
+                    {% if status in ['pending_payment','confirmed'] and r.can_cancel %}
+                    <form method="POST" action="{{ url_for('player.cancel_reservation', reservation_id=r.id) }}"
+                          onsubmit="return confirm('Cancel this reservation?');" style="margin:0;">
+                        <button type="submit" class="btn-cancel"><i class="ph ph-x-circle"></i> Cancel</button>
+                    </form>
+                    {% endif %}
+                </div>
             </div>
         </div>
-        <div class="res-amount">
-            ₱{{ '%.2f'|format(r.total_amount) }}
-            <small>{{ r.total_hours|int }} hr × ₱{{ '%.2f'|format(r.hourly_rate) }}</small>
-        </div>
+
     </div>
     {% endfor %}
+</div>
 {% else %}
     <div class="empty-state">
         <i class="ph ph-calendar-blank"></i>
-        <p style="font-size:.95rem;margin-bottom:12px;">No reservations yet.</p>
+        <p>No reservations yet.</p>
         <a href="{{ url_for('player.reservation') }}" class="btn-pay"><i class="ph ph-plus-circle"></i> Book a Court</a>
     </div>
 {% endif %}

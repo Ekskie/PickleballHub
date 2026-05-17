@@ -1,0 +1,45 @@
+{% extends "player/base_player.html" %}
+
+{% block title %}Club Payment{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="page-title">Join Club: {{ club.name }}</h1>
+    <p style="color: var(--text-muted); margin-top: 5px;">Please submit your membership payment to join.</p>
+</div>
+
+<div class="glass-card" style="max-width: 500px; margin: 20px auto; padding: 30px;">
+    
+    <div style="text-align: center; margin-bottom: 24px;">
+        <h2 style="font-size: 2rem; color: #f59e0b; margin: 0 0 10px 0;">₱{{ "%.2f"|format(club.membership_fee) }}</h2>
+        <p style="color: var(--text-muted); margin: 0;">Membership Fee</p>
+    </div>
+
+    <div style="background: rgba(0, 198, 255, 0.05); border: 1px solid rgba(0, 198, 255, 0.2); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+        <h3 style="margin: 0 0 10px 0; font-size: 1rem; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+            <i class="ph ph-wallet" style="color: #00c6ff;"></i> GCash Payment Instructions
+        </h3>
+        <ol style="margin: 0; padding-left: 20px; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6;">
+            <li>Send <strong>₱{{ "%.2f"|format(club.membership_fee) }}</strong> via GCash to the Club Admin.</li>
+            <li>Copy the <strong>Reference Number</strong> from your GCash receipt.</li>
+            <li>Paste the Reference Number below to submit your join request.</li>
+        </ol>
+    </div>
+
+    <form method="POST" action="{{ url_for('player.club_payment', club_id=club.id) }}">
+        <div style="margin-bottom: 20px;">
+            <label for="gcash_ref" style="display: block; margin-bottom: 8px; color: var(--text-secondary); font-weight: 600;">GCash Reference Number <span style="color: red;">*</span></label>
+            <input type="text" id="gcash_ref" name="gcash_ref" required placeholder="e.g. 100123456789"
+                   style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary); font-family: monospace; font-size: 1.1rem; letter-spacing: 1px;">
+        </div>
+
+        <div style="display: flex; gap: 12px;">
+            <a href="{{ url_for('player.clubs') }}" class="btn-cancel" style="flex: 1; text-align: center; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); text-decoration: none; font-weight: 600;">Cancel</a>
+            
+            <button type="submit" class="action-box orange" style="flex: 2; padding: 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <i class="ph ph-check-circle"></i> Submit Payment
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

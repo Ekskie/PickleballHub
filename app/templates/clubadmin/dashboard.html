@@ -16,23 +16,22 @@
                 <i class="ph ph-users" style="font-size: 2rem; color: var(--primary);"></i>
                 <div class="stat-info">
                     <h3>Active Members</h3>
-                    <p class="stat-value">342</p>
-                    <span class="stat-change positive"><i class="ph ph-trend-up"></i> 12 this month</span>
+                    <p class="stat-value">{{ stats.members }}</p>
                 </div>
             </div>
             <div class="glass-card stat-box">
                 <i class="ph ph-calendar-star" style="font-size: 2rem; color: var(--secondary);"></i>
                 <div class="stat-info">
                     <h3>Upcoming Events</h3>
-                    <p class="stat-value">4</p>
+                    <p class="stat-value">{{ stats.events }}</p>
                 </div>
             </div>
             <div class="glass-card stat-box">
                 <i class="ph ph-medal" style="font-size: 2rem; color: #f59e0b;"></i>
                 <div class="stat-info">
                     <h3>Top Rated Player</h3>
-                    <p class="stat-value" style="font-size: 1.4rem;">David Kim</p>
-                    <span class="stat-change" style="color: #f59e0b;">4.8 DUPR</span>
+                    <p class="stat-value" style="font-size: 1.4rem;">{{ stats.top_player.name if stats.top_player else 'N/A' }}</p>
+                    <span class="stat-change" style="color: #f59e0b;">{{ stats.top_player.score if stats.top_player else 'N/A' }}</span>
                 </div>
             </div>
         </div>
@@ -53,24 +52,31 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td class="bold">Sarah Jenkins</td>
-                            <td>Apr 20, 2025</td>
-                            <td>Intermediate</td>
-                            <td><span class="status-pill success">Active</span></td>
-                        </tr>
-                        <tr>
-                            <td class="bold">Tom Hardy</td>
-                            <td>Apr 19, 2025</td>
-                            <td>Beginner</td>
-                            <td><span class="status-pill success">Active</span></td>
-                        </tr>
-                        <tr>
-                            <td class="bold">Nancy Drew</td>
-                            <td>Apr 15, 2025</td>
-                            <td>Advanced</td>
-                            <td><span class="status-pill warning">Pending Dues</span></td>
-                        </tr>
+                        {% if stats.recent_members %}
+                            {% for m in stats.recent_members %}
+                            <tr>
+                                <td class="bold">{{ m.profiles.first_name }} {{ m.profiles.last_name }}</td>
+                                <td>
+                                    {% set dt = m.joined_at.split('T')[0] %}
+                                    {{ dt }}
+                                </td>
+                                <td>-</td>
+                                <td>
+                                    {% if m.status == 'active' %}
+                                        <span class="status-pill success">Active</span>
+                                    {% elif m.status == 'pending' %}
+                                        <span class="status-pill warning">Pending Approval</span>
+                                    {% else %}
+                                        <span class="status-pill error">{{ m.status | title }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: 20px;">No recent members.</td>
+                            </tr>
+                        {% endif %}
                     </tbody>
                 </table>
             </div>
@@ -96,20 +102,24 @@
         <div class="glass-card flex-fill">
             <h3 class="widget-title">Club Activity</h3>
             <ul class="activity-feed">
-                <li>
-                    <span class="dot"></span>
-                    <div class="activity-info">
-                        <p><strong>Sarah Jenkins</strong> joined the club</p>
-                        <small>2 hours ago</small>
-                    </div>
-                </li>
-                <li>
-                    <span class="dot"></span>
-                    <div class="activity-info">
-                        <p>Spring Mixer event published</p>
-                        <small>Yesterday</small>
-                    </div>
-                </li>
+                {% if stats.activity %}
+                    {% for a in stats.activity %}
+                    <li>
+                        <span class="dot"></span>
+                        <div class="activity-info">
+                            <p><strong>{{ a.title }}</strong> {{ a.message }}</p>
+                            <small>{{ a.created_at | community_timeago }}</small>
+                        </div>
+                    </li>
+                    {% endfor %}
+                {% else %}
+                    <li>
+                        <span class="dot" style="background: var(--border-color);"></span>
+                        <div class="activity-info">
+                            <p>No recent activity.</p>
+                        </div>
+                    </li>
+                {% endif %}
             </ul>
         </div>
     </div>

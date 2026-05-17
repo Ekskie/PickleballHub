@@ -1,22 +1,169 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, g
 from app.decorators import require_role
 from app import supabase_admin, supabase
+from datetime import datetime, timedelta, timezone
+
+PH_TZ = timezone(timedelta(hours=8))
 
 def get_db():
     return supabase_admin or supabase
 
-
 clubadmin_bp = Blueprint('clubadmin', __name__, url_prefix='/clubadmin')
+
+@clubadmin_bp.before_request
+@require_role('clubadmin')
+def load_club():
+    if request.endpoint == 'auth.logout':
+        return
+        
+    admin_id = session.get('user_id')
+    if not admin_id:
+        return
+        
+    db = get_db()
+    try:
+        resp = db.table('clubs').select('*').eq('admin_id', admin_id).single().execute()
+        g.club = resp.data
+    except Exception:
+        g.club = None
+
+    # Redirect to setup if no club exists and not already on setup page
+    if not g.club and request.endpoint and request.endpoint not in ['clubadmin.club_setup', 'clubadmin.profile', 'auth.logout']:
+        flash("Please set up your club profile first.", "info")
+        return redirect(url_for('clubadmin.club_setup'))
+
+@clubadmin_bp.route('/club-setup', methods=['GET', 'POST'])
+@require_role('clubadmin')
+def club_setup():
+    admin_id = session.get('user_id')
+    db = get_db()
+    
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        description = request.form.get('description', '').strip()
+        location = request.form.get('location', '').strip()
+        membership_type = request.form.get('membership_type', 'free')
+        membership_fee = request.form.get('membership_fee', 0)
+        
+        if not name:
+            flash("Club name is required.", "error")
+            return redirect(url_for('clubadmin.club_setup'))
+            
+        update_data = {
+            'admin_id': admin_id,
+            'name': name,
+            'description': description,
+            'location': location,
+            'membership_type': membership_type,
+            'membership_fee': float(membership_fee) if membership_type == 'paid' else 0,
+            'status': 'active'
+        }
+        
+        # Handle logo upload
+        logo_file = request.files.get('logo')
+        if logo_file and logo_file.filename:
+            try:
+                import time
+                ext = logo_file.filename.split('.')[-1]
+                filename = f"club_{admin_id}_{int(time.time())}.{ext}"
+                db.storage.from_('community-images').upload(
+                    file=logo_file.read(),
+                    path=filename,
+                    file_options={"content-type": logo_file.content_type}
+                )
+                update_data['logo_url'] = db.storage.from_('community-images').get_public_url(filename)
+            except Exception as e:
+                flash(f"Warning: Logo upload failed - {e}", "warning")
+                
+        try:
+            if g.club:
+                db.table('clubs').update(update_data).eq('id', g.club['id']).execute()
+                flash("Club profile updated.", "success")
+            else:
+                db.table('clubs').insert(update_data).execute()
+                flash("Club created successfully!", "success")
+            return redirect(url_for('clubadmin.dashboard'))
+        except Exception as e:
+            flash(f"Error saving club: {e}", "error")
+            
+    return render_template('clubadmin/club_setup.html')
 
 @clubadmin_bp.route('/dashboard')
 @require_role('clubadmin')
 def dashboard():
-    return render_template('clubadmin/dashboard.html')
+    db = get_db()
+    stats = {'members': 0, 'events': 0, 'top_player': None, 'recent_members': [], 'activity': []}
+    
+    if g.club:
+        try:
+            # Members count
+            mem_resp = db.table('club_memberships').select('id', count='exact').eq('club_id', g.club['id']).eq('status', 'active').execute()
+            stats['members'] = mem_resp.count or 0
+            
+            # Upcoming Events count
+            admin_id = session.get('user_id')
+            ev_resp = db.table('events').select('id', count='exact').eq('organizer_id', admin_id).in_('status', ['registration_open', 'upcoming', 'full']).execute()
+            stats['events'] = ev_resp.count or 0
+            
+            # Recent members
+            recent_resp = db.table('club_memberships').select(
+                'id, status, joined_at, profiles!player_id(first_name, last_name)'
+            ).eq('club_id', g.club['id']).order('joined_at', desc=True).limit(5).execute()
+            stats['recent_members'] = recent_resp.data or []
+            
+            # Activity feed
+            act_resp = db.table('notifications').select('*').eq('user_id', admin_id).order('created_at', desc=True).limit(5).execute()
+            stats['activity'] = act_resp.data or []
+            
+        except Exception as e:
+            print("Dashboard error:", e)
+            
+    return render_template('clubadmin/dashboard.html', stats=stats)
 
 @clubadmin_bp.route('/members')
 @require_role('clubadmin')
 def members():
-    return render_template('clubadmin/members.html')
+    db = get_db()
+    members_list = []
+    
+    if g.club:
+        try:
+            resp = db.table('club_memberships').select(
+                'id, status, joined_at, gcash_ref, player_id, profiles!player_id(first_name, last_name, phone)'
+            ).eq('club_id', g.club['id']).order('joined_at', desc=True).execute()
+            members_list = resp.data or []
+        except Exception as e:
+            flash(f"Error loading members: {e}", "error")
+            
+    return render_template('clubadmin/members.html', members=members_list)
+
+@clubadmin_bp.route('/members/<membership_id>/approve', methods=['POST'])
+@require_role('clubadmin')
+def approve_member(membership_id):
+    db = get_db()
+    if not g.club:
+        return redirect(url_for('clubadmin.dashboard'))
+        
+    try:
+        db.table('club_memberships').update({'status': 'active'}).eq('id', membership_id).eq('club_id', g.club['id']).execute()
+        flash("Member approved successfully.", "success")
+    except Exception as e:
+        flash(f"Error approving member: {e}", "error")
+    return redirect(url_for('clubadmin.members'))
+
+@clubadmin_bp.route('/members/<membership_id>/remove', methods=['POST'])
+@require_role('clubadmin')
+def remove_member(membership_id):
+    db = get_db()
+    if not g.club:
+        return redirect(url_for('clubadmin.dashboard'))
+        
+    try:
+        db.table('club_memberships').delete().eq('id', membership_id).eq('club_id', g.club['id']).execute()
+        flash("Member removed.", "success")
+    except Exception as e:
+        flash(f"Error removing member: {e}", "error")
+    return redirect(url_for('clubadmin.members'))
 
 @clubadmin_bp.route('/events')
 @require_role('clubadmin')
@@ -55,7 +202,7 @@ def event_participants(event_id):
         if event_details:
             # Fetch participants
             reg_resp = db.table('event_registrations').select(
-                'id, status, registered_at, profiles!player_id(first_name, last_name, email, phone)'
+                'id, status, registered_at, profiles!player_id(first_name, last_name, phone)'
             ).eq('event_id', event_id).execute()
             participants = reg_resp.data or []
         else:
@@ -70,12 +217,209 @@ def event_participants(event_id):
 @clubadmin_bp.route('/tournaments')
 @require_role('clubadmin')
 def tournaments():
-    return render_template('clubadmin/tournaments.html')
+    admin_id = session.get('user_id')
+    db = get_db()
+    tournaments_list = []
+    try:
+        resp = db.table('events').select(
+            'id, title, event_date, status'
+        ).eq('organizer_id', admin_id).eq('type', 'tournament').order('event_date', desc=False).execute()
+        tournaments_list = resp.data or []
+        
+        for t in tournaments_list:
+            reg_resp = db.table('event_registrations').select('id', count='exact').eq('event_id', t['id']).eq('status', 'registered').execute()
+            t['registered_count'] = reg_resp.count or 0
+    except Exception as e:
+        flash(f"Error loading tournaments: {e}", "error")
+        
+    return render_template('clubadmin/tournaments.html', tournaments=tournaments_list)
+
+@clubadmin_bp.route('/tournaments/<event_id>/manage')
+@require_role('clubadmin')
+def tournament_manage(event_id):
+    admin_id = session.get('user_id')
+    db = get_db()
+    
+    try:
+        # Verify ownership
+        ev_resp = db.table('events').select('*').eq('id', event_id).eq('organizer_id', admin_id).eq('type', 'tournament').single().execute()
+        event = ev_resp.data
+        if not event:
+            flash("Tournament not found.", "error")
+            return redirect(url_for('clubadmin.tournaments'))
+            
+        # Get all tournaments for dropdown
+        all_t_resp = db.table('events').select('id, title').eq('organizer_id', admin_id).eq('type', 'tournament').execute()
+        all_tournaments = all_t_resp.data or []
+        
+        # Get participants
+        reg_resp = db.table('event_registrations').select(
+            'player_id, profiles!player_id(first_name, last_name)'
+        ).eq('event_id', event_id).eq('status', 'registered').execute()
+        participants = reg_resp.data or []
+        
+        # Get matches
+        matches_resp = db.table('tournament_matches').select(
+            'id, round_number, match_number, player1_id, player2_id, winner_id, player1_score, player2_score, status, played_at, '
+            'player1:profiles!player1_id(id, first_name, last_name), '
+            'player2:profiles!player2_id(id, first_name, last_name), '
+            'winner:profiles!winner_id(id, first_name, last_name)'
+        ).eq('event_id', event_id).order('round_number').order('match_number').execute()
+        matches = matches_resp.data or []
+        
+        # Bracket Generation logic check
+        has_bracket = len(matches) > 0
+        
+        return render_template('clubadmin/tournament_manage.html', 
+                               event=event, 
+                               all_tournaments=all_tournaments,
+                               participants=participants,
+                               matches=matches,
+                               has_bracket=has_bracket)
+                               
+    except Exception as e:
+        flash(f"Error loading tournament manage: {e}", "error")
+        return redirect(url_for('clubadmin.tournaments'))
+
+@clubadmin_bp.route('/tournaments/<event_id>/bracket/generate', methods=['POST'])
+@require_role('clubadmin')
+def bracket_generate(event_id):
+    admin_id = session.get('user_id')
+    db = get_db()
+    
+    try:
+        # Verify ownership
+        db.table('events').select('id').eq('id', event_id).eq('organizer_id', admin_id).single().execute()
+        
+        # Get participants
+        reg_resp = db.table('event_registrations').select('player_id').eq('event_id', event_id).eq('status', 'registered').execute()
+        players = [r['player_id'] for r in (reg_resp.data or [])]
+        
+        if len(players) < 2:
+            flash("Not enough players to generate a bracket.", "warning")
+            return redirect(url_for('clubadmin.tournament_manage', event_id=event_id))
+            
+        # Very simple bracket generation (pairs players up)
+        # In a real app, you'd calculate powers of 2 and byes.
+        import random
+        random.shuffle(players)
+        
+        matches_to_insert = []
+        match_num = 1
+        for i in range(0, len(players), 2):
+            p1 = players[i]
+            p2 = players[i+1] if i+1 < len(players) else None
+            
+            matches_to_insert.append({
+                'event_id': event_id,
+                'round_number': 1,
+                'match_number': match_num,
+                'player1_id': p1,
+                'player2_id': p2,
+                'status': 'pending' if p2 else 'completed',
+                'winner_id': p1 if not p2 else None # Bye
+            })
+            match_num += 1
+            
+        if matches_to_insert:
+            db.table('tournament_matches').insert(matches_to_insert).execute()
+            
+        flash("Bracket generated successfully!", "success")
+        
+    except Exception as e:
+        flash(f"Error generating bracket: {e}", "error")
+        
+    return redirect(url_for('clubadmin.tournament_manage', event_id=event_id))
+
+@clubadmin_bp.route('/tournaments/<event_id>/matches/<match_id>/score', methods=['POST'])
+@require_role('clubadmin')
+def match_score(event_id, match_id):
+    admin_id = session.get('user_id')
+    db = get_db()
+    
+    p1_score = request.form.get('player1_score', type=int)
+    p2_score = request.form.get('player2_score', type=int)
+    winner_id = request.form.get('winner_id') or None  # empty string → NULL (valid UUID expected)
+    
+    try:
+        # Verify ownership
+        db.table('events').select('id').eq('id', event_id).eq('organizer_id', admin_id).single().execute()
+        
+        db.table('tournament_matches').update({
+            'player1_score': p1_score,
+            'player2_score': p2_score,
+            'winner_id': winner_id,
+            'status': 'completed',
+            'played_at': datetime.now(PH_TZ).isoformat()
+        }).eq('id', match_id).eq('event_id', event_id).execute()
+        
+        flash("Score recorded successfully.", "success")
+        # In a full system, you would automatically advance the winner to the next round here
+        
+    except Exception as e:
+        flash(f"Error recording score: {e}", "error")
+        
+    return redirect(url_for('clubadmin.tournament_manage', event_id=event_id))
 
 @clubadmin_bp.route('/leaderboard')
 @require_role('clubadmin')
 def leaderboard():
-    return render_template('clubadmin/leaderboard.html')
+    admin_id = session.get('user_id')
+    db = get_db()
+    rankings = []
+
+    try:
+        # Get all tournaments run by this admin
+        ev_resp = db.table('events').select('id').eq('organizer_id', admin_id).eq('type', 'tournament').execute()
+        event_ids = [e['id'] for e in (ev_resp.data or [])]
+
+        if event_ids:
+            # Fetch all completed matches for these tournaments
+            matches_resp = db.table('tournament_matches').select(
+                'player1_id, player2_id, winner_id, status'
+            ).in_('event_id', event_ids).eq('status', 'completed').execute()
+            matches = matches_resp.data or []
+
+            # Aggregate per player
+            stats = {}
+            for m in matches:
+                for pid in [m['player1_id'], m['player2_id']]:
+                    if pid is None:
+                        continue
+                    if pid not in stats:
+                        stats[pid] = {'wins': 0, 'losses': 0, 'played': 0}
+                    stats[pid]['played'] += 1
+                    if m['winner_id'] == pid:
+                        stats[pid]['wins'] += 1
+                    else:
+                        stats[pid]['losses'] += 1
+
+            if stats:
+                # Fetch player profiles
+                player_ids = list(stats.keys())
+                prof_resp = db.table('profiles').select('id, first_name, last_name').in_('id', player_ids).execute()
+                profiles_map = {p['id']: p for p in (prof_resp.data or [])}
+
+                for pid, s in stats.items():
+                    prof = profiles_map.get(pid, {})
+                    win_rate = round((s['wins'] / s['played']) * 100) if s['played'] > 0 else 0
+                    rankings.append({
+                        'id': pid,
+                        'name': f"{prof.get('first_name', '')} {prof.get('last_name', '')}".strip(),
+                        'initials': ((prof.get('first_name') or ' ')[0] + (prof.get('last_name') or ' ')[0]).upper(),
+                        'played': s['played'],
+                        'wins': s['wins'],
+                        'losses': s['losses'],
+                        'win_rate': win_rate,
+                    })
+
+                # Sort by wins desc, then win_rate desc
+                rankings.sort(key=lambda x: (-x['wins'], -x['win_rate']))
+
+    except Exception as e:
+        flash(f"Error loading leaderboard: {e}", "error")
+
+    return render_template('clubadmin/leaderboard.html', rankings=rankings)
 
 @clubadmin_bp.route('/profile', methods=['GET', 'POST'])
 @require_role('clubadmin')
