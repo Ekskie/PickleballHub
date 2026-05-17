@@ -16,54 +16,72 @@ def get_db():
 def dashboard():
     owner_id = session.get('user_id')
     db = get_db()
-    
-    # Defaults
-    total_earnings = 0
+
+    total_earnings = 0       # all-time
+    today_earnings = 0
     total_bookings = 0
     active_staff = 0
     recent_bookings = []
-    
+    revenue_chart = {'labels': [], 'data': []}
+    facility_revenue = []
+
     try:
-        # Get facilities owned by this user
-        fac_resp = db.table('facilities').select('id').eq('owner_id', owner_id).execute()
-        fac_ids = [f['id'] for f in (fac_resp.data or [])]
-        
+        fac_resp = db.table('facilities').select('id, name').eq('owner_id', owner_id).execute()
+        facilities_data = fac_resp.data or []
+        fac_ids = [f['id'] for f in facilities_data]
+
         if fac_ids:
-            # 1. Today's Earnings & Total Bookings
             from datetime import date
             today_str = date.today().isoformat()
-            
-            # Fetch reservations for the owner's facilities
+
+            # All confirmed/completed reservations
             res_resp = db.table('court_reservations').select(
-                'id, total_amount, date, start_time, end_time, status, profiles(first_name, last_name), courts(name, type)'
+                'id, total_amount, date, start_time, end_time, status, '
+                'profiles(first_name, last_name), courts(name, type), facility_id'
             ).in_('facility_id', fac_ids).order('created_at', desc=True).execute()
             reservations = res_resp.data or []
-            
+
+            paid = [r for r in reservations if r['status'] in ['confirmed', 'completed']]
             total_bookings = len(reservations)
-            
-            # Calculate today's earnings (only paid/completed)
-            today_earnings = sum(
-                r['total_amount'] for r in reservations 
-                if r['date'] == today_str and r['status'] in ['confirmed', 'completed']
-            )
-            total_earnings = today_earnings
-            
-            # Recent Bookings (top 5)
-            recent_bookings = reservations[:5]
-            
-            # 2. Active Staff Count
+            total_earnings = sum((r.get('total_amount') or 0) for r in paid)
+            today_earnings = sum((r.get('total_amount') or 0) for r in paid if r.get('date') == today_str)
+
+            # Recent bookings (top 6)
+            recent_bookings = reservations[:6]
+
+            # 7-day daily revenue trend
+            now = datetime.now(PH_TZ)
+            labels, daily_data = [], []
+            for i in range(6, -1, -1):
+                day = now - timedelta(days=i)
+                day_str = day.strftime('%Y-%m-%d')
+                labels.append(day.strftime('%b %d'))
+                day_rev = sum((r.get('total_amount') or 0) for r in paid if r.get('date') == day_str)
+                daily_data.append(round(day_rev, 2))
+            revenue_chart = {'labels': labels, 'data': daily_data}
+
+            # Revenue per facility
+            for f in facilities_data:
+                frev = sum((r.get('total_amount') or 0) for r in paid if r.get('facility_id') == f['id'])
+                fbookings = sum(1 for r in reservations if r.get('facility_id') == f['id'])
+                facility_revenue.append({'name': f['name'], 'revenue': round(frev, 2), 'bookings': fbookings})
+
+            # Staff count
             staff_resp = db.table('facility_staff').select('id', count='exact').in_('facility_id', fac_ids).execute()
-            active_staff = staff_resp.count if staff_resp.count is not None else 0
+            active_staff = staff_resp.count or 0
 
     except Exception as e:
-        print(f"Error loading owner dashboard: {e}")
-        
+        print(f"Owner dashboard error: {e}")
+
     return render_template(
         'owner/dashboard.html',
         total_earnings=total_earnings,
+        today_earnings=today_earnings,
         total_bookings=total_bookings,
         active_staff=active_staff,
-        recent_bookings=recent_bookings
+        recent_bookings=recent_bookings,
+        revenue_chart=revenue_chart,
+        facility_revenue=facility_revenue,
     )
 
 # ── Facilities ─────────────────────────────────────────────────────────────────
@@ -457,7 +475,7 @@ def events():
 
         if fac_ids:
             ev_resp = db.table('events').select(
-                'id, title, type, event_date, start_time, end_time, max_players, status, location_label, '
+                'id, title, type, event_date, start_time, end_time, max_players, status, location_label, organizer_id, '
                 'facilities(name), profiles!organizer_id(first_name, last_name)'
             ).in_('facility_id', fac_ids).order('event_date', desc=False).execute()
             events_list = ev_resp.data or []
@@ -617,22 +635,78 @@ def bracket_generate(event_id):
         
     return redirect(url_for('owner.tournament_manage', event_id=event_id))
 
+def _advance_bracket(db, event_id):
+    """Check current round completion and auto-generate next round or declare champion."""
+    try:
+        all_m = db.table('tournament_matches').select(
+            'id, round_number, status, winner_id'
+        ).eq('event_id', event_id).order('round_number').execute()
+        matches = all_m.data or []
+        if not matches:
+            return
+
+        max_round = max(m['round_number'] for m in matches)
+        round_matches = [m for m in matches if m['round_number'] == max_round]
+
+        if any(m['status'] != 'completed' for m in round_matches):
+            return  # Round not finished yet
+
+        winners = [m['winner_id'] for m in round_matches if m['winner_id']]
+
+        if len(winners) == 1:
+            # 🏆 Champion decided
+            db.table('events').update({'status': 'completed'}).eq('id', event_id).execute()
+            try:
+                db.table('notifications').insert({
+                    'user_id': winners[0],
+                    'title': '🏆 Tournament Champion!',
+                    'message': 'Congratulations! You have won the tournament!',
+                    'type': 'success'
+                }).execute()
+            except Exception:
+                pass
+            return
+
+        # Pair winners → next round
+        next_round = max_round + 1
+        match_num = 1
+        next_matches = []
+        for i in range(0, len(winners), 2):
+            p1 = winners[i]
+            p2 = winners[i + 1] if i + 1 < len(winners) else None
+            next_matches.append({
+                'event_id': event_id,
+                'round_number': next_round,
+                'match_number': match_num,
+                'player1_id': p1,
+                'player2_id': p2,
+                'status': 'completed' if not p2 else 'pending',
+                'winner_id': p1 if not p2 else None,
+            })
+            match_num += 1
+        if next_matches:
+            db.table('tournament_matches').insert(next_matches).execute()
+            if len(next_matches) == 1 and next_matches[0]['status'] == 'completed':
+                _advance_bracket(db, event_id)
+    except Exception as e:
+        print(f"Owner bracket advancement error: {e}")
+
+
 @owner_bp.route('/tournaments/<event_id>/matches/<match_id>/score', methods=['POST'])
 @require_role('owner')
 def match_score(event_id, match_id):
     owner_id = session.get('user_id')
     db = get_db()
-    
+
     p1_score = request.form.get('player1_score', type=int)
     p2_score = request.form.get('player2_score', type=int)
-    winner_id = request.form.get('winner_id') or None  # empty string → NULL (valid UUID expected)
-    
+    winner_id = request.form.get('winner_id') or None
+
     try:
-        # Verify ownership
         fac_resp = db.table('facilities').select('id').eq('owner_id', owner_id).execute()
         fac_ids = [f['id'] for f in (fac_resp.data or [])]
         db.table('events').select('id').eq('id', event_id).in_('facility_id', fac_ids).single().execute()
-        
+
         db.table('tournament_matches').update({
             'player1_score': p1_score,
             'player2_score': p2_score,
@@ -640,12 +714,13 @@ def match_score(event_id, match_id):
             'status': 'completed',
             'played_at': datetime.now(PH_TZ).isoformat()
         }).eq('id', match_id).eq('event_id', event_id).execute()
-        
-        flash("Score recorded successfully.", "success")
-        
+
+        _advance_bracket(db, event_id)
+        flash("Score recorded! Bracket updated.", "success")
+
     except Exception as e:
         flash(f"Error recording score: {e}", "error")
-        
+
     return redirect(url_for('owner.tournament_manage', event_id=event_id))
 
 # ── Create Event ───────────────────────────────────────────────────────────────
@@ -1061,3 +1136,78 @@ def messages():
 @require_role('owner')
 def community():
     return render_template('owner/community.html')
+
+# ── Support ──────────────────────────────────────────────────────────────────────
+@owner_bp.route('/support')
+@require_role('owner')
+def support():
+    return render_template('owner/support.html')
+
+
+# ── Event Status Lifecycle ────────────────────────────────────────────────────
+@owner_bp.route('/events/<event_id>/status', methods=['POST'])
+@require_role('owner')
+def change_event_status(event_id):
+    owner_id = session.get('user_id')
+    new_status = request.form.get('status', '').strip()
+    allowed = ['upcoming', 'registration_open', 'full', 'in_progress', 'completed', 'cancelled']
+    if new_status not in allowed:
+        flash("Invalid status.", "error")
+        return redirect(url_for('owner.events'))
+
+    db = get_db()
+    try:
+        ev_resp = db.table('events').select('id, title, organizer_id').eq('id', event_id).single().execute()
+        ev = ev_resp.data
+        if not ev or ev['organizer_id'] != owner_id:
+            flash("Access denied.", "error")
+            return redirect(url_for('owner.events'))
+
+        db.table('events').update({'status': new_status}).eq('id', event_id).execute()
+        flash(f"Event status changed to '{new_status.replace('_', ' ').title()}'.", "success")
+
+        if new_status == 'cancelled':
+            reg_resp = db.table('event_registrations').select('player_id').eq('event_id', event_id).eq('status', 'registered').execute()
+            for reg in (reg_resp.data or []):
+                db.table('notifications').insert({
+                    'user_id': reg['player_id'],
+                    'title': f'Event Cancelled: {ev["title"]}',
+                    'message': f'"{ev["title"]}" has been cancelled by the organizer.',
+                    'type': 'warning'
+                }).execute()
+    except Exception as e:
+        flash(f"Error updating status: {e}", "error")
+
+    return redirect(url_for('owner.events'))
+
+
+# ── Court Quick Status Toggle ─────────────────────────────────────────────────
+@owner_bp.route('/courts/<court_id>/status', methods=['POST'])
+@require_role('owner')
+def toggle_court_status(court_id):
+    owner_id = session.get('user_id')
+    new_status = request.form.get('status', 'active')
+    if new_status not in ['active', 'maintenance', 'closed']:
+        flash("Invalid court status.", "error")
+        return redirect(url_for('owner.courts'))
+
+    db = get_db()
+    try:
+        # Verify ownership via facility
+        c_resp = db.table('courts').select('id, facility_id').eq('id', court_id).single().execute()
+        court = c_resp.data
+        if not court:
+            flash("Court not found.", "error")
+            return redirect(url_for('owner.courts'))
+
+        fac_resp = db.table('facilities').select('id').eq('id', court['facility_id']).eq('owner_id', owner_id).execute()
+        if not fac_resp.data:
+            flash("Access denied.", "error")
+            return redirect(url_for('owner.courts'))
+
+        db.table('courts').update({'status': new_status}).eq('id', court_id).execute()
+        flash(f"Court status set to '{new_status.title()}'.", "success")
+    except Exception as e:
+        flash(f"Error updating court status: {e}", "error")
+
+    return redirect(url_for('owner.courts'))

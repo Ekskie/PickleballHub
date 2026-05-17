@@ -24,8 +24,9 @@ html.dark-mode .badge-league   { background:rgba(180,83,9,0.15); }
 .event-meta { display:flex; flex-direction:column; gap:5px; }
 .event-meta-row { display:flex; align-items:center; gap:7px; font-size:0.8rem; color:var(--text-secondary); }
 .event-meta-row i { font-size:0.95rem; color:var(--text-muted); }
-.event-footer { display:flex; justify-content:space-between; align-items:center; padding-top:8px; border-top:1px solid var(--border-color); }
+.event-footer { display:flex; justify-content:space-between; align-items:center; padding-top:8px; border-top:1px solid var(--border-color); flex-wrap:wrap; gap:6px; }
 .event-reg-count { font-size:0.8rem; color:var(--text-muted); font-weight:500; }
+.status-select { padding:4px 8px; border-radius:6px; border:1px solid var(--border-color); background:var(--input-bg); color:var(--text-primary); font-size:0.75rem; cursor:pointer; }
 .empty-state { grid-column:1/-1; display:flex; flex-direction:column; align-items:center; padding:60px 20px; gap:14px; text-align:center; }
 .empty-state i { font-size:3.5rem; color:var(--text-muted); }
 .empty-state h3 { font-size:1.1rem; color:var(--text-primary); }
@@ -44,7 +45,7 @@ html.dark-mode .badge-league   { background:rgba(180,83,9,0.15); }
         <h1 class="page-title">Events on My Courts</h1>
         <p style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">All events booked at your facilities</p>
     </div>
-    <a href="{{ url_for('clubadmin.create_event') }}" class="btn-sm btn-sm-primary" style="padding: 10px 18px; font-size: 0.9rem;">
+    <a href="{{ url_for('clubadmin.create_event') }}" class="btn-sm btn-sm-primary" style="padding:10px 18px;font-size:0.9rem;">
         <i class="ph ph-plus-circle"></i> Create Event
     </a>
 </div>
@@ -65,8 +66,9 @@ html.dark-mode .badge-league   { background:rgba(180,83,9,0.15); }
         <div class="event-card" data-type="{{ ev.type }}">
             <div class="event-card-top">
                 <span class="event-type-badge badge-{{ ev.type }}">{{ ev.type|capitalize }}</span>
-                <span class="status-pill {% if ev.status == 'registration_open' %}success{% elif ev.status == 'full' %}danger{% elif ev.status == 'cancelled' %}warning{% else %}{% endif %}" style="font-size:0.65rem;">
-                    {{ ev.status|replace('_',' ')|capitalize }}
+                {% set sc = ev.status %}
+                <span class="status-pill {% if sc == 'registration_open' %}success{% elif sc == 'in_progress' %}warning{% elif sc in ['cancelled','full'] %}danger{% endif %}" style="font-size:0.65rem;">
+                    {{ sc|replace('_',' ')|capitalize }}
                 </span>
             </div>
             <div class="event-title">{{ ev.title }}</div>
@@ -77,10 +79,21 @@ html.dark-mode .badge-league   { background:rgba(180,83,9,0.15); }
                 {% if ev.location_label %}<div class="event-meta-row"><i class="ph ph-intersect"></i> {{ ev.location_label }}</div>{% endif %}
             </div>
             <div class="event-footer">
-                <span class="event-reg-count"><i class="ph ph-users"></i> {{ ev.registered_count }} / {{ ev.max_players }} registered</span>
-                <a href="{{ url_for('clubadmin.event_participants', event_id=ev.id) }}" class="btn-sm btn-sm-outline" style="padding: 4px 10px; font-size: 0.75rem;">
-                    View
-                </a>
+                <span class="event-reg-count"><i class="ph ph-users"></i> {{ ev.registered_count }} / {{ ev.max_players }}</span>
+                <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                    {% if ev.organizer_id == session.get('user_id') %}
+                    <form method="POST" action="{{ url_for('clubadmin.change_event_status', event_id=ev.id) }}" style="margin:0;">
+                        <select name="status" class="status-select" onchange="this.form.submit()" title="Change status">
+                            {% for s in ['upcoming','registration_open','in_progress','completed','cancelled'] %}
+                            <option value="{{ s }}" {% if ev.status == s %}selected{% endif %}>{{ s|replace('_',' ')|title }}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                    {% endif %}
+                    <a href="{{ url_for('clubadmin.event_participants', event_id=ev.id) }}" class="btn-sm btn-sm-outline" style="padding:4px 10px;font-size:0.75rem;">
+                        <i class="ph ph-users"></i> Participants
+                    </a>
+                </div>
             </div>
         </div>
         {% endfor %}
@@ -88,8 +101,7 @@ html.dark-mode .badge-league   { background:rgba(180,83,9,0.15); }
         <div class="empty-state">
             <i class="ph ph-trophy"></i>
             <h3>No Events Yet</h3>
-            <p>Create your first event to start accepting player registrations at your courts.</p>
-            
+            <p>Create your first event to start accepting player registrations.</p>
         </div>
     {% endif %}
 </div>

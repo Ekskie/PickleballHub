@@ -1,38 +1,35 @@
 {% extends "clubadmin/base_clubadmin.html" %}
-
 {% block title %}Club Members{% endblock %}
 
 {% block content %}
-<div class="dashboard-header ">
+<div class="dashboard-header">
     <h1 class="page-title">Club Members</h1>
-    <button class="action-box orange display-row" style="width: auto; padding: 0.5rem 1rem; ">
-        <i class="ph ph-user-plus"></i> Add Member
-    </button>
+    <span style="color:var(--text-secondary);font-size:0.9rem;">{{ members|length }} member(s)</span>
 </div>
 
 <div class="glass-card">
-    <div class="widget-header">
-        <div class="header-search" style="flex: 1; max-width: 400px; margin-right: 15px;">
+    <div class="widget-header" style="margin-bottom:16px;">
+        <div class="header-search" style="flex:1;max-width:360px;">
             <i class="ph ph-magnifying-glass"></i>
-            <input type="text" placeholder="Search members by name...">
+            <input type="text" id="memberSearch" placeholder="Search by name or phone..." oninput="filterMembers()">
         </div>
         <div class="filter-actions">
-            <select class="action-box"
-                style="padding: 0.5rem; border: none; background: rgba(255,255,255,0.05); color: var(--text-primary); cursor: pointer; border-radius: 8px;">
-                <option value="all">All Levels</option>
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
+            <select id="statusFilter" onchange="filterMembers()"
+                style="padding:0.5rem 10px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);cursor:pointer;border-radius:8px;font-size:0.85rem;">
+                <option value="all">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="pending">Pending</option>
             </select>
         </div>
     </div>
+
     <div class="table-container">
         <table class="data-grid">
             <thead>
                 <tr>
                     <th>MEMBER</th>
+                    <th>PHONE</th>
                     <th>JOIN DATE</th>
-                    <th>SKILL LEVEL</th>
                     <th>STATUS</th>
                     <th>ACTIONS</th>
                 </tr>
@@ -40,48 +37,76 @@
             <tbody>
                 {% if members %}
                     {% for m in members %}
-                    <tr>
+                    <tr class="member-row"
+                        data-name="{{ (m.profiles.first_name ~ ' ' ~ m.profiles.last_name)|lower }}"
+                        data-status="{{ m.status }}">
                         <td class="bold">{{ m.profiles.first_name }} {{ m.profiles.last_name }}</td>
-                        <td>
-                            {% set dt = m.joined_at.split('T')[0] %}
-                            {{ dt }}
-                        </td>
-                        <td>-</td>
+                        <td style="color:var(--text-secondary);font-size:0.85rem;">{{ m.profiles.phone or '—' }}</td>
+                        <td>{{ m.joined_at.split('T')[0] }}</td>
                         <td>
                             {% if m.status == 'active' %}
                                 <span class="status-pill success">Active</span>
                             {% elif m.status == 'pending' %}
-                                <span class="status-pill warning" style="color:#f59e0b; background:rgba(245,158,11,0.1)">
-                                    Pending Payment
+                                <span class="status-pill warning" style="color:#f59e0b;background:rgba(245,158,11,0.1);">
+                                    Pending
                                     {% if m.gcash_ref %}
-                                    <br><small style="color:var(--text-muted); font-size: 0.7rem;">Ref: {{ m.gcash_ref }}</small>
+                                    <br><small style="color:var(--text-muted);font-size:0.7rem;">Ref: {{ m.gcash_ref }}</small>
                                     {% endif %}
                                 </span>
                             {% else %}
-                                <span class="status-pill error">{{ m.status | title }}</span>
+                                <span class="status-pill">{{ m.status|title }}</span>
                             {% endif %}
                         </td>
-                        <td>
-                            <form action="{{ url_for('clubadmin.remove_member', membership_id=m.id) }}" method="POST" style="display:inline;">
-                                <button type="submit" class="action-link" title="Remove" style="color: #ef4444; border:none; background:none; cursor:pointer;"><i class="ph ph-trash"></i></button>
-                            </form>
+                        <td style="display:flex;gap:8px;align-items:center;">
                             {% if m.status == 'pending' %}
-                            <form action="{{ url_for('clubadmin.approve_member', membership_id=m.id) }}" method="POST" style="display:inline; margin-left: 10px;">
-                                <button type="submit" class="action-link" title="Approve" style="color: #4ade80; border:none; background:none; cursor:pointer;"><i class="ph ph-check-circle"></i></button>
+                            <form action="{{ url_for('clubadmin.approve_member', membership_id=m.id) }}" method="POST" style="margin:0;">
+                                <button type="submit"
+                                    style="background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:0.8rem;display:inline-flex;align-items:center;gap:4px;">
+                                    <i class="ph ph-check-circle"></i> Approve
+                                </button>
                             </form>
                             {% endif %}
+                            <form action="{{ url_for('clubadmin.remove_member', membership_id=m.id) }}" method="POST" style="margin:0;"
+                                  onsubmit="return confirm('Remove {{ m.profiles.first_name }} from the club?');">
+                                <button type="submit"
+                                    style="background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.2);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:0.8rem;display:inline-flex;align-items:center;gap:4px;">
+                                    <i class="ph ph-trash"></i>
+                                </button>
+                            </form>
                         </td>
                     </tr>
                     {% endfor %}
                 {% else %}
                     <tr>
-                        <td colspan="5" style="text-align: center; padding: 30px; color: var(--text-muted);">
-                            No members found.
+                        <td colspan="5" style="text-align:center;padding:40px;color:var(--text-muted);">
+                            <i class="ph ph-users" style="font-size:2rem;display:block;margin-bottom:8px;opacity:0.4;"></i>
+                            No members yet.
                         </td>
                     </tr>
                 {% endif %}
             </tbody>
         </table>
     </div>
+
+    <div id="noResultsMsg" style="display:none;text-align:center;padding:30px;color:var(--text-muted);">
+        <i class="ph ph-magnifying-glass" style="font-size:1.5rem;display:block;margin-bottom:6px;opacity:0.4;"></i>
+        No members match your search.
+    </div>
 </div>
+
+<script>
+function filterMembers() {
+    const query = document.getElementById('memberSearch').value.toLowerCase();
+    const status = document.getElementById('statusFilter').value;
+    let visible = 0;
+    document.querySelectorAll('.member-row').forEach(row => {
+        const matchName   = row.dataset.name.includes(query);
+        const matchStatus = status === 'all' || row.dataset.status === status;
+        const show = matchName && matchStatus;
+        row.style.display = show ? '' : 'none';
+        if (show) visible++;
+    });
+    document.getElementById('noResultsMsg').style.display = visible === 0 ? 'block' : 'none';
+}
+</script>
 {% endblock %}

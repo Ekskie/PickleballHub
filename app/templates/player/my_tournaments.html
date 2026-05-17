@@ -1,0 +1,80 @@
+{% extends "player/base_player.html" %}
+{% block title %}My Tournaments{% endblock %}
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="page-title">My Tournaments</h1>
+    <a href="{{ url_for('player.events') }}" class="action-box orange"
+        style="padding:8px 18px;border:none;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.9rem;display:flex;align-items:center;gap:6px;">
+        <i class="ph ph-magnifying-glass"></i> Browse Events
+    </a>
+</div>
+
+
+
+{% if tournaments %}
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;">
+    {% for t in tournaments %}
+    <div class="glass-card tournament-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+            <div>
+                <div
+                    style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--primary-orange);margin-bottom:4px;">
+                    <i class="ph ph-trophy"></i> Tournament
+                </div>
+                <h3 style="margin:0;font-size:1.1rem;font-weight:700;">{{ t.title }}</h3>
+            </div>
+            {% if t.status == 'completed' %}
+            <span class="status-pill success">Completed</span>
+            {% elif t.status == 'in_progress' %}
+            <span class="status-pill" style="background:rgba(245,158,11,0.15);color:#f59e0b;">In Progress</span>
+            {% elif t.status == 'registration_open' %}
+            <span class="status-pill" style="background:rgba(99,102,241,0.15);color:#818cf8;">Open</span>
+            {% else %}
+            <span class="status-pill">{{ t.status | replace('_', ' ') | title }}</span>
+            {% endif %}
+        </div>
+
+        <div
+            style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;font-size:0.88rem;color:var(--text-secondary);">
+            <div style="display:flex;align-items:center;gap:8px;">
+                <i class="ph ph-calendar" style="color:var(--primary-orange);"></i>
+                {{ t.event_date[:10] if t.event_date else '—' }}
+            </div>
+            {% if t.facilities %}
+            <div style="display:flex;align-items:center;gap:8px;">
+                <i class="ph ph-map-pin" style="color:var(--primary-orange);"></i>
+                {{ t.facilities.name }} · {{ t.facilities.location }}
+            </div>
+            {% endif %}
+        </div>
+
+        <a href="{{ url_for('player.tournament_bracket', event_id=t.id) }}" class="action-box green"
+            style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;text-decoration:none;border:none;border-radius:8px;font-weight:600;width:100%;">
+            <i class="ph ph-tree-structure"></i> View My Bracket
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="glass-card" style="text-align:center;padding:60px;">
+    <i class="ph ph-trophy" style="font-size:4rem;display:block;margin-bottom:16px;opacity:0.3;"></i>
+    <h3 style="margin:0 0 8px;font-size:1.2rem;">No Tournament Registrations</h3>
+    <p style="color:var(--text-secondary);margin-bottom:20px;">You haven't joined any tournaments yet.</p>
+    <a href="{{ url_for('player.events') }}" class="action-box orange"
+        style="padding:10px 24px;text-decoration:none;border:none;border-radius:8px;font-weight:600;display:inline-flex;align-items:center;gap:8px;">
+        <i class="ph ph-magnifying-glass"></i> Browse Events
+    </a>
+</div>
+{% endif %}
+
+<style>
+    .tournament-card {
+        transition: transform .2s, box-shadow .2s;
+    }
+
+    .tournament-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+    }
+</style>
+{% endblock %}

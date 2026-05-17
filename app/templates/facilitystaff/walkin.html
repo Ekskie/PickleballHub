@@ -5,32 +5,38 @@
     <h1 class="page-title">Register Walk-In</h1>
 </div>
 <div class="dashboard-grid">
-    <div class="dashboard-main" style="max-width: 600px;">
+    <div class="dashboard-main" style="max-width:620px;">
         <div class="glass-card">
             <form method="POST" action="{{ url_for('facilitystaff.walkin') }}" id="walkin-form">
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Guest Name *</label>
-                    <input type="text" name="guest_name" required class="form-input" style="width: 100%; padding: 10px; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px;" placeholder="John Doe">
+
+                <!-- Guest Info -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+                    <div>
+                        <label class="field-label">Guest Name *</label>
+                        <input type="text" name="guest_name" required class="form-input field-input" placeholder="John Doe">
+                    </div>
+                    <div>
+                        <label class="field-label">Contact Number (Optional)</label>
+                        <input type="tel" name="guest_phone" class="form-input field-input" placeholder="09123456789">
+                    </div>
                 </div>
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Contact Number (Optional)</label>
-                    <input type="tel" name="guest_phone" class="form-input" style="width: 100%; padding: 10px; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px;" placeholder="09123456789">
-                </div>
-                
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Select Court *</label>
-                    <select name="court_id" id="court_select" required class="form-input" style="width: 100%; padding: 10px; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px;">
+
+                <!-- Court -->
+                <div style="margin-bottom:20px;">
+                    <label class="field-label">Select Court *</label>
+                    <select name="court_id" id="court_select" required class="form-input field-input">
                         <option value="" data-rate="0">-- Select Court --</option>
                         {% for court in courts %}
-                        <option value="{{ court.id }}" data-rate="{{ court.hourly_rate }}">{{ court.name }} (₱{{ court.hourly_rate }}/hr)</option>
+                        <option value="{{ court.id }}" data-rate="{{ court.hourly_rate }}">{{ court.name }} — ₱{{ court.hourly_rate }}/hr</option>
                         {% endfor %}
                     </select>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                <!-- Duration & Party -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
                     <div>
-                        <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Duration (Hours)</label>
-                        <select name="duration" id="duration_select" class="form-input" style="width: 100%; padding: 10px; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px;">
+                        <label class="field-label">Duration (Hours)</label>
+                        <select name="duration" id="duration_select" class="form-input field-input">
                             <option value="1">1 Hour</option>
                             <option value="1.5">1.5 Hours</option>
                             <option value="2">2 Hours</option>
@@ -38,45 +44,88 @@
                         </select>
                     </div>
                     <div>
-                        <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Party Size</label>
-                        <input type="number" name="party_size" id="party_size" value="1" min="1" max="10" required class="form-input" style="width: 100%; padding: 10px; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px;">
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 20px; padding: 15px; background: rgba(41, 163, 86, 0.1); border-radius: 8px; border: 1px solid rgba(41, 163, 86, 0.3);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; color: var(--btn-green);">
-                        <span style="font-weight: 600;">Total Amount due now:</span>
-                        <span style="font-size: 1.25rem; font-weight: 700;" id="total_price_display">₱0.00</span>
+                        <label class="field-label">Party Size</label>
+                        <input type="number" name="party_size" id="party_size" value="1" min="1" max="20" required class="form-input field-input">
                     </div>
                 </div>
 
-                <button type="submit" class="action-box green" style="width: 100%; padding: 1rem; border: none; cursor: pointer;">
-                    <i class="ph ph-check-circle" style="font-size: 1.2rem; margin-right: 8px; display: inline-block; vertical-align: middle;"></i>
-                    <span style="font-size: 1rem; display: inline-block; vertical-align: middle;">Add to Queue & Take Payment</span>
+                <!-- Payment Method -->
+                <div style="margin-bottom:16px;">
+                    <label class="field-label">Payment Method *</label>
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                        {% for val, lbl, icon in [('cash','Cash','ph-money'),('gcash','GCash','ph-device-mobile'),('qr_ph','QR Ph','ph-qr-code')] %}
+                        <label style="flex:1;min-width:100px;cursor:pointer;">
+                            <input type="radio" name="payment_method" value="{{ val }}" {% if val == 'cash' %}checked{% endif %}
+                                   style="display:none;" class="pm-radio" data-target="gcash_ref_section">
+                            <div class="pm-card {% if val == 'cash' %}pm-active{% endif %}"
+                                 style="padding:12px;border:2px solid var(--border-color);border-radius:10px;text-align:center;transition:all .2s;">
+                                <i class="ph {{ icon }}" style="font-size:1.4rem;display:block;margin-bottom:4px;"></i>
+                                <span style="font-size:0.85rem;font-weight:600;">{{ lbl }}</span>
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- GCash Reference (conditional) -->
+                <div id="gcash_ref_section" style="margin-bottom:20px;display:none;">
+                    <label class="field-label">GCash / QR Reference Number</label>
+                    <input type="text" name="gcash_ref" class="form-input field-input" placeholder="e.g. 1234567890">
+                </div>
+
+                <!-- Amount Summary -->
+                <div style="margin-bottom:20px;padding:16px;background:rgba(74,222,128,0.1);border-radius:10px;border:1px solid rgba(74,222,128,0.3);">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <div style="color:var(--text-secondary);font-size:0.85rem;">Court Rate × Duration</div>
+                            <div id="calc_detail" style="font-size:0.85rem;margin-top:2px;color:var(--text-secondary);">₱0 × 1h = ₱0</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="color:var(--text-secondary);font-size:0.8rem;">TOTAL DUE</div>
+                            <div id="total_price_display" style="font-size:1.6rem;font-weight:800;color:#4ade80;">₱0.00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="action-box green" style="width:100%;padding:14px;border:none;cursor:pointer;border-radius:10px;font-size:1rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;">
+                    <i class="ph ph-check-circle" style="font-size:1.2rem;"></i> Confirm & Take Payment
                 </button>
             </form>
-            
-            <script>
-                const courtSelect = document.getElementById('court_select');
-                const durationSelect = document.getElementById('duration_select');
-                const partySizeInput = document.getElementById('party_size');
-                const totalPriceDisplay = document.getElementById('total_price_display');
-                
-                function calculateTotal() {
-                    const selectedOption = courtSelect.options[courtSelect.selectedIndex];
-                    const rate = parseFloat(selectedOption.getAttribute('data-rate') || 0);
-                    const duration = parseFloat(durationSelect.value || 1);
-                    const partySize = parseInt(partySizeInput.value || 1);
-                    
-                    const total = rate * duration * partySize;
-                    totalPriceDisplay.textContent = '₱' + total.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
-                }
-                
-                courtSelect.addEventListener('change', calculateTotal);
-                durationSelect.addEventListener('change', calculateTotal);
-                partySizeInput.addEventListener('input', calculateTotal);
-            </script>
         </div>
     </div>
 </div>
+
+<style>
+.field-label { display:block;margin-bottom:6px;color:var(--text-secondary);font-size:0.88rem;font-weight:600; }
+.field-input { width:100%;padding:10px 14px;background:var(--input-bg);border:1px solid var(--border-color);color:var(--text-primary);border-radius:8px;font-size:0.95rem; }
+.pm-card:hover { border-color:rgba(74,222,128,0.5) !important;background:rgba(74,222,128,0.05) !important; }
+.pm-active { border-color:#4ade80 !important;background:rgba(74,222,128,0.1) !important;color:#4ade80 !important; }
+</style>
+
+<script>
+const courtSel = document.getElementById('court_select');
+const durSel = document.getElementById('duration_select');
+const totalDisplay = document.getElementById('total_price_display');
+const calcDetail = document.getElementById('calc_detail');
+
+function calcTotal() {
+    const rate = parseFloat(courtSel.options[courtSel.selectedIndex]?.getAttribute('data-rate') || 0);
+    const dur = parseFloat(durSel.value || 1);
+    const total = rate * dur;
+    totalDisplay.textContent = '₱' + total.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+    calcDetail.textContent = `₱${rate.toLocaleString()} × ${dur}h = ₱${total.toLocaleString()}`;
+}
+courtSel.addEventListener('change', calcTotal);
+durSel.addEventListener('change', calcTotal);
+
+// Payment method toggle
+document.querySelectorAll('.pm-radio').forEach(radio => {
+    radio.addEventListener('change', () => {
+        document.querySelectorAll('.pm-card').forEach(c => c.classList.remove('pm-active'));
+        radio.closest('label').querySelector('.pm-card').classList.add('pm-active');
+        const needsRef = ['gcash', 'qr_ph'].includes(radio.value);
+        document.getElementById('gcash_ref_section').style.display = needsRef ? 'block' : 'none';
+    });
+});
+</script>
 {% endblock %}

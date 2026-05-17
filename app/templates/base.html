@@ -254,6 +254,11 @@
                         style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary); resize: vertical; outline: none;"></textarea>
                 </div>
                 <div class="form-actions" style="display: flex; justify-content: flex-end; gap: 1rem;">
+                    <!-- Add these right before your form's submit button -->
+                    <a href="{{url_for('player.support')}}"
+                        style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; background: var(--accent-color); color: rgb(0, 0, 0); border: none; border-radius: 8px; text-decoration: none; cursor: pointer; font-weight: 600; font-size: 0.9rem;">
+                        <i class="ph ph-person"></i> More
+                    </a>
                     <button type="button" class="action-box"
                         onclick="document.getElementById('support-modal').style.display='none'"
                         style="padding: 0.6rem 1.2rem; background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; width: auto; font-size: 0.9rem;">Cancel</button>

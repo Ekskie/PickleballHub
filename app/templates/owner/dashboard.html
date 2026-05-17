@@ -1,47 +1,71 @@
 {% extends "owner/base_owner.html" %}
-
 {% block title %}Owner Dashboard{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
 
 {% block content %}
 <div class="dashboard-header">
     <h1 class="page-title">Facility Owner Dashboard</h1>
+    <small style="color:var(--text-secondary);">Live financial data</small>
+</div>
+
+<!-- Stat Cards -->
+<div class="stats-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:20px;">
+    <div class="glass-card stat-box">
+        <i class="ph ph-wallet" style="font-size:2rem;color:#4ade80;"></i>
+        <div class="stat-info">
+            <h3>All-Time Revenue</h3>
+            <p class="stat-value">₱{{ "{:,.0f}".format(total_earnings) }}</p>
+            <span class="stat-change positive"><i class="ph ph-trend-up"></i> Confirmed + Completed</span>
+        </div>
+    </div>
+    <div class="glass-card stat-box">
+        <i class="ph ph-sun" style="font-size:2rem;color:#f59e0b;"></i>
+        <div class="stat-info">
+            <h3>Today's Revenue</h3>
+            <p class="stat-value">₱{{ "{:,.0f}".format(today_earnings) }}</p>
+            <span class="stat-change" style="color:var(--text-secondary);">Paid bookings today</span>
+        </div>
+    </div>
+    <div class="glass-card stat-box">
+        <i class="ph ph-calendar-check" style="font-size:2rem;color:var(--primary);"></i>
+        <div class="stat-info">
+            <h3>Total Bookings</h3>
+            <p class="stat-value">{{ total_bookings }}</p>
+            <span class="stat-change" style="color:var(--text-secondary);">All time</span>
+        </div>
+    </div>
+    <div class="glass-card stat-box">
+        <i class="ph ph-users-three" style="font-size:2rem;color:var(--secondary);"></i>
+        <div class="stat-info">
+            <h3>Active Staff</h3>
+            <p class="stat-value">{{ active_staff }}</p>
+            <span class="stat-change" style="color:var(--text-secondary);">Assigned to facilities</span>
+        </div>
+    </div>
 </div>
 
 <div class="dashboard-grid">
-    <!-- Main Area -->
+    <!-- Main -->
     <div class="dashboard-main">
-        <!-- Stat Cards -->
-        <div class="stats-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px;">
-            <div class="glass-card stat-box">
-                <i class="ph ph-wallet" style="font-size: 2rem; color: #4ade80;"></i>
-                <div class="stat-info">
-                    <h3>Today's Earnings</h3>
-                    <p class="stat-value">₱{{ "{:,.2f}".format(total_earnings) }}</p>
-                    <span class="stat-change" style="color:var(--text-secondary);">From court bookings</span>
-                </div>
+        <!-- Revenue Chart -->
+        <div class="glass-card" style="margin-bottom:20px;">
+            <div class="widget-header">
+                <h3><i class="ph ph-chart-line" style="margin-right:6px;"></i>Revenue — Last 7 Days</h3>
+                <span style="color:var(--text-secondary);font-size:0.85rem;">₱{{ "{:,.0f}".format(revenue_chart.data | sum) }} this week</span>
             </div>
-            <div class="glass-card stat-box">
-                <i class="ph ph-calendar-check" style="font-size: 2rem; color: var(--primary);"></i>
-                <div class="stat-info">
-                    <h3>Total Bookings</h3>
-                    <p class="stat-value">{{ total_bookings }}</p>
-                    <span class="stat-change" style="color:var(--text-secondary);">All time</span>
-                </div>
-            </div>
-            <div class="glass-card stat-box">
-                <i class="ph ph-users-three" style="font-size: 2rem; color: var(--secondary);"></i>
-                <div class="stat-info">
-                    <h3>Active Staff</h3>
-                    <p class="stat-value">{{ active_staff }}</p>
-                    <span class="stat-change" style="color:var(--text-secondary);">Assigned to your facilities</span>
-                </div>
+            <div style="position:relative;height:220px;padding-top:10px;">
+                <canvas id="revenueChart"></canvas>
             </div>
         </div>
 
+        <!-- Recent Bookings -->
         <div class="glass-card">
             <div class="widget-header">
                 <h3>Recent Bookings</h3>
-                <a href="#" class="view-all">View All</a>
+                <a href="{{ url_for('owner.queue') }}" class="view-all">View Queue</a>
             </div>
             <div class="table-container">
                 <table class="data-grid">
@@ -49,88 +73,122 @@
                         <tr>
                             <th>PLAYER</th>
                             <th>COURT</th>
-                            <th>TIME SLOT</th>
+                            <th>DATE / TIME</th>
                             <th>STATUS</th>
-                            <th>FEE</th>
+                            <th>AMOUNT</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% if recent_bookings %}
-                            {% for b in recent_bookings %}
-                            <tr>
-                                <td class="bold">
-                                    {{ b.profiles.first_name if b.profiles else 'Unknown' }} 
-                                    {{ b.profiles.last_name if b.profiles else '' }}
-                                </td>
-                                <td>{{ b.courts.name if b.courts else 'Court' }} ({{ b.courts.type if b.courts else 'N/A' }})</td>
-                                <td>{{ b.date }} <br> <small>{{ b.start_time[:5] }} - {{ b.end_time[:5] }}</small></td>
-                                <td>
-                                    {% if b.status in ['confirmed', 'completed'] %}
-                                        <span class="status-pill success">Paid</span>
-                                    {% elif b.status == 'pending_payment' %}
-                                        <span class="status-pill warning">Pending</span>
-                                    {% else %}
-                                        <span class="status-pill" style="background:var(--input-bg);color:var(--text-muted);">{{ b.status|capitalize }}</span>
-                                    {% endif %}
-                                </td>
-                                <td>₱{{ "{:,.2f}".format(b.total_amount) }}</td>
-                            </tr>
-                            {% endfor %}
+                        {% for b in recent_bookings %}
+                        <tr>
+                            <td class="bold">
+                                {% if b.profiles %}{{ b.profiles.first_name }} {{ b.profiles.last_name }}
+                                {% elif b.guest_name %}{{ b.guest_name }} <span style="font-size:0.75rem;color:var(--text-secondary);">(Walk-in)</span>
+                                {% else %}Guest{% endif %}
+                            </td>
+                            <td>{{ b.courts.name if b.courts else 'Court' }}</td>
+                            <td style="font-size:0.85rem;color:var(--text-secondary);">
+                                {{ b.date }}<br><small>{{ b.start_time[:5] if b.start_time else '' }} – {{ b.end_time[:5] if b.end_time else '' }}</small>
+                            </td>
+                            <td>
+                                {% if b.status in ['confirmed','completed'] %}<span class="status-pill success">Paid</span>
+                                {% elif b.status == 'pending_payment' %}<span class="status-pill warning">Pending</span>
+                                {% else %}<span class="status-pill">{{ b.status | capitalize }}</span>{% endif %}
+                            </td>
+                            <td style="font-weight:700;color:#4ade80;">₱{{ "{:,.2f}".format(b.total_amount or 0) }}</td>
+                        </tr>
                         {% else %}
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px;">No recent bookings found.</td>
-                            </tr>
-                        {% endif %}
+                        <tr><td colspan="5" style="text-align:center;padding:30px;color:var(--text-secondary);">No bookings yet.</td></tr>
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- Sidebar Area -->
+    <!-- Sidebar -->
     <div class="dashboard-side">
         <div class="glass-card">
-            <h3 class="widget-title">Facility Controls</h3>
+            <h3 class="widget-title">Quick Actions</h3>
             <div class="action-grid">
-                <button class="action-box orange">
-                    <i class="ph ph-intersect"></i>
-                    <span>Manage Courts</span>
-                </button>
-                <button class="action-box navy">
-                    <i class="ph ph-clock"></i>
-                    <span>Operating Hours</span>
-                </button>
+                <a href="{{ url_for('owner.facilities') }}" class="action-box orange" style="text-decoration:none;text-align:center;">
+                    <i class="ph ph-buildings"></i><span>Facilities</span>
+                </a>
+                <a href="{{ url_for('owner.courts') }}" class="action-box navy" style="text-decoration:none;text-align:center;">
+                    <i class="ph ph-intersect"></i><span>Courts</span>
+                </a>
+                <a href="{{ url_for('owner.staff') }}" class="action-box" style="text-decoration:none;text-align:center;background:rgba(99,102,241,0.15);color:#818cf8;">
+                    <i class="ph ph-users-three"></i><span>Staff</span>
+                </a>
+                <a href="{{ url_for('owner.events') }}" class="action-box green" style="text-decoration:none;text-align:center;">
+                    <i class="ph ph-trophy"></i><span>Events</span>
+                </a>
             </div>
         </div>
-        
+
+        <!-- Revenue by Facility -->
+        {% if facility_revenue %}
         <div class="glass-card flex-fill">
-            <h3 class="widget-title">Facility Activity</h3>
-            <ul class="activity-feed">
-                <li>
-                    <span class="dot"></span>
-                    <div class="activity-info">
-                        <p><strong>Court 1</strong> maintenance scheduled</p>
-                        <small>Today, 9:00 AM</small>
-                    </div>
-                </li>
-                <li>
-                    <span class="dot"></span>
-                    <div class="activity-info">
-                        <p><strong>Staff member</strong> Sarah started shift</p>
-                        <small>Today, 1:00 PM</small>
-                    </div>
-                </li>
-            </ul>
+            <h3 class="widget-title"><i class="ph ph-buildings" style="margin-right:6px;"></i>Revenue by Facility</h3>
+            {% set max_rev = facility_revenue | map(attribute='revenue') | max %}
+            {% for f in facility_revenue %}
+            <div style="margin-bottom:14px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.85rem;">
+                    <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;" title="{{ f.name }}">{{ f.name }}</span>
+                    <strong style="color:#4ade80;">₱{{ "{:,.0f}".format(f.revenue) }}</strong>
+                </div>
+                <div style="background:rgba(255,255,255,0.08);border-radius:4px;height:6px;overflow:hidden;">
+                    <div style="height:100%;border-radius:4px;background:linear-gradient(90deg,#4ade80,#22d3ee);width:{% if max_rev > 0 %}{{ ((f.revenue / max_rev) * 100) | round }}%{% else %}0%{% endif %};transition:width .6s ease;"></div>
+                </div>
+                <small style="color:var(--text-secondary);">{{ f.bookings }} booking(s)</small>
+            </div>
+            {% endfor %}
         </div>
+        {% endif %}
     </div>
 </div>
 
 <style>
-.stat-box { display: flex; align-items: center; gap: 15px; }
-.stat-info h3 { font-size: 0.9rem; color: var(--text-secondary); margin: 0; }
-.stat-value { font-size: 1.8rem; font-weight: 700; margin: 5px 0; color: var(--text-primary); }
-.stat-change { font-size: 0.8rem; font-weight: 600; }
-.stat-change.positive { color: #4ade80; }
-.stat-change.negative { color: #f87171; }
+.stat-box { display:flex;align-items:center;gap:15px; }
+.stat-info h3 { font-size:0.9rem;color:var(--text-secondary);margin:0; }
+.stat-value { font-size:1.8rem;font-weight:700;margin:5px 0;color:var(--text-primary); }
+.stat-change { font-size:0.8rem;font-weight:600; }
+.stat-change.positive { color:#4ade80; }
 </style>
+
+<script>
+Chart.defaults.color = 'rgba(255,255,255,0.65)';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.08)';
+
+new Chart(document.getElementById('revenueChart'), {
+    type: 'line',
+    data: {
+        labels: {{ revenue_chart.labels | tojson }},
+        datasets: [{
+            label: 'Revenue (₱)',
+            data: {{ revenue_chart.data | tojson }},
+            borderColor: '#4ade80',
+            backgroundColor: 'rgba(74,222,128,0.12)',
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#4ade80',
+            pointRadius: 4,
+            pointHoverRadius: 6,
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.05)' } },
+            y: {
+                grid: { color: 'rgba(255,255,255,0.05)' },
+                beginAtZero: true,
+                ticks: { callback: v => '₱' + v.toLocaleString() }
+            }
+        }
+    }
+});
+</script>
 {% endblock %}

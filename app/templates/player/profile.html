@@ -280,6 +280,23 @@
                 <i class="ph ph-floppy-disk"></i> Save Profile
             </button>
         </form>
+        
+        <hr style="border:0; border-top:1px solid var(--border-color); width:100%; margin:20px 0;">
+        
+        <form method="POST" action="{{ url_for(request.blueprint ~ '.change_password') }}" style="width:100%; text-align:left;">
+            <h3 style="font-size:0.95rem; font-weight:700; color:var(--text-primary); margin-bottom:12px;">Security</h3>
+            <label style="font-size: 0.8rem; color: var(--text-muted);">New Password</label>
+            <input type="password" name="new_password" required minlength="6"
+                   style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg); color: var(--text-primary); margin-bottom: 10px;">
+            
+            <label style="font-size: 0.8rem; color: var(--text-muted);">Confirm Password</label>
+            <input type="password" name="confirm_password" required minlength="6"
+                   style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg); color: var(--text-primary); margin-bottom: 12px;">
+                   
+            <button type="submit" class="btn-edit-profile" style="background: transparent; color: var(--text-primary); border: 1px solid var(--border-color);">
+                <i class="ph ph-lock-key"></i> Update Password
+            </button>
+        </form>
     </div>
 
     <!-- Right: Statistics & Activity -->

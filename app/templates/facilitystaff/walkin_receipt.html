@@ -1,0 +1,137 @@
+{% extends "facilitystaff/base_facilitystaff.html" %}
+{% block title %}Walk-In Receipt{% endblock %}
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="page-title">Walk-In Receipt</h1>
+    <div style="display:flex;gap:10px;">
+        <a href="{{ url_for('facilitystaff.walkin') }}" class="action-box orange" style="padding:8px 18px;border:none;border-radius:8px;text-decoration:none;font-weight:600;display:flex;align-items:center;gap:6px;">
+            <i class="ph ph-plus"></i> New Walk-In
+        </a>
+        <button onclick="window.print()" class="action-box green" style="padding:8px 18px;border:none;border-radius:8px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;">
+            <i class="ph ph-printer"></i> Print
+        </button>
+    </div>
+</div>
+
+<div style="max-width:520px;margin:0 auto;">
+    <div class="glass-card" style="position:relative;overflow:hidden;">
+        <!-- Header -->
+        <div style="text-align:center;padding:20px 0 16px;border-bottom:1px dashed rgba(255,255,255,0.15);margin-bottom:20px;">
+            <div style="font-size:2.5rem;margin-bottom:8px;">🎾</div>
+            <div style="font-size:1.2rem;font-weight:800;color:var(--text-primary);">PickleballHub</div>
+            <div style="color:var(--text-secondary);font-size:0.85rem;">Walk-In Registration Receipt</div>
+            <div style="margin-top:8px;">
+                {% if receipt.queue_status == 'playing' %}
+                <span style="background:rgba(74,222,128,0.15);color:#4ade80;padding:4px 14px;border-radius:20px;font-size:0.8rem;font-weight:700;border:1px solid rgba(74,222,128,0.3);">
+                    <i class="ph ph-play-circle"></i> Court Ready — Playing Now
+                </span>
+                {% else %}
+                <span style="background:rgba(245,158,11,0.15);color:#f59e0b;padding:4px 14px;border-radius:20px;font-size:0.8rem;font-weight:700;border:1px solid rgba(245,158,11,0.3);">
+                    <i class="ph ph-clock"></i> Added to Queue — Waiting
+                </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Guest Info -->
+        <div style="margin-bottom:20px;">
+            <div class="receipt-row">
+                <span class="receipt-label">Guest Name</span>
+                <span class="receipt-value">{{ receipt.guest_name }}</span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">Contact</span>
+                <span class="receipt-value">{{ receipt.guest_phone }}</span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">Party Size</span>
+                <span class="receipt-value">{{ receipt.party_size }} person(s)</span>
+            </div>
+        </div>
+
+        <!-- Booking Info -->
+        <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:16px;margin-bottom:20px;">
+            <div class="receipt-row">
+                <span class="receipt-label"><i class="ph ph-intersect"></i> Court</span>
+                <span class="receipt-value bold">{{ receipt.court_name }}</span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label"><i class="ph ph-calendar"></i> Date</span>
+                <span class="receipt-value">{{ receipt.date }}</span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label"><i class="ph ph-clock"></i> Time</span>
+                <span class="receipt-value">{{ receipt.start_time }} – {{ receipt.end_time }}</span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label"><i class="ph ph-timer"></i> Duration</span>
+                <span class="receipt-value">{{ receipt.duration }} hour(s)</span>
+            </div>
+        </div>
+
+        <!-- Payment Info -->
+        <div style="background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);border-radius:10px;padding:16px;margin-bottom:20px;">
+            <div class="receipt-row" style="margin-bottom:8px;">
+                <span class="receipt-label">Court Rate</span>
+                <span class="receipt-value">₱{{ "{:,.2f}".format(receipt.hourly_rate) }}/hr</span>
+            </div>
+            <div class="receipt-row" style="margin-bottom:8px;">
+                <span class="receipt-label">Duration</span>
+                <span class="receipt-value">× {{ receipt.duration }}h</span>
+            </div>
+            <div class="receipt-row" style="padding-top:8px;border-top:1px solid rgba(74,222,128,0.2);">
+                <span style="font-weight:700;font-size:1rem;">Total Paid</span>
+                <span style="font-weight:800;font-size:1.4rem;color:#4ade80;">₱{{ "{:,.2f}".format(receipt.total_amount) }}</span>
+            </div>
+        </div>
+
+        <!-- Payment Method -->
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-top:1px dashed rgba(255,255,255,0.1);">
+            <span class="receipt-label">Payment Method</span>
+            <span class="pm-badge pm-{{ receipt.payment_method }}">
+                {% if receipt.payment_method == 'cash' %}<i class="ph ph-money"></i> Cash
+                {% elif receipt.payment_method == 'gcash' %}<i class="ph ph-device-mobile"></i> GCash
+                {% else %}<i class="ph ph-qr-code"></i> QR Ph{% endif %}
+            </span>
+        </div>
+        {% if receipt.gcash_ref != '—' %}
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;">
+            <span class="receipt-label">Reference #</span>
+            <span class="receipt-value" style="font-family:monospace;letter-spacing:1px;">{{ receipt.gcash_ref }}</span>
+        </div>
+        {% endif %}
+
+        <!-- Footer -->
+        <div style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px dashed rgba(255,255,255,0.1);color:var(--text-secondary);font-size:0.8rem;">
+            <p>Thank you for playing at our facility!</p>
+            <p style="opacity:0.6;">Booking ID: {{ receipt.reservation_id[:8] | upper }}</p>
+        </div>
+    </div>
+
+    <div style="display:flex;gap:12px;margin-top:16px;">
+        <a href="{{ url_for('facilitystaff.queue') }}" class="action-box" style="flex:1;text-align:center;padding:12px;text-decoration:none;border:1px solid var(--border-color);border-radius:10px;color:var(--text-primary);font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;">
+            <i class="ph ph-queue"></i> View Queue
+        </a>
+        <a href="{{ url_for('facilitystaff.walkin') }}" class="action-box green" style="flex:1;text-align:center;padding:12px;text-decoration:none;border:none;border-radius:10px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;">
+            <i class="ph ph-plus"></i> New Walk-In
+        </a>
+    </div>
+</div>
+
+<style>
+.receipt-row { display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:0.9rem; }
+.receipt-label { color:var(--text-secondary); }
+.receipt-value { font-weight:600;color:var(--text-primary); }
+.receipt-value.bold { font-weight:700; }
+.pm-badge { padding:4px 14px;border-radius:20px;font-weight:700;font-size:0.85rem;display:flex;align-items:center;gap:5px; }
+.pm-cash { background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3); }
+.pm-gcash { background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.3); }
+.pm-qr_ph { background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3); }
+
+@media print {
+    .dashboard-header .action-box, .dashboard-side, nav, aside { display:none !important; }
+    .glass-card { background:white !important;color:black !important;border:1px solid #ccc !important; }
+    .receipt-label, .receipt-value, .receipt-row { color:black !important; }
+}
+</style>
+{% endblock %}

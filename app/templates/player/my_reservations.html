@@ -70,13 +70,19 @@
     </a>
 </div>
 
-<!-- Tabs -->
-<div class="res-tabs">
-    <button class="res-tab active" onclick="filterRes('all',this)">All <span style="opacity:.7;font-weight:400;">({{ reservations|length }})</span></button>
-    <button class="res-tab" onclick="filterRes('pending_payment',this)"><i class="ph ph-hourglass-low"></i> Pending Payment</button>
-    <button class="res-tab" onclick="filterRes('confirmed',this)"><i class="ph ph-check-circle"></i> Confirmed</button>
-    <button class="res-tab" onclick="filterRes('completed',this)"><i class="ph ph-tennis-ball"></i> Completed</button>
-    <button class="res-tab" onclick="filterRes('cancelled',this)"><i class="ph ph-x-circle"></i> Cancelled</button>
+<!-- Tabs and Search -->
+<div class="res-tabs-container" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:22px;">
+    <div class="res-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin:0;">
+        <button class="res-tab active" onclick="filterRes('all',this)">All <span style="opacity:.7;font-weight:400;">({{ reservations|length }})</span></button>
+        <button class="res-tab" onclick="filterRes('pending_payment',this)"><i class="ph ph-hourglass-low"></i> Pending Payment</button>
+        <button class="res-tab" onclick="filterRes('confirmed',this)"><i class="ph ph-check-circle"></i> Confirmed</button>
+        <button class="res-tab" onclick="filterRes('completed',this)"><i class="ph ph-tennis-ball"></i> Completed</button>
+        <button class="res-tab" onclick="filterRes('cancelled',this)"><i class="ph ph-x-circle"></i> Cancelled</button>
+    </div>
+    <div class="header-search" style="flex:1; max-width:300px; min-width:200px; position:relative;">
+        <i class="ph ph-magnifying-glass" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted);"></i>
+        <input type="text" id="resSearch" placeholder="Search court, facility, ref..." oninput="filterRes(currentFilterStatus, document.querySelector('.res-tab.active'))" style="width:100%; padding:8px 12px 8px 36px; border-radius:20px; border:1px solid var(--border-color); background:var(--input-bg); color:var(--text-primary); font-size:0.85rem; outline:none;">
+    </div>
 </div>
 
 <!-- Reservation Cards -->
@@ -87,7 +93,7 @@
     {% set court  = r.courts or {} %}
     {% set fac    = r.facilities or {} %}
     {% set status = r.status %}
-    <div class="res-card" data-status="{{ status }}">
+    <div class="res-card" data-status="{{ status }}" data-search="{{ (court.name or '')|lower }} {{ (fac.name or '')|lower }} {{ (r.gcash_ref or '')|lower }}">
 
         <!-- Court Image Banner -->
         <div class="res-img-banner">
@@ -163,6 +169,10 @@
     </div>
     {% endfor %}
 </div>
+<div id="noResultsMsg" style="display:none;text-align:center;padding:30px;color:var(--text-muted);">
+    <i class="ph ph-magnifying-glass" style="font-size:1.5rem;display:block;margin-bottom:6px;opacity:0.4;"></i>
+    No reservations match your search.
+</div>
 {% else %}
     <div class="empty-state">
         <i class="ph ph-calendar-blank"></i>
@@ -173,12 +183,35 @@
 </div>
 
 <script>
+let currentFilterStatus = 'all';
+
 function filterRes(status, btn){
-    document.querySelectorAll('.res-tab').forEach(t=>t.classList.remove('active'));
-    btn.classList.add('active');
+    currentFilterStatus = status;
+    
+    if (btn) {
+        document.querySelectorAll('.res-tab').forEach(t=>t.classList.remove('active'));
+        btn.classList.add('active');
+    }
+    
+    const query = (document.getElementById('resSearch')?.value || '').toLowerCase();
+    let visibleCount = 0;
+    
     document.querySelectorAll('.res-card').forEach(c=>{
-        c.style.display = (status==='all'||c.dataset.status===status) ? '' : 'none';
+        const matchStatus = (status==='all'||c.dataset.status===status);
+        const matchSearch = c.dataset.search.includes(query);
+        
+        if (matchStatus && matchSearch) {
+            c.style.display = '';
+            visibleCount++;
+        } else {
+            c.style.display = 'none';
+        }
     });
+    
+    const noResMsg = document.getElementById('noResultsMsg');
+    if (noResMsg) {
+        noResMsg.style.display = visibleCount === 0 ? 'block' : 'none';
+    }
 }
 </script>
 {% endblock %}

@@ -326,6 +326,20 @@
                                 data-status="{{ c.status }}"
                                 data-image="{{ c.image_url or '' }}"
                             ><i class="ph ph-pencil-simple"></i> Edit</button>
+                        <!-- Quick maintenance toggle -->
+                        <form method="POST" action="{{ url_for('owner.toggle_court_status', court_id=c.id) }}" style="margin:0;">
+                            {% if c.status == 'active' %}
+                            <input type="hidden" name="status" value="maintenance">
+                            <button type="submit" class="btn-sm" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);" title="Set to Maintenance">
+                                <i class="ph ph-wrench"></i>
+                            </button>
+                            {% elif c.status == 'maintenance' %}
+                            <input type="hidden" name="status" value="active">
+                            <button type="submit" class="btn-sm" style="background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3);" title="Set Back to Active">
+                                <i class="ph ph-check-circle"></i>
+                            </button>
+                            {% endif %}
+                        </form>
                         <form method="POST" action="{{ url_for('owner.delete_court', court_id=c.id) }}"
                             onsubmit="return confirm('Delete court {{ c.name }}?');" style="margin:0;">
                             <button type="submit" class="btn-sm btn-sm-danger"><i class="ph ph-trash"></i></button>

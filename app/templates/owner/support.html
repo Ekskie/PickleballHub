@@ -1,0 +1,107 @@
+{% extends "owner/base_owner.html" %}
+{% block title %}Support Center{% endblock %}
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="page-title">Support Center</h1>
+</div>
+
+<div class="dashboard-grid">
+    <div class="dashboard-main" style="max-width:680px;">
+        <div class="glass-card" style="margin-bottom:20px;">
+            <div class="widget-header" style="margin-bottom:20px;">
+                <h3><i class="ph ph-ticket" style="margin-right:8px;color:var(--primary-orange);"></i>Submit a Support Ticket</h3>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}{% for cat, msg in messages %}
+            <div style="padding:12px 16px;border-radius:8px;margin-bottom:16px;
+                background:{% if cat == 'success' %}rgba(74,222,128,0.15){% else %}rgba(248,113,113,0.15){% endif %};
+                color:{% if cat == 'success' %}#4ade80{% else %}#f87171{% endif %};
+                border:1px solid {% if cat == 'success' %}rgba(74,222,128,0.3){% else %}rgba(248,113,113,0.3){% endif %};">
+                <i class="ph {% if cat == 'success' %}ph-check-circle{% else %}ph-warning-circle{% endif %}" style="margin-right:8px;"></i>{{ msg }}
+            </div>
+            {% endfor %}{% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('support.submit_ticket') }}">
+                <div style="margin-bottom:18px;">
+                    <label style="display:block;margin-bottom:6px;font-weight:600;font-size:0.9rem;color:var(--text-secondary);">Category</label>
+                    <select name="category" style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);">
+                        <option value="general">General Inquiry</option>
+                        <option value="facility">Facility Issue</option>
+                        <option value="booking">Booking / Reservation</option>
+                        <option value="payment">Payment / Revenue</option>
+                        <option value="staff">Staff Management</option>
+                        <option value="kyc">KYC Verification</option>
+                        <option value="bug">Bug Report</option>
+                    </select>
+                </div>
+                <div style="margin-bottom:18px;">
+                    <label style="display:block;margin-bottom:6px;font-weight:600;font-size:0.9rem;color:var(--text-secondary);">Subject *</label>
+                    <input type="text" name="subject" required placeholder="Brief description of your issue"
+                           style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);">
+                </div>
+                <div style="margin-bottom:24px;">
+                    <label style="display:block;margin-bottom:6px;font-weight:600;font-size:0.9rem;color:var(--text-secondary);">Message *</label>
+                    <textarea name="message" required rows="5"
+                              placeholder="Describe your issue in detail. Include your facility name, booking IDs, or any error messages."
+                              style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);resize:vertical;font-family:inherit;"></textarea>
+                </div>
+                <button type="submit" class="action-box orange"
+                        style="padding:12px 28px;border:none;border-radius:10px;cursor:pointer;font-weight:700;font-size:0.95rem;display:flex;align-items:center;gap:8px;">
+                    <i class="ph ph-paper-plane-tilt"></i> Send Ticket
+                </button>
+            </form>
+        </div>
+
+        <!-- Owner-specific FAQ -->
+        <div class="glass-card">
+            <h3 style="font-size:1rem;margin:0 0 16px;"><i class="ph ph-question" style="margin-right:6px;color:#818cf8;"></i>Common Owner Questions</h3>
+            <div style="display:flex;flex-direction:column;gap:0;">
+                {% for q, a in [
+                    ('How do I get my facility KYC verified?', 'Submit your facility documents through the Facilities page. Our team reviews within 2–3 business days.'),
+                    ('How do I manage my court schedule?', 'Go to Courts in the sidebar and configure each court\'s availability and hourly rates.'),
+                    ('How do I view my revenue and bookings?', 'Your dashboard shows a 7-day revenue chart. Detailed reports are available on the dashboard as well.'),
+                    ('How do I add or remove staff?', 'Visit the Staff section to assign or remove facility staff members.')
+                ] %}
+                <details style="border-bottom:1px solid var(--border-color);padding:12px 0;cursor:pointer;">
+                    <summary style="font-weight:600;font-size:0.9rem;list-style:none;display:flex;justify-content:space-between;align-items:center;">
+                        {{ q }} <i class="ph ph-caret-down" style="color:var(--text-secondary);font-size:0.8rem;"></i>
+                    </summary>
+                    <p style="color:var(--text-secondary);font-size:0.88rem;margin-top:8px;line-height:1.6;">{{ a }}</p>
+                </details>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-side">
+        <div class="glass-card">
+            <h3 class="widget-title">Contact Info</h3>
+            <div style="display:flex;flex-direction:column;gap:14px;font-size:0.88rem;">
+                <div style="display:flex;gap:10px;align-items:flex-start;">
+                    <i class="ph ph-envelope" style="font-size:1.2rem;color:var(--primary-orange);margin-top:2px;"></i>
+                    <div>
+                        <div style="font-weight:600;margin-bottom:2px;">Email Support</div>
+                        <div style="color:var(--text-secondary);">support@pickleballhub.com</div>
+                    </div>
+                </div>
+                <div style="display:flex;gap:10px;align-items:flex-start;">
+                    <i class="ph ph-clock" style="font-size:1.2rem;color:#818cf8;margin-top:2px;"></i>
+                    <div>
+                        <div style="font-weight:600;margin-bottom:2px;">Response Time</div>
+                        <div style="color:var(--text-secondary);">Owner tickets: priority 12–24h</div>
+                    </div>
+                </div>
+                <div style="display:flex;gap:10px;align-items:flex-start;">
+                    <i class="ph ph-phone" style="font-size:1.2rem;color:#4ade80;margin-top:2px;"></i>
+                    <div>
+                        <div style="font-weight:600;margin-bottom:2px;">Phone Support</div>
+                        <div style="color:var(--text-secondary);">+63 2 8XXX-XXXX<br>Mon–Fri, 9AM–5PM PHT</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

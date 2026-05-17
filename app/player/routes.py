@@ -55,6 +55,32 @@ def dashboard():
     )
 
 
+@player_bp.route('/support')
+@require_role('player')
+def support():
+    return render_template('player/support.html')
+
+
+@player_bp.route('/change-password', methods=['POST'])
+@require_role('player')
+def change_password():
+    player_id = session.get('user_id')
+    new_password = request.form.get('new_password')
+    confirm_password = request.form.get('confirm_password')
+    
+    if not new_password or new_password != confirm_password:
+        flash("Passwords do not match or are empty.", "error")
+        return redirect(url_for('player.profile'))
+        
+    try:
+        supabase_admin.auth.admin.update_user_by_id(player_id, {"password": new_password})
+        flash("Password updated successfully.", "success")
+    except Exception as e:
+        flash(f"Error updating password: {e}", "error")
+        
+    return redirect(url_for('player.profile'))
+
+
 @player_bp.route('/profile', methods=['GET', 'POST'])
 @require_role('player')
 def profile():
@@ -86,12 +112,18 @@ def profile():
     try:
         r_resp = db.table('court_reservations').select('id', count='exact').eq('player_id', player_id).execute()
         stats['courts'] = r_resp.count or 0
-        
+
         e_resp = db.table('event_registrations').select('id', count='exact').eq('player_id', player_id).execute()
         stats['events'] = e_resp.count or 0
+
+        # Count tournaments specifically (events with type='tournament')
+        t_resp = db.table('event_registrations').select(
+            'id, events!inner(type)'
+        ).eq('player_id', player_id).eq('events.type', 'tournament').execute()
+        stats['tournaments'] = len(t_resp.data or [])
     except Exception:
         pass
-        
+
     return render_template('player/profile.html', stats=stats)
 
 
@@ -591,6 +623,39 @@ def unregister_event(event_id):
     try:
         db.table('event_registrations').update({'status': 'cancelled'}).eq('event_id', event_id).eq('player_id', player_id).execute()
         flash('You have unregistered from the event.', 'success')
+
+        # ── Waitlist Promotion ──────────────────────────────────────────────────
+        try:
+            ev_resp = db.table('events').select('max_players, title, status').eq('id', event_id).single().execute()
+            ev = ev_resp.data
+            if not ev:
+                return redirect(url_for('player.events'))
+
+            # Count remaining registered players
+            reg_count_resp = db.table('event_registrations').select('id', count='exact').eq('event_id', event_id).eq('status', 'registered').execute()
+            reg_count = reg_count_resp.count or 0
+
+            # If there's now a free spot and the event was marked full, open it
+            if ev['status'] == 'full' and reg_count < ev['max_players']:
+                db.table('events').update({'status': 'registration_open'}).eq('id', event_id).execute()
+
+            # Promote the oldest waitlisted player
+            if reg_count < ev['max_players']:
+                waitlist_resp = db.table('event_registrations').select('id, player_id').eq('event_id', event_id).eq('status', 'waitlisted').order('created_at').limit(1).execute()
+                if waitlist_resp.data:
+                    promoted = waitlist_resp.data[0]
+                    db.table('event_registrations').update({'status': 'registered'}).eq('id', promoted['id']).execute()
+                    # Notify the promoted player
+                    db.table('notifications').insert({
+                        'user_id': promoted['player_id'],
+                        'title': f'🎉 Spot Available: {ev["title"]}',
+                        'message': f'A spot opened up for "{ev["title"]}" and you have been automatically registered. Check your events!',
+                        'type': 'success'
+                    }).execute()
+        except Exception as promotion_err:
+            print(f"Waitlist promotion error: {promotion_err}")
+        # ───────────────────────────────────────────────────────────────────────
+
     except Exception as e:
         flash(f'Error unregistering: {e}', 'error')
     return redirect(url_for('player.events'))
@@ -799,3 +864,74 @@ def leave_club(club_id):
     except Exception as e:
         flash(f"Error leaving club: {e}", "error")
     return redirect(url_for('player.my_clubs'))
+
+
+# ── Player Tournament Bracket View ─────────────────────────────────────────────
+@player_bp.route('/tournaments')
+@require_role('player')
+def my_tournaments():
+    player_id = session.get('user_id')
+    db = get_db()
+    tournaments = []
+    try:
+        reg_resp = db.table('event_registrations').select(
+            'status, events!inner(id, title, event_date, status, type, '
+            'facilities(name, location))'
+        ).eq('player_id', player_id).eq('status', 'registered').execute()
+        for r in (reg_resp.data or []):
+            ev = r.get('events')
+            if ev and ev.get('type') == 'tournament':
+                ev['my_registration_status'] = r['status']
+                tournaments.append(ev)
+    except Exception as e:
+        flash(f"Error loading tournaments: {e}", "error")
+    return render_template('player/my_tournaments.html', tournaments=tournaments)
+
+
+@player_bp.route('/tournaments/<event_id>')
+@require_role('player')
+def tournament_bracket(event_id):
+    player_id = session.get('user_id')
+    db = get_db()
+    event = None
+    matches = []
+    max_round = 0
+    champion = None
+
+    try:
+        ev_resp = db.table('events').select(
+            'id, title, event_date, status, max_players, '
+            'facilities(name, location)'
+        ).eq('id', event_id).single().execute()
+        event = ev_resp.data
+        if not event:
+            flash("Tournament not found.", "error")
+            return redirect(url_for('player.my_tournaments'))
+
+        match_resp = db.table('tournament_matches').select(
+            'id, round_number, match_number, player1_id, player2_id, winner_id, '
+            'player1_score, player2_score, status, '
+            'player1:profiles!player1_id(id, first_name, last_name), '
+            'player2:profiles!player2_id(id, first_name, last_name), '
+            'winner:profiles!winner_id(id, first_name, last_name)'
+        ).eq('event_id', event_id).order('round_number').order('match_number').execute()
+        matches = match_resp.data or []
+
+        if matches:
+            max_round = max(m['round_number'] for m in matches)
+            if event.get('status') == 'completed':
+                final_ms = [m for m in matches if m['round_number'] == max_round and m['status'] == 'completed']
+                if final_ms and final_ms[0].get('winner'):
+                    champion = final_ms[0]['winner']
+
+    except Exception as e:
+        flash(f"Error loading bracket: {e}", "error")
+        return redirect(url_for('player.my_tournaments'))
+
+    return render_template('player/tournament_bracket.html',
+                           event=event,
+                           matches=matches,
+                           max_round=max_round,
+                           champion=champion,
+                           player_id=player_id)
+

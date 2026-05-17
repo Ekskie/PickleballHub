@@ -24,8 +24,9 @@ html.dark-mode .badge-league   { background:rgba(180,83,9,0.15); }
 .event-meta { display:flex; flex-direction:column; gap:5px; }
 .event-meta-row { display:flex; align-items:center; gap:7px; font-size:0.8rem; color:var(--text-secondary); }
 .event-meta-row i { font-size:0.95rem; color:var(--text-muted); }
-.event-footer { display:flex; justify-content:space-between; align-items:center; padding-top:8px; border-top:1px solid var(--border-color); }
+.event-footer { display:flex; justify-content:space-between; align-items:center; padding-top:8px; border-top:1px solid var(--border-color); flex-wrap:wrap; gap:6px; }
 .event-reg-count { font-size:0.8rem; color:var(--text-muted); font-weight:500; }
+.status-select { padding:4px 8px; border-radius:6px; border:1px solid var(--border-color); background:var(--input-bg); color:var(--text-primary); font-size:0.75rem; cursor:pointer; }
 .empty-state { grid-column:1/-1; display:flex; flex-direction:column; align-items:center; padding:60px 20px; gap:14px; text-align:center; }
 .empty-state i { font-size:3.5rem; color:var(--text-muted); }
 .empty-state h3 { font-size:1.1rem; color:var(--text-primary); }
@@ -77,13 +78,22 @@ html.dark-mode .badge-league   { background:rgba(180,83,9,0.15); }
                 {% if ev.location_label %}<div class="event-meta-row"><i class="ph ph-intersect"></i> {{ ev.location_label }}</div>{% endif %}
             </div>
             <div class="event-footer">
-                <span class="event-reg-count"><i class="ph ph-users"></i> {{ ev.registered_count }} / {{ ev.max_players }} registered</span>
-                <div style="display: flex; gap: 8px;">
-                    <a href="{{ url_for('owner.event_participants', event_id=ev.id) }}" class="btn-sm btn-sm-outline" style="padding: 4px 10px; font-size: 0.75rem;">
-                        View
+                <span class="event-reg-count"><i class="ph ph-users"></i> {{ ev.registered_count }} / {{ ev.max_players }}</span>
+                <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                    {% if ev.organizer_id == session.get('user_id') %}
+                    <form method="POST" action="{{ url_for('owner.change_event_status', event_id=ev.id) }}" style="margin:0;">
+                        <select name="status" class="status-select" onchange="this.form.submit()" title="Change status">
+                            {% for s in ['upcoming','registration_open','in_progress','completed','cancelled'] %}
+                            <option value="{{ s }}" {% if ev.status == s %}selected{% endif %}>{{ s|replace('_',' ')|title }}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                    {% endif %}
+                    <a href="{{ url_for('owner.event_participants', event_id=ev.id) }}" class="btn-sm btn-sm-outline" style="padding:4px 10px;font-size:0.75rem;">
+                        <i class="ph ph-users"></i> Participants
                     </a>
                     {% if ev.type == 'tournament' %}
-                    <a href="{{ url_for('owner.tournament_manage', event_id=ev.id) }}" class="btn-sm btn-sm-primary" style="padding: 4px 10px; font-size: 0.75rem; background: var(--btn-navy);">
+                    <a href="{{ url_for('owner.tournament_manage', event_id=ev.id) }}" class="btn-sm btn-sm-primary" style="padding:4px 10px;font-size:0.75rem;background:var(--btn-navy);">
                         <i class="ph ph-tree-structure"></i> Bracket
                     </a>
                     {% endif %}

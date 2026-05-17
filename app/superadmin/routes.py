@@ -1,6 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 from app.decorators import require_role
 from app import supabase_admin, supabase
+from datetime import datetime, timedelta, timezone
+
+PH_TZ = timezone(timedelta(hours=8))
 
 def get_db():
     return supabase_admin or supabase
@@ -11,7 +14,49 @@ superadmin_bp = Blueprint('superadmin', __name__, url_prefix='/superadmin')
 @superadmin_bp.route('/dashboard')
 @require_role('superadmin')
 def dashboard():
-    return render_template('superadmin/dashboard.html')
+    db = get_db()
+    stats = {'total_players': 0, 'total_facilities': 0, 'total_revenue': 0, 'pending_kyc': 0}
+    recent_facilities = []
+    user_role_chart = {'labels': [], 'data': []}
+
+    try:
+        # Total players
+        p_resp = db.table('profiles').select('id', count='exact').eq('role', 'player').execute()
+        stats['total_players'] = p_resp.count or 0
+
+        # Active facilities
+        f_resp = db.table('facilities').select('id', count='exact').eq('status', 'active').execute()
+        stats['total_facilities'] = f_resp.count or 0
+
+        # Total platform revenue
+        rev_resp = db.table('court_reservations').select('total_amount').in_('status', ['confirmed', 'completed']).execute()
+        stats['total_revenue'] = sum((r.get('total_amount') or 0) for r in (rev_resp.data or []))
+
+        # Pending KYC
+        kyc_resp = db.table('facilities').select('id', count='exact').eq('kyc_status', 'pending_approval').execute()
+        stats['pending_kyc'] = kyc_resp.count or 0
+
+        # Recent facility registrations
+        rf_resp = db.table('facilities').select(
+            'id, name, location, status, kyc_status, created_at, profiles!owner_id(first_name, last_name)'
+        ).order('created_at', desc=True).limit(6).execute()
+        recent_facilities = rf_resp.data or []
+
+        # User distribution by role
+        all_prof = db.table('profiles').select('role').execute()
+        role_counts = {}
+        for p in (all_prof.data or []):
+            r = (p.get('role') or 'unknown').strip()
+            role_counts[r] = role_counts.get(r, 0) + 1
+        user_role_chart = {'labels': list(role_counts.keys()), 'data': list(role_counts.values())}
+
+    except Exception as e:
+        print(f"Superadmin dashboard error: {e}")
+
+    return render_template('superadmin/dashboard.html',
+                           stats=stats,
+                           recent_facilities=recent_facilities,
+                           user_role_chart=user_role_chart)
 
 @superadmin_bp.route('/facilities')
 @require_role('superadmin')
@@ -32,7 +77,6 @@ def update_kyc_status(facility_id):
     if status not in ['verified', 'rejected', 'unverified']:
         flash('Invalid status.', 'error')
         return redirect(url_for('superadmin.facilities'))
-        
     db = get_db()
     try:
         db.table('facilities').update({'kyc_status': status}).eq('id', facility_id).execute()
@@ -60,53 +104,143 @@ def add_adminstaff():
     last_name = request.form.get('last_name', '').strip()
     email = request.form.get('email', '').strip()
     password = request.form.get('password', '').strip()
-    
     if not all([first_name, email, password]):
         flash('Please fill all required fields.', 'error')
         return redirect(url_for('superadmin.users'))
-        
     db = get_db()
     try:
         from app import supabase_admin
         if not supabase_admin:
             flash("Admin client not available.", "error")
             return redirect(url_for('superadmin.users'))
-            
         new_user = supabase_admin.auth.admin.create_user({
-            "email": email,
-            "password": password,
-            "email_confirm": True,
-            "user_metadata": {
-                "first_name": first_name,
-                "last_name": last_name,
-                "role": "adminstaff"
-            }
+            "email": email, "password": password, "email_confirm": True,
+            "user_metadata": {"first_name": first_name, "last_name": last_name, "role": "adminstaff"}
         })
-        
         staff_id = new_user.user.id
-        
         supabase_admin.table('profiles').upsert({
-            'id': staff_id,
-            'first_name': first_name,
-            'last_name': last_name,
-            'role': 'adminstaff'
+            'id': staff_id, 'first_name': first_name, 'last_name': last_name, 'role': 'adminstaff'
         }, on_conflict='id').execute()
-        
         flash(f'Admin Staff account for {first_name} created successfully!', 'success')
     except Exception as e:
         flash(f'Error creating admin staff: {e}', 'error')
-        
     return redirect(url_for('superadmin.users'))
 
+# ── Reports with real data ──────────────────────────────────────────────────────
 @superadmin_bp.route('/reports')
 @require_role('superadmin')
 def reports():
-    return render_template('superadmin/reports.html')
+    db = get_db()
+    stats = {'total_revenue': 0, 'total_bookings': 0, 'total_events': 0, 'total_users': 0}
+    revenue_chart = {'labels': [], 'data': []}
+    booking_chart = {'labels': [], 'data': []}
+    role_chart = {'labels': [], 'data': []}
+    kyc_chart = {'labels': [], 'data': []}
 
-@superadmin_bp.route('/settings')
+    try:
+        now = datetime.now(PH_TZ)
+
+        # Build last-6-month buckets
+        month_buckets = {}
+        for i in range(5, -1, -1):
+            month_dt = now - timedelta(days=i * 30)
+            key = month_dt.strftime('%Y-%m')
+            month_buckets[key] = {'label': month_dt.strftime('%b %Y'), 'revenue': 0.0, 'bookings': 0}
+
+        # All confirmed/completed reservations
+        rev_resp = db.table('court_reservations').select('total_amount, status, created_at').in_('status', ['confirmed', 'completed']).execute()
+        reservations = rev_resp.data or []
+        stats['total_revenue'] = sum((r.get('total_amount') or 0) for r in reservations)
+        stats['total_bookings'] = len(reservations)
+
+        for r in reservations:
+            key = (r.get('created_at') or '')[:7]
+            if key in month_buckets:
+                month_buckets[key]['revenue'] += (r.get('total_amount') or 0)
+                month_buckets[key]['bookings'] += 1
+
+        revenue_chart = {'labels': [v['label'] for v in month_buckets.values()],
+                         'data': [round(v['revenue'], 2) for v in month_buckets.values()]}
+        booking_chart = {'labels': [v['label'] for v in month_buckets.values()],
+                         'data': [v['bookings'] for v in month_buckets.values()]}
+
+        # User distribution
+        all_prof = db.table('profiles').select('role').execute()
+        all_profiles = all_prof.data or []
+        stats['total_users'] = len(all_profiles)
+        role_counts = {}
+        for p in all_profiles:
+            rr = (p.get('role') or 'unknown').strip()
+            role_counts[rr] = role_counts.get(rr, 0) + 1
+        role_chart = {'labels': list(role_counts.keys()), 'data': list(role_counts.values())}
+
+        # KYC distribution
+        all_fac = db.table('facilities').select('kyc_status').execute()
+        kyc_counts = {'verified': 0, 'pending_approval': 0, 'unverified': 0, 'rejected': 0}
+        for f in (all_fac.data or []):
+            s = (f.get('kyc_status') or 'unverified')
+            kyc_counts[s] = kyc_counts.get(s, 0) + 1
+        kyc_chart = {
+            'labels': ['Verified', 'Pending', 'Unverified', 'Rejected'],
+            'data': [kyc_counts['verified'], kyc_counts['pending_approval'],
+                     kyc_counts['unverified'], kyc_counts['rejected']]
+        }
+
+        # Events total
+        ev_resp = db.table('events').select('id', count='exact').execute()
+        stats['total_events'] = ev_resp.count or 0
+
+    except Exception as e:
+        print(f"Reports error: {e}")
+        flash(f'Error loading reports data: {e}', 'error')
+
+    return render_template('superadmin/reports.html',
+                           stats=stats,
+                           revenue_chart=revenue_chart,
+                           booking_chart=booking_chart,
+                           role_chart=role_chart,
+                           kyc_chart=kyc_chart)
+
+# ── Settings (real save) ────────────────────────────────────────────────────────
+@superadmin_bp.route('/settings', methods=['GET', 'POST'])
 @require_role('superadmin')
 def settings():
-    return render_template('superadmin/settings.html')
+    db = get_db()
+    current = {
+        'platform_name': 'PickleballHub',
+        'support_email': 'support@pickleballhub.com',
+        'maintenance_mode': False,
+        'require_2fa': False,
+    }
+
+    if request.method == 'POST':
+        try:
+            rows = [
+                {'key': 'platform_name', 'value': request.form.get('platform_name', 'PickleballHub').strip()},
+                {'key': 'support_email', 'value': request.form.get('support_email', '').strip()},
+                {'key': 'maintenance_mode', 'value': '1' if request.form.get('maintenance_mode') else '0'},
+                {'key': 'require_2fa', 'value': '1' if request.form.get('require_2fa') else '0'},
+            ]
+            for row in rows:
+                db.table('platform_settings').upsert(row, on_conflict='key').execute()
+            flash('Settings saved successfully!', 'success')
+        except Exception as e:
+            flash(f'Error saving settings: {e}', 'error')
+        return redirect(url_for('superadmin.settings'))
+
+    # GET — load from DB
+    try:
+        resp = db.table('platform_settings').select('*').execute()
+        for row in (resp.data or []):
+            k, v = row.get('key'), row.get('value')
+            if k in ('maintenance_mode', 'require_2fa'):
+                current[k] = (v == '1')
+            elif k in current:
+                current[k] = v
+    except Exception as e:
+        print(f"Settings load error: {e}")
+
+    return render_template('superadmin/settings.html', settings=current)
 
 @superadmin_bp.route('/profile', methods=['GET', 'POST'])
 @require_role('superadmin')
@@ -119,9 +253,7 @@ def profile():
         phone = request.form.get('phone', '').strip()
         try:
             db.table('profiles').update({
-                'first_name': first_name,
-                'last_name': last_name,
-                'phone': phone
+                'first_name': first_name, 'last_name': last_name, 'phone': phone
             }).eq('id', user_id).execute()
             session['first_name'] = first_name
             session['last_name'] = last_name
@@ -170,4 +302,3 @@ def community():
 @require_role('superadmin')
 def tutorials():
     return render_template('superadmin/tutorials.html')
-

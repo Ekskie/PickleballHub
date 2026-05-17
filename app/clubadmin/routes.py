@@ -173,7 +173,7 @@ def events():
     events_list = []
     try:
         ev_resp = db.table('events').select(
-            'id, title, type, event_date, start_time, end_time, max_players, status, location_label, facilities(name)'
+            'id, title, type, event_date, start_time, end_time, max_players, status, location_label, organizer_id, facilities(name)'
         ).eq('organizer_id', clubadmin_id).order('event_date', desc=False).execute()
         events_list = ev_resp.data or []
         
@@ -331,20 +331,80 @@ def bracket_generate(event_id):
         
     return redirect(url_for('clubadmin.tournament_manage', event_id=event_id))
 
+def _advance_bracket(db, event_id):
+    """Check current round completion and auto-generate next round or declare champion."""
+    try:
+        # Get all matches grouped by round
+        all_m = db.table('tournament_matches').select(
+            'id, round_number, status, winner_id'
+        ).eq('event_id', event_id).order('round_number').execute()
+        matches = all_m.data or []
+        if not matches:
+            return
+
+        max_round = max(m['round_number'] for m in matches)
+        round_matches = [m for m in matches if m['round_number'] == max_round]
+
+        # Only proceed if ALL matches in the current round are completed
+        if any(m['status'] != 'completed' for m in round_matches):
+            return
+
+        winners = [m['winner_id'] for m in round_matches if m['winner_id']]
+
+        if len(winners) == 1:
+            # 🏆 Tournament champion decided
+            db.table('events').update({'status': 'completed'}).eq('id', event_id).execute()
+            try:
+                db.table('notifications').insert({
+                    'user_id': winners[0],
+                    'title': '🏆 Tournament Champion!',
+                    'message': 'Congratulations! You have won the tournament!',
+                    'type': 'success'
+                }).execute()
+            except Exception:
+                pass
+            return
+
+        # Generate next round — pair winners sequentially
+        next_round = max_round + 1
+        match_num = 1
+        next_matches = []
+        for i in range(0, len(winners), 2):
+            p1 = winners[i]
+            p2 = winners[i + 1] if i + 1 < len(winners) else None
+            next_matches.append({
+                'event_id': event_id,
+                'round_number': next_round,
+                'match_number': match_num,
+                'player1_id': p1,
+                'player2_id': p2,
+                'status': 'completed' if not p2 else 'pending',
+                'winner_id': p1 if not p2 else None,  # BYE auto-wins
+            })
+            match_num += 1
+        if next_matches:
+            db.table('tournament_matches').insert(next_matches).execute()
+            # If the only new match was a BYE, recurse to check again
+            if len(next_matches) == 1 and next_matches[0]['status'] == 'completed':
+                _advance_bracket(db, event_id)
+    except Exception as e:
+        print(f"Bracket advancement error: {e}")
+
+
 @clubadmin_bp.route('/tournaments/<event_id>/matches/<match_id>/score', methods=['POST'])
 @require_role('clubadmin')
 def match_score(event_id, match_id):
     admin_id = session.get('user_id')
     db = get_db()
-    
+
     p1_score = request.form.get('player1_score', type=int)
     p2_score = request.form.get('player2_score', type=int)
-    winner_id = request.form.get('winner_id') or None  # empty string → NULL (valid UUID expected)
-    
+    winner_id = request.form.get('winner_id') or None
+
     try:
         # Verify ownership
         db.table('events').select('id').eq('id', event_id).eq('organizer_id', admin_id).single().execute()
-        
+
         db.table('tournament_matches').update({
             'player1_score': p1_score,
             'player2_score': p2_score,
@@ -352,13 +412,14 @@ def match_score(event_id, match_id):
             'status': 'completed',
             'played_at': datetime.now(PH_TZ).isoformat()
         }).eq('id', match_id).eq('event_id', event_id).execute()
-        
-        flash("Score recorded successfully.", "success")
-        # In a full system, you would automatically advance the winner to the next round here
-        
+
+        # Auto-advance bracket
+        _advance_bracket(db, event_id)
+        flash("Score recorded! Bracket updated.", "success")
+
     except Exception as e:
         flash(f"Error recording score: {e}", "error")
-        
+
     return redirect(url_for('clubadmin.tournament_manage', event_id=event_id))
 
 @clubadmin_bp.route('/leaderboard')
@@ -754,3 +815,49 @@ def api_courts_by_facility(facility_id):
         return jsonify(resp.data or [])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+# ── Support ───────────────────────────────────────────────────────────────────
+@clubadmin_bp.route('/support')
+@require_role('clubadmin')
+def support():
+    return render_template('clubadmin/support.html')
+
+
+# ── Event Status Lifecycle ────────────────────────────────────────────────────
+@clubadmin_bp.route('/events/<event_id>/status', methods=['POST'])
+@require_role('clubadmin')
+def change_event_status(event_id):
+    admin_id = session.get('user_id')
+    new_status = request.form.get('status', '').strip()
+    allowed = ['upcoming', 'registration_open', 'full', 'in_progress', 'completed', 'cancelled']
+    if new_status not in allowed:
+        flash("Invalid status.", "error")
+        return redirect(url_for('clubadmin.events'))
+
+    db = get_db()
+    try:
+        # Verify organizer ownership
+        ev_resp = db.table('events').select('id, title, organizer_id').eq('id', event_id).single().execute()
+        ev = ev_resp.data
+        if not ev or ev['organizer_id'] != admin_id:
+            flash("Access denied.", "error")
+            return redirect(url_for('clubadmin.events'))
+
+        db.table('events').update({'status': new_status}).eq('id', event_id).execute()
+        label = new_status.replace('_', ' ').title()
+        flash(f"Event status changed to '{label}'.", "success")
+
+        # If cancelled, notify all registered players
+        if new_status == 'cancelled':
+            reg_resp = db.table('event_registrations').select('player_id').eq('event_id', event_id).eq('status', 'registered').execute()
+            for reg in (reg_resp.data or []):
+                db.table('notifications').insert({
+                    'user_id': reg['player_id'],
+                    'title': f'Event Cancelled: {ev["title"]}',
+                    'message': f'"{ev["title"]}" has been cancelled by the organizer.',
+                    'type': 'warning'
+                }).execute()
+    except Exception as e:
+        flash(f"Error updating status: {e}", "error")
+
+    return redirect(url_for('clubadmin.events'))

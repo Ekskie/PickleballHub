@@ -279,31 +279,32 @@ def schedule():
 def walkin():
     staff_id = session.get('user_id')
     db = get_db()
-    
+
     if request.method == 'POST':
         guest_name = request.form.get('guest_name', '').strip()
         guest_phone = request.form.get('guest_phone', '').strip()
         court_id = request.form.get('court_id')
         duration = float(request.form.get('duration', 1))
         party_size = int(request.form.get('party_size', 1))
-        
+        payment_method = request.form.get('payment_method', 'cash')
+        gcash_ref = request.form.get('gcash_ref', '').strip() or None
+
         if not guest_name or not court_id:
             flash("Guest Name and Court are required.", "error")
             return redirect(url_for('facilitystaff.walkin'))
-            
+
         try:
             # 1. Get Court Info
-            c_resp = db.table('courts').select('facility_id, hourly_rate').eq('id', court_id).single().execute()
+            c_resp = db.table('courts').select('facility_id, hourly_rate, name').eq('id', court_id).single().execute()
             court_info = c_resp.data
-            
-            total_amount = court_info['hourly_rate'] * duration * party_size
-            
+            total_amount = court_info['hourly_rate'] * duration
+
             now = datetime.now(PH_TZ)
             today_str = now.strftime('%Y-%m-%d')
             start_time = now.strftime('%H:%M:%S')
             end_time = (now + timedelta(hours=duration)).strftime('%H:%M:%S')
-            
-            # 2. Create Reservation
+
+            # 2. Create Reservation (include gcash_ref for payment reference)
             res_data = {
                 'court_id': court_id,
                 'facility_id': court_info['facility_id'],
@@ -316,48 +317,74 @@ def walkin():
                 'status': 'confirmed',
                 'guest_name': guest_name,
                 'guest_phone': guest_phone,
-                'party_size': party_size
+                'party_size': party_size,
             }
+            if gcash_ref:
+                res_data['gcash_ref'] = gcash_ref
+
             res_resp = db.table('court_reservations').insert(res_data).execute()
             new_res = res_resp.data[0]
-            
-            # 3. Check if court is currently playing
+
+            # 3. Queue status
             q_resp = db.table('court_queues').select('id').eq('court_id', court_id).eq('status', 'playing').execute()
-            is_playing = len(q_resp.data) > 0
-            
-            q_status = 'waiting' if is_playing else 'playing'
-            
+            q_status = 'waiting' if q_resp.data else 'playing'
+
             # 4. Create Queue Entry
-            q_data = {
+            db.table('court_queues').insert({
                 'facility_id': court_info['facility_id'],
                 'court_id': court_id,
                 'status': q_status,
                 'guest_name': guest_name,
                 'party_size': party_size,
-                'reservation_id': new_res['id']
+                'reservation_id': new_res['id'],
+            }).execute()
+
+            # 5. Store receipt data in session
+            session['walkin_receipt'] = {
+                'reservation_id': new_res['id'],
+                'guest_name': guest_name,
+                'guest_phone': guest_phone or '—',
+                'court_name': court_info['name'],
+                'date': today_str,
+                'start_time': start_time[:5],
+                'end_time': end_time[:5],
+                'duration': duration,
+                'party_size': party_size,
+                'hourly_rate': court_info['hourly_rate'],
+                'total_amount': total_amount,
+                'payment_method': payment_method,
+                'gcash_ref': gcash_ref or '—',
+                'queue_status': q_status,
             }
-            db.table('court_queues').insert(q_data).execute()
-            
-            flash(f"Walk-in registered successfully. Total: ₱{total_amount:,.2f}", "success")
-            return redirect(url_for('facilitystaff.dashboard'))
-            
+
+            return redirect(url_for('facilitystaff.walkin_receipt'))
+
         except Exception as e:
             flash(f"Error registering walk-in: {e}", "error")
             return redirect(url_for('facilitystaff.walkin'))
-            
-    # GET Request: Fetch available courts
+
+    # GET: Fetch available courts
     courts = []
     try:
         fs_resp = db.table('facility_staff').select('facility_id').eq('staff_id', staff_id).execute()
         fac_ids = [f['facility_id'] for f in fs_resp.data or []]
-        
         if fac_ids:
             c_resp = db.table('courts').select('id, name, hourly_rate').in_('facility_id', fac_ids).eq('status', 'active').execute()
             courts = c_resp.data or []
     except Exception as e:
         flash(f"Error loading courts: {e}", "error")
-        
+
     return render_template('facilitystaff/walkin.html', courts=courts)
+
+
+@facilitystaff_bp.route('/walkin/receipt')
+@require_role('facilitystaff')
+def walkin_receipt():
+    receipt = session.pop('walkin_receipt', None)
+    if not receipt:
+        flash("No recent walk-in found.", "warning")
+        return redirect(url_for('facilitystaff.walkin'))
+    return render_template('facilitystaff/walkin_receipt.html', receipt=receipt)
 
 @facilitystaff_bp.route('/profile', methods=['GET', 'POST'])
 @require_role('facilitystaff')

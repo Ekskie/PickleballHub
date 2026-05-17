@@ -1,143 +1,76 @@
 {% extends "owner/base_owner.html" %}
-
 {% block title %}Manage Tournament: {{ event.title }}{% endblock %}
 
 {% block extra_head %}
 <style>
-    .tournament-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-    }
+.tournament-selector {
+    padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);
+    background: var(--input-bg); color: var(--text-primary);
+    font-size: 1rem; font-weight: 600; width: 300px;
+}
+.stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:15px; margin-bottom:24px; }
+.stat-card { background:var(--bg-color); border:1px solid var(--border-color); padding:16px; border-radius:10px; text-align:center; }
+.stat-card .value { font-size:1.5rem; font-weight:700; color:var(--primary-orange); display:block; margin-bottom:4px; }
+.stat-card .label { font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; }
 
-    .tournament-selector {
-        padding: 10px;
-        border-radius: 8px;
-        border: 1px solid var(--border-color);
-        background: var(--input-bg);
-        color: var(--text-primary);
-        font-size: 1rem;
-        font-weight: 600;
-        width: 300px;
-    }
+/* Champion Banner */
+.champion-banner {
+    background:linear-gradient(135deg,rgba(250,204,21,0.15) 0%,rgba(251,146,60,0.15) 100%);
+    border:2px solid rgba(250,204,21,0.4); border-radius:16px; padding:28px;
+    text-align:center; margin-bottom:24px; position:relative; overflow:hidden;
+}
+.champion-banner::before {
+    content:''; position:absolute; inset:0;
+    background:radial-gradient(ellipse at center,rgba(250,204,21,0.08) 0%,transparent 70%);
+}
+.champion-trophy { font-size:3.5rem; margin-bottom:8px; display:block; animation:pulse-glow 2s ease-in-out infinite; }
+@keyframes pulse-glow { 0%,100%{filter:drop-shadow(0 0 8px rgba(250,204,21,0.8))} 50%{filter:drop-shadow(0 0 24px rgba(250,204,21,1))} }
+.champion-name { font-size:2rem; font-weight:800; color:#fcd34d; margin-bottom:4px; }
+.champion-label { font-size:0.9rem; color:rgba(255,255,255,0.6); text-transform:uppercase; letter-spacing:2px; }
 
-    .stats-row {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 15px;
-        margin-bottom: 24px;
-    }
+/* Bracket Layout */
+.bracket-wrapper { overflow-x:auto; padding:20px 0; }
+.bracket-container { display:flex; gap:0; align-items:stretch; min-width:max-content; }
+.bracket-round-col { display:flex; flex-direction:column; min-width:220px; }
+.round-label { text-align:center; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); padding:0 10px 12px; }
+.round-label.final-label { color:#fcd34d; }
+.matches-col { display:flex; flex-direction:column; justify-content:space-around; flex:1; gap:8px; padding:0 10px; }
 
-    .stat-card {
-        background: var(--bg-color);
-        border: 1px solid var(--border-color);
-        padding: 15px;
-        border-radius: 10px;
-        text-align: center;
-    }
+/* Match Card */
+.match-card { background:var(--input-bg); border:1px solid var(--border-color); border-radius:10px; overflow:hidden; position:relative; transition:box-shadow .2s; }
+.match-card:hover { box-shadow:0 4px 20px rgba(0,0,0,0.3); }
+.match-card.completed { border-color:rgba(74,222,128,0.3); }
+.match-card.is-final { border-color:rgba(250,204,21,0.4); }
+.match-player { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; font-size:0.88rem; gap:8px; border-bottom:1px solid var(--border-color); }
+.match-player:last-child { border-bottom:none; }
+.match-player.winner { background:rgba(74,222,128,0.1); color:#4ade80; font-weight:700; }
+.match-player.winner::before { content:'✓'; margin-right:4px; font-size:0.75rem; }
+.player-name { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.player-score { font-weight:700; min-width:24px; text-align:center; background:rgba(255,255,255,0.08); border-radius:4px; padding:2px 6px; font-size:0.85rem; }
+.match-footer { padding:6px 12px; display:flex; justify-content:flex-end; background:rgba(0,0,0,0.15); }
+.score-btn { padding:4px 12px; background:var(--primary-orange); color:white; border:none; border-radius:5px; cursor:pointer; font-size:0.78rem; font-weight:600; transition:opacity .2s; }
+.score-btn:hover { opacity:0.85; }
+.completed-badge { font-size:0.75rem; color:#4ade80; font-weight:600; }
 
-    .stat-card .value {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--primary-orange);
-        display: block;
-        margin-bottom: 5px;
-    }
+/* Connector lines */
+.bracket-connector { display:flex; flex-direction:column; justify-content:space-around; width:24px; flex-shrink:0; }
+.connector-line { flex:1; border-right:2px solid rgba(255,255,255,0.12); border-top:2px solid rgba(255,255,255,0.12); border-bottom:2px solid rgba(255,255,255,0.12); border-radius:0 6px 6px 0; margin:4px 0; }
 
-    .stat-card .label {
-        font-size: 0.8rem;
-        color: var(--text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .bracket-container {
-        display: flex;
-        gap: 40px;
-        overflow-x: auto;
-        padding: 20px 0;
-    }
-
-    .bracket-round {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-        justify-content: space-around;
-        min-width: 200px;
-    }
-
-    .match-card {
-        background: var(--input-bg);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        padding: 10px;
-        position: relative;
-    }
-
-    .match-player {
-        display: flex;
-        justify-content: space-between;
-        padding: 5px 0;
-        font-size: 0.9rem;
-    }
-
-    .match-player.winner {
-        font-weight: bold;
-        color: var(--btn-green);
-    }
-
-    .match-player:first-child {
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .score-btn {
-        width: 100%;
-        margin-top: 10px;
-        padding: 5px;
-        background: var(--primary-orange);
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 0.8rem;
-    }
-
-    .score-btn:disabled {
-        background: var(--border-color);
-        cursor: not-allowed;
-    }
-    
-    /* Modal styles */
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.5);
-    }
-
-    .modal-content {
-        background-color: var(--bg-color);
-        margin: 10% auto;
-        padding: 20px;
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        width: 400px;
-    }
+/* Modal */
+.modal-overlay { display:none; position:fixed; z-index:1000; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); }
+.modal-box { background:var(--card-bg); border:1px solid var(--border-color); border-radius:16px; width:440px; max-width:95%; margin:8% auto; padding:28px; box-shadow:0 24px 60px rgba(0,0,0,0.5); animation:modal-in .2s ease; }
+@keyframes modal-in { from{transform:translateY(-20px);opacity:0} to{transform:translateY(0);opacity:1} }
+.modal-vs { text-align:center; font-size:0.8rem; color:var(--text-muted); margin:8px 0; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="tournament-header">
+<!-- Header -->
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
     <div>
         <h1 class="page-title">Tournament Control Room</h1>
-        <p style="color: var(--text-muted);">Manage bracket and record match scores.</p>
+        <p style="color:var(--text-muted);margin:0;font-size:0.9rem;">{{ event.title }} — Bracket &amp; Scoring</p>
     </div>
-    
     <select class="tournament-selector" onchange="window.location.href=this.value">
         {% for t in all_tournaments %}
         <option value="{{ url_for('owner.tournament_manage', event_id=t.id) }}" {% if t.id == event.id %}selected{% endif %}>
@@ -147,32 +80,49 @@
     </select>
 </div>
 
+<!-- Stats Row -->
+{% set completed_matches = matches | selectattr('status', 'equalto', 'completed') | list %}
+{% set max_round = matches | map(attribute='round_number') | max if matches else 0 %}
 <div class="stats-row">
     <div class="stat-card">
-        <span class="value">{{ participants|length }}</span>
-        <span class="label">Registered Players</span>
+        <span class="value">{{ participants | length }}</span>
+        <span class="label">Players</span>
     </div>
     <div class="stat-card">
-        <span class="value">{{ matches|length }}</span>
+        <span class="value">{{ matches | length }}</span>
         <span class="label">Total Matches</span>
     </div>
     <div class="stat-card">
-        {% set completed_matches = matches|selectattr('status', 'equalto', 'completed')|list|length %}
-        <span class="value">{{ completed_matches }}</span>
-        <span class="label">Matches Completed</span>
+        <span class="value">{{ completed_matches | length }}</span>
+        <span class="label">Completed</span>
     </div>
     <div class="stat-card">
-        <span class="value">{{ event.status | replace('_', ' ') | title }}</span>
-        <span class="label">Event Status</span>
+        <span class="value">{{ max_round }}</span>
+        <span class="label">Rounds Played</span>
     </div>
 </div>
 
-<div class="glass-card" style="margin-bottom: 20px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2 style="font-size: 1.2rem; margin: 0;">Tournament Bracket</h2>
+<!-- Champion Banner -->
+{% if event.status == 'completed' and matches %}
+    {% set final_matches = matches | selectattr('round_number', 'equalto', max_round) | selectattr('status', 'equalto', 'completed') | list %}
+    {% if final_matches and final_matches[0].winner %}
+    <div class="champion-banner">
+        <span class="champion-trophy">🏆</span>
+        <div class="champion-name">{{ final_matches[0].winner.first_name }} {{ final_matches[0].winner.last_name }}</div>
+        <div class="champion-label">Tournament Champion · {{ event.title }}</div>
+    </div>
+    {% endif %}
+{% endif %}
+
+<!-- Bracket -->
+<div class="glass-card" style="margin-bottom:20px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <h2 style="font-size:1.2rem;margin:0;display:flex;align-items:center;gap:8px;">
+            <i class="ph ph-tree-structure"></i> Tournament Bracket
+        </h2>
         {% if not has_bracket %}
         <form action="{{ url_for('owner.bracket_generate', event_id=event.id) }}" method="POST">
-            <button type="submit" class="action-box orange" style="padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+            <button type="submit" class="action-box orange" style="padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-weight:600;display:flex;align-items:center;gap:6px;">
                 <i class="ph ph-tree-structure"></i> Generate Bracket
             </button>
         </form>
@@ -180,97 +130,120 @@
     </div>
 
     {% if has_bracket %}
+    <div class="bracket-wrapper">
         <div class="bracket-container">
-            <!-- Round 1 -->
-            <div class="bracket-round">
-                <h4 style="text-align: center; color: var(--text-muted); margin-bottom: 10px;">Round 1</h4>
-                {% for match in matches if match.round_number == 1 %}
-                <div class="match-card">
-                    <div class="match-player {% if match.winner_id == match.player1_id %}winner{% endif %}">
-                        <span>{{ match.player1.first_name }} {{ match.player1.last_name }}</span>
-                        <span>{{ match.player1_score if match.player1_score is not none else '-' }}</span>
+            {% for round_num in range(1, max_round + 1) %}
+                {% set round_ms = matches | selectattr('round_number', 'equalto', round_num) | list %}
+                {% if round_ms %}
+                    {% if not loop.first %}
+                    <div class="bracket-connector">
+                        {% for _ in round_ms %}<div class="connector-line"></div>{% endfor %}
                     </div>
-                    <div class="match-player {% if match.winner_id == match.player2_id %}winner{% endif %}">
-                        {% if match.player2 %}
-                            <span>{{ match.player2.first_name }} {{ match.player2.last_name }}</span>
-                            <span>{{ match.player2_score if match.player2_score is not none else '-' }}</span>
-                        {% else %}
-                            <span style="color: var(--text-muted); font-style: italic;">BYE</span>
-                            <span>-</span>
-                        {% endif %}
-                    </div>
-                    {% if match.status == 'pending' and match.player2 %}
-                        <button class="score-btn" onclick="openScoreModal('{{ match.id }}', '{{ match.player1_id }}', '{{ match.player1.first_name }} {{ match.player1.last_name }}', '{{ match.player2_id }}', '{{ match.player2.first_name }} {{ match.player2.last_name }}')">
-                            Enter Score
-                        </button>
-                    {% elif match.status == 'completed' %}
-                        <div style="text-align: center; margin-top: 5px; font-size: 0.75rem; color: var(--text-muted);">Completed</div>
                     {% endif %}
-                </div>
-                {% endfor %}
-            </div>
-            
-            <!-- In a full implementation, you would dynamically group by round_number here -->
+                    <div class="bracket-round-col">
+                        <div class="round-label {% if loop.last and round_ms|length == 1 %}final-label{% endif %}">
+                            {% if loop.last and round_ms|length == 1 %}🏆 Final
+                            {% elif loop.last %}Semifinals
+                            {% else %}Round {{ round_num }}{% endif %}
+                        </div>
+                        <div class="matches-col">
+                            {% for match in round_ms %}
+                            {% set is_final = (round_num == max_round and round_ms|length == 1) %}
+                            <div class="match-card {% if match.status == 'completed' %}completed{% endif %} {% if is_final %}is-final{% endif %}">
+                                <div class="match-player {% if match.winner_id == match.player1_id %}winner{% endif %}">
+                                    <span class="player-name">{% if match.player1 %}{{ match.player1.first_name }} {{ match.player1.last_name }}{% else %}TBD{% endif %}</span>
+                                    <span class="player-score">{{ match.player1_score if match.player1_score is not none else '–' }}</span>
+                                </div>
+                                <div class="match-player {% if match.winner_id == match.player2_id %}winner{% endif %}">
+                                    {% if match.player2 %}
+                                        <span class="player-name">{{ match.player2.first_name }} {{ match.player2.last_name }}</span>
+                                        <span class="player-score">{{ match.player2_score if match.player2_score is not none else '–' }}</span>
+                                    {% else %}
+                                        <span class="player-name" style="color:var(--text-muted);font-style:italic;">BYE</span>
+                                        <span class="player-score" style="color:var(--text-muted);">–</span>
+                                    {% endif %}
+                                </div>
+                                <div class="match-footer">
+                                    {% if match.status == 'pending' and match.player2 %}
+                                    <button class="score-btn" onclick="openScoreModal(
+                                        '{{ match.id }}',
+                                        '{{ match.player1_id }}',
+                                        '{{ match.player1.first_name ~ " " ~ match.player1.last_name if match.player1 else "TBD" }}',
+                                        '{{ match.player2_id }}',
+                                        '{{ match.player2.first_name ~ " " ~ match.player2.last_name if match.player2 else "TBD" }}'
+                                    )">Enter Score</button>
+                                    {% elif match.status == 'completed' %}
+                                    <span class="completed-badge"><i class="ph ph-check-circle"></i> Done</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
         </div>
+    </div>
     {% else %}
-        <div style="text-align: center; padding: 40px; color: var(--text-muted);">
-            <i class="ph ph-tree-structure" style="font-size: 3rem; margin-bottom: 10px; display: block;"></i>
-            <p>Bracket has not been generated yet.</p>
-            <p style="font-size: 0.9rem;">Wait for all players to register, then click "Generate Bracket".</p>
-        </div>
+    <div style="text-align:center;padding:50px;color:var(--text-muted);">
+        <i class="ph ph-tree-structure" style="font-size:3rem;display:block;margin-bottom:12px;opacity:0.4;"></i>
+        <p style="font-size:1rem;margin-bottom:4px;">Bracket not generated yet.</p>
+        <p style="font-size:0.85rem;opacity:0.6;">Wait for all players to register, then click "Generate Bracket".</p>
+    </div>
     {% endif %}
 </div>
 
 <!-- Score Modal -->
-<div id="scoreModal" class="modal">
-    <div class="modal-content">
-        <h2 style="margin-top: 0; margin-bottom: 20px;">Record Match Score</h2>
+<div id="scoreModal" class="modal-overlay">
+    <div class="modal-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+            <h2 style="margin:0;font-size:1.1rem;"><i class="ph ph-notepad" style="margin-right:6px;"></i>Record Match Score</h2>
+            <button onclick="closeScoreModal()" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:1.4rem;">&times;</button>
+        </div>
         <form id="scoreForm" method="POST">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <span id="p1_name" style="font-weight: bold;">Player 1</span>
-                <input type="number" name="player1_score" required min="0" style="width: 80px; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-primary);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                <span id="p1_name" style="font-weight:700;font-size:1rem;"></span>
+                <input type="number" name="player1_score" id="p1score" required min="0"
+                       style="width:80px;padding:8px;border-radius:8px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);text-align:center;font-size:1rem;font-weight:700;">
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <span id="p2_name" style="font-weight: bold;">Player 2</span>
-                <input type="number" name="player2_score" required min="0" style="width: 80px; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-primary);">
+            <div class="modal-vs">VS</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                <span id="p2_name" style="font-weight:700;font-size:1rem;"></span>
+                <input type="number" name="player2_score" id="p2score" required min="0"
+                       style="width:80px;padding:8px;border-radius:8px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);text-align:center;font-size:1rem;font-weight:700;">
             </div>
-            
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Winner</label>
-                <select name="winner_id" id="winner_select" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-primary);">
-                    <option value="" disabled selected>Select winner...</option>
+            <div style="margin-bottom:20px;">
+                <label style="display:block;margin-bottom:6px;font-weight:600;font-size:0.9rem;">Winner</label>
+                <select name="winner_id" id="winner_select" required
+                        style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);">
+                    <option value="" disabled selected>Select winner…</option>
                 </select>
             </div>
-            
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                <button type="button" class="btn-cancel" onclick="closeScoreModal()" style="padding: 10px 20px; border-radius: 6px; border: 1px solid var(--border-color); background: transparent; color: var(--text-primary); cursor: pointer;">Cancel</button>
-                <button type="submit" class="action-box orange" style="padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600;">Save Score</button>
+            <div style="display:flex;gap:10px;justify-content:flex-end;">
+                <button type="button" onclick="closeScoreModal()"
+                        style="padding:10px 20px;border-radius:8px;border:1px solid var(--border-color);background:transparent;color:var(--text-primary);cursor:pointer;">Cancel</button>
+                <button type="submit" class="action-box orange"
+                        style="padding:10px 24px;border:none;border-radius:8px;cursor:pointer;font-weight:700;">Save Score</button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
-    function openScoreModal(matchId, p1Id, p1Name, p2Id, p2Name) {
-        document.getElementById('scoreModal').style.display = 'block';
-        
-        // Update form action
-        const form = document.getElementById('scoreForm');
-        form.action = "{{ url_for('owner.match_score', event_id=event.id, match_id='MATCH_ID') }}".replace('MATCH_ID', matchId);
-        
-        // Update names
-        document.getElementById('p1_name').innerText = p1Name;
-        document.getElementById('p2_name').innerText = p2Name;
-        
-        // Update winner select
-        const select = document.getElementById('winner_select');
-        select.innerHTML = '<option value="" disabled selected>Select winner...</option>';
-        select.innerHTML += `<option value="${p1Id}">${p1Name}</option>`;
-        select.innerHTML += `<option value="${p2Id}">${p2Name}</option>`;
-    }
-    
-    function closeScoreModal() {
-        document.getElementById('scoreModal').style.display = 'none';
-    }
+function openScoreModal(matchId, p1Id, p1Name, p2Id, p2Name) {
+    document.getElementById('scoreModal').style.display = 'block';
+    document.getElementById('scoreForm').action =
+        "{{ url_for('owner.match_score', event_id=event.id, match_id='MATCH_ID') }}".replace('MATCH_ID', matchId);
+    document.getElementById('p1_name').textContent = p1Name;
+    document.getElementById('p2_name').textContent = p2Name;
+    const sel = document.getElementById('winner_select');
+    sel.innerHTML = '<option value="" disabled selected>Select winner…</option>';
+    sel.innerHTML += `<option value="${p1Id}">${p1Name}</option>`;
+    sel.innerHTML += `<option value="${p2Id}">${p2Name}</option>`;
+    document.getElementById('p1score').value = '';
+    document.getElementById('p2score').value = '';
+}
+function closeScoreModal() { document.getElementById('scoreModal').style.display = 'none'; }
+window.addEventListener('click', e => { if (e.target === document.getElementById('scoreModal')) closeScoreModal(); });
 </script>
 {% endblock %}
