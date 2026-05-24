@@ -1,12 +1,187 @@
 {% extends "player/base_player.html" %}
 {% block title %}{{ event.title }} — Bracket{% endblock %}
 
+{% block extra_head %}
+<style>
+/* ── Champion Banner ─────────────────────────── */
+.champion-banner {
+    background: linear-gradient(135deg, rgba(250,204,21,0.15) 0%, rgba(251,146,60,0.15) 100%);
+    border: 2px solid rgba(250,204,21,0.4);
+    border-radius: 16px; padding: 28px; text-align: center;
+    margin-bottom: 24px; position: relative; overflow: hidden;
+}
+.champion-banner::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, rgba(250,204,21,0.08) 0%, transparent 70%);
+}
+.champion-trophy { font-size: 3.5rem; margin-bottom: 8px; display: block; animation: pulse-glow 2s ease-in-out infinite; }
+@keyframes pulse-glow { 0%,100%{ filter: drop-shadow(0 0 8px rgba(250,204,21,.8)) } 50%{ filter: drop-shadow(0 0 28px rgba(250,204,21,1)) } }
+.champion-name { font-size: 2rem; font-weight: 800; color: #fcd34d; margin-bottom: 4px; }
+.champion-sub { font-size: 0.9rem; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 2px; }
+
+/* ── Legend ──────────────────────────────────── */
+.bracket-legend {
+    display: flex; gap: 18px; flex-wrap: wrap;
+    margin-bottom: 20px; font-size: 0.8rem;
+}
+.leg-item { display: flex; align-items: center; gap: 7px; }
+.leg-dot {
+    width: 14px; height: 14px;
+    border-radius: 3px; flex-shrink: 0;
+}
+
+/* ── Bracket Container ───────────────────────── */
+.bracket-wrap { overflow-x: auto; padding: 10px 0 20px; }
+.bracket-canvas {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    min-width: max-content;
+    gap: 48px;
+    padding: 24px 16px;
+}
+.bracket-svg-layer {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 0;
+}
+.bracket-svg-layer path.connector-done    { stroke: rgba(74,222,128,.45); }
+.bracket-svg-layer path.connector-mine    { stroke: rgba(129,140,248,.6); stroke-dasharray: 5 3; animation: dash-flow 1.4s linear infinite; }
+.bracket-svg-layer path.connector-pending { stroke: rgba(249,115,22,.45); stroke-dasharray: 6 4; animation: dash-flow 1.2s linear infinite; }
+@keyframes dash-flow { to { stroke-dashoffset: -20; } }
+
+/* ── Round Column ────────────────────────────── */
+.bracket-round {
+    display: flex; flex-direction: column;
+    min-width: 230px; position: relative; z-index: 1;
+}
+.round-header {
+    text-align: center; font-size: 0.72rem;
+    font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: var(--text-muted);
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    margin-bottom: 12px;
+}
+.round-header.final-header { color: #fcd34d; text-shadow: 0 0 12px rgba(252,211,77,.5); }
+.round-matches {
+    display: flex; flex-direction: column;
+    justify-content: space-around; flex: 1; gap: 12px;
+}
+
+/* ── Match Card ──────────────────────────────── */
+.match-node {
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px; overflow: hidden;
+    transition: box-shadow .25s, border-color .25s, transform .2s;
+}
+.match-node:hover { box-shadow: 0 6px 24px rgba(0,0,0,.4); border-color: rgba(255,255,255,.2); transform: translateY(-1px); }
+.match-node.is-done  { border-color: rgba(74,222,128,.25); }
+.match-node.is-mine  { border-color: rgba(129,140,248,.5); box-shadow: 0 0 16px rgba(129,140,248,.1); }
+.match-node.is-final { border-color: rgba(250,204,21,.45); box-shadow: 0 0 20px rgba(250,204,21,.1); }
+.match-node.is-final:hover { box-shadow: 0 0 30px rgba(250,204,21,.2); }
+
+/* ── Player Row ──────────────────────────────── */
+.mp-row {
+    display: flex; align-items: center;
+    gap: 8px; padding: 9px 12px;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    transition: background .2s; position: relative;
+}
+.mp-row:last-of-type { border-bottom: none; }
+.mp-row.is-winner {
+    background: rgba(74,222,128,.08);
+    border-left: 3px solid #4ade80;
+}
+.mp-row.is-winner .mp-name  { color: #4ade80; font-weight: 700; }
+.mp-row.is-winner .mp-score { background: rgba(74,222,128,.2); color: #4ade80; }
+.mp-row.is-loser .mp-name   { opacity: .5; }
+.mp-row.is-you-row {
+    background: rgba(99,102,241,.08);
+    border-left: 3px solid #818cf8;
+}
+.mp-row.is-you-row .mp-name { color: #818cf8; font-weight: 700; }
+
+/* YOU badge */
+.you-badge {
+    font-size: 0.6rem; font-weight: 800;
+    background: #818cf8; color: #fff;
+    padding: 1px 5px; border-radius: 3px;
+    flex-shrink: 0; text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+.mp-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem; font-weight: 800; color: #fff;
+    flex-shrink: 0; background: var(--primary-orange);
+    text-transform: uppercase;
+}
+.mp-avatar.bye-avatar { background: rgba(255,255,255,.08); color: var(--text-muted); font-size: 0.55rem; }
+
+.mp-name { flex: 1; font-size: 0.84rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-primary); }
+.mp-name.bye-name { color: var(--text-muted); font-style: italic; }
+
+.mp-score {
+    font-weight: 700; font-size: 0.82rem;
+    min-width: 28px; text-align: center;
+    background: rgba(255,255,255,.08); border-radius: 5px;
+    padding: 2px 7px; color: var(--text-secondary); flex-shrink: 0;
+}
+
+/* ── Match Footer ────────────────────────────── */
+.match-footer-bar {
+    padding: 6px 12px;
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(0,0,0,.18); gap: 6px;
+}
+.match-round-label { font-size: 0.68rem; color: var(--text-muted); }
+.my-match-pill {
+    font-size: 0.7rem; font-weight: 700;
+    padding: 2px 8px; border-radius: 20px;
+    background: rgba(99,102,241,.15); color: #818cf8;
+}
+.my-match-pill.won-pill  { background: rgba(74,222,128,.15); color: #4ade80; }
+.my-match-pill.lost-pill { background: rgba(248,113,113,.15); color: #f87171; }
+
+/* ── Match History ───────────────────────────── */
+.history-card {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 16px; border-radius: 10px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid var(--border-color);
+    transition: border-color .2s;
+}
+.history-card:hover { border-color: rgba(255,255,255,.15); }
+.history-result-badge {
+    width: 48px; height: 48px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 0.85rem; flex-shrink: 0;
+}
+
+/* ── Empty state ─────────────────────────────── */
+.bracket-empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+.bracket-empty i { font-size: 3rem; display: block; margin-bottom: 12px; opacity: .3; }
+
+/* ── Confetti ────────────────────────────────── */
+@keyframes confetti-fall {
+    0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- Header -->
 <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
     <div>
         <a href="{{ url_for('player.my_tournaments') }}"
-            style="color:var(--text-secondary);font-size:0.85rem;text-decoration:none;display:flex;align-items:center;gap:4px;margin-bottom:6px;">
+           style="color:var(--text-secondary);font-size:0.85rem;text-decoration:none;display:flex;align-items:center;gap:4px;margin-bottom:6px;">
             <i class="ph ph-arrow-left"></i> Back to My Tournaments
         </a>
         <h1 class="page-title" style="margin:0;">{{ event.title }}</h1>
@@ -20,157 +195,134 @@
         {% if event.status == 'completed' %}
         <span class="status-pill success">Completed</span>
         {% elif event.status == 'in_progress' %}
-        <span class="status-pill" style="background:rgba(245,158,11,0.15);color:#f59e0b;">In Progress</span>
+        <span class="status-pill" style="background:rgba(245,158,11,.15);color:#f59e0b;">In Progress</span>
         {% else %}
-        <span class="status-pill" style="background:rgba(99,102,241,0.15);color:#818cf8;">{{ event.status |
-            replace('_',' ') | title }}</span>
+        <span class="status-pill" style="background:rgba(99,102,241,.15);color:#818cf8;">{{ event.status | replace('_',' ') | title }}</span>
         {% endif %}
         <small style="color:var(--text-secondary);">{{ event.event_date[:10] if event.event_date else '' }}</small>
     </div>
 </div>
 
 <!-- Legend -->
-<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;font-size:0.82rem;">
-    <span style="display:flex;align-items:center;gap:6px;">
-        <span
-            style="width:14px;height:14px;border-radius:3px;background:rgba(99,102,241,0.3);border:1px solid #818cf8;display:inline-block;"></span>
-        Your match
-    </span>
-    <span style="display:flex;align-items:center;gap:6px;">
-        <span
-            style="width:14px;height:14px;border-radius:3px;background:rgba(74,222,128,0.2);border:1px solid #4ade80;display:inline-block;"></span>
-        Winner
-    </span>
-    <span style="display:flex;align-items:center;gap:6px;">
-        <span
-            style="width:14px;height:14px;border-radius:3px;background:rgba(248,113,113,0.2);border:1px solid #f87171;display:inline-block;"></span>
-        Loss
-    </span>
+<div class="bracket-legend">
+    <div class="leg-item">
+        <div class="leg-dot" style="background:rgba(99,102,241,.3);border:1px solid #818cf8;"></div>
+        <span style="color:var(--text-secondary);">Your match</span>
+    </div>
+    <div class="leg-item">
+        <div class="leg-dot" style="background:rgba(74,222,128,.2);border:1px solid #4ade80;"></div>
+        <span style="color:var(--text-secondary);">Winner</span>
+    </div>
+    <div class="leg-item">
+        <div class="leg-dot" style="background:rgba(248,113,113,.2);border:1px solid #f87171;"></div>
+        <span style="color:var(--text-secondary);">Loss</span>
+    </div>
+    <div class="leg-item">
+        <div class="leg-dot" style="background:rgba(250,204,21,.2);border:1px solid #fcd34d;"></div>
+        <span style="color:var(--text-secondary);">Final</span>
+    </div>
 </div>
 
 <!-- Champion Banner -->
 {% if champion %}
-<div
-    style="background:linear-gradient(135deg,rgba(250,204,21,0.15),rgba(251,146,60,0.15));border:2px solid rgba(250,204,21,0.4);border-radius:16px;padding:24px;text-align:center;margin-bottom:24px;">
-    <span
-        style="font-size:3rem;display:block;margin-bottom:8px;filter:drop-shadow(0 0 12px rgba(250,204,21,0.9));">🏆</span>
-    <div style="font-size:1.6rem;font-weight:800;color:#fcd34d;margin-bottom:4px;">
+<div class="champion-banner" id="champion-banner">
+    <span class="champion-trophy">🏆</span>
+    <div class="champion-name">
         {{ champion.first_name }} {{ champion.last_name }}
-        {% if champion.id == player_id %}<span
-            style="font-size:1rem;background:rgba(250,204,21,0.2);padding:2px 10px;border-radius:20px;margin-left:8px;">That's
-            You! 🎉</span>{% endif %}
+        {% if champion.id == player_id %}
+        <span style="font-size:1rem;background:rgba(250,204,21,.2);padding:2px 10px;border-radius:20px;margin-left:8px;">That's You! 🎉</span>
+        {% endif %}
     </div>
-    <div style="color:rgba(255,255,255,0.6);font-size:0.85rem;text-transform:uppercase;letter-spacing:2px;">Tournament
-        Champion</div>
+    <div class="champion-sub">Tournament Champion</div>
 </div>
 {% endif %}
 
 <!-- Bracket -->
-<div class="glass-card">
+<div class="glass-card" style="margin-bottom:20px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
         <h2 style="font-size:1.1rem;margin:0;display:flex;align-items:center;gap:8px;">
             <i class="ph ph-tree-structure"></i> Tournament Bracket
         </h2>
-        <span style="font-size:0.85rem;color:var(--text-secondary);">
-            {{ matches | length }} total match(es)
-        </span>
+        <span style="font-size:0.85rem;color:var(--text-secondary);">{{ matches | length }} total match(es)</span>
     </div>
 
     {% if matches %}
-    <div style="overflow-x:auto;padding-bottom:10px;">
-        <div style="display:flex;gap:0;align-items:stretch;min-width:max-content;">
+    <div class="bracket-wrap">
+        <div class="bracket-canvas" id="bracket-canvas" data-max-round="{{ max_round }}" data-player-id="{{ player_id }}">
+            <svg class="bracket-svg-layer" id="bracket-svg" aria-hidden="true"></svg>
+
             {% for round_num in range(1, max_round + 1) %}
             {% set round_ms = matches | selectattr('round_number', 'equalto', round_num) | list %}
             {% if round_ms %}
-            {% if not loop.first %}
-            <!-- Connector -->
-            <div style="display:flex;flex-direction:column;justify-content:space-around;width:22px;flex-shrink:0;">
-                {% for _ in round_ms %}
-                <div
-                    style="flex:1;border-right:2px solid rgba(255,255,255,0.1);border-top:2px solid rgba(255,255,255,0.1);border-bottom:2px solid rgba(255,255,255,0.1);border-radius:0 6px 6px 0;margin:4px 0;">
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            <div style="display:flex;flex-direction:column;min-width:210px;">
-                <!-- Round Label -->
-                <div
-                    style="text-align:center;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:0 10px 10px; color: {% if loop.last and (round_ms|length) == 1 %}#fcd34d{% else %}var(--text-secondary){% endif %};">
-                    {% if loop.last and round_ms|length == 1 %}🏆 Final
-                    {% elif loop.last %}Semifinals
+            {% set is_last = loop.last %}
+            <div class="bracket-round">
+                <div class="round-header {% if is_last and round_ms|length == 1 %}final-header{% endif %}">
+                    {% if is_last and round_ms|length == 1 %}🏆 Final
+                    {% elif is_last %}Semifinals
                     {% else %}Round {{ round_num }}{% endif %}
                 </div>
-
-                <!-- Matches -->
-                <div
-                    style="display:flex;flex-direction:column;justify-content:space-around;flex:1;gap:8px;padding:0 10px;">
+                <div class="round-matches">
                     {% for match in round_ms %}
-                    {% set is_my_match = (match.player1_id == player_id or match.player2_id == player_id) %}
-                    {% set i_won = (match.winner_id == player_id) %}
-                    {% set i_lost = (is_my_match and match.status == 'completed' and not i_won) %}
+                    {% set is_final      = (is_last and round_ms|length == 1) %}
+                    {% set is_my_match   = (match.player1_id == player_id or match.player2_id == player_id) %}
+                    {% set i_won         = (match.winner_id == player_id) %}
+                    {% set i_lost        = (is_my_match and match.status == 'completed' and not i_won) %}
+                    {% set p1_name = (match.player1.first_name ~ ' ' ~ match.player1.last_name) if match.player1 else 'TBD' %}
+                    {% set p2_name = (match.player2.first_name ~ ' ' ~ match.player2.last_name) if match.player2 else 'BYE' %}
 
-                    <div style="border-radius:10px;overflow:hidden;border:1px solid
-                                {% if is_my_match and match.status == 'pending' %}rgba(129,140,248,0.6)
-                                {% elif i_won %}rgba(74,222,128,0.4)
-                                {% elif i_lost %}rgba(248,113,113,0.4)
-                                {% else %}var(--border-color){% endif %};
-                                background:
-                                {% if is_my_match and match.status == 'pending' %}rgba(99,102,241,0.08)
-                                {% elif i_won %}rgba(74,222,128,0.06)
-                                {% elif i_lost %}rgba(248,113,113,0.06)
-                                {% else %}var(--input-bg){% endif %};">
+                    <div class="match-node
+                                {% if match.status == 'completed' %}is-done{% endif %}
+                                {% if is_final %}is-final{% endif %}
+                                {% if is_my_match %}is-mine{% endif %}"
+                         data-round="{{ round_num }}"
+                         data-match="{{ match.match_number }}"
+                         data-status="{{ match.status }}"
+                         data-is-mine="{{ 'true' if is_my_match else 'false' }}"
+                         id="m-{{ match.id }}">
 
                         <!-- Player 1 -->
-                        <div
-                            style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.08);
-                                    {% if match.winner_id == match.player1_id %}background:rgba(74,222,128,0.1);{% endif %}">
-                            <span
-                                style="font-size:0.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px;
-                                        {% if match.player1_id == player_id %}font-weight:700;color:{% if i_won %}#4ade80{% elif i_lost %}#f87171{% else %}#818cf8{% endif %};{% else %}{% if match.winner_id == match.player1_id %}color:#4ade80;font-weight:600;{% endif %}{% endif %}">
-                                {% if match.player1_id == player_id %}<i class="ph ph-user-circle"
-                                    style="margin-right:3px;"></i>{% endif %}
-                                {{ match.player1.first_name ~ ' ' ~ match.player1.last_name if match.player1 else 'TBD'
-                                }}
-                            </span>
-                            <span
-                                style="font-weight:700;font-size:0.85rem;min-width:24px;text-align:center;padding:2px 6px;background:rgba(255,255,255,0.08);border-radius:4px;">
-                                {{ match.player1_score if match.player1_score is not none else '–' }}
-                            </span>
+                        <div class="mp-row
+                                    {% if match.winner_id == match.player1_id %}is-winner{% elif match.status == 'completed' %}is-loser{% endif %}
+                                    {% if match.player1_id == player_id %}is-you-row{% endif %}">
+                            <div class="mp-avatar">{{ match.player1.first_name[0] ~ match.player1.last_name[0] if match.player1 else '?' }}</div>
+                            <span class="mp-name">{{ p1_name }}</span>
+                            {% if match.player1_id == player_id %}<span class="you-badge">YOU</span>{% endif %}
+                            <span class="mp-score">{{ match.player1_score if match.player1_score is not none else '–' }}</span>
                         </div>
 
                         <!-- Player 2 -->
-                        <div
-                            style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;
-                                    {% if match.winner_id == match.player2_id %}background:rgba(74,222,128,0.1);{% endif %}">
+                        <div class="mp-row
+                                    {% if match.winner_id == match.player2_id %}is-winner{% elif match.status == 'completed' and match.player2 %}is-loser{% endif %}
+                                    {% if match.player2_id == player_id %}is-you-row{% endif %}">
                             {% if match.player2 %}
-                            <span
-                                style="font-size:0.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px;
-                                        {% if match.player2_id == player_id %}font-weight:700;color:{% if i_won %}#4ade80{% elif i_lost %}#f87171{% else %}#818cf8{% endif %};{% else %}{% if match.winner_id == match.player2_id %}color:#4ade80;font-weight:600;{% endif %}{% endif %}">
-                                {% if match.player2_id == player_id %}<i class="ph ph-user-circle"
-                                    style="margin-right:3px;"></i>{% endif %}
-                                {{ match.player2.first_name ~ ' ' ~ match.player2.last_name }}
-                            </span>
-                            <span
-                                style="font-weight:700;font-size:0.85rem;min-width:24px;text-align:center;padding:2px 6px;background:rgba(255,255,255,0.08);border-radius:4px;">
-                                {{ match.player2_score if match.player2_score is not none else '–' }}
-                            </span>
+                            <div class="mp-avatar">{{ match.player2.first_name[0] ~ match.player2.last_name[0] }}</div>
+                            <span class="mp-name">{{ p2_name }}</span>
+                            {% if match.player2_id == player_id %}<span class="you-badge">YOU</span>{% endif %}
+                            <span class="mp-score">{{ match.player2_score if match.player2_score is not none else '–' }}</span>
                             {% else %}
-                            <span style="font-size:0.85rem;color:var(--text-secondary);font-style:italic;">BYE</span>
-                            <span style="font-size:0.85rem;color:var(--text-secondary);">–</span>
+                            <div class="mp-avatar bye-avatar">BYE</div>
+                            <span class="mp-name bye-name">BYE</span>
+                            <span class="mp-score">–</span>
                             {% endif %}
                         </div>
 
-                        <!-- Status strip -->
-                        {% if is_my_match %}
-                        <div style="padding:4px 12px;font-size:0.72rem;font-weight:700;text-align:center;
-                                    background:{% if i_won %}rgba(74,222,128,0.15){% elif i_lost %}rgba(248,113,113,0.15){% else %}rgba(99,102,241,0.12){% endif %};
-                                    color:{% if i_won %}#4ade80{% elif i_lost %}#f87171{% else %}#818cf8{% endif %};">
-                            {% if i_won %}🏆 You Won!
-                            {% elif i_lost %}You Lost
-                            {% else %}⏳ Your Match — Pending{% endif %}
+                        <!-- Footer -->
+                        <div class="match-footer-bar">
+                            <span class="match-round-label">R{{ round_num }} · M{{ match.match_number }}</span>
+                            {% if is_my_match %}
+                                {% if i_won %}
+                                <span class="my-match-pill won-pill">🏆 You Won!</span>
+                                {% elif i_lost %}
+                                <span class="my-match-pill lost-pill">You Lost</span>
+                                {% else %}
+                                <span class="my-match-pill">⏳ Your Match</span>
+                                {% endif %}
+                            {% elif match.status == 'completed' %}
+                            <span style="font-size:0.7rem;color:#4ade80;display:flex;align-items:center;gap:3px;">
+                                <i class="ph ph-check-circle"></i> Done
+                            </span>
+                            {% endif %}
                         </div>
-                        {% endif %}
                     </div>
                     {% endfor %}
                 </div>
@@ -180,40 +332,35 @@
         </div>
     </div>
     {% else %}
-    <div style="text-align:center;padding:50px;color:var(--text-secondary);">
-        <i class="ph ph-tree-structure" style="font-size:3rem;display:block;margin-bottom:12px;opacity:0.3;"></i>
+    <div class="bracket-empty">
+        <i class="ph ph-tree-structure"></i>
         <p>Bracket hasn't been generated yet.</p>
-        <p style="font-size:0.85rem;opacity:0.6;">The organizer will generate the bracket once registration closes.</p>
+        <p style="font-size:0.85rem;opacity:.6;">The organizer will set it up once registration closes.</p>
     </div>
     {% endif %}
 </div>
 
-<!-- My Matches Summary -->
+<!-- My Match History -->
 {% set my_matches = matches | selectattr('player1_id', 'equalto', player_id) | list +
-matches | selectattr('player2_id', 'equalto', player_id) | list %}
+                   matches | selectattr('player2_id', 'equalto', player_id) | list %}
 {% if my_matches %}
-<div class="glass-card" style="margin-top:20px;">
+<div class="glass-card">
     <h3 style="font-size:1rem;margin:0 0 16px;display:flex;align-items:center;gap:8px;">
         <i class="ph ph-user-circle" style="color:#818cf8;"></i> My Match History
     </h3>
     <div style="display:flex;flex-direction:column;gap:10px;">
         {% for m in my_matches %}
-        {% set is_p1 = (m.player1_id == player_id) %}
-        {% set opponent = m.player2 if is_p1 else m.player1 %}
-        {% set my_score = m.player1_score if is_p1 else m.player2_score %}
-        {% set opp_score = m.player2_score if is_p1 else m.player1_score %}
-        {% set won = (m.winner_id == player_id) %}
-        <div
-            style="display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid var(--border-color);">
-            <span
-                style="width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;
-                background:{% if m.status == 'completed' %}{% if won %}rgba(74,222,128,0.2){% else %}rgba(248,113,113,0.2){% endif %}{% else %}rgba(99,102,241,0.15){% endif %};
-                color:{% if m.status == 'completed' %}{% if won %}#4ade80{% else %}#f87171{% endif %}{% else %}#818cf8{% endif %};">
+        {% set is_p1      = (m.player1_id == player_id) %}
+        {% set opponent   = m.player2 if is_p1 else m.player1 %}
+        {% set my_score   = m.player1_score if is_p1 else m.player2_score %}
+        {% set opp_score  = m.player2_score if is_p1 else m.player1_score %}
+        {% set won        = (m.winner_id == player_id) %}
+        <div class="history-card">
+            <div class="history-result-badge" style="background:{% if m.status == 'completed' %}{% if won %}rgba(74,222,128,.2){% else %}rgba(248,113,113,.2){% endif %}{% else %}rgba(99,102,241,.15){% endif %};color:{% if m.status == 'completed' %}{% if won %}#4ade80{% else %}#f87171{% endif %}{% else %}#818cf8{% endif %};">
                 {% if m.status == 'completed' %}{% if won %}W{% else %}L{% endif %}{% else %}?{% endif %}
-            </span>
+            </div>
             <div style="flex:1;">
-                <div style="font-weight:600;font-size:0.9rem;">Round {{ m.round_number }} — Match {{ m.match_number }}
-                </div>
+                <div style="font-weight:600;font-size:0.9rem;">Round {{ m.round_number }} — Match {{ m.match_number }}</div>
                 <div style="font-size:0.83rem;color:var(--text-secondary);">
                     vs. {{ opponent.first_name ~ ' ' ~ opponent.last_name if opponent else 'BYE' }}
                 </div>
@@ -226,12 +373,91 @@ matches | selectattr('player2_id', 'equalto', player_id) | list %}
                 <div style="font-size:0.75rem;color:var(--text-secondary);">Score</div>
             </div>
             {% else %}
-            <span
-                style="background:rgba(99,102,241,0.12);color:#818cf8;padding:4px 12px;border-radius:20px;font-size:0.78rem;font-weight:600;">Pending</span>
+            <span style="background:rgba(99,102,241,.12);color:#818cf8;padding:4px 12px;border-radius:20px;font-size:0.78rem;font-weight:600;">Pending</span>
             {% endif %}
         </div>
         {% endfor %}
     </div>
 </div>
 {% endif %}
+
+<script>
+const AVATAR_COLORS = ['#ff5722','#8b5cf6','#06b6d4','#10b981','#f59e0b','#ec4899','#3b82f6','#84cc16'];
+function avatarColor(name) {
+    let h = 0;
+    for (let c of name) h = (h * 31 + c.charCodeAt(0)) & 0xffff;
+    return AVATAR_COLORS[h % AVATAR_COLORS.length];
+}
+
+/* Color all avatars */
+document.querySelectorAll('.mp-avatar:not(.bye-avatar)').forEach(el => {
+    el.style.background = avatarColor(el.textContent.trim());
+});
+
+/* SVG Connectors */
+function drawConnectors() {
+    const canvas = document.getElementById('bracket-canvas');
+    const svg    = document.getElementById('bracket-svg');
+    if (!svg || !canvas) return;
+    svg.innerHTML = '';
+    const maxRound = parseInt(canvas.dataset.maxRound) || 0;
+    if (maxRound < 2) return;
+    const canvasRect = canvas.getBoundingClientRect();
+    const scrollLeft = canvas.closest('.bracket-wrap')?.scrollLeft || 0;
+    const scrollTop  = canvas.closest('.bracket-wrap')?.scrollTop  || 0;
+
+    for (let r = 1; r < maxRound; r++) {
+        const fromCards = [...canvas.querySelectorAll(`.match-node[data-round="${r}"]`)];
+        const toCards   = [...canvas.querySelectorAll(`.match-node[data-round="${r + 1}"]`)];
+        toCards.forEach((toCard, ti) => {
+            [fromCards[ti * 2], fromCards[ti * 2 + 1]].forEach(fromCard => {
+                if (!fromCard) return;
+                const fr = fromCard.getBoundingClientRect();
+                const tr = toCard.getBoundingClientRect();
+                const x1 = fr.right  - canvasRect.left + scrollLeft;
+                const y1 = fr.top    + fr.height / 2 - canvasRect.top + scrollTop;
+                const x2 = tr.left   - canvasRect.left + scrollLeft;
+                const y2 = tr.top    + tr.height / 2 - canvasRect.top + scrollTop;
+                const mx = (x1 + x2) / 2;
+
+                const isMine   = fromCard.dataset.isMine === 'true' || toCard.dataset.isMine === 'true';
+                const isDone   = fromCard.dataset.status === 'completed';
+                let stroke = 'rgba(255,255,255,.12)';
+                let cls    = 'connector-default';
+                if (isDone && isMine)  { stroke = 'rgba(129,140,248,.6)'; cls = 'connector-mine'; }
+                else if (isDone)       { stroke = 'rgba(74,222,128,.45)'; cls = 'connector-done'; }
+                else if (isMine)       { stroke = 'rgba(129,140,248,.45)'; cls = 'connector-mine'; }
+                else                   { cls = 'connector-pending'; }
+
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', `M ${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`);
+                path.setAttribute('stroke', stroke);
+                path.setAttribute('stroke-width', '2');
+                path.setAttribute('fill', 'none');
+                path.setAttribute('stroke-linecap', 'round');
+                path.setAttribute('class', cls);
+                if (cls === 'connector-mine' || cls === 'connector-pending') {
+                    path.setAttribute('stroke-dasharray', '5 3');
+                }
+                svg.appendChild(path);
+            });
+        });
+    }
+}
+window.addEventListener('load',   () => setTimeout(drawConnectors, 80));
+window.addEventListener('resize', () => setTimeout(drawConnectors, 80));
+
+/* Confetti */
+function launchConfetti() {
+    const colors = ['#fcd34d','#ff5722','#4ade80','#818cf8','#fb923c','#f472b6'];
+    for (let i = 0; i < 90; i++) {
+        const el = document.createElement('div');
+        const sz = Math.random() * 7 + 5;
+        el.style.cssText = `position:fixed;left:${Math.random()*100}vw;top:-12px;width:${sz}px;height:${sz}px;background:${colors[Math.floor(Math.random()*colors.length)]};border-radius:${Math.random()>.5?'50%':'3px'};animation:confetti-fall ${Math.random()*2+2.5}s ease-in forwards;animation-delay:${Math.random()*1.2}s;z-index:9999;pointer-events:none;`;
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 5000);
+    }
+}
+if (document.getElementById('champion-banner')) setTimeout(launchConfetti, 400);
+</script>
 {% endblock %}

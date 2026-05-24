@@ -164,12 +164,12 @@ def courts_listing():
     search_query = request.args.get('search', '')
     courts = []
     try:
-        client = supabase_admin or supabase
+        client = get_db()
         if client:
             # Fetch all active courts with facility info
             resp = client.table('courts').select(
                 'id, name, type, hourly_rate, status, '
-                'facility_id, facilities(id, name, location)'
+                'facility_id, facilities(id, name, location, latitude, longitude, kyc_status, image_url, description)'
             ).eq('status', 'active').execute()
 
             if resp.data:
@@ -196,6 +196,11 @@ def courts_listing():
                         'facility_name': facility.get('name', 'Unknown Facility'),
                         'facility_location': facility.get('location', 'Laguna'),
                         'facility_id': facility.get('id'),
+                        'facility_latitude': float(facility.get('latitude')) if facility.get('latitude') is not None else None,
+                        'facility_longitude': float(facility.get('longitude')) if facility.get('longitude') is not None else None,
+                        'facility_kyc_status': facility.get('kyc_status', 'pending'),
+                        'facility_image_url': facility.get('image_url'),
+                        'facility_description': facility.get('description'),
                     })
     except Exception as e:
         print(f'[courts_listing] DB error: {e}')
@@ -218,7 +223,7 @@ def api_courts_search():
     
     suggestions = []
     try:
-        client = supabase_admin or supabase
+        client = get_db()
         if client:
             query_lower = query.lower()
             

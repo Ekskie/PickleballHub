@@ -15,6 +15,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/landing/landing.css') }}">
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
 
     <style>
@@ -375,6 +378,409 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* ── Split Layout & Map Styles ── */
+        .courts-layout-wrap {
+            display: flex;
+            gap: 32px;
+            margin-top: 40px;
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        .courts-list-pane {
+            flex: 1.2;
+            min-width: 0;
+        }
+
+        .courts-map-pane {
+            flex: 0.8;
+            position: sticky;
+            top: 100px;
+            height: calc(100vh - 140px);
+            min-height: 550px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            background: rgba(22, 25, 33, 0.4);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            z-index: 10;
+        }
+
+        .courts-map-pane:hover {
+            border-color: rgba(255, 87, 34, 0.3);
+            box-shadow: 0 10px 40px rgba(255, 87, 34, 0.15);
+        }
+
+        #courts-map {
+            width: 100%;
+            height: 100%;
+            background: #0f1419;
+        }
+
+        @media (min-width: 992px) {
+            .courts-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+        }
+
+        @media (min-width: 1400px) {
+            .courts-grid {
+                grid-template-columns: repeat(3, 1fr) !important;
+            }
+        }
+
+        /* ── Two-Way Highlight Style ── */
+        .court-card.highlight {
+            border-color: #ff5722 !important;
+            background: rgba(255, 87, 34, 0.08) !important;
+            box-shadow: 0 10px 24px rgba(255, 87, 34, 0.25) !important;
+            transform: translateY(-4px);
+        }
+
+        /* ── Custom Glowing Marker ── */
+        .custom-map-marker {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+        }
+
+        .marker-pin {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #ff5722 0%, #ff7043 100%);
+            border-radius: 50% 50% 50% 0;
+            position: absolute;
+            transform: rotate(-45deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #fff;
+            box-shadow: 0 4px 10px rgba(255, 87, 34, 0.5);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 2;
+        }
+
+        .marker-pin i {
+            transform: rotate(45deg);
+            color: #fff;
+            font-size: 18px;
+        }
+
+        .marker-pulse {
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 87, 34, 0.4);
+            border-radius: 50%;
+            position: absolute;
+            bottom: -8px;
+            left: 8px;
+            animation: pulse-ring 1.8s cubic-bezier(0.215, 0.610, 0.355, 1) infinite;
+            z-index: 1;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(0.5);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(2.2);
+                opacity: 0;
+            }
+        }
+
+        .custom-map-marker.active .marker-pin {
+            transform: rotate(-45deg) scale(1.2);
+            background: linear-gradient(135deg, #fff 0%, #ff5722 100%);
+            box-shadow: 0 6px 16px rgba(255, 87, 34, 0.8);
+            border-color: #ff5722;
+        }
+        
+        .custom-map-marker.active .marker-pin i {
+            color: #0f1419;
+        }
+
+        /* ── Leaflet Theme Customization ── */
+        .leaflet-container {
+            font-family: 'Outfit', sans-serif !important;
+            color: #fff !important;
+        }
+
+        .leaflet-control-attribution {
+            background: rgba(15, 20, 25, 0.85) !important;
+            color: #808080 !important;
+            backdrop-filter: blur(5px);
+            font-size: 0.72rem !important;
+            border-top-left-radius: 4px;
+        }
+        
+        .leaflet-control-attribution a {
+            color: #ff5722 !important;
+            text-decoration: none;
+        }
+
+        .leaflet-control-attribution a:hover {
+            text-decoration: underline;
+        }
+
+        .leaflet-popup-content-wrapper {
+            background: rgba(20, 24, 33, 0.95) !important;
+            backdrop-filter: blur(15px) !important;
+            border: 1px solid rgba(255, 87, 34, 0.3) !important;
+            border-radius: 14px !important;
+            padding: 0 !important;
+            overflow: hidden;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.6) !important;
+        }
+
+        .leaflet-popup-content {
+            margin: 0 !important;
+            width: 280px !important;
+        }
+
+        .leaflet-popup-tip {
+            background: rgba(20, 24, 33, 0.95) !important;
+            border: 1px solid rgba(255, 87, 34, 0.3) !important;
+        }
+
+        .leaflet-popup-close-button {
+            color: #fff !important;
+            font-size: 20px !important;
+            padding: 10px 14px 0 0 !important;
+            z-index: 10;
+        }
+
+        .leaflet-popup-close-button:hover {
+            color: #ff5722 !important;
+        }
+
+        .leaflet-bar {
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
+            border-radius: 8px !important;
+            overflow: hidden;
+        }
+
+        .leaflet-bar a {
+            background-color: rgba(20, 24, 33, 0.95) !important;
+            color: #fff !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .leaflet-bar a:hover {
+            background-color: #ff5722 !important;
+            color: #fff !important;
+        }
+
+        /* ── Popup Card HTML Styles ── */
+        .popup-card {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .popup-img-banner {
+            width: 100%;
+            height: 120px;
+            position: relative;
+            background: linear-gradient(135deg, #c2520a, #ff5722);
+            overflow: hidden;
+        }
+
+        .popup-img-banner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .popup-img-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            font-size: 2rem;
+            color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 87, 34, 0.15);
+        }
+
+        .popup-img-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 12px 16px;
+            background: linear-gradient(0deg, rgba(15, 20, 25, 0.95) 0%, transparent 100%);
+        }
+
+        .popup-kyc-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #10b981;
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
+            z-index: 5;
+        }
+
+        .popup-body {
+            padding: 16px;
+            background: rgba(15, 20, 25, 0.95);
+        }
+
+        .popup-fac-name {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .popup-fac-loc {
+            font-size: 0.8rem;
+            color: #b0b0b0;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .popup-fac-desc {
+            font-size: 0.78rem;
+            color: #808080;
+            margin-bottom: 12px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .popup-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 12px;
+            margin-top: 4px;
+        }
+
+        .popup-courts-count {
+            font-size: 0.8rem;
+            color: #b0b0b0;
+            font-weight: 500;
+        }
+
+        .popup-courts-count span {
+            color: #ff5722;
+            font-weight: 700;
+        }
+
+        .popup-btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 6px 12px;
+            background: #ff5722;
+            color: #fff;
+            border-radius: 6px;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 0.75rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .popup-btn-action:hover {
+            background: #f4511e;
+            transform: translateY(-1px);
+        }
+
+        /* ── Mobile Layout & Toggle Button ── */
+        .mobile-toggle-btn {
+            display: none;
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 999;
+            background: #ff5722;
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(255, 87, 34, 0.4);
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-family: inherit;
+        }
+
+        .mobile-toggle-btn:hover {
+            background: #f4511e;
+            transform: translateX(-50%) translateY(-2px);
+            box-shadow: 0 6px 24px rgba(255, 87, 34, 0.6);
+        }
+
+        @media (max-width: 991px) {
+            .mobile-toggle-btn {
+                display: flex;
+            }
+
+            .courts-layout-wrap {
+                position: relative;
+                overflow: hidden;
+                width: 100%;
+                min-height: 500px;
+            }
+
+            .courts-list-pane {
+                width: 100%;
+                transition: transform 0.4s cubic-bezier(0.77, 0, 0.175, 1);
+            }
+
+            .courts-map-pane {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 500px;
+                border-radius: 12px;
+                transform: translateX(100%);
+                transition: transform 0.4s cubic-bezier(0.77, 0, 0.175, 1);
+                z-index: 10;
+            }
+
+            .courts-layout-wrap.show-map-view .courts-list-pane {
+                transform: translateX(-100%);
+                pointer-events: none;
+                height: 0;
+                overflow: hidden;
+            }
+
+            .courts-layout-wrap.show-map-view .courts-map-pane {
+                transform: translateX(0);
+                position: relative;
+                height: calc(100vh - 160px);
+                min-height: 450px;
+            }
+        }
     </style>
 
 </head>
@@ -405,84 +811,341 @@
             <button type="submit">Search</button>
         </form>
 
-        <!-- Courts Count -->
-        {% if courts %}
-            <div class="courts-count">Found {{ courts_count }} available court{% if courts_count != 1 %}s{% endif %}</div>
-        {% endif %}
+        <!-- Courts Layout Split Pane -->
+        <div class="courts-layout-wrap" id="courts-layout">
+            
+            <!-- Left Pane: Listings -->
+            <div class="courts-list-pane">
+                <!-- Courts Count -->
+                {% if courts %}
+                    <div class="courts-count">Found {{ courts_count }} available court{% if courts_count != 1 %}s{% endif %}</div>
+                {% endif %}
 
-        <!-- Courts Grid -->
-        {% if courts %}
-            <div class="courts-grid">
-                {% for court in courts %}
-                    <div class="court-card">
-                        <div class="court-card-header">
-                            <div class="court-header">
-                                <div class="court-icon">
-                                    {% if court.type == 'Outdoor' %}
-                                        <i class="ph ph-sun"></i>
-                                    {% else %}
-                                        <i class="ph ph-house"></i>
-                                    {% endif %}
+                <!-- Courts Grid -->
+                {% if courts %}
+                    <div class="courts-grid">
+                        {% for court in courts %}
+                            <div class="court-card" data-court-id="{{ court.id }}" data-facility-id="{{ court.facility_id }}" onmouseenter="highlightMarker('{{ court.facility_id }}')" onmouseleave="unhighlightMarker('{{ court.facility_id }}')">
+                                <div class="court-card-header">
+                                    <div class="court-header">
+                                        <div class="court-icon">
+                                            {% if court.type == 'Outdoor' %}
+                                                <i class="ph ph-sun"></i>
+                                            {% else %}
+                                                <i class="ph ph-house"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div class="court-info">
+                                            <div class="court-name">{{ court.name }}</div>
+                                            <span class="court-type">{{ court.type }}</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="court-info">
-                                    <div class="court-name">{{ court.name }}</div>
-                                    <span class="court-type">{{ court.type }}</span>
+
+                                <div class="court-card-body">
+                                    <div class="facility-info">
+                                        <div class="facility-name">{{ court.facility_name }}</div>
+                                        <div class="facility-location">
+                                            <i class="ph ph-map-pin"></i>
+                                            {{ court.facility_location }}
+                                        </div>
+                                    </div>
+
+                                    <div class="court-rate">
+                                        ₱{{ "%.2f"|format(court.hourly_rate) }}
+                                        <span class="court-rate-label">/hour</span>
+                                    </div>
+
+                                    <div class="court-actions">
+                                        <a href="{{ url_for('auth.login') }}" class="btn-view">
+                                            <i class="ph ph-calendar-check"></i> Book Now
+                                        </a>
+                                        {% if session.get('user_id') %}
+                                            <a href="#" class="btn-view" onclick="viewCourtDetails('{{ court.id }}')">
+                                                <i class="ph ph-info"></i> Details
+                                            </a>
+                                        {% else %}
+                                            <a href="{{ url_for('auth.login') }}" class="btn-login">
+                                                <i class="ph ph-sign-in"></i> Sign In
+                                            </a>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="court-card-body">
-                            <div class="facility-info">
-                                <div class="facility-name">{{ court.facility_name }}</div>
-                                <div class="facility-location">
-                                    <i class="ph ph-map-pin"></i>
-                                    {{ court.facility_location }}
-                                </div>
-                            </div>
-
-                            <div class="court-rate">
-                                ₱{{ "%.2f"|format(court.hourly_rate) }}
-                                <span class="court-rate-label">/hour</span>
-                            </div>
-
-                            <div class="court-actions">
-                                <a href="{{ url_for('auth.login') }}" class="btn-view">
-                                    <i class="ph ph-calendar-check"></i> Book Now
-                                </a>
-                                {% if session.get('user_id') %}
-                                    <a href="#" class="btn-view" onclick="viewCourtDetails('{{ court.id }}')">
-                                        <i class="ph ph-info"></i> Details
-                                    </a>
-                                {% else %}
-                                    <a href="{{ url_for('auth.login') }}" class="btn-login">
-                                        <i class="ph ph-sign-in"></i> Sign In
-                                    </a>
-                                {% endif %}
-                            </div>
-                        </div>
+                        {% endfor %}
                     </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="empty-state">
-                <div class="empty-icon">
-                    <i class="ph ph-magnifying-glass"></i>
-                </div>
-                <h2>No Courts Found</h2>
-                <p>{% if search_query %}No courts match "{{ search_query }}". Try a different search term.{% else %}No courts available at the moment.{% endif %}</p>
-                {% if search_query %}
-                    <a href="{{ url_for('main.courts_listing') }}" class="btn-view" style="display: inline-flex; margin-top: 20px;">
-                        <i class="ph ph-arrow-left"></i> Clear Search
-                    </a>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="ph ph-magnifying-glass"></i>
+                        </div>
+                        <h2>No Courts Found</h2>
+                        <p>{% if search_query %}No courts match "{{ search_query }}". Try a different search term.{% else %}No courts available at the moment.{% endif %}</p>
+                        {% if search_query %}
+                            <a href="{{ url_for('main.courts_listing') }}" class="btn-view" style="display: inline-flex; margin-top: 20px;">
+                                <i class="ph ph-arrow-left"></i> Clear Search
+                            </a>
+                        {% endif %}
+                    </div>
                 {% endif %}
             </div>
-        {% endif %}
+
+            <!-- Right Pane: Interactive Map -->
+            <div class="courts-map-pane">
+                <div id="courts-map"></div>
+            </div>
+            
+        </div>
+
+        <!-- Mobile Floating View Toggle Button -->
+        <button class="mobile-toggle-btn" id="mobile-view-toggle">
+            <i class="ph ph-map-trifold"></i> Show Map
+        </button>
 
     </section>
 
     <script>
+        // Retrieve courts data passed from Flask
+        const courtsData = {{ courts|tojson|safe }};
+        
+        let map = null;
+        const markers = {};
+
+        // Group courts by facility to prevent overlapping pins
+        const facilitiesMap = {};
+        courtsData.forEach(court => {
+            if (court.facility_latitude && court.facility_longitude) {
+                const fid = court.facility_id;
+                if (!facilitiesMap[fid]) {
+                    facilitiesMap[fid] = {
+                        id: fid,
+                        name: court.facility_name,
+                        location: court.facility_location,
+                        latitude: parseFloat(court.facility_latitude),
+                        longitude: parseFloat(court.facility_longitude),
+                        kyc_status: court.facility_kyc_status,
+                        image_url: court.facility_image_url,
+                        description: court.facility_description || '',
+                        courts: []
+                    };
+                }
+                facilitiesMap[fid].courts.push(court);
+            }
+        });
+        const facilities = Object.values(facilitiesMap);
+
+        // Initialize Map
+        document.addEventListener('DOMContentLoaded', () => {
+            const mapContainer = document.getElementById('courts-map');
+            if (!mapContainer) return;
+
+            // Default center around Laguna, Philippines (Calamba area)
+            let center = [14.21, 121.16];
+            let zoom = 12;
+
+            // Calculate center dynamically if facilities exist
+            if (facilities.length > 0) {
+                let totalLat = 0, totalLng = 0;
+                facilities.forEach(f => {
+                    totalLat += f.latitude;
+                    totalLng += f.longitude;
+                });
+                center = [totalLat / facilities.length, totalLng / facilities.length];
+                zoom = 13;
+            }
+
+            // Create Leaflet map instance
+            map = L.map('courts-map', {
+                center: center,
+                zoom: zoom,
+                zoomControl: false, // Custom position Zoom Control
+                scrollWheelZoom: true
+            });
+
+            // Add standard Zoom control in a cleaner spot (topright)
+            L.control.zoom({
+                position: 'topright'
+            }).addTo(map);
+
+            // Add premium Dark Mode CartoDB tiles
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                subdomains: 'abcd',
+                maxZoom: 20
+            }).addTo(map);
+
+            // Plot Facility Markers
+            facilities.forEach(f => {
+                // Determine icon representation
+                const customIcon = L.divIcon({
+                    className: `custom-map-marker marker-fid-${f.id}`,
+                    html: `
+                        <div class="marker-pin">
+                            <i class="ph ph-tennis-ball"></i>
+                        </div>
+                        <div class="marker-pulse"></div>
+                    `,
+                    iconSize: [40, 40],
+                    iconAnchor: [20, 40],
+                    popupAnchor: [0, -40]
+                });
+
+                // Setup dynamic Popup Card Content HTML
+                const kycBadge = f.kyc_status === 'verified' 
+                    ? `<div class="popup-kyc-badge"><i class="ph ph-shield-check"></i> Verified</div>` 
+                    : '';
+                const imageBanner = f.image_url 
+                    ? `<img src="${f.image_url}" alt="${f.name}">` 
+                    : `<div class="popup-img-placeholder"><i class="ph ph-buildings"></i></div>`;
+                
+                let courtsListHtml = '';
+                f.courts.slice(0, 3).forEach(c => {
+                    courtsListHtml += `
+                        <div style="font-size:0.75rem; color:#b0b0b0; display:flex; justify-content:space-between; margin-bottom:4px;">
+                            <span>${c.name} (${c.type})</span>
+                            <span style="color:#ff5722; font-weight:600;">₱${c.hourly_rate.toFixed(2)}/hr</span>
+                        </div>
+                    `;
+                });
+                if (f.courts.length > 3) {
+                    courtsListHtml += `<div style="font-size:0.7rem; color:#808080; text-align:right;">+ ${f.courts.length - 3} more courts</div>`;
+                }
+
+                const popupHtml = `
+                    <div class="popup-card">
+                        <div class="popup-img-banner">
+                            ${kycBadge}
+                            ${imageBanner}
+                            <div class="popup-img-overlay"></div>
+                        </div>
+                        <div class="popup-body">
+                            <div class="popup-fac-name">${f.name}</div>
+                            <div class="popup-fac-loc">
+                                <i class="ph ph-map-pin"></i> ${f.location}
+                            </div>
+                            <div class="popup-fac-desc">${f.description}</div>
+                            
+                            <div style="margin-bottom: 12px; background:rgba(255,255,255,0.03); padding:8px; border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
+                                ${courtsListHtml}
+                            </div>
+
+                            <div class="popup-footer">
+                                <div class="popup-courts-count">
+                                    <span>${f.courts.length}</span> court${f.courts.length !== 1 ? 's' : ''} available
+                                </div>
+                                <button onclick="scrollToFacility('${f.id}')" class="popup-btn-action">
+                                    <i class="ph ph-list-bullets"></i> View List
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Render marker and bind it
+                const marker = L.marker([f.latitude, f.longitude], { icon: customIcon }).addTo(map);
+                marker.bindPopup(popupHtml, {
+                    maxWidth: 280,
+                    minWidth: 280,
+                    closeButton: true
+                });
+
+                // Synchronize popup hover/highlight states
+                marker.on('popupopen', () => {
+                    document.querySelectorAll(`.court-card[data-facility-id="${f.id}"]`).forEach(card => {
+                        card.classList.add('highlight');
+                    });
+                    const markerElement = document.querySelector(`.marker-fid-${f.id}`);
+                    if (markerElement) markerElement.classList.add('active');
+                });
+
+                marker.on('popupclose', () => {
+                    document.querySelectorAll(`.court-card[data-facility-id="${f.id}"]`).forEach(card => {
+                        card.classList.remove('highlight');
+                    });
+                    const markerElement = document.querySelector(`.marker-fid-${f.id}`);
+                    if (markerElement) markerElement.classList.remove('active');
+                });
+
+                // Save marker reference
+                markers[f.id] = marker;
+            });
+
+            // Mobile toggle panel handler
+            const mobileToggle = document.getElementById('mobile-view-toggle');
+            const layout = document.getElementById('courts-layout');
+            
+            if (mobileToggle && layout) {
+                mobileToggle.addEventListener('click', () => {
+                    const isShowingMap = layout.classList.toggle('show-map-view');
+                    if (isShowingMap) {
+                        mobileToggle.innerHTML = `<i class="ph ph-list-bullets"></i> Show List`;
+                        // Force Leaflet to recalculate viewport size
+                        setTimeout(() => {
+                            map.invalidateSize();
+                            if (facilities.length > 0) {
+                                // Fit bounds elegantly
+                                const bounds = L.latLngBounds(facilities.map(f => [f.latitude, f.longitude]));
+                                map.fitBounds(bounds, { padding: [50, 50] });
+                            }
+                        }, 200);
+                    } else {
+                        mobileToggle.innerHTML = `<i class="ph ph-map-trifold"></i> Show Map`;
+                    }
+                });
+            }
+        });
+
+        // ── Two-Way Highlight Logic ──
+        function highlightMarker(facilityId) {
+            const marker = markers[facilityId];
+            if (marker) {
+                const element = document.querySelector(`.marker-fid-${facilityId}`);
+                if (element) {
+                    element.classList.add('active');
+                }
+            }
+        }
+
+        // Remove active class when cursor exits card
+        function unhighlightMarker(facilityId) {
+            const marker = markers[facilityId];
+            if (marker) {
+                const element = document.querySelector(`.marker-fid-${facilityId}`);
+                if (element) {
+                    element.classList.remove('active');
+                }
+            }
+        }
+
+        function scrollToFacility(facilityId) {
+            // If on mobile, close the map view first
+            const layout = document.getElementById('courts-layout');
+            const mobileToggle = document.getElementById('mobile-view-toggle');
+            if (layout && layout.classList.contains('show-map-view')) {
+                layout.classList.remove('show-map-view');
+                if (mobileToggle) {
+                    mobileToggle.innerHTML = `<i class="ph ph-map-trifold"></i> Show Map`;
+                }
+            }
+
+            // Find first card belonging to facility
+            const cards = document.querySelectorAll(`.court-card[data-facility-id="${facilityId}"]`);
+            if (cards.length > 0) {
+                const firstCard = cards[0];
+                firstCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Trigger quick bounce highlight animation
+                cards.forEach(card => {
+                    card.classList.add('highlight');
+                    setTimeout(() => {
+                        card.classList.remove('highlight');
+                    }, 2000);
+                });
+            }
+        }
+
         function viewCourtDetails(courtId) {
-            // Placeholder for viewing court details
+            // Detail logic placeholder
             alert('Court details view coming soon!');
         }
     </script>
