@@ -3,6 +3,7 @@
 {% block title %}Profile Management{% endblock %}
 
 {% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
     .profile-layout {
         display: grid;
@@ -121,6 +122,16 @@
         grid-template-columns: repeat(3, 1fr);
         gap: 12px;
         margin-bottom: 24px;
+    }
+
+    .stat-boxes.four-cols {
+        grid-template-columns: repeat(4, 1fr) !important;
+    }
+
+    @media (max-width: 768px) {
+        .stat-boxes.four-cols {
+            grid-template-columns: repeat(2, 1fr) !important;
+        }
     }
 
     .stat-box {
@@ -274,6 +285,12 @@
                     <i class="ph ph-shield-check"></i>
                     <span class="membership-badge">Free</span>
                 </div>
+                <div class="contact-row">
+                    <i class="ph ph-trophy"></i>
+                    <span class="membership-badge" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);">
+                        DUPR: {{ "%.2f"|format(current_user.dupr|float) }} ({{ current_user.elo }} Elo)
+                    </span>
+                </div>
             </div>
 
             <button type="submit" class="btn-edit-profile" style="background: var(--btn-navy); color: white; border: none;">
@@ -303,7 +320,7 @@
     <div class="glass-card">
         <p class="stats-section-title">Player Statistics</p>
 
-        <div class="stat-boxes">
+        <div class="stat-boxes four-cols">
             <div class="stat-box orange">
                 <span class="stat-value">{{ stats.courts if stats else 0 }}</span>
                 <span class="stat-label">Courts Booked</span>
@@ -316,6 +333,10 @@
                 <span class="stat-value">{{ stats.tournaments if stats else 0 }}</span>
                 <span class="stat-label">Tournaments</span>
             </div>
+            <div class="stat-box" style="border-color: var(--btn-green); background: rgba(16, 185, 129, 0.04);">
+                <span class="stat-value" style="color: var(--btn-green);">{{ "%.2f"|format(current_user.dupr|float) }}</span>
+                <span class="stat-label" style="font-weight: 600; color: var(--text-primary);">DUPR ({{ current_user.elo }} Elo)</span>
+            </div>
         </div>
 
         <p class="fairness-label">Fairness Rating</p>
@@ -327,13 +348,172 @@
         </div>
         <p class="fairness-note">Your fairness score is based on peak-time booking frequency. Higher is better.</p>
 
-        <p class="recent-activity-title">Recent Activity</p>
-        <ul class="activity-list">
-            <li><span class="dot"></span> Booked Court 2 – Apr 28</li>
-            <li><span class="dot"></span> Joined Weekend Doubles</li>
-            <li><span class="dot"></span> Completed session – Court 1</li>
-        </ul>
+        <!-- Skill Trajectory Line Chart -->
+        <div style="border-top: 1px solid var(--border-color); margin: 24px 0 16px; padding-top: 24px; display: flex; justify-content: space-between; align-items: center;">
+            <p class="recent-activity-title" style="margin: 0;"><i class="ph ph-chart-line-up" style="color: var(--btn-green); font-size: 1.1rem; vertical-align: middle;"></i> Competitive Trajectory</p>
+            <div style="display: flex; gap: 8px;">
+                <button type="button" class="action-box green active" id="btn-chart-dupr" onclick="toggleChartType('dupr')" style="padding: 4px 12px; font-size: 0.75rem; border-radius: 6px; cursor: pointer; width: auto; font-weight: 600;">DUPR</button>
+                <button type="button" class="action-box navy" id="btn-chart-elo" onclick="toggleChartType('elo')" style="padding: 4px 12px; font-size: 0.75rem; border-radius: 6px; cursor: pointer; width: auto; font-weight: 600;">Elo</button>
+            </div>
+        </div>
+        <div style="position: relative; height: 200px; width: 100%; margin-bottom: 24px;">
+            <canvas id="ratingChart"></canvas>
+        </div>
+
+        <!-- Recent Tournament Matches -->
+        <p class="recent-activity-title" style="border-top: 1px solid var(--border-color); padding-top: 24px; margin-top: 24px;"><i class="ph ph-sword" style="color: var(--primary-orange); font-size: 1.1rem; vertical-align: middle;"></i> Recent Tournament Matches</p>
+        <div class="match-log" style="display: flex; flex-direction: column; gap: 10px;">
+            {% if player_matches %}
+                {% for match in player_matches[:5] %}
+                <div style="padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--border-color); background: var(--input-bg);">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="padding: 4px 8px; font-size: 0.7rem; font-weight: 700; border-radius: 4px; background: {{ 'rgba(16,185,129,0.12)' if match.result == 'WIN' else 'rgba(239,68,68,0.12)' }}; color: {{ '#10b981' if match.result == 'WIN' else '#ef4444' }}; text-transform: uppercase;">
+                            {{ match.result }}
+                        </span>
+                        <div>
+                            <span style="font-weight: 600; font-size: 0.85rem; display: block; color: var(--text-primary);">vs {{ match.opponent_name }}</span>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">{{ match.event_title }}</span>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="font-weight: 700; font-size: 0.9rem; color: var(--text-primary);">{{ match.score }}</span>
+                        <span style="font-size: 0.7rem; color: var(--text-muted); display: block;">{{ match.played_at[:10] if match.played_at else 'Recent' }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; padding: 24px; color: var(--text-muted); font-size: 0.8rem; background: var(--input-bg); border-radius: 8px; border: 1px dashed var(--border-color);">
+                    <i class="ph ph-club" style="font-size: 1.8rem; display: block; margin-bottom: 8px; opacity: 0.4;"></i>
+                    No tournament matches played yet.
+                </div>
+            {% endif %}
+        </div>
     </div>
+
+    <!-- Chart rendering logic -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const historyData = {{ rating_history|tojson if rating_history else '[]' }};
+            
+            if (!historyData || historyData.length === 0) {
+                return;
+            }
+
+            const labels = historyData.map(h => {
+                const date = new Date(h.recorded_at);
+                return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+            });
+            
+            const eloValues = historyData.map(h => h.elo);
+            const duprValues = historyData.map(h => parseFloat(h.dupr));
+
+            let chartType = 'dupr';
+
+            const ctx = document.getElementById('ratingChart').getContext('2d');
+            
+            let ratingChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'DUPR Rating',
+                        data: duprValues,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.06)',
+                        borderWidth: 2.5,
+                        fill: true,
+                        tension: 0.35,
+                        pointBackgroundColor: '#10b981',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 1.5,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.9)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: 'rgba(148, 163, 184, 0.1)',
+                            borderWidth: 1,
+                            padding: 8,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    if (chartType === 'dupr') {
+                                        return `DUPR: ${context.parsed.y.toFixed(2)}`;
+                                    } else {
+                                        return `Elo: ${context.parsed.y}`;
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(148, 163, 184, 0.04)'
+                            },
+                            ticks: {
+                                color: 'rgba(148, 163, 184, 0.55)',
+                                font: { size: 9 }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(148, 163, 184, 0.04)'
+                            },
+                            ticks: {
+                                color: 'rgba(148, 163, 184, 0.55)',
+                                font: { size: 9 },
+                                callback: function(value) {
+                                    return chartType === 'dupr' ? value.toFixed(1) : value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            window.toggleChartType = function(type) {
+                chartType = type;
+                
+                const btnDupr = document.getElementById('btn-chart-dupr');
+                const btnElo = document.getElementById('btn-chart-elo');
+                
+                if (type === 'dupr') {
+                    btnDupr.classList.add('active', 'green');
+                    btnDupr.classList.remove('navy');
+                    btnElo.classList.remove('active', 'green');
+                    btnElo.classList.add('navy');
+                    
+                    ratingChart.data.datasets[0].label = 'DUPR Rating';
+                    ratingChart.data.datasets[0].data = duprValues;
+                    ratingChart.data.datasets[0].borderColor = '#10b981';
+                    ratingChart.data.datasets[0].backgroundColor = 'rgba(16, 185, 129, 0.06)';
+                    ratingChart.data.datasets[0].pointBackgroundColor = '#10b981';
+                } else {
+                    btnElo.classList.add('active', 'green');
+                    btnElo.classList.remove('navy');
+                    btnDupr.classList.remove('active', 'green');
+                    btnDupr.classList.add('navy');
+                    
+                    ratingChart.data.datasets[0].label = 'Elo Rating';
+                    ratingChart.data.datasets[0].data = eloValues;
+                    ratingChart.data.datasets[0].borderColor = '#818cf8';
+                    ratingChart.data.datasets[0].backgroundColor = 'rgba(129, 140, 248, 0.06)';
+                    ratingChart.data.datasets[0].pointBackgroundColor = '#818cf8';
+                }
+                
+                ratingChart.update();
+            };
+        });
+    </script>
 
 </div>
 {% endblock %}

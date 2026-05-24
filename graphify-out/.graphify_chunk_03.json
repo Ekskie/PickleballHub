@@ -1,0 +1,53 @@
+{
+  "nodes": [
+    {"id": "superadmin_blueprint", "label": "superadmin Blueprint", "file_type": "code", "source_file": "app/superadmin/routes.py", "source_location": "L29", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "superadmin_dashboard", "label": "Superadmin Dashboard (Platform KPIs)", "file_type": "code", "source_file": "app/superadmin/routes.py", "source_location": "L31", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "superadmin_facilities", "label": "Superadmin Facilities Management", "file_type": "code", "source_file": "app/superadmin/routes.py", "source_location": "L78", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "superadmin_update_kyc", "label": "update_kyc_status (Superadmin)", "file_type": "code", "source_file": "app/superadmin/routes.py", "source_location": "L90", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "superadmin_users", "label": "Superadmin Users Management", "file_type": "code", "source_file": "app/superadmin/routes.py", "source_location": "L105", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "superadmin_add_adminstaff", "label": "add_adminstaff Route", "file_type": "code", "source_file": "app/superadmin/routes.py", "source_location": "L117", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "superadmin_reports", "label": "Platform Reports Route", "file_type": "code", "source_file": "app/superadmin/routes.py", "source_location": "L147", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "superadmin_settings", "label": "Platform Settings Route", "file_type": "code", "source_file": "app/superadmin/routes.py", "source_location": "L222", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "db_platform_settings_table", "label": "platform_settings Table", "file_type": "rationale", "source_file": "app/superadmin/routes.py", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "superadmin_kyc_workflow", "label": "KYC Verification Workflow", "file_type": "rationale", "source_file": "app/superadmin/routes.py", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "adminstaff_blueprint", "label": "adminstaff Blueprint", "file_type": "code", "source_file": "app/adminstaff/routes.py", "source_location": "L28", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "adminstaff_dashboard", "label": "Adminstaff Dashboard (Support KPIs)", "file_type": "code", "source_file": "app/adminstaff/routes.py", "source_location": "L30", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "adminstaff_support", "label": "Support Tickets Management", "file_type": "code", "source_file": "app/adminstaff/routes.py", "source_location": "L86", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "adminstaff_resolve_ticket", "label": "resolve_ticket Route", "file_type": "code", "source_file": "app/adminstaff/routes.py", "source_location": "L98", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "adminstaff_verifications", "label": "Facility Verifications (Adminstaff)", "file_type": "code", "source_file": "app/adminstaff/routes.py", "source_location": "L110", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "adminstaff_disputes", "label": "Disputes Management", "file_type": "code", "source_file": "app/adminstaff/routes.py", "source_location": "L138", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "adminstaff_update_dispute", "label": "update_dispute Route", "file_type": "code", "source_file": "app/adminstaff/routes.py", "source_location": "L153", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "db_tickets_table", "label": "tickets Table (Support)", "file_type": "rationale", "source_file": "app/adminstaff/routes.py", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "db_disputes_table", "label": "disputes Table", "file_type": "rationale", "source_file": "app/adminstaff/routes.py", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null}
+  ],
+  "edges": [
+    {"source": "superadmin_dashboard", "target": "db_court_reservations_table", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "app/superadmin/routes.py", "source_location": "L49", "weight": 1.0},
+    {"source": "superadmin_dashboard", "target": "db_facilities_table", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "app/superadmin/routes.py", "source_location": "L45", "weight": 1.0},
+    {"source": "superadmin_update_kyc", "target": "superadmin_kyc_workflow", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "app/superadmin/routes.py", "source_location": "L90", "weight": 1.0},
+    {"source": "superadmin_add_adminstaff", "target": "init_supabase_admin", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "app/superadmin/routes.py", "source_location": "L133", "weight": 1.0},
+    {"source": "superadmin_add_adminstaff", "target": "init_profiles_table", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "app/superadmin/routes.py", "source_location": "L138", "weight": 1.0},
+    {"source": "superadmin_reports", "target": "db_court_reservations_table", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "app/superadmin/routes.py", "source_location": "L168", "weight": 1.0},
+    {"source": "superadmin_settings", "target": "db_platform_settings_table", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "app/superadmin/routes.py", "source_location": "L242", "weight": 1.0},
+    {"source": "adminstaff_dashboard", "target": "db_tickets_table", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "app/adminstaff/routes.py", "source_location": "L40", "weight": 1.0},
+    {"source": "adminstaff_dashboard", "target": "db_disputes_table", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "app/adminstaff/routes.py", "source_location": "L49", "weight": 1.0},
+    {"source": "adminstaff_support", "target": "db_tickets_table", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "app/adminstaff/routes.py", "source_location": "L92", "weight": 1.0},
+    {"source": "adminstaff_resolve_ticket", "target": "db_tickets_table", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "app/adminstaff/routes.py", "source_location": "L104", "weight": 1.0},
+    {"source": "adminstaff_disputes", "target": "db_disputes_table", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "app/adminstaff/routes.py", "source_location": "L144", "weight": 1.0},
+    {"source": "adminstaff_verifications", "target": "superadmin_kyc_workflow", "relation": "semantically_similar_to", "confidence": "INFERRED", "confidence_score": 0.95, "source_file": "app/adminstaff/routes.py", "source_location": null, "weight": 1.0},
+    {"source": "superadmin_blueprint", "target": "decorators_require_role", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "app/superadmin/routes.py", "source_location": "L2", "weight": 1.0},
+    {"source": "adminstaff_blueprint", "target": "decorators_require_role", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "app/adminstaff/routes.py", "source_location": "L2", "weight": 1.0}
+  ],
+  "hyperedges": [
+    {
+      "id": "platform_admin_tools",
+      "label": "Platform Administration Tools",
+      "nodes": ["superadmin_dashboard", "superadmin_reports", "superadmin_settings", "superadmin_users"],
+      "relation": "form",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "app/superadmin/routes.py"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

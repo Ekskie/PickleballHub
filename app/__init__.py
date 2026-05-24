@@ -88,7 +88,7 @@ def create_app():
         if client:
             try:
                 resp = client.table('profiles').select(
-                    'first_name, last_name, phone, role'
+                    'first_name, last_name, phone, role, elo, dupr, proficiency'
                 ).eq('id', user_id).single().execute()
 
                 if resp.data:
@@ -98,6 +98,15 @@ def create_app():
                     full     = f"{first} {last}".strip()
                     initials = (first[0] + (last[0] if last else '')).upper()
                     role     = (d.get('role') or 'player').strip().lower()
+
+                    # Retrieve elo/dupr with proficiency fallback
+                    elo = d.get('elo')
+                    dupr = d.get('dupr')
+                    if elo is None or dupr is None:
+                        from app.ratings import get_initial_rating
+                        elo_def, dupr_def = get_initial_rating(d.get('proficiency'))
+                        if elo is None: elo = elo_def
+                        if dupr is None: dupr = dupr_def
 
                     return dict(current_user={
                         'first_name':   first,
@@ -111,6 +120,9 @@ def create_app():
                         'id':           user_id,
                         'is_logged_in': True,
                         'access_token': session.get('access_token', ''),
+                        'elo':          elo,
+                        'dupr':         dupr,
+                        'proficiency':  d.get('proficiency'),
                     }, supabase_url=supabase_url, supabase_anon_key=supabase_key)
             except Exception as exc:
                 print(f"[context_processor] Supabase error: {exc}", file=sys.stderr)
@@ -121,6 +133,9 @@ def create_app():
         full     = f"{first} {last}".strip()
         initials = (first[0] + (last[0] if last else '')).upper()
         role     = session.get('role', 'player').lower()
+
+        from app.ratings import get_initial_rating
+        elo_def, dupr_def = get_initial_rating(session.get('proficiency'))
 
         return dict(current_user={
             'first_name':   first,
@@ -134,6 +149,9 @@ def create_app():
             'id':           user_id,
             'is_logged_in': True,
             'access_token': session.get('access_token', ''),
+            'elo':          session.get('elo', elo_def),
+            'dupr':         session.get('dupr', dupr_def),
+            'proficiency':  session.get('proficiency'),
         }, supabase_url=supabase_url, supabase_anon_key=supabase_key)
 
     # ── Template Filters ──────────────────────────────────────────────────────

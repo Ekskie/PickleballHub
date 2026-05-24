@@ -141,7 +141,77 @@ def profile():
     except Exception:
         pass
 
-    return render_template('player/profile.html', stats=stats)
+    # Fetch rating history for charts
+    rating_history = []
+    try:
+        hist_resp = db.table('rating_history').select('*').eq('player_id', player_id).order('recorded_at', desc=False).execute()
+        rating_history = hist_resp.data or []
+        
+        if not rating_history:
+            # Player has no rating history yet, let's initialize it!
+            prof_resp = db.table('profiles').select('elo, dupr, proficiency, created_at').eq('id', player_id).single().execute()
+            prof = prof_resp.data
+            if prof:
+                elo = prof.get('elo')
+                dupr = prof.get('dupr')
+                if elo is None or dupr is None:
+                    from app.ratings import init_player_rating
+                    elo, dupr = init_player_rating(db, player_id, prof.get('proficiency'))
+                
+                # Insert baseline history slightly older than now
+                created_at = prof.get('created_at') or datetime.now(PH_TZ).isoformat()
+                from app.ratings import ensure_initial_history
+                ensure_initial_history(db, player_id, elo, dupr, created_at)
+                
+                # Fetch again
+                hist_resp = db.table('rating_history').select('*').eq('player_id', player_id).order('recorded_at', desc=False).execute()
+                rating_history = hist_resp.data or []
+    except Exception as e:
+        print(f"[profile_route] Error fetching rating history: {e}")
+
+    # Fetch player's completed tournament matches
+    player_matches = []
+    try:
+        matches_resp = db.table('tournament_matches').select(
+            'id, event_id, round_number, match_number, player1_score, player2_score, winner_id, status, played_at, '
+            'player1:profiles!player1_id(id, first_name, last_name), '
+            'player2:profiles!player2_id(id, first_name, last_name), '
+            'events(title)'
+        ).or_(f"player1_id.eq.{player_id},player2_id.eq.{player_id}").eq('status', 'completed').order('played_at', desc=True).execute()
+        
+        raw_matches = matches_resp.data or []
+        
+        # Format matches for rendering
+        for m in raw_matches:
+            is_p1 = m.get('player1_id') == player_id
+            opponent = m.get('player2') if is_p1 else m.get('player1')
+            opp_name = f"{opponent.get('first_name', '')} {opponent.get('last_name', '')}".strip() if opponent else "Unknown Opponent"
+            
+            my_score = m.get('player1_score') if is_p1 else m.get('player2_score')
+            opp_score = m.get('player2_score') if is_p1 else m.get('player1_score')
+            
+            result = "WIN" if m.get('winner_id') == player_id else "LOSS"
+            if m.get('winner_id') is None:
+                result = "DRAW"
+                
+            player_matches.append({
+                'id': m['id'],
+                'event_title': m.get('events', {}).get('title', 'Unknown Tournament') if m.get('events') else 'Tournament Match',
+                'opponent_name': opp_name,
+                'score': f"{my_score} - {opp_score}" if my_score is not None and opp_score is not None else "N/A",
+                'result': result,
+                'played_at': m.get('played_at')
+            })
+    except Exception as e:
+        print(f"[profile_route] Error fetching player matches: {e}")
+
+    return render_template(
+        'player/profile.html',
+        stats=stats,
+        rating_history=rating_history,
+        player_matches=player_matches
+    )
+
 
 
 @player_bp.route('/reservation')

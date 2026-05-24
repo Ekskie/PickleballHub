@@ -3,91 +3,555 @@
 
 {% block extra_head %}
 <style>
-/* ── Wizard Steps ── */
-.wizard-steps { display:flex; align-items:center; gap:0; margin-bottom:32px; }
-.step-item { display:flex; align-items:center; gap:10px; }
-.step-num { width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;border:2px solid var(--border-color);color:var(--text-muted);background:var(--card-bg);transition:all .3s; }
-.step-item.active .step-num { background:var(--primary-orange);border-color:var(--primary-orange);color:#fff; }
-.step-item.done .step-num { background:var(--btn-green);border-color:var(--btn-green);color:#fff; }
-.step-label { font-size:0.8rem;font-weight:600;color:var(--text-muted); }
-.step-item.active .step-label,.step-item.done .step-label { color:var(--text-primary); }
-.step-line { flex:1;height:2px;background:var(--border-color);margin:0 8px;min-width:32px; }
-.step-line.done { background:var(--btn-green); }
-/* ── Panels ── */
-.wizard-panel { display:none; }
-.wizard-panel.active { display:block; animation:postFadeIn .3s ease; }
-/* ── Facility / Court Cards ── */
-.facility-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px; }
-.facility-card { background:var(--card-bg);border:2px solid var(--card-border);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .2s; }
-.facility-card:hover { border-color:var(--primary-orange);box-shadow:var(--shadow-hover); }
-.facility-card.selected { border-color:var(--primary-orange);box-shadow:0 0 0 3px rgba(249,115,22,.2); }
-.fac-img-banner { height:140px;background:linear-gradient(135deg,#c2520a,var(--primary-orange));position:relative;overflow:hidden; }
-.fac-img-banner img { width:100%;height:100%;object-fit:cover;display:block; }
-.fac-img-banner .fac-img-placeholder { display:flex;align-items:center;justify-content:center;height:100%; }
-.fac-img-banner .fac-img-placeholder i { font-size:2.5rem;color:rgba(255,255,255,.45); }
-.fac-img-overlay { position:absolute;bottom:0;left:0;right:0;padding:10px 14px;background:linear-gradient(0deg,rgba(0,0,0,.65),transparent); }
-.fac-img-overlay h4 { font-size:.95rem;font-weight:700;color:#fff;margin:0; }
-.fac-card-body { padding:12px 14px 14px; }
-.facility-card .fac-loc { font-size:.78rem;color:var(--text-muted);display:flex;align-items:center;gap:4px;margin-bottom:6px;flex-wrap:wrap; }
-.facility-card .fac-hours { font-size:.75rem;color:var(--text-secondary);display:flex;align-items:center;gap:4px; }
-.btn-map { display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border:1px solid var(--primary-orange);border-radius:20px;background:transparent;color:var(--primary-orange);font-size:.72rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit;margin-left:4px; }
-.btn-map:hover { background:var(--primary-orange);color:#fff; }
-.court-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px; }
-.court-card { background:var(--card-bg);border:2px solid var(--card-border);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .2s; }
-.court-card:hover { border-color:var(--primary-orange);box-shadow:var(--shadow-hover); }
-.court-card.selected { border-color:var(--primary-orange);background:var(--primary-orange-light); }
-.court-img-banner { height:100px;background:linear-gradient(135deg,#1e3a5f,#2d6a9f);overflow:hidden;position:relative; }
-.court-img-banner img { width:100%;height:100%;object-fit:cover;display:block; }
-.court-img-banner .court-img-placeholder { display:flex;align-items:center;justify-content:center;height:100%; }
-.court-img-banner .court-img-placeholder i { font-size:2rem;color:rgba(255,255,255,.45); }
-.court-card-body { padding:12px 14px 14px; }
-.court-card h4 { font-size:.9rem;font-weight:700;margin-bottom:6px; }
-.type-pill { display:inline-flex;align-items:center;gap:4px;font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:8px; }
-.type-pill.indoor { background:rgba(59,130,246,.12);color:#3B82F6; }
-.type-pill.outdoor { background:rgba(41,163,86,.12);color:#29A356; }
-.court-rate { font-size:1rem;font-weight:700;color:var(--primary-orange); }
-.court-rate small { font-size:.7rem;font-weight:400;color:var(--text-muted); }
-/* ── Step 3 Layout ── */
-.step3-layout { display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start; }
-@media(max-width:900px){ .step3-layout{grid-template-columns:1fr;} }
-.date-row { display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap; }
-.date-row label { font-size:.85rem;font-weight:600;color:var(--text-secondary); }
-.date-row input[type=date] { border:1px solid var(--border-color);background:var(--card-bg);color:var(--text-primary);padding:8px 12px;border-radius:8px;outline:none;font-family:inherit;font-size:.875rem; }
-.date-row input[type=date]:focus { border-color:var(--primary-orange); }
-/* ── Slot Grid ── */
-.slot-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px; }
-.slot-btn { padding:10px 6px;border:1.5px solid var(--border-color);border-radius:8px;background:var(--card-bg);font-size:.75rem;font-weight:600;cursor:pointer;text-align:center;transition:all .2s;font-family:inherit;color:var(--text-secondary); }
-.slot-btn:hover:not(.booked) { border-color:var(--primary-orange);color:var(--primary-orange); }
-.slot-btn.selected { background:var(--primary-orange);border-color:var(--primary-orange);color:#fff; }
-.slot-btn.booked { background:var(--input-bg);color:var(--text-muted);cursor:not-allowed;opacity:.6; }
-.slot-legend { display:flex;gap:16px;margin-bottom:14px;flex-wrap:wrap; }
-.leg-item { display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--text-muted); }
-.leg-dot { width:12px;height:12px;border-radius:3px; }
-.leg-dot.avail { background:var(--card-bg);border:1.5px solid var(--border-color); }
-.leg-dot.sel { background:var(--primary-orange); }
-.leg-dot.bkd { background:var(--input-bg);border:1.5px solid var(--border-color);opacity:.6; }
-/* ── Summary Card ── */
-.summary-card { background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:20px;box-shadow:var(--shadow-card);position:sticky;top:24px; }
-.summary-card h3 { font-size:.95rem;font-weight:700;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border-color); }
-.summary-row { display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;font-size:.82rem; }
-.summary-row .s-label { color:var(--text-muted); }
-.summary-row .s-val { font-weight:600;color:var(--text-primary);text-align:right;max-width:160px; }
-.summary-total { display:flex;justify-content:space-between;align-items:center;padding-top:14px;margin-top:4px;border-top:2px solid var(--border-color); }
-.summary-total .t-label { font-size:.85rem;font-weight:700; }
-.summary-total .t-val { font-size:1.2rem;font-weight:800;color:var(--primary-orange); }
-.btn-confirm { width:100%;padding:13px;background:var(--primary-orange);color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:16px;transition:background .2s,transform .15s; }
-.btn-confirm:hover { background:var(--primary-orange-hover);transform:translateY(-1px); }
-.btn-confirm:disabled { opacity:.5;cursor:not-allowed;transform:none; }
-.empty-state { text-align:center;padding:40px;color:var(--text-muted); }
-.empty-state i { font-size:2.5rem;opacity:.4;display:block;margin-bottom:12px; }
-/* back btn */
-.btn-back { display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid var(--border-color);border-radius:8px;background:var(--card-bg);color:var(--text-secondary);font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s; }
-.btn-back:hover { border-color:var(--primary-orange);color:var(--primary-orange); }
-.panel-action-row { display:flex;justify-content:space-between;align-items:center;margin-bottom:20px; }
-/* Map Modal */
-#map-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center; }
-#map-modal.active { display:flex; }
-#facility-map { width:100%; height:300px; border-radius:8px; margin-top:10px; background:#e0e0e0; }
+    /* ── Wizard Steps ── */
+    .wizard-steps {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        margin-bottom: 32px;
+    }
+
+    .step-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .step-num {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 700;
+        border: 2px solid var(--border-color);
+        color: var(--text-muted);
+        background: var(--card-bg);
+        transition: all .3s;
+    }
+
+    .step-item.active .step-num {
+        background: var(--primary-orange);
+        border-color: var(--primary-orange);
+        color: #fff;
+    }
+
+    .step-item.done .step-num {
+        background: var(--btn-green);
+        border-color: var(--btn-green);
+        color: #fff;
+    }
+
+    .step-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-muted);
+    }
+
+    .step-item.active .step-label,
+    .step-item.done .step-label {
+        color: var(--text-primary);
+    }
+
+    .step-line {
+        flex: 1;
+        height: 2px;
+        background: var(--border-color);
+        margin: 0 8px;
+        min-width: 32px;
+    }
+
+    .step-line.done {
+        background: var(--btn-green);
+    }
+
+    /* ── Panels ── */
+    .wizard-panel {
+        display: none;
+    }
+
+    .wizard-panel.active {
+        display: block;
+        animation: postFadeIn .3s ease;
+    }
+
+    /* ── Facility / Court Cards ── */
+    .facility-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 16px;
+    }
+
+    .facility-card {
+        background: var(--card-bg);
+        border: 2px solid var(--card-border);
+        border-radius: 14px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all .2s;
+    }
+
+    .facility-card:hover {
+        border-color: var(--primary-orange);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .facility-card.selected {
+        border-color: var(--primary-orange);
+        box-shadow: 0 0 0 3px rgba(249, 115, 22, .2);
+    }
+
+    .fac-img-banner {
+        height: 140px;
+        background: linear-gradient(135deg, #c2520a, var(--primary-orange));
+        position: relative;
+        overflow: hidden;
+    }
+
+    .fac-img-banner img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .fac-img-banner .fac-img-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+    }
+
+    .fac-img-banner .fac-img-placeholder i {
+        font-size: 2.5rem;
+        color: rgba(255, 255, 255, .45);
+    }
+
+    .fac-img-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 10px 14px;
+        background: linear-gradient(0deg, rgba(0, 0, 0, .65), transparent);
+    }
+
+    .fac-img-overlay h4 {
+        font-size: .95rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+    }
+
+    .fac-card-body {
+        padding: 12px 14px 14px;
+    }
+
+    .facility-card .fac-loc {
+        font-size: .78rem;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-bottom: 6px;
+        flex-wrap: wrap;
+    }
+
+    .facility-card .fac-hours {
+        font-size: .75rem;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .btn-map {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 10px;
+        border: 1px solid var(--primary-orange);
+        border-radius: 20px;
+        background: transparent;
+        color: var(--primary-orange);
+        font-size: .72rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all .2s;
+        font-family: inherit;
+        margin-left: 4px;
+    }
+
+    .btn-map:hover {
+        background: var(--primary-orange);
+        color: #fff;
+    }
+
+    .court-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 14px;
+    }
+
+    .court-card {
+        background: var(--card-bg);
+        border: 2px solid var(--card-border);
+        border-radius: 12px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all .2s;
+    }
+
+    .court-card:hover {
+        border-color: var(--primary-orange);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .court-card.selected {
+        border-color: var(--primary-orange);
+        background: var(--primary-orange-light);
+    }
+
+    .court-img-banner {
+        height: 100px;
+        background: linear-gradient(135deg, #1e3a5f, #2d6a9f);
+        overflow: hidden;
+        position: relative;
+    }
+
+    .court-img-banner img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .court-img-banner .court-img-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+    }
+
+    .court-img-banner .court-img-placeholder i {
+        font-size: 2rem;
+        color: rgba(255, 255, 255, .45);
+    }
+
+    .court-card-body {
+        padding: 12px 14px 14px;
+    }
+
+    .court-card h4 {
+        font-size: .9rem;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+
+    .type-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: .7rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 20px;
+        margin-bottom: 8px;
+    }
+
+    .type-pill.indoor {
+        background: rgba(59, 130, 246, .12);
+        color: #3B82F6;
+    }
+
+    .type-pill.outdoor {
+        background: rgba(41, 163, 86, .12);
+        color: #29A356;
+    }
+
+    .court-rate {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--primary-orange);
+    }
+
+    .court-rate small {
+        font-size: .7rem;
+        font-weight: 400;
+        color: var(--text-muted);
+    }
+
+    /* ── Step 3 Layout ── */
+    .step3-layout {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 20px;
+        align-items: start;
+    }
+
+    @media(max-width:900px) {
+        .step3-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .date-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .date-row label {
+        font-size: .85rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+    }
+
+    .date-row input[type=date] {
+        border: 1px solid var(--border-color);
+        background: var(--card-bg);
+        color: var(--text-primary);
+        padding: 8px 12px;
+        border-radius: 8px;
+        outline: none;
+        font-family: inherit;
+        font-size: .875rem;
+    }
+
+    .date-row input[type=date]:focus {
+        border-color: var(--primary-orange);
+    }
+
+    /* ── Slot Grid ── */
+    .slot-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 8px;
+    }
+
+    .slot-btn {
+        padding: 10px 6px;
+        border: 1.5px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--card-bg);
+        font-size: .75rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-align: center;
+        transition: all .2s;
+        font-family: inherit;
+        color: var(--text-secondary);
+    }
+
+    .slot-btn:hover:not(.booked) {
+        border-color: var(--primary-orange);
+        color: var(--primary-orange);
+    }
+
+    .slot-btn.selected {
+        background: var(--primary-orange);
+        border-color: var(--primary-orange);
+        color: #fff;
+    }
+
+    .slot-btn.booked {
+        background: var(--input-bg);
+        color: var(--text-muted);
+        cursor: not-allowed;
+        opacity: .6;
+    }
+
+    .slot-legend {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+    }
+
+    .leg-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: .75rem;
+        color: var(--text-muted);
+    }
+
+    .leg-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+    }
+
+    .leg-dot.avail {
+        background: var(--card-bg);
+        border: 1.5px solid var(--border-color);
+    }
+
+    .leg-dot.sel {
+        background: var(--primary-orange);
+    }
+
+    .leg-dot.bkd {
+        background: var(--input-bg);
+        border: 1.5px solid var(--border-color);
+        opacity: .6;
+    }
+
+    /* ── Summary Card ── */
+    .summary-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: var(--shadow-card);
+        position: sticky;
+        top: 24px;
+    }
+
+    .summary-card h3 {
+        font-size: .95rem;
+        font-weight: 700;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 10px;
+        font-size: .82rem;
+    }
+
+    .summary-row .s-label {
+        color: var(--text-muted);
+    }
+
+    .summary-row .s-val {
+        font-weight: 600;
+        color: var(--text-primary);
+        text-align: right;
+        max-width: 160px;
+    }
+
+    .summary-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 14px;
+        margin-top: 4px;
+        border-top: 2px solid var(--border-color);
+    }
+
+    .summary-total .t-label {
+        font-size: .85rem;
+        font-weight: 700;
+    }
+
+    .summary-total .t-val {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: var(--primary-orange);
+    }
+
+    .btn-confirm {
+        width: 100%;
+        padding: 13px;
+        background: var(--primary-orange);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-size: .9rem;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: inherit;
+        margin-top: 16px;
+        transition: background .2s, transform .15s;
+    }
+
+    .btn-confirm:hover {
+        background: var(--primary-orange-hover);
+        transform: translateY(-1px);
+    }
+
+    .btn-confirm:disabled {
+        opacity: .5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: var(--text-muted);
+    }
+
+    .empty-state i {
+        font-size: 2.5rem;
+        opacity: .4;
+        display: block;
+        margin-bottom: 12px;
+    }
+
+    /* back btn */
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--card-bg);
+        color: var(--text-secondary);
+        font-size: .82rem;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all .2s;
+    }
+
+    .btn-back:hover {
+        border-color: var(--primary-orange);
+        color: var(--primary-orange);
+    }
+
+    .panel-action-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    /* Map Modal */
+    #map-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #map-modal.active {
+        display: flex;
+    }
+
+    #facility-map {
+        width: 100%;
+        height: 300px;
+        border-radius: 8px;
+        margin-top: 10px;
+        background: #e0e0e0;
+    }
 </style>
 <!-- Leaflet CSS & JS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -126,16 +590,14 @@
 
 <!-- Step 1: Choose Facility -->
 <div class="wizard-panel active glass-card" id="panel-1">
-    <h3 style="font-size:1rem;font-weight:700;margin-bottom:16px;"><i class="ph ph-building" style="color:var(--primary-orange)"></i> Choose a Facility</h3>
+    <h3 style="font-size:1rem;font-weight:700;margin-bottom:16px;"><i class="ph ph-building"
+            style="color:var(--primary-orange)"></i> Choose a Facility</h3>
     {% if facilities %}
     <div class="facility-grid">
         {% for f in facilities %}
-        <div class="facility-card" data-id="{{ f.id }}"
-             data-name="{{ f.name }}"
-             data-open="{{ f.open_time or '08:00' }}"
-             data-close="{{ f.close_time or '21:00' }}"
-             data-slot="{{ f.slot_duration_minutes or 60 }}"
-             onclick="selectFacility(this)">
+        <div class="facility-card" data-id="{{ f.id }}" data-name="{{ f.name }}"
+            data-open="{{ f.open_time or '08:00' }}" data-close="{{ f.close_time or '21:00' }}"
+            data-slot="{{ f.slot_duration_minutes or 60 }}" onclick="selectFacility(this)">
             <!-- Image Banner -->
             <div class="fac-img-banner">
                 {% if f.image_url %}
@@ -146,7 +608,8 @@
                 <div class="fac-img-overlay">
                     <h4>{{ f.name }}
                         {% if f.kyc_status == 'verified' %}
-                        <i class="ph ph-shield-check" style="color:#10b981;font-size:.75rem;margin-left:4px;" title="KYC Verified"></i>
+                        <i class="ph ph-shield-check" style="color:#10b981;font-size:.75rem;margin-left:4px;"
+                            title="KYC Verified"></i>
                         {% endif %}
                     </h4>
                 </div>
@@ -156,27 +619,36 @@
                 <div class="fac-loc">
                     <i class="ph ph-map-pin"></i>{{ f.location or 'Location not set' }}
                     {% if f.latitude and f.longitude %}
-                    <button type="button" class="btn-map" onclick="event.stopPropagation(); showMapModal({{ f.latitude }}, {{ f.longitude }}, '{{ f.name | escape }}')"><i class="ph ph-map-trifold"></i> Map</button>
+                    <button type="button" class="btn-map"
+                        onclick="event.stopPropagation(); showMapModal({{ f.latitude }}, {{ f.longitude }}, '{{ f.name | escape }}')"><i
+                            class="ph ph-map-trifold"></i> Map</button>
                     {% endif %}
                 </div>
-                {% if f.description %}<p style="font-size:.78rem;color:var(--text-secondary);margin-bottom:6px;">{{ f.description }}</p>{% endif %}
-                <div class="fac-hours"><i class="ph ph-clock"></i>{{ (f.open_time or '08:00')[:5] }} – {{ (f.close_time or '21:00')[:5] }}</div>
+                {% if f.description %}<p style="font-size:.78rem;color:var(--text-secondary);margin-bottom:6px;">{{
+                    f.description }}</p>{% endif %}
+                <div class="fac-hours"><i class="ph ph-clock"></i>{{ (f.open_time or '08:00')[:5] }} – {{ (f.close_time
+                    or '21:00')[:5] }}</div>
             </div>
         </div>
         {% endfor %}
     </div>
     {% else %}
-    <div class="empty-state"><i class="ph ph-building"></i><p>No active facilities available yet.</p></div>
+    <div class="empty-state"><i class="ph ph-building"></i>
+        <p>No active facilities available yet.</p>
+    </div>
     {% endif %}
 </div>
 
 <!-- Step 2: Choose Court -->
 <div class="wizard-panel glass-card" id="panel-2">
     <div class="panel-action-row">
-        <h3 style="font-size:1rem;font-weight:700;"><i class="ph ph-tennis-ball" style="color:var(--primary-orange)"></i> Choose a Court — <span id="s2-fac-name" style="color:var(--primary-orange)"></span></h3>
+        <h3 style="font-size:1rem;font-weight:700;"><i class="ph ph-tennis-ball"
+                style="color:var(--primary-orange)"></i> Choose a Court — <span id="s2-fac-name"
+                style="color:var(--primary-orange)"></span></h3>
         <button class="btn-back" onclick="goStep(1)"><i class="ph ph-arrow-left"></i> Back</button>
     </div>
-    <div id="courts-loading" style="text-align:center;padding:30px;color:var(--text-muted);"><i class="ph ph-circle-notch" style="animation:spin .8s linear infinite;font-size:1.5rem"></i></div>
+    <div id="courts-loading" style="text-align:center;padding:30px;color:var(--text-muted);"><i
+            class="ph ph-circle-notch" style="animation:spin .8s linear infinite;font-size:1.5rem"></i></div>
     <div class="court-grid" id="court-grid" style="display:none;"></div>
 </div>
 
@@ -185,19 +657,27 @@
     <div class="step3-layout">
         <div class="glass-card" style="margin-bottom:0;">
             <div class="panel-action-row">
-                <h3 style="font-size:1rem;font-weight:700;"><i class="ph ph-calendar" style="color:var(--primary-orange)"></i> Pick Date & Time</h3>
+                <h3 style="font-size:1rem;font-weight:700;"><i class="ph ph-calendar"
+                        style="color:var(--primary-orange)"></i> Pick Date & Time</h3>
                 <button class="btn-back" onclick="goStep(2)"><i class="ph ph-arrow-left"></i> Back</button>
             </div>
             <div class="date-row">
                 <label>Date:</label>
                 <input type="date" id="slot-date" min="" onchange="loadSlots()">
                 <label style="margin-left: 20px;">Party Size:</label>
-                <input type="number" id="slot-party-size" min="1" max="10" value="1" onchange="updateSummary()" style="border:1px solid var(--border-color);background:var(--card-bg);color:var(--text-primary);padding:8px 12px;border-radius:8px;outline:none;font-family:inherit;font-size:.875rem;width:80px;">
+                <input type="number" id="slot-party-size" min="1" max="10" value="1" onchange="updateSummary()"
+                    style="border:1px solid var(--border-color);background:var(--card-bg);color:var(--text-primary);padding:8px 12px;border-radius:8px;outline:none;font-family:inherit;font-size:.875rem;width:80px;">
             </div>
             <div class="slot-legend">
-                <div class="leg-item"><div class="leg-dot avail"></div> Available</div>
-                <div class="leg-item"><div class="leg-dot sel"></div> Selected</div>
-                <div class="leg-item"><div class="leg-dot bkd"></div> Booked</div>
+                <div class="leg-item">
+                    <div class="leg-dot avail"></div> Available
+                </div>
+                <div class="leg-item">
+                    <div class="leg-dot sel"></div> Selected
+                </div>
+                <div class="leg-item">
+                    <div class="leg-dot bkd"></div> Booked
+                </div>
             </div>
             <div id="slot-grid-wrap">
                 <p style="color:var(--text-muted);font-size:.85rem;">Select a date to see available slots.</p>
@@ -206,11 +686,13 @@
         <!-- Summary -->
         <div class="summary-card">
             <h3><i class="ph ph-receipt" style="color:var(--primary-orange)"></i> Booking Summary</h3>
-            <div class="summary-row"><span class="s-label">Facility</span><span class="s-val" id="sum-facility">—</span></div>
+            <div class="summary-row"><span class="s-label">Facility</span><span class="s-val" id="sum-facility">—</span>
+            </div>
             <div class="summary-row"><span class="s-label">Court</span><span class="s-val" id="sum-court">—</span></div>
             <div class="summary-row"><span class="s-label">Date</span><span class="s-val" id="sum-date">—</span></div>
             <div class="summary-row"><span class="s-label">Time</span><span class="s-val" id="sum-time">—</span></div>
-            <div class="summary-row"><span class="s-label">Duration</span><span class="s-val" id="sum-hours">—</span></div>
+            <div class="summary-row"><span class="s-label">Duration</span><span class="s-val" id="sum-hours">—</span>
+            </div>
             <div class="summary-row"><span class="s-label">Rate</span><span class="s-val" id="sum-rate">—</span></div>
             <div class="summary-total">
                 <span class="t-label">Total</span>
@@ -218,218 +700,221 @@
             </div>
             <form method="POST" action="{{ url_for('player.book_reservation') }}" id="booking-form">
                 <input type="hidden" name="facility_id" id="inp-facility-id">
-                <input type="hidden" name="court_id"    id="inp-court-id">
-                <input type="hidden" name="date"        id="inp-date">
-                <input type="hidden" name="start_time"  id="inp-start">
-                <input type="hidden" name="end_time"    id="inp-end">
+                <input type="hidden" name="court_id" id="inp-court-id">
+                <input type="hidden" name="date" id="inp-date">
+                <input type="hidden" name="start_time" id="inp-start">
+                <input type="hidden" name="end_time" id="inp-end">
                 <input type="hidden" name="total_hours" id="inp-hours">
                 <input type="hidden" name="hourly_rate" id="inp-rate">
-                <input type="hidden" name="party_size"  id="inp-party-size" value="1">
+                <input type="hidden" name="party_size" id="inp-party-size" value="1">
                 <input type="hidden" name="total_amount" id="inp-total">
                 <button type="submit" class="btn-confirm" id="btn-confirm" disabled>
                     <i class="ph ph-lock-key-open"></i> Confirm &amp; Pay
                 </button>
             </form>
-            <p id="sum-hint" style="font-size:.72rem;color:var(--text-muted);text-align:center;margin-top:8px;">Select at least one time slot to continue</p>
+            <p id="sum-hint" style="font-size:.72rem;color:var(--text-muted);text-align:center;margin-top:8px;">Select
+                at least one time slot to continue</p>
         </div>
     </div>
 </div>
 
 <script>
-// State
-let state = { facility:null, court:null, selectedSlots:[], bookedSlots:[], openTime:'08:00', closeTime:'21:00' };
+    // State
+    let state = { facility: null, court: null, selectedSlots: [], bookedSlots: [], openTime: '08:00', closeTime: '21:00' };
 
-function fmt12(h){ let ap=h<12?'AM':'PM',h12=h%12||12; return `${String(h12).padStart(2,'0')}:00 ${ap}`; }
+    function fmt12(h) { let ap = h < 12 ? 'AM' : 'PM', h12 = h % 12 || 12; return `${String(h12).padStart(2, '0')}:00 ${ap}`; }
 
-/* ── Step navigation ── */
-function goStep(n){
-    document.querySelectorAll('.wizard-panel').forEach((p,i)=>{ p.classList.toggle('active',i+1===n); });
-    [1,2,3].forEach(i=>{
-        let si=document.getElementById(`si-${i}`);
-        si.classList.toggle('active',i===n);
-        si.classList.toggle('done',i<n);
-    });
-    [1,2].forEach(i=>{ let sl=document.getElementById(`sl-${i}`); sl?.classList.toggle('done',i<n); });
-}
+    /* ── Step navigation ── */
+    function goStep(n) {
+        document.querySelectorAll('.wizard-panel').forEach((p, i) => { p.classList.toggle('active', i + 1 === n); });
+        [1, 2, 3].forEach(i => {
+            let si = document.getElementById(`si-${i}`);
+            si.classList.toggle('active', i === n);
+            si.classList.toggle('done', i < n);
+        });
+        [1, 2].forEach(i => { let sl = document.getElementById(`sl-${i}`); sl?.classList.toggle('done', i < n); });
+    }
 
-/* ── Step 1: Facility ── */
-function selectFacility(card){
-    document.querySelectorAll('.facility-card').forEach(c=>c.classList.remove('selected'));
-    card.classList.add('selected');
-    state.facility = { id:card.dataset.id, name:card.dataset.name, open:card.dataset.open, close:card.dataset.close };
-    state.openTime = card.dataset.open.substring(0,5);
-    state.closeTime = card.dataset.close.substring(0,5);
-    document.getElementById('s2-fac-name').textContent = card.dataset.name;
-    document.getElementById('inp-facility-id').value = card.dataset.id;
-    document.getElementById('sum-facility').textContent = card.dataset.name;
-    loadCourts(card.dataset.id);
-    goStep(2);
-}
+    /* ── Step 1: Facility ── */
+    function selectFacility(card) {
+        document.querySelectorAll('.facility-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        state.facility = { id: card.dataset.id, name: card.dataset.name, open: card.dataset.open, close: card.dataset.close };
+        state.openTime = card.dataset.open.substring(0, 5);
+        state.closeTime = card.dataset.close.substring(0, 5);
+        document.getElementById('s2-fac-name').textContent = card.dataset.name;
+        document.getElementById('inp-facility-id').value = card.dataset.id;
+        document.getElementById('sum-facility').textContent = card.dataset.name;
+        loadCourts(card.dataset.id);
+        goStep(2);
+    }
 
-/* ── Step 2: Courts ── */
-async function loadCourts(fid){
-    document.getElementById('courts-loading').style.display='block';
-    document.getElementById('court-grid').style.display='none';
-    const res = await fetch(`/player/reservation/api/courts?facility_id=${fid}`);
-    const courts = await res.json();
-    const grid = document.getElementById('court-grid');
-    grid.innerHTML = '';
-    if(!courts.length){ grid.innerHTML='<div class="empty-state"><i class="ph ph-tennis-ball"></i><p>No courts available in this facility.</p></div>'; }
-    courts.forEach(c=>{
-        const div=document.createElement('div');
-        div.className='court-card';
-        div.dataset.id=c.id; div.dataset.name=c.name; div.dataset.rate=c.hourly_rate;
-        const imgBanner = c.image_url
-            ? `<img src="${c.image_url}" alt="${c.name}">`
-            : `<div class="court-img-placeholder"><i class="ph ph-intersect"></i></div>`;
-        div.innerHTML=`
+    /* ── Step 2: Courts ── */
+    async function loadCourts(fid) {
+        document.getElementById('courts-loading').style.display = 'block';
+        document.getElementById('court-grid').style.display = 'none';
+        const res = await fetch(`/player/reservation/api/courts?facility_id=${fid}`);
+        const courts = await res.json();
+        const grid = document.getElementById('court-grid');
+        grid.innerHTML = '';
+        if (!courts.length) { grid.innerHTML = '<div class="empty-state"><i class="ph ph-tennis-ball"></i><p>No courts available in this facility.</p></div>'; }
+        courts.forEach(c => {
+            const div = document.createElement('div');
+            div.className = 'court-card';
+            div.dataset.id = c.id; div.dataset.name = c.name; div.dataset.rate = c.hourly_rate;
+            const imgBanner = c.image_url
+                ? `<img src="${c.image_url}" alt="${c.name}">`
+                : `<div class="court-img-placeholder"><i class="ph ph-intersect"></i></div>`;
+            div.innerHTML = `
             <div class="court-img-banner">${imgBanner}</div>
             <div class="court-card-body">
                 <h4>${c.name}</h4>
-                <span class="type-pill ${c.type}">${c.type==='indoor'?'<i class="ph ph-house"></i>':'<i class="ph ph-sun"></i>'} ${c.type}</span>
+                <span class="type-pill ${c.type}">${c.type === 'indoor' ? '<i class="ph ph-house"></i>' : '<i class="ph ph-sun"></i>'} ${c.type}</span>
                 <div class="court-rate">₱${parseFloat(c.hourly_rate).toFixed(2)}<small>/hour</small></div>
             </div>`;
-        div.onclick=()=>selectCourt(div);
-        grid.appendChild(div);
-    });
-    document.getElementById('courts-loading').style.display='none';
-    grid.style.display='grid';
-}
-
-function selectCourt(card){
-    document.querySelectorAll('.court-card').forEach(c=>c.classList.remove('selected'));
-    card.classList.add('selected');
-    state.court = { id:card.dataset.id, name:card.dataset.name, rate:parseFloat(card.dataset.rate) };
-    document.getElementById('inp-court-id').value = card.dataset.id;
-    document.getElementById('inp-rate').value = card.dataset.rate;
-    document.getElementById('sum-court').textContent = card.dataset.name;
-    document.getElementById('sum-rate').textContent = '₱'+parseFloat(card.dataset.rate).toFixed(2)+'/hr';
-    // Set min date to today
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('slot-date').min = today;
-    document.getElementById('slot-date').value = today;
-    state.selectedSlots = [];
-    loadSlots();
-    goStep(3);
-}
-
-/* ── Step 3: Time Slots ── */
-async function loadSlots(){
-    const date = document.getElementById('slot-date').value;
-    if(!date||!state.court) return;
-    state.selectedSlots=[];
-    updateSummary();
-    document.getElementById('slot-grid-wrap').innerHTML='<div style="text-align:center;padding:20px;color:var(--text-muted)"><i class="ph ph-circle-notch" style="animation:spin .8s linear infinite;font-size:1.5rem"></i></div>';
-
-    const res=await fetch(`/player/reservation/api/slots?court_id=${state.court.id}&date=${date}`);
-    const booked=await res.json();
-    state.bookedSlots=booked;
-    state.currentDate=date;
-    renderSlots(date,booked);
-}
-
-function renderSlots(date,booked){
-    const openH=parseInt(state.openTime),closeH=parseInt(state.closeTime);
-    // Build set of booked hours
-    const bookedHrs=new Set();
-    booked.forEach(b=>{
-        const sh=parseInt(b.start_time),eh=parseInt(b.end_time);
-        for(let h=sh;h<eh;h++) bookedHrs.add(h);
-    });
-    const grid=document.createElement('div');
-    grid.className='slot-grid';
-    const now=new Date(), todayStr=now.toISOString().split('T')[0];
-    const curH=now.getHours();
-    for(let h=openH;h<closeH;h++){
-        const isPast = date===todayStr && h<=curH;
-        const isBooked=bookedHrs.has(h)||isPast;
-        const btn=document.createElement('button');
-        btn.type='button';
-        btn.className='slot-btn'+(isBooked?' booked':'');
-        btn.dataset.hour=h;
-        btn.innerHTML=`${fmt12(h)}<br><small style="font-weight:400;opacity:.7">${isPast?'Past':isBooked?'Booked':'Available'}</small>`;
-        if(!isBooked) btn.onclick=()=>toggleSlot(btn,h);
-        grid.appendChild(btn);
+            div.onclick = () => selectCourt(div);
+            grid.appendChild(div);
+        });
+        document.getElementById('courts-loading').style.display = 'none';
+        grid.style.display = 'grid';
     }
-    document.getElementById('slot-grid-wrap').innerHTML='';
-    document.getElementById('slot-grid-wrap').appendChild(grid);
-}
 
-function toggleSlot(btn,h){
-    const idx=state.selectedSlots.indexOf(h);
-    if(idx>=0){ state.selectedSlots.splice(idx,1); btn.classList.remove('selected'); }
-    else { state.selectedSlots.push(h); btn.classList.add('selected'); }
-    updateSummary();
-}
-
-function updateSummary(){
-    const slots=state.selectedSlots.sort((a,b)=>a-b);
-    const date=document.getElementById('slot-date').value;
-    if(!slots.length){
-        document.getElementById('sum-date').textContent=date||'—';
-        document.getElementById('sum-time').textContent='—';
-        document.getElementById('sum-hours').textContent='—';
-        document.getElementById('sum-total').textContent='₱0.00';
-        document.getElementById('inp-total').value=0;
-        document.getElementById('btn-confirm').disabled=true;
-        document.getElementById('sum-hint').style.display='block';
-        return;
+    function selectCourt(card) {
+        document.querySelectorAll('.court-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        state.court = { id: card.dataset.id, name: card.dataset.name, rate: parseFloat(card.dataset.rate) };
+        document.getElementById('inp-court-id').value = card.dataset.id;
+        document.getElementById('inp-rate').value = card.dataset.rate;
+        document.getElementById('sum-court').textContent = card.dataset.name;
+        document.getElementById('sum-rate').textContent = '₱' + parseFloat(card.dataset.rate).toFixed(2) + '/hr';
+        // Set min date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('slot-date').min = today;
+        document.getElementById('slot-date').value = today;
+        state.selectedSlots = [];
+        loadSlots();
+        goStep(3);
     }
-    const startH=slots[0], endH=slots[slots.length-1]+1;
-    const totalHrs=slots.length;
-    const partySize = parseInt(document.getElementById('slot-party-size').value) || 1;
-    const total = totalHrs * state.court.rate * partySize;
-    const pad = n => String(n).padStart(2,'0');
-    document.getElementById('sum-date').textContent = date;
-    document.getElementById('sum-time').textContent = `${fmt12(startH)} – ${fmt12(endH)}`;
-    document.getElementById('sum-hours').textContent = `${totalHrs} hour${totalHrs!==1?'s':''}`;
-    document.getElementById('sum-total').textContent = '₱'+total.toFixed(2);
-    document.getElementById('inp-date').value = date;
-    document.getElementById('inp-start').value = `${pad(startH)}:00`;
-    document.getElementById('inp-end').value = `${pad(endH)}:00`;
-    document.getElementById('inp-hours').value = totalHrs;
-    document.getElementById('inp-party-size').value = partySize;
-    document.getElementById('inp-total').value = total.toFixed(2);
-    document.getElementById('btn-confirm').disabled = false;
-    document.getElementById('sum-hint').style.display = 'none';
-}
 
-document.getElementById('slot-date')?.addEventListener('change', loadSlots);
+    /* ── Step 3: Time Slots ── */
+    async function loadSlots() {
+        const date = document.getElementById('slot-date').value;
+        if (!date || !state.court) return;
+        state.selectedSlots = [];
+        updateSummary();
+        document.getElementById('slot-grid-wrap').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted)"><i class="ph ph-circle-notch" style="animation:spin .8s linear infinite;font-size:1.5rem"></i></div>';
 
-/* ── Leaflet Map Modal ── */
-let currentMap = null;
-let currentMarker = null;
-
-function showMapModal(lat, lng, name) {
-    document.getElementById('map-modal').classList.add('active');
-    
-    if (!currentMap) {
-        currentMap = L.map('facility-map').setView([lat, lng], 15);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(currentMap);
-        currentMarker = L.marker([lat, lng]).addTo(currentMap);
-    } else {
-        currentMap.setView([lat, lng], 15);
-        currentMarker.setLatLng([lat, lng]);
+        const res = await fetch(`/player/reservation/api/slots?court_id=${state.court.id}&date=${date}`);
+        const booked = await res.json();
+        state.bookedSlots = booked;
+        state.currentDate = date;
+        renderSlots(date, booked);
     }
-    currentMarker.bindPopup(`<b>${name}</b>`).openPopup();
-    
-    // Invalidate size to ensure it renders correctly inside the modal
-    setTimeout(() => {
-        currentMap.invalidateSize();
-    }, 100);
-}
 
-function closeMapModal() {
-    document.getElementById('map-modal').classList.remove('active');
-}
+    function renderSlots(date, booked) {
+        const openH = parseInt(state.openTime), closeH = parseInt(state.closeTime);
+        // Build set of booked hours
+        const bookedHrs = new Set();
+        booked.forEach(b => {
+            const sh = parseInt(b.start_time), eh = parseInt(b.end_time);
+            for (let h = sh; h < eh; h++) bookedHrs.add(h);
+        });
+        const grid = document.createElement('div');
+        grid.className = 'slot-grid';
+        const now = new Date(), todayStr = now.toISOString().split('T')[0];
+        const curH = now.getHours();
+        for (let h = openH; h < closeH; h++) {
+            const isPast = date === todayStr && h <= curH;
+            const isBooked = bookedHrs.has(h) || isPast;
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'slot-btn' + (isBooked ? ' booked' : '');
+            btn.dataset.hour = h;
+            btn.innerHTML = `${fmt12(h)}<br><small style="font-weight:400;opacity:.7">${isPast ? 'Past' : isBooked ? 'Booked' : 'Available'}</small>`;
+            if (!isBooked) btn.onclick = () => toggleSlot(btn, h);
+            grid.appendChild(btn);
+        }
+        document.getElementById('slot-grid-wrap').innerHTML = '';
+        document.getElementById('slot-grid-wrap').appendChild(grid);
+    }
+
+    function toggleSlot(btn, h) {
+        const idx = state.selectedSlots.indexOf(h);
+        if (idx >= 0) { state.selectedSlots.splice(idx, 1); btn.classList.remove('selected'); }
+        else { state.selectedSlots.push(h); btn.classList.add('selected'); }
+        updateSummary();
+    }
+
+    function updateSummary() {
+        const slots = state.selectedSlots.sort((a, b) => a - b);
+        const date = document.getElementById('slot-date').value;
+        if (!slots.length) {
+            document.getElementById('sum-date').textContent = date || '—';
+            document.getElementById('sum-time').textContent = '—';
+            document.getElementById('sum-hours').textContent = '—';
+            document.getElementById('sum-total').textContent = '₱0.00';
+            document.getElementById('inp-total').value = 0;
+            document.getElementById('btn-confirm').disabled = true;
+            document.getElementById('sum-hint').style.display = 'block';
+            return;
+        }
+        const startH = slots[0], endH = slots[slots.length - 1] + 1;
+        const totalHrs = slots.length;
+        const partySize = parseInt(document.getElementById('slot-party-size').value) || 1;
+        const total = totalHrs * state.court.rate * partySize;
+        const pad = n => String(n).padStart(2, '0');
+        document.getElementById('sum-date').textContent = date;
+        document.getElementById('sum-time').textContent = `${fmt12(startH)} – ${fmt12(endH)}`;
+        document.getElementById('sum-hours').textContent = `${totalHrs} hour${totalHrs !== 1 ? 's' : ''}`;
+        document.getElementById('sum-total').textContent = '₱' + total.toFixed(2);
+        document.getElementById('inp-date').value = date;
+        document.getElementById('inp-start').value = `${pad(startH)}:00`;
+        document.getElementById('inp-end').value = `${pad(endH)}:00`;
+        document.getElementById('inp-hours').value = totalHrs;
+        document.getElementById('inp-party-size').value = partySize;
+        document.getElementById('inp-total').value = total.toFixed(2);
+        document.getElementById('btn-confirm').disabled = false;
+        document.getElementById('sum-hint').style.display = 'none';
+    }
+
+    document.getElementById('slot-date')?.addEventListener('change', loadSlots);
+
+    /* ── Leaflet Map Modal ── */
+    let currentMap = null;
+    let currentMarker = null;
+
+    function showMapModal(lat, lng, name) {
+        document.getElementById('map-modal').classList.add('active');
+
+        if (!currentMap) {
+            currentMap = L.map('facility-map').setView([lat, lng], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(currentMap);
+            currentMarker = L.marker([lat, lng]).addTo(currentMap);
+        } else {
+            currentMap.setView([lat, lng], 15);
+            currentMarker.setLatLng([lat, lng]);
+        }
+        currentMarker.bindPopup(`<b>${name}</b>`).openPopup();
+
+        // Invalidate size to ensure it renders correctly inside the modal
+        setTimeout(() => {
+            currentMap.invalidateSize();
+        }, 100);
+    }
+
+    function closeMapModal() {
+        document.getElementById('map-modal').classList.remove('active');
+    }
 </script>
 
 <!-- Map Modal HTML -->
 <div id="map-modal">
     <div class="glass-card" style="width: 90%; max-width: 600px; position: relative;">
-        <button onclick="closeMapModal()" style="position: absolute; top: 15px; right: 15px; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center;"><i class="ph ph-x"></i></button>
+        <button onclick="closeMapModal()"
+            style="position: absolute; top: 15px; right: 15px; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center;"><i
+                class="ph ph-x"></i></button>
         <h3 style="margin-bottom: 10px; font-size: 1.1rem; color: var(--text-primary);">Facility Location</h3>
         <div id="facility-map"></div>
     </div>

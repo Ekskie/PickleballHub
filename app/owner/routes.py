@@ -732,8 +732,12 @@ def match_score(event_id, match_id):
             'played_at': datetime.now(PH_TZ).isoformat()
         }).eq('id', match_id).eq('event_id', event_id).execute()
 
+        # Calculate and update player ratings
+        from app.ratings import update_match_ratings
+        update_match_ratings(db, match_id)
+
         _advance_bracket(db, event_id)
-        flash("Score recorded! Bracket updated.", "success")
+        flash("Score recorded! Bracket and ratings updated.", "success")
 
     except Exception as e:
         flash(f"Error recording score: {e}", "error")

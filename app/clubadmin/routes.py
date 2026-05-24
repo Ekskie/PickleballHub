@@ -430,9 +430,13 @@ def match_score(event_id, match_id):
             'played_at': datetime.now(PH_TZ).isoformat()
         }).eq('id', match_id).eq('event_id', event_id).execute()
 
+        # Calculate and update player ratings
+        from app.ratings import update_match_ratings
+        update_match_ratings(db, match_id)
+
         # Auto-advance bracket
         _advance_bracket(db, event_id)
-        flash("Score recorded! Bracket updated.", "success")
+        flash("Score recorded! Bracket and ratings updated.", "success")
 
     except Exception as e:
         flash(f"Error recording score: {e}", "error")
@@ -475,11 +479,21 @@ def leaderboard():
             if stats:
                 # Fetch player profiles
                 player_ids = list(stats.keys())
-                prof_resp = db.table('profiles').select('id, first_name, last_name').in_('id', player_ids).execute()
+                prof_resp = db.table('profiles').select('id, first_name, last_name, elo, dupr, proficiency').in_('id', player_ids).execute()
                 profiles_map = {p['id']: p for p in (prof_resp.data or [])}
+
+                from app.ratings import get_initial_rating
 
                 for pid, s in stats.items():
                     prof = profiles_map.get(pid, {})
+                    
+                    elo = prof.get('elo')
+                    dupr = prof.get('dupr')
+                    if elo is None or dupr is None:
+                        elo_def, dupr_def = get_initial_rating(prof.get('proficiency'))
+                        if elo is None: elo = elo_def
+                        if dupr is None: dupr = dupr_def
+
                     win_rate = round((s['wins'] / s['played']) * 100) if s['played'] > 0 else 0
                     rankings.append({
                         'id': pid,
@@ -489,10 +503,12 @@ def leaderboard():
                         'wins': s['wins'],
                         'losses': s['losses'],
                         'win_rate': win_rate,
+                        'elo': elo,
+                        'dupr': dupr,
                     })
 
-                # Sort by wins desc, then win_rate desc
-                rankings.sort(key=lambda x: (-x['wins'], -x['win_rate']))
+                # Sort by Elo desc, then wins desc
+                rankings.sort(key=lambda x: (-x['elo'], -x['wins']))
 
     except Exception as e:
         flash(f"Error loading leaderboard: {e}", "error")
