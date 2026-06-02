@@ -49,12 +49,57 @@
       "norm_label": "routes"
     },
     {
+      "label": "chats.py",
+      "file_type": "code",
+      "source_file": "app/chats.py",
+      "source_location": "L1",
+      "id": "app_chats_py",
+      "community": 1,
+      "norm_label": "chats.py"
+    },
+    {
+      "label": "send_auto_message()",
+      "file_type": "code",
+      "source_file": "app/chats.py",
+      "source_location": "L3",
+      "id": "app_chats_send_auto_message",
+      "community": 1,
+      "norm_label": "send_auto_message()"
+    },
+    {
+      "label": "trigger_booking_autochat()",
+      "file_type": "code",
+      "source_file": "app/chats.py",
+      "source_location": "L54",
+      "id": "app_chats_trigger_booking_autochat",
+      "community": 1,
+      "norm_label": "trigger_booking_autochat()"
+    },
+    {
+      "label": "Sends an automated message from sender_id to recipient_id.     If a 1-to-1 conve",
+      "file_type": "rationale",
+      "source_file": "app/chats.py",
+      "source_location": "L4",
+      "id": "app_chats_rationale_4",
+      "community": 1,
+      "norm_label": "sends an automated message from sender_id to recipient_id.     if a 1-to-1 conve"
+    },
+    {
+      "label": "Triggers automated chats from the facility owner and assigned staff to the playe",
+      "file_type": "rationale",
+      "source_file": "app/chats.py",
+      "source_location": "L55",
+      "id": "app_chats_rationale_55",
+      "community": 1,
+      "norm_label": "triggers automated chats from the facility owner and assigned staff to the playe"
+    },
+    {
       "label": "decorators.py",
       "file_type": "code",
       "source_file": "app/decorators.py",
       "source_location": "L1",
       "id": "app_decorators_py",
-      "community": 12,
+      "community": 9,
       "norm_label": "decorators.py"
     },
     {
@@ -63,7 +108,7 @@
       "source_file": "app/decorators.py",
       "source_location": "L9",
       "id": "app_decorators_get_dashboard_for_role",
-      "community": 12,
+      "community": 9,
       "norm_label": "_get_dashboard_for_role()"
     },
     {
@@ -72,7 +117,7 @@
       "source_file": "app/decorators.py",
       "source_location": "L28",
       "id": "app_decorators_require_role",
-      "community": 12,
+      "community": 9,
       "norm_label": "require_role()"
     },
     {
@@ -81,7 +126,7 @@
       "source_file": "app/decorators.py",
       "source_location": "L1",
       "id": "app_decorators_rationale_1",
-      "community": 12,
+      "community": 9,
       "norm_label": "role-based access control decorators for protecting routes."
     },
     {
@@ -90,7 +135,7 @@
       "source_file": "app/decorators.py",
       "source_location": "L10",
       "id": "app_decorators_rationale_10",
-      "community": 12,
+      "community": 9,
       "norm_label": "return the dashboard url for a given role."
     },
     {
@@ -99,7 +144,7 @@
       "source_file": "app/decorators.py",
       "source_location": "L29",
       "id": "app_decorators_rationale_29",
-      "community": 12,
+      "community": 9,
       "norm_label": "decorator to protect routes by role.     usage: @require_role('superadmin', 'own"
     },
     {
@@ -214,7 +259,7 @@
       "label": "create_app()",
       "file_type": "code",
       "source_file": "app/__init__.py",
-      "source_location": "L23",
+      "source_location": "L25",
       "id": "app_init_create_app",
       "community": 4,
       "norm_label": "create_app()"
@@ -1411,7 +1456,7 @@
       "label": "reservation()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L218",
+      "source_location": "L219",
       "id": "player_routes_reservation",
       "community": 1,
       "norm_label": "reservation()"
@@ -1420,7 +1465,7 @@
       "label": "api_reservation_courts()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L233",
+      "source_location": "L234",
       "id": "player_routes_api_reservation_courts",
       "community": 1,
       "norm_label": "api_reservation_courts()"
@@ -1429,25 +1474,16 @@
       "label": "api_reservation_slots()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L249",
+      "source_location": "L250",
       "id": "player_routes_api_reservation_slots",
       "community": 1,
       "norm_label": "api_reservation_slots()"
     },
     {
-      "label": "api_reservation_calendar_events()",
-      "file_type": "code",
-      "source_file": "app/player/routes.py",
-      "source_location": "L269",
-      "id": "player_routes_api_reservation_calendar_events",
-      "community": 1,
-      "norm_label": "api_reservation_calendar_events()"
-    },
-    {
       "label": "book_reservation()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L315",
+      "source_location": "L270",
       "id": "player_routes_book_reservation",
       "community": 1,
       "norm_label": "book_reservation()"
@@ -1456,7 +1492,7 @@
       "label": "my_reservations()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L376",
+      "source_location": "L314",
       "id": "player_routes_my_reservations",
       "community": 1,
       "norm_label": "my_reservations()"
@@ -1465,7 +1501,7 @@
       "label": "cancel_reservation()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L422",
+      "source_location": "L360",
       "id": "player_routes_cancel_reservation",
       "community": 1,
       "norm_label": "cancel_reservation()"
@@ -1474,7 +1510,7 @@
       "label": "payment()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L442",
+      "source_location": "L380",
       "id": "player_routes_payment",
       "community": 1,
       "norm_label": "payment()"
@@ -1483,7 +1519,7 @@
       "label": "confirm_payment()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L465",
+      "source_location": "L403",
       "id": "player_routes_confirm_payment",
       "community": 1,
       "norm_label": "confirm_payment()"
@@ -1492,7 +1528,7 @@
       "label": "get_processed_queues()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L499",
+      "source_location": "L444",
       "id": "player_routes_get_processed_queues",
       "community": 1,
       "norm_label": "get_processed_queues()"
@@ -1501,7 +1537,7 @@
       "label": "queue()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L604",
+      "source_location": "L549",
       "id": "player_routes_queue",
       "community": 1,
       "norm_label": "queue()"
@@ -1510,7 +1546,7 @@
       "label": "queue_partial()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L613",
+      "source_location": "L558",
       "id": "player_routes_queue_partial",
       "community": 1,
       "norm_label": "queue_partial()"
@@ -1519,7 +1555,7 @@
       "label": "events()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L622",
+      "source_location": "L567",
       "id": "player_routes_events",
       "community": 1,
       "norm_label": "events()"
@@ -1528,7 +1564,7 @@
       "label": "register_event()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L660",
+      "source_location": "L605",
       "id": "player_routes_register_event",
       "community": 1,
       "norm_label": "register_event()"
@@ -1537,7 +1573,7 @@
       "label": "tournament_payment()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L710",
+      "source_location": "L655",
       "id": "player_routes_tournament_payment",
       "community": 1,
       "norm_label": "tournament_payment()"
@@ -1546,7 +1582,7 @@
       "label": "unregister_event()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L769",
+      "source_location": "L714",
       "id": "player_routes_unregister_event",
       "community": 1,
       "norm_label": "unregister_event()"
@@ -1555,7 +1591,7 @@
       "label": "event_detail()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L815",
+      "source_location": "L760",
       "id": "player_routes_event_detail",
       "community": 1,
       "norm_label": "event_detail()"
@@ -1564,7 +1600,7 @@
       "label": "community()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L851",
+      "source_location": "L796",
       "id": "player_routes_community",
       "community": 1,
       "norm_label": "community()"
@@ -1573,7 +1609,7 @@
       "label": "messages()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L857",
+      "source_location": "L802",
       "id": "player_routes_messages",
       "community": 1,
       "norm_label": "messages()"
@@ -1582,7 +1618,7 @@
       "label": "notifications()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L863",
+      "source_location": "L808",
       "id": "player_routes_notifications",
       "community": 1,
       "norm_label": "notifications()"
@@ -1591,7 +1627,7 @@
       "label": "mark_notifications_read()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L878",
+      "source_location": "L823",
       "id": "player_routes_mark_notifications_read",
       "community": 1,
       "norm_label": "mark_notifications_read()"
@@ -1600,7 +1636,7 @@
       "label": "tutorials()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L890",
+      "source_location": "L835",
       "id": "player_routes_tutorials",
       "community": 5,
       "norm_label": "tutorials()"
@@ -1609,7 +1645,7 @@
       "label": "clubs()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L896",
+      "source_location": "L841",
       "id": "player_routes_clubs",
       "community": 1,
       "norm_label": "clubs()"
@@ -1618,7 +1654,7 @@
       "label": "my_clubs()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L924",
+      "source_location": "L869",
       "id": "player_routes_my_clubs",
       "community": 1,
       "norm_label": "my_clubs()"
@@ -1627,7 +1663,7 @@
       "label": "join_club()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L940",
+      "source_location": "L885",
       "id": "player_routes_join_club",
       "community": 1,
       "norm_label": "join_club()"
@@ -1636,7 +1672,7 @@
       "label": "club_payment()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L972",
+      "source_location": "L917",
       "id": "player_routes_club_payment",
       "community": 1,
       "norm_label": "club_payment()"
@@ -1645,7 +1681,7 @@
       "label": "leave_club()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L1007",
+      "source_location": "L952",
       "id": "player_routes_leave_club",
       "community": 1,
       "norm_label": "leave_club()"
@@ -1654,7 +1690,7 @@
       "label": "my_tournaments()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L1021",
+      "source_location": "L966",
       "id": "player_routes_my_tournaments",
       "community": 1,
       "norm_label": "my_tournaments()"
@@ -1663,7 +1699,7 @@
       "label": "tournament_bracket()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L1042",
+      "source_location": "L987",
       "id": "player_routes_tournament_bracket",
       "community": 1,
       "norm_label": "tournament_bracket()"
@@ -1672,26 +1708,17 @@
       "label": "Return booked start_time values for a court on a given date.",
       "file_type": "rationale",
       "source_file": "app/player/routes.py",
-      "source_location": "L250",
-      "id": "player_routes_rationale_250",
+      "source_location": "L251",
+      "id": "player_routes_rationale_251",
       "community": 1,
       "norm_label": "return booked start_time values for a court on a given date."
-    },
-    {
-      "label": "Return booked slots as events for FullCalendar within a date range.",
-      "file_type": "rationale",
-      "source_file": "app/player/routes.py",
-      "source_location": "L270",
-      "id": "player_routes_rationale_270",
-      "community": 1,
-      "norm_label": "return booked slots as events for fullcalendar within a date range."
     },
     {
       "label": "Fetch queues for today, process wait times, and auto-complete games 15 mins past",
       "file_type": "rationale",
       "source_file": "app/player/routes.py",
-      "source_location": "L500",
-      "id": "player_routes_rationale_500",
+      "source_location": "L445",
+      "id": "player_routes_rationale_445",
       "community": 1,
       "norm_label": "fetch queues for today, process wait times, and auto-complete games 15 mins past"
     },
@@ -3316,6 +3343,42 @@
       "norm_label": "next steps for development"
     },
     {
+      "label": "api_reservation_calendar_events()",
+      "file_type": "code",
+      "source_file": "app/player/routes.py",
+      "source_location": "L269",
+      "community": 1,
+      "norm_label": "api_reservation_calendar_events()",
+      "id": "player_routes_api_reservation_calendar_events"
+    },
+    {
+      "label": "Return booked start_time values for a court on a given date.",
+      "file_type": "rationale",
+      "source_file": "app/player/routes.py",
+      "source_location": "L250",
+      "community": 1,
+      "norm_label": "return booked start_time values for a court on a given date.",
+      "id": "player_routes_rationale_250"
+    },
+    {
+      "label": "Return booked slots as events for FullCalendar within a date range.",
+      "file_type": "rationale",
+      "source_file": "app/player/routes.py",
+      "source_location": "L270",
+      "community": 1,
+      "norm_label": "return booked slots as events for fullcalendar within a date range.",
+      "id": "player_routes_rationale_270"
+    },
+    {
+      "label": "Fetch queues for today, process wait times, and auto-complete games 15 mins past",
+      "file_type": "rationale",
+      "source_file": "app/player/routes.py",
+      "source_location": "L500",
+      "community": 1,
+      "norm_label": "fetch queues for today, process wait times, and auto-complete games 15 mins past",
+      "id": "player_routes_rationale_500"
+    },
+    {
       "label": "Fetch queues for today, process wait times, and auto-complete games 15 mins past",
       "file_type": "rationale",
       "source_file": "app/player/routes.py",
@@ -3741,7 +3804,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 6,
+      "community": 12,
       "norm_label": "courts_listing route",
       "id": "main_courts_listing"
     },
@@ -3754,7 +3817,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 6,
+      "community": 12,
       "norm_label": "api_courts_search (autocomplete api)",
       "id": "main_api_courts_search"
     },
@@ -3819,7 +3882,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 6,
+      "community": 12,
       "norm_label": "courts table (supabase)",
       "id": "db_courts_table"
     },
@@ -3832,7 +3895,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 6,
+      "community": 12,
       "norm_label": "facilities table (supabase)",
       "id": "db_facilities_table"
     },
@@ -3975,7 +4038,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 6,
+      "community": 12,
       "norm_label": "book_reservation route",
       "id": "player_book_reservation"
     },
@@ -4131,7 +4194,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 6,
+      "community": 12,
       "norm_label": "court_reservations table",
       "id": "db_court_reservations_table"
     },
@@ -4248,7 +4311,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 6,
+      "community": 12,
       "norm_label": "superadmin dashboard (platform kpis)",
       "id": "superadmin_dashboard"
     },
@@ -4313,7 +4376,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 6,
+      "community": 12,
       "norm_label": "platform reports route",
       "id": "superadmin_reports"
     },
@@ -4495,7 +4558,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 6,
+      "community": 12,
       "norm_label": "owner dashboard (revenue & bookings)",
       "id": "owner_dashboard"
     },
@@ -4651,7 +4714,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 6,
+      "community": 12,
       "norm_label": "facility_staff table",
       "id": "db_facility_staff_table"
     },
@@ -4703,7 +4766,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 6,
+      "community": 12,
       "norm_label": "facilitystaff dashboard (live court status)",
       "id": "facilitystaff_dashboard"
     },
@@ -5392,7 +5455,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 6,
+      "community": 12,
       "norm_label": "court-hero.jpg (court hero image)",
       "id": "image_court_hero"
     },
@@ -5477,6 +5540,79 @@
       "confidence_score": 1.0,
       "source": "vercel_json",
       "target": "pickleballhub_vercel_routes"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/chats.py",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_chats_py",
+      "target": "app_chats_send_auto_message"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/chats.py",
+      "source_location": "L54",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_chats_py",
+      "target": "app_chats_trigger_booking_autochat"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "app/chats.py",
+      "source_location": "L106",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_chats_trigger_booking_autochat",
+      "target": "app_chats_send_auto_message"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "app/chats.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_chats_rationale_4",
+      "target": "app_chats_send_auto_message"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "app/chats.py",
+      "source_location": "L55",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_chats_rationale_55",
+      "target": "app_chats_trigger_booking_autochat"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/player/routes.py",
+      "source_location": "L434",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_player_routes_py",
+      "target": "app_chats_trigger_booking_autochat"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/player/routes.py",
+      "source_location": "L435",
+      "weight": 1.0,
+      "source": "player_routes_confirm_payment",
+      "target": "app_chats_trigger_booking_autochat"
     },
     {
       "relation": "contains",
@@ -8962,16 +9098,6 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "app/player/routes.py",
-      "source_location": "L269",
-      "weight": 1.0,
-      "source": "app_player_routes_py",
-      "target": "player_routes_api_reservation_calendar_events",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "app/player/routes.py",
       "source_location": "L200",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -9222,6 +9348,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "app/player/routes.py",
+      "source_location": "L269",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_player_routes_py",
+      "target": "player_routes_api_reservation_calendar_events"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/player/routes.py",
       "source_location": "L367",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -9282,17 +9418,6 @@
       "confidence_score": 1.0,
       "source": "player_routes_get_db",
       "target": "player_routes_api_reservation_slots"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "app/player/routes.py",
-      "source_location": "L281",
-      "weight": 1.0,
-      "source": "player_routes_api_reservation_calendar_events",
-      "target": "player_routes_get_db",
-      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9526,6 +9651,27 @@
       "target": "player_routes_tournament_bracket"
     },
     {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "app/player/routes.py",
+      "source_location": "L281",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_routes_api_reservation_calendar_events",
+      "target": "player_routes_get_db"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "app/player/routes.py",
+      "source_location": "L251",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_routes_rationale_251",
+      "target": "player_routes_api_reservation_slots"
+    },
+    {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "app/player/routes.py",
@@ -9544,16 +9690,6 @@
       "confidence_score": 1.0,
       "source": "player_routes_api_reservation_slots",
       "target": "player_routes_rationale_181"
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "app/player/routes.py",
-      "source_location": "L270",
-      "weight": 1.0,
-      "source": "player_routes_rationale_270",
-      "target": "player_routes_api_reservation_calendar_events",
-      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9581,11 +9717,21 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "app/player/routes.py",
+      "source_location": "L445",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_routes_rationale_445",
+      "target": "player_routes_get_processed_queues"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "app/player/routes.py",
       "source_location": "L500",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "player_routes_rationale_500",
-      "target": "player_routes_get_processed_queues",
-      "confidence_score": 1.0
+      "target": "player_routes_get_processed_queues"
     },
     {
       "relation": "rationale_for",
@@ -12045,6 +12191,16 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "app/player/routes.py",
+      "source_location": "L270",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_routes_rationale_270",
+      "target": "player_routes_api_reservation_calendar_events"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "app/player/routes.py",
       "source_location": "L368",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -13313,5 +13469,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "838ecce9d6549d50d1067d895e4c744100217eed"
+  "built_at_commit": "d755d845909d03810649f56e491c9d2d4da9e578"
 }

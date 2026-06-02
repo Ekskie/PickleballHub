@@ -429,6 +429,13 @@ def confirm_payment(reservation_id):
                 'estimated_wait_mins': 0
             }).execute()
 
+            # Trigger automated chat messages from owner and staff
+            try:
+                from app.chats import trigger_booking_autochat
+                trigger_booking_autochat(db, reservation_id, player_id)
+            except Exception as chat_err:
+                print(f"Error triggering autochats: {chat_err}")
+
         flash('Payment confirmed! Your court is booked and you are added to the queue.', 'success')
     except Exception as e:
         flash(f'Payment error: {e}', 'error')

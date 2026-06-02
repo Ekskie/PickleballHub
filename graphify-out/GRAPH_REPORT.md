@@ -1,16 +1,16 @@
-# Graph Report - PickleballHub  (2026-05-24)
+# Graph Report - PickleballHub  (2026-06-02)
 
 ## Corpus Check
-- 40 files · ~138,066 words
+- 41 files · ~138,761 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 532 nodes · 767 edges · 64 communities (23 shown, 41 thin omitted)
+- 539 nodes · 776 edges · 64 communities (23 shown, 41 thin omitted)
 - Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 22 edges (avg confidence: 0.91)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `838ecce9`
+- Built from commit: `d755d845`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -110,8 +110,8 @@ Cohesion: 0.06
 Nodes (33): allConversations, capitalise(), chatHeader, chatHeaderAvatar, chatHeaderName, chatHeaderRole, chatInputWrap, chatMessages (+25 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.08
-Nodes (39): HTMX Partial Queue Refresh Pattern, get_processed_queues Helper, PH_TZ (Philippine Timezone UTC+8), Queue Monitoring Route, api_reservation_calendar_events(), api_reservation_courts(), api_reservation_slots(), book_reservation() (+31 more)
+Cohesion: 0.06
+Nodes (45): Sends an automated message from sender_id to recipient_id.     If a 1-to-1 conve, Triggers automated chats from the facility owner and assigned staff to the playe, send_auto_message(), trigger_booking_autochat(), HTMX Partial Queue Refresh Pattern, get_processed_queues Helper, PH_TZ (Philippine Timezone UTC+8), Queue Monitoring Route (+37 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.08
@@ -130,8 +130,8 @@ Cohesion: 0.14
 Nodes (28): addBtn, addForm, addModal, allTutorials, closeModalBtn, closeWatch, closeWatchModal(), countLabel (+20 more)
 
 ### Community 6 - "Community 6"
-Cohesion: 0.08
-Nodes (27): court_queues Table, court_reservations Table, courts Table (Supabase), event_registrations Table, facilities Table (Supabase), facility_staff Table, Facilitystaff Dashboard (Live Court Status), Walk-in Registration Route (+19 more)
+Cohesion: 0.14
+Nodes (15): court_queues Table, event_registrations Table, Walk-in Registration Route, Walk-in Guest (Non-registered Player), Centralized Collection Multi-Vendor Pattern, PayMongo Checkout Session API, PayMongo Integration Guide, PayMongo Webhook Handler (payment.paid) (+7 more)
 
 ### Community 7 - "Community 7"
 Cohesion: 0.09
@@ -142,8 +142,8 @@ Cohesion: 0.09
 Nodes (25): auth Blueprint, login Route, logout Route, _redirect_by_role, Role-Dashboard Routing Map, signup Route, Role-Based Access Control (RBAC), logo.png (PickleballHub Logo) (+17 more)
 
 ### Community 9 - "Community 9"
-Cohesion: 0.23
-Nodes (11): add_adminstaff(), dashboard(), facilities(), get_db(), mark_notifications_read(), notifications(), profile(), reports() (+3 more)
+Cohesion: 0.14
+Nodes (16): _get_dashboard_for_role(), Role-based access control decorators for protecting routes., Return the dashboard URL for a given role., Decorator to protect routes by role.     Usage: @require_role('superadmin', 'own, require_role(), add_adminstaff(), dashboard(), facilities() (+8 more)
 
 ### Community 10 - "Community 10"
 Cohesion: 0.13
@@ -154,8 +154,8 @@ Cohesion: 0.25
 Nodes (14): forgot_password Route, resend_verification Route, forgot_password(), get_db(), login(), logout(), Resend the email verification link to the given address., Step 1: user enters email → Supabase sends reset link. (+6 more)
 
 ### Community 12 - "Community 12"
-Cohesion: 0.16
-Nodes (17): _get_dashboard_for_role(), Role-based access control decorators for protecting routes., Return the dashboard URL for a given role., Decorator to protect routes by role.     Usage: @require_role('superadmin', 'own, require_role(), get_staff_processed_queues Helper, dashboard(), get_db() (+9 more)
+Cohesion: 0.11
+Nodes (24): court_reservations Table, courts Table (Supabase), facilities Table (Supabase), facility_staff Table, Facilitystaff Dashboard (Live Court Status), get_staff_processed_queues Helper, dashboard(), get_db() (+16 more)
 
 ### Community 13 - "Community 13"
 Cohesion: 0.20
@@ -202,16 +202,16 @@ Nodes (3): tutorials Table (Supabase), clinics Route, _extract_yt_id (YouTube UR
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `tutorials()` connect `Community 5` to `Community 0`, `Community 1`, `Community 10`?**
-  _High betweenness centrality (0.199) - this node is a cross-community bridge._
+  _High betweenness centrality (0.198) - this node is a cross-community bridge._
 - **Why does `get_processed_queues Helper` connect `Community 1` to `Community 12`, `Community 6`?**
-  _High betweenness centrality (0.187) - this node is a cross-community bridge._
+  _High betweenness centrality (0.186) - this node is a cross-community bridge._
 - **Why does `court_queues Table` connect `Community 6` to `Community 1`?**
-  _High betweenness centrality (0.173) - this node is a cross-community bridge._
+  _High betweenness centrality (0.172) - this node is a cross-community bridge._
 - **What connects `version`, `builds`, `routes` to the rest of the system?**
-  _160 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _164 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
   _Cohesion score 0.06341463414634146 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.07716701902748414 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06431372549019608 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
   _Cohesion score 0.08315863032844165 - nodes in this community are weakly interconnected._

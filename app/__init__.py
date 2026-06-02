@@ -19,6 +19,8 @@ supabase_admin: Client | None = None
 if supabase_url and service_role_key:
     supabase_admin = create_client(supabase_url, service_role_key)
 
+_cached_admin_db: Client | None = None
+
 
 def create_app():
     app = Flask(__name__)
@@ -71,9 +73,6 @@ def create_app():
 
         # --- 1. Try Supabase (cached admin client, bypasses RLS) ---
         global _cached_admin_db
-        if '_cached_admin_db' not in globals():
-            _cached_admin_db = None
-            
         if _cached_admin_db is None:
             import os
             import httpx
