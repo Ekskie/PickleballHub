@@ -189,147 +189,10 @@
         color: #fff;
     }
 
-    .court-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 14px;
-    }
-
-    .court-card {
-        background: var(--card-bg);
-        border: 2px solid var(--card-border);
-        border-radius: 12px;
-        overflow: hidden;
-        cursor: pointer;
-        transition: all .2s;
-    }
-
-    .court-card:hover {
-        border-color: var(--primary-orange);
-        box-shadow: var(--shadow-hover);
-    }
-
-    .court-card.selected {
-        border-color: var(--primary-orange);
-        background: var(--primary-orange-light);
-    }
-
-    .court-img-banner {
-        height: 100px;
-        background: linear-gradient(135deg, #1e3a5f, #2d6a9f);
-        overflow: hidden;
-        position: relative;
-    }
-
-    .court-img-banner img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-    }
-
-    .court-img-banner .court-img-placeholder {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-    }
-
-    .court-img-banner .court-img-placeholder i {
-        font-size: 2rem;
-        color: rgba(255, 255, 255, .45);
-    }
-
-    .court-card-body {
-        padding: 12px 14px 14px;
-    }
-
-    .court-card h4 {
-        font-size: .9rem;
-        font-weight: 700;
-        margin-bottom: 6px;
-    }
-
-    .type-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        font-size: .7rem;
-        font-weight: 700;
-        padding: 2px 8px;
-        border-radius: 20px;
-        margin-bottom: 8px;
-    }
-
-    .type-pill.indoor {
-        background: rgba(59, 130, 246, .12);
-        color: #3B82F6;
-    }
-
-    .type-pill.outdoor {
-        background: rgba(41, 163, 86, .12);
-        color: #29A356;
-    }
-
-    .court-rate {
-        font-size: 1rem;
-        font-weight: 700;
-        color: var(--primary-orange);
-    }
-
-    .court-rate small {
-        font-size: .7rem;
-        font-weight: 400;
-        color: var(--text-muted);
-    }
-
-    /* ── Step 3 Layout ── */
-    .step3-layout {
-        display: grid;
-        grid-template-columns: 1fr 320px;
-        gap: 20px;
-        align-items: start;
-    }
-
-    @media(max-width:900px) {
-        .step3-layout {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    .date-row {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-    }
-
-    .date-row label {
-        font-size: .85rem;
-        font-weight: 600;
-        color: var(--text-secondary);
-    }
-
-    .date-row input[type=date] {
-        border: 1px solid var(--border-color);
-        background: var(--card-bg);
-        color: var(--text-primary);
-        padding: 8px 12px;
-        border-radius: 8px;
-        outline: none;
-        font-family: inherit;
-        font-size: .875rem;
-    }
-
-    .date-row input[type=date]:focus {
-        border-color: var(--primary-orange);
-    }
-
     /* ── Slot Grid ── */
     .slot-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
         gap: 8px;
     }
 
@@ -527,6 +390,251 @@
         margin-bottom: 20px;
     }
 
+    /* ── Step 3 Layout ── */
+    .step3-layout {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 20px;
+        align-items: start;
+    }
+
+    @media(max-width:900px) {
+        .step3-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* ── Visual Court Occupancy Map CSS ── */
+    .visual-court-card {
+        background: var(--card-bg);
+        border: 2px solid var(--card-border);
+        border-radius: 14px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+
+    .visual-court-card.available:hover {
+        border-color: var(--primary-orange);
+        transform: translateY(-4px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .visual-court-card.selected {
+        border-color: var(--primary-orange);
+        box-shadow: 0 0 0 2px var(--primary-orange), 0 8px 25px rgba(249, 115, 22, 0.25);
+        transform: scale(1.02);
+    }
+
+    .visual-court-card.occupied {
+        cursor: not-allowed;
+        opacity: 0.75;
+    }
+
+    .visual-court-header {
+        padding: 14px 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border-color);
+        background: var(--input-bg);
+    }
+
+    .visual-court-name {
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--text-primary);
+    }
+
+    .visual-court-status-badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .visual-court-status-badge.available {
+        background: rgba(16, 185, 129, 0.12);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .visual-court-status-badge.occupied {
+        background: rgba(239, 68, 68, 0.12);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .visual-court-status-badge.selected-badge {
+        background: rgba(249, 115, 22, 0.15);
+        color: var(--primary-orange);
+        border: 1px solid rgba(249, 115, 22, 0.3);
+    }
+
+    .visual-court-drawing-area {
+        height: 140px;
+        background: #15803d; /* Premium Forest Green outer court */
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 16px;
+        border-radius: 10px;
+        border: 2px solid rgba(255, 255, 255, 0.05);
+        box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .court-line-border {
+        position: absolute;
+        left: 10%;
+        top: 12.5%;
+        width: 80%;
+        height: 75%;
+        border: 1.5px solid rgba(255, 255, 255, 0.95);
+        background: #1e40af; /* Premium Royal Blue inner court */
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.15);
+        z-index: 1;
+    }
+
+    .court-kitchen-area {
+        position: absolute;
+        left: 37%;
+        right: 37%;
+        top: 12.5%;
+        height: 75%;
+        background: #15803d; /* Matches outer court */
+        z-index: 2;
+        border-left: 1.5px solid rgba(255, 255, 255, 0.95);
+        border-right: 1.5px solid rgba(255, 255, 255, 0.95);
+    }
+
+    .court-line-center {
+        position: absolute;
+        width: 27%;
+        height: 0;
+        border-top: 1.5px solid rgba(255, 255, 255, 0.95);
+        top: 50%;
+        left: 10%;
+        z-index: 3;
+    }
+
+    .court-line-center-right {
+        position: absolute;
+        width: 27%;
+        height: 0;
+        border-top: 1.5px solid rgba(255, 255, 255, 0.95);
+        top: 50%;
+        right: 10%;
+        z-index: 3;
+    }
+
+    .court-net {
+        position: absolute;
+        width: 2px;
+        height: 85%;
+        background: rgba(255, 255, 255, 0.8);
+        left: 50%;
+        top: 7.5%;
+        box-shadow: 0 0 3px rgba(0,0,0,0.5);
+        z-index: 4;
+    }
+
+    .court-net::after {
+        content: '';
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        background: #000;
+        border-radius: 50%;
+        left: -2px;
+        top: -3px;
+    }
+
+    .court-net::before {
+        content: '';
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        background: #000;
+        border-radius: 50%;
+        left: -2px;
+        bottom: -3px;
+    }
+
+    /* Selected Court Drawing Styling */
+    .visual-court-card.selected .visual-court-drawing-area {
+        background: #c2410c; /* Forest orange outer */
+    }
+
+    .visual-court-card.selected .court-line-border {
+        background: #ea580c; /* Bright orange inner */
+    }
+
+    .visual-court-card.selected .court-kitchen-area {
+        background: #c2410c; /* Orange kitchen */
+    }
+
+    /* Occupied Court Drawing Styling */
+    .visual-court-card.occupied .visual-court-drawing-area {
+        background: #334155 !important; /* Slate gray outer */
+        box-shadow: none;
+    }
+
+    .visual-court-card.occupied .court-line-border {
+        background: #475569 !important; /* Medium gray inner */
+        border-color: rgba(255, 255, 255, 0.4) !important;
+        box-shadow: none;
+    }
+
+    .visual-court-card.occupied .court-kitchen-area {
+        background: #334155 !important;
+        border-color: rgba(255, 255, 255, 0.4) !important;
+    }
+
+    .visual-court-card.occupied .court-line-center,
+    .visual-court-card.occupied .court-line-center-right,
+    .visual-court-card.occupied .court-net {
+        border-color: rgba(255, 255, 255, 0.4) !important;
+    }
+
+    .visual-court-card.occupied .court-net::before,
+    .visual-court-card.occupied .court-net::after {
+        background: #475569 !important;
+    }
+
+    .visual-court-footer {
+        padding: 14px 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid var(--border-color);
+        font-size: 0.85rem;
+        background: var(--card-bg);
+    }
+
+    .visual-court-rate {
+        font-weight: 700;
+        color: var(--primary-orange);
+        font-size: 0.95rem;
+    }
+
+    .visual-court-type {
+        color: var(--text-muted);
+        text-transform: capitalize;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
     /* Map Modal */
     #map-modal {
         display: none;
@@ -579,12 +687,12 @@
     <div class="step-line" id="sl-1"></div>
     <div class="step-item" id="si-2">
         <div class="step-num">2</div>
-        <span class="step-label">Court</span>
+        <span class="step-label">Date &amp; Time</span>
     </div>
     <div class="step-line" id="sl-2"></div>
     <div class="step-item" id="si-3">
         <div class="step-num">3</div>
-        <span class="step-label">Time Slot</span>
+        <span class="step-label">Choose Court</span>
     </div>
 </div>
 
@@ -639,60 +747,82 @@
     {% endif %}
 </div>
 
-<!-- Step 2: Choose Court -->
+<!-- Step 2: Choose Date & Time -->
 <div class="wizard-panel glass-card" id="panel-2">
     <div class="panel-action-row">
-        <h3 style="font-size:1rem;font-weight:700;"><i class="ph ph-tennis-ball"
-                style="color:var(--primary-orange)"></i> Choose a Court — <span id="s2-fac-name"
-                style="color:var(--primary-orange)"></span></h3>
+        <h3 style="font-size:1rem;font-weight:700;"><i class="ph ph-calendar" style="color:var(--primary-orange)"></i> Choose Date &amp; Time — <span id="s2-fac-name" style="color:var(--primary-orange)"></span></h3>
         <button class="btn-back" onclick="goStep(1)"><i class="ph ph-arrow-left"></i> Back</button>
     </div>
-    <div id="courts-loading" style="text-align:center;padding:30px;color:var(--text-muted);"><i
-            class="ph ph-circle-notch" style="animation:spin .8s linear infinite;font-size:1.5rem"></i></div>
-    <div class="court-grid" id="court-grid" style="display:none;"></div>
+    
+    <div style="display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; align-items: flex-end;">
+        <div class="form-group" style="margin: 0; display: flex; flex-direction: column; gap: 6px;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Select Date</label>
+            <input type="date" id="select-date" onchange="onDateTimeChange()" style="border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-primary); padding: 8px 12px; border-radius: 8px; outline: none; font-family: inherit; font-size: .875rem;">
+        </div>
+        <div class="form-group" style="margin: 0; display: flex; flex-direction: column; gap: 6px;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Duration</label>
+            <select id="select-duration" onchange="onDateTimeChange()" style="border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-primary); padding: 8px 12px; border-radius: 8px; outline: none; font-family: inherit; font-size: .875rem; width: 120px;">
+                <option value="1">1 Hour</option>
+                <option value="2">2 Hours</option>
+                <option value="3">3 Hours</option>
+            </select>
+        </div>
+        <div class="form-group" style="margin: 0; display: flex; flex-direction: column; gap: 6px;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Party Size</label>
+            <input type="number" id="select-party-size" min="1" max="10" value="1" onchange="onDateTimeChange()" style="border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-primary); padding: 8px 12px; border-radius: 8px; outline: none; font-family: inherit; font-size: .875rem; width: 80px;">
+        </div>
+    </div>
+
+    <div style="border-top: 1px solid var(--border-color); padding-top: 20px;">
+        <h4 style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-bottom: 12px;">Select Start Time</h4>
+        <div class="slot-legend" style="margin-bottom: 16px;">
+            <div class="leg-item"><div class="leg-dot avail"></div> Available</div>
+            <div class="leg-item"><div class="leg-dot bkd"></div> Closed / Full</div>
+        </div>
+        <div id="times-loading" style="display:none;text-align:center;padding:30px;color:var(--text-muted);"><i class="ph ph-circle-notch" style="animation:spin .8s linear infinite;font-size:1.5rem"></i></div>
+        <div id="start-time-grid" class="slot-grid"></div>
+    </div>
 </div>
 
-<!-- Step 3: Time Slot -->
+<!-- Step 3: Visual Court Selection -->
 <div class="wizard-panel" id="panel-3">
     <div class="step3-layout">
         <div class="glass-card" style="margin-bottom:0;">
             <div class="panel-action-row">
-                <h3 style="font-size:1rem;font-weight:700;"><i class="ph ph-calendar"
-                        style="color:var(--primary-orange)"></i> Pick Date & Time</h3>
+                <h3 style="font-size:1rem;font-weight:700;">
+                    <i class="ph ph-grid-four" style="color:var(--primary-orange)"></i> Choose Your Court
+                </h3>
                 <button class="btn-back" onclick="goStep(2)"><i class="ph ph-arrow-left"></i> Back</button>
             </div>
-            <div class="date-row">
-                <label>Date:</label>
-                <input type="date" id="slot-date" min="" onchange="loadSlots()">
-                <label style="margin-left: 20px;">Party Size:</label>
-                <input type="number" id="slot-party-size" min="1" max="10" value="1" onchange="updateSummary()"
-                    style="border:1px solid var(--border-color);background:var(--card-bg);color:var(--text-primary);padding:8px 12px;border-radius:8px;outline:none;font-family:inherit;font-size:.875rem;width:80px;">
-            </div>
-            <div class="slot-legend">
-                <div class="leg-item">
-                    <div class="leg-dot avail"></div> Available
+            
+            <div style="background: var(--input-bg); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                    Selected Slot: <strong id="map-selected-slot-text" style="color: var(--text-primary);">June 9, 2026 @ 10:00 AM - 11:00 AM</strong>
                 </div>
-                <div class="leg-item">
-                    <div class="leg-dot sel"></div> Selected
-                </div>
-                <div class="leg-item">
-                    <div class="leg-dot bkd"></div> Booked
+                <div class="slot-legend" style="margin-bottom: 0;">
+                    <div class="leg-item"><div class="leg-dot avail" style="background: #10b981; border: none;"></div> Available</div>
+                    <div class="leg-item"><div class="leg-dot bkd" style="background: #ef4444; border: none;"></div> Occupied</div>
+                    <div class="leg-item"><div class="leg-dot sel" style="background: var(--primary-orange); border: none;"></div> Selected</div>
                 </div>
             </div>
-            <div id="slot-grid-wrap">
-                <p style="color:var(--text-muted);font-size:.85rem;">Select a date to see available slots.</p>
+
+            <div id="map-loading" style="text-align:center;padding:40px;color:var(--text-muted);">
+                <i class="ph ph-circle-notch" style="animation:spin .8s linear infinite;font-size:1.8rem"></i>
+                <p style="font-size: 0.8rem; margin-top: 8px;">Loading real-time court occupancy...</p>
             </div>
+
+            <!-- Beautiful Visual Court Grid Map -->
+            <div id="visual-court-map" style="display: none; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; padding: 10px 0;"></div>
         </div>
+
         <!-- Summary -->
         <div class="summary-card">
             <h3><i class="ph ph-receipt" style="color:var(--primary-orange)"></i> Booking Summary</h3>
-            <div class="summary-row"><span class="s-label">Facility</span><span class="s-val" id="sum-facility">—</span>
-            </div>
+            <div class="summary-row"><span class="s-label">Facility</span><span class="s-val" id="sum-facility">—</span></div>
             <div class="summary-row"><span class="s-label">Court</span><span class="s-val" id="sum-court">—</span></div>
             <div class="summary-row"><span class="s-label">Date</span><span class="s-val" id="sum-date">—</span></div>
             <div class="summary-row"><span class="s-label">Time</span><span class="s-val" id="sum-time">—</span></div>
-            <div class="summary-row"><span class="s-label">Duration</span><span class="s-val" id="sum-hours">—</span>
-            </div>
+            <div class="summary-row"><span class="s-label">Duration</span><span class="s-val" id="sum-hours">—</span></div>
             <div class="summary-row"><span class="s-label">Rate</span><span class="s-val" id="sum-rate">—</span></div>
             <div class="summary-total">
                 <span class="t-label">Total</span>
@@ -712,17 +842,29 @@
                     <i class="ph ph-lock-key-open"></i> Confirm &amp; Pay
                 </button>
             </form>
-            <p id="sum-hint" style="font-size:.72rem;color:var(--text-muted);text-align:center;margin-top:8px;">Select
-                at least one time slot to continue</p>
+            <p id="sum-hint" style="font-size:.72rem;color:var(--text-muted);text-align:center;margin-top:8px;">Choose an available court on the map to continue</p>
         </div>
     </div>
 </div>
 
 <script>
     // State
-    let state = { facility: null, court: null, selectedSlots: [], bookedSlots: [], openTime: '08:00', closeTime: '21:00' };
+    let state = {
+        facility: null,      // { id, name, open, close }
+        selectedDate: null,  // "YYYY-MM-DD"
+        duration: 1,         // 1, 2, 3
+        partySize: 1,        // number
+        startTime: null,     // integer hour (e.g. 10)
+        endTime: null,       // integer hour
+        court: null,         // { id, name, rate }
+        courtsList: [],      // fetched courts
+        reservationsList: [] // fetched reservations
+    };
 
-    function fmt12(h) { let ap = h < 12 ? 'AM' : 'PM', h12 = h % 12 || 12; return `${String(h12).padStart(2, '0')}:00 ${ap}`; }
+    function fmt12(h) { 
+        let ap = h < 12 ? 'AM' : 'PM', h12 = h % 12 || 12; 
+        return `${String(h12).padStart(2, '0')}:00 ${ap}`; 
+    }
 
     /* ── Step navigation ── */
     function goStep(n) {
@@ -735,149 +877,293 @@
         [1, 2].forEach(i => { let sl = document.getElementById(`sl-${i}`); sl?.classList.toggle('done', i < n); });
     }
 
-    /* ── Step 1: Facility ── */
+    /* ── Step 1: Select Facility ── */
     function selectFacility(card) {
         document.querySelectorAll('.facility-card').forEach(c => c.classList.remove('selected'));
         card.classList.add('selected');
-        state.facility = { id: card.dataset.id, name: card.dataset.name, open: card.dataset.open, close: card.dataset.close };
-        state.openTime = card.dataset.open.substring(0, 5);
-        state.closeTime = card.dataset.close.substring(0, 5);
+        
+        state.facility = { 
+            id: card.dataset.id, 
+            name: card.dataset.name, 
+            open: card.dataset.open, 
+            close: card.dataset.close 
+        };
+        
         document.getElementById('s2-fac-name').textContent = card.dataset.name;
         document.getElementById('inp-facility-id').value = card.dataset.id;
         document.getElementById('sum-facility').textContent = card.dataset.name;
-        loadCourts(card.dataset.id);
+
+        // Initialize default Date to today
+        const today = new Date().toISOString().split('T')[0];
+        const dateInput = document.getElementById('select-date');
+        dateInput.min = today;
+        dateInput.value = today;
+        state.selectedDate = today;
+
+        // Initialize duration and party size
+        state.duration = parseInt(document.getElementById('select-duration').value) || 1;
+        state.partySize = parseInt(document.getElementById('select-party-size').value) || 1;
+        
+        // Reset state
+        state.startTime = null;
+        state.endTime = null;
+        state.court = null;
+
+        onDateTimeChange(); // Load times
         goStep(2);
     }
 
-    /* ── Step 2: Courts ── */
-    async function loadCourts(fid) {
-        document.getElementById('courts-loading').style.display = 'block';
-        document.getElementById('court-grid').style.display = 'none';
-        const res = await fetch(`/player/reservation/api/courts?facility_id=${fid}`);
-        const courts = await res.json();
-        const grid = document.getElementById('court-grid');
-        grid.innerHTML = '';
-        if (!courts.length) { grid.innerHTML = '<div class="empty-state"><i class="ph ph-tennis-ball"></i><p>No courts available in this facility.</p></div>'; }
-        courts.forEach(c => {
-            const div = document.createElement('div');
-            div.className = 'court-card';
-            div.dataset.id = c.id; div.dataset.name = c.name; div.dataset.rate = c.hourly_rate;
-            const imgBanner = c.image_url
-                ? `<img src="${c.image_url}" alt="${c.name}">`
-                : `<div class="court-img-placeholder"><i class="ph ph-intersect"></i></div>`;
-            div.innerHTML = `
-            <div class="court-img-banner">${imgBanner}</div>
-            <div class="court-card-body">
-                <h4>${c.name}</h4>
-                <span class="type-pill ${c.type}">${c.type === 'indoor' ? '<i class="ph ph-house"></i>' : '<i class="ph ph-sun"></i>'} ${c.type}</span>
-                <div class="court-rate">₱${parseFloat(c.hourly_rate).toFixed(2)}<small>/hour</small></div>
-            </div>`;
-            div.onclick = () => selectCourt(div);
-            grid.appendChild(div);
-        });
-        document.getElementById('courts-loading').style.display = 'none';
-        grid.style.display = 'grid';
-    }
-
-    function selectCourt(card) {
-        document.querySelectorAll('.court-card').forEach(c => c.classList.remove('selected'));
-        card.classList.add('selected');
-        state.court = { id: card.dataset.id, name: card.dataset.name, rate: parseFloat(card.dataset.rate) };
-        document.getElementById('inp-court-id').value = card.dataset.id;
-        document.getElementById('inp-rate').value = card.dataset.rate;
-        document.getElementById('sum-court').textContent = card.dataset.name;
-        document.getElementById('sum-rate').textContent = '₱' + parseFloat(card.dataset.rate).toFixed(2) + '/hr';
-        // Set min date to today
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('slot-date').min = today;
-        document.getElementById('slot-date').value = today;
-        state.selectedSlots = [];
-        loadSlots();
-        goStep(3);
-    }
-
-    /* ── Step 3: Time Slots ── */
-    async function loadSlots() {
-        const date = document.getElementById('slot-date').value;
-        if (!date || !state.court) return;
-        state.selectedSlots = [];
+    /* ── Step 2: Date & Time Selection ── */
+    async function onDateTimeChange() {
+        state.selectedDate = document.getElementById('select-date').value;
+        state.duration = parseInt(document.getElementById('select-duration').value) || 1;
+        state.partySize = parseInt(document.getElementById('select-party-size').value) || 1;
+        
+        // Reset selections
+        state.startTime = null;
+        state.endTime = null;
+        state.court = null;
         updateSummary();
-        document.getElementById('slot-grid-wrap').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted)"><i class="ph ph-circle-notch" style="animation:spin .8s linear infinite;font-size:1.5rem"></i></div>';
 
-        const res = await fetch(`/player/reservation/api/slots?court_id=${state.court.id}&date=${date}`);
-        const booked = await res.json();
-        state.bookedSlots = booked;
-        state.currentDate = date;
-        renderSlots(date, booked);
+        if (!state.facility || !state.selectedDate) return;
+
+        document.getElementById('times-loading').style.display = 'block';
+        document.getElementById('start-time-grid').style.display = 'none';
+
+        try {
+            // Fetch occupancy API
+            const res = await fetch(`/player/reservation/api/facility_occupancy?facility_id=${state.facility.id}&date=${state.selectedDate}`);
+            const data = await res.json();
+            
+            state.courtsList = data.courts || [];
+            state.reservationsList = data.reservations || [];
+            
+            renderStartTimes();
+        } catch (err) {
+            console.error("Error fetching facility occupancy:", err);
+            document.getElementById('start-time-grid').innerHTML = '<p style="color:red;font-size:0.8rem;text-align:center;">Failed to load time slots.</p>';
+        } finally {
+            document.getElementById('times-loading').style.display = 'none';
+            document.getElementById('start-time-grid').style.display = 'grid';
+        }
     }
 
-    function renderSlots(date, booked) {
-        const openH = parseInt(state.openTime), closeH = parseInt(state.closeTime);
-        // Build set of booked hours
-        const bookedHrs = new Set();
-        booked.forEach(b => {
-            const sh = parseInt(b.start_time), eh = parseInt(b.end_time);
-            for (let h = sh; h < eh; h++) bookedHrs.add(h);
-        });
-        const grid = document.createElement('div');
-        grid.className = 'slot-grid';
-        const now = new Date(), todayStr = now.toISOString().split('T')[0];
-        const curH = now.getHours();
-        for (let h = openH; h < closeH; h++) {
-            const isPast = date === todayStr && h <= curH;
-            const isBooked = bookedHrs.has(h) || isPast;
+    function renderStartTimes() {
+        const grid = document.getElementById('start-time-grid');
+        grid.innerHTML = '';
+
+        if (!state.courtsList.length) {
+            grid.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem;text-align:center;grid-column:1/-1;">No courts available at this facility.</p>';
+            return;
+        }
+
+        const openHour = parseInt(state.facility.open.substring(0, 2)) || 8;
+        const closeHour = parseInt(state.facility.close.substring(0, 2)) || 21;
+        
+        const now = new Date();
+        const todayStr = now.toISOString().split('T')[0];
+        const currentHour = now.getHours();
+
+        // Generate start hours
+        for (let h = openHour; h <= closeHour - state.duration; h++) {
+            const startStr = `${String(h).padStart(2, '0')}:00`;
+            const endStr = `${String(h + state.duration).padStart(2, '0')}:00`;
+
+            const isPast = (state.selectedDate === todayStr && h <= currentHour);
+
+            // Check how many courts are available during this entire duration
+            let availableCourtsCount = 0;
+            state.courtsList.forEach(c => {
+                const isCourtOccupied = state.reservationsList.some(r => {
+                    if (r.court_id !== c.id) return false;
+                    return isOverlapping(r.start_time, r.end_time, startStr, endStr);
+                });
+                if (!isCourtOccupied) availableCourtsCount++;
+            });
+
+            const isBooked = (availableCourtsCount === 0) || isPast;
+
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'slot-btn' + (isBooked ? ' booked' : '');
-            btn.dataset.hour = h;
-            btn.innerHTML = `${fmt12(h)}<br><small style="font-weight:400;opacity:.7">${isPast ? 'Past' : isBooked ? 'Booked' : 'Available'}</small>`;
-            if (!isBooked) btn.onclick = () => toggleSlot(btn, h);
+            
+            let label = `${fmt12(h)}`;
+            if (isPast) {
+                label += `<br><small style="font-weight:400;opacity:0.7">Past</small>`;
+            } else if (availableCourtsCount === 0) {
+                label += `<br><small style="font-weight:400;opacity:0.7">Fully Booked</small>`;
+            } else {
+                label += `<br><small style="font-weight:400;opacity:0.7">${availableCourtsCount} court${availableCourtsCount !== 1 ? 's' : ''} free</small>`;
+            }
+
+            btn.innerHTML = label;
+            
+            if (!isBooked) {
+                btn.onclick = () => selectStartTime(h);
+            }
             grid.appendChild(btn);
         }
-        document.getElementById('slot-grid-wrap').innerHTML = '';
-        document.getElementById('slot-grid-wrap').appendChild(grid);
     }
 
-    function toggleSlot(btn, h) {
-        const idx = state.selectedSlots.indexOf(h);
-        if (idx >= 0) { state.selectedSlots.splice(idx, 1); btn.classList.remove('selected'); }
-        else { state.selectedSlots.push(h); btn.classList.add('selected'); }
+    function isOverlapping(s1, e1, s2, e2) {
+        const t = str => {
+            const parts = str.split(':');
+            return parseInt(parts[0]) * 60 + (parseInt(parts[1]) || 0);
+        };
+        return t(s1) < t(e2) && t(s2) < t(e1);
+    }
+
+    function selectStartTime(h) {
+        state.startTime = h;
+        state.endTime = h + state.duration;
+        
+        // Update selection UI in Step 2
+        document.querySelectorAll('#start-time-grid .slot-btn').forEach(btn => {
+            btn.classList.remove('selected');
+        });
+        const activeBtn = Array.from(document.querySelectorAll('#start-time-grid .slot-btn')).find(b => parseInt(b.innerHTML.substring(0,2)) === h);
+        if (activeBtn) activeBtn.classList.add('selected');
+
+        // Render visual court occupancy map in Step 3
+        renderVisualCourtMap();
+        goStep(3);
+    }
+
+    /* ── Step 3: Visual Court Occupancy Map ── */
+    function renderVisualCourtMap() {
+        const startStr = `${String(state.startTime).padStart(2, '0')}:00`;
+        const endStr = `${String(state.endTime).padStart(2, '0')}:00`;
+
+        // Format selected slot text
+        const dateObj = new Date(state.selectedDate + 'T00:00:00');
+        const formattedDate = dateObj.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        document.getElementById('map-selected-slot-text').textContent = `${formattedDate} @ ${fmt12(state.startTime)} - ${fmt12(state.endTime)} (${state.duration} hr${state.duration !== 1 ? 's' : ''})`;
+
+        const mapContainer = document.getElementById('visual-court-map');
+        const mapLoading = document.getElementById('map-loading');
+        
+        mapLoading.style.display = 'none';
+        mapContainer.style.display = 'grid';
+        mapContainer.innerHTML = '';
+
+        state.courtsList.forEach(c => {
+            const isOccupied = state.reservationsList.some(r => {
+                if (r.court_id !== c.id) return false;
+                return isOverlapping(r.start_time, r.end_time, startStr, endStr);
+            });
+
+            const card = document.createElement('div');
+            card.className = `visual-court-card ${isOccupied ? 'occupied' : 'available'}`;
+            card.dataset.id = c.id;
+            card.dataset.name = c.name;
+            card.dataset.rate = c.hourly_rate;
+
+            // Draw a mini interactive court graphic with realistic pickleball colors
+            const courtGraphicHtml = `
+                <div class="visual-court-drawing-area">
+                    <div class="court-line-border"></div>
+                    <div class="court-kitchen-area"></div>
+                    <div class="court-line-center"></div>
+                    <div class="court-line-center-right"></div>
+                    <div class="court-net"></div>
+                </div>
+            `;
+
+            card.innerHTML = `
+                <div class="visual-court-header">
+                    <span class="visual-court-name">${c.name}</span>
+                    <span class="visual-court-status-badge ${isOccupied ? 'occupied' : 'available'}">
+                        ${isOccupied ? '<i class="ph ph-lock-key"></i> Occupied' : '<i class="ph ph-check-circle"></i> Available'}
+                    </span>
+                </div>
+                ${courtGraphicHtml}
+                <div class="visual-court-footer">
+                    <span class="visual-court-type">
+                        ${c.type === 'indoor' ? '<i class="ph ph-house"></i>' : '<i class="ph ph-sun"></i>'} ${c.type}
+                    </span>
+                    <span class="visual-court-rate">₱${parseFloat(c.hourly_rate).toFixed(2)}<small style="font-size:0.65rem; font-weight:400; color:var(--text-muted);">/hr</small></span>
+                </div>
+            `;
+
+            if (!isOccupied) {
+                card.onclick = () => selectCourtMapCard(card);
+            }
+            
+            mapContainer.appendChild(card);
+        });
+
+        // Clear previous court selection
+        state.court = null;
+        updateSummary();
+    }
+
+    function selectCourtMapCard(card) {
+        document.querySelectorAll('.visual-court-card').forEach(c => {
+            c.classList.remove('selected');
+            if (c.classList.contains('available')) {
+                const badge = c.querySelector('.visual-court-status-badge');
+                badge.className = 'visual-court-status-badge available';
+                badge.innerHTML = '<i class="ph ph-check-circle"></i> Available';
+            }
+        });
+        
+        card.classList.add('selected');
+        const badge = card.querySelector('.visual-court-status-badge');
+        badge.className = 'visual-court-status-badge selected-badge';
+        badge.innerHTML = '<i class="ph ph-circle-wavy-check"></i> Selected';
+        
+        state.court = { 
+            id: card.dataset.id, 
+            name: card.dataset.name, 
+            rate: parseFloat(card.dataset.rate) 
+        };
+
         updateSummary();
     }
 
     function updateSummary() {
-        const slots = state.selectedSlots.sort((a, b) => a - b);
-        const date = document.getElementById('slot-date').value;
-        if (!slots.length) {
-            document.getElementById('sum-date').textContent = date || '—';
+        const dateInput = document.getElementById('select-date').value;
+        
+        if (!state.court || !state.startTime) {
+            document.getElementById('sum-court').textContent = '—';
+            document.getElementById('sum-date').textContent = dateInput || '—';
             document.getElementById('sum-time').textContent = '—';
             document.getElementById('sum-hours').textContent = '—';
+            document.getElementById('sum-rate').textContent = '—';
             document.getElementById('sum-total').textContent = '₱0.00';
             document.getElementById('inp-total').value = 0;
             document.getElementById('btn-confirm').disabled = true;
             document.getElementById('sum-hint').style.display = 'block';
             return;
         }
-        const startH = slots[0], endH = slots[slots.length - 1] + 1;
-        const totalHrs = slots.length;
-        const partySize = parseInt(document.getElementById('slot-party-size').value) || 1;
-        const total = totalHrs * state.court.rate * partySize;
+
+        const startH = state.startTime;
+        const endH = state.endTime;
+        const totalHrs = state.duration;
+        const partySize = state.partySize;
+        const total = totalHrs * state.court.rate; // Fixed: Renting court flat rate per hour, not per player
         const pad = n => String(n).padStart(2, '0');
-        document.getElementById('sum-date').textContent = date;
+
+        document.getElementById('sum-court').textContent = state.court.name;
+        document.getElementById('sum-date').textContent = dateInput;
         document.getElementById('sum-time').textContent = `${fmt12(startH)} – ${fmt12(endH)}`;
         document.getElementById('sum-hours').textContent = `${totalHrs} hour${totalHrs !== 1 ? 's' : ''}`;
+        document.getElementById('sum-rate').textContent = '₱' + state.court.rate.toFixed(2) + '/hr';
         document.getElementById('sum-total').textContent = '₱' + total.toFixed(2);
-        document.getElementById('inp-date').value = date;
+
+        // Fill hidden inputs
+        document.getElementById('inp-court-id').value = state.court.id;
+        document.getElementById('inp-rate').value = state.court.rate;
+        document.getElementById('inp-date').value = dateInput;
         document.getElementById('inp-start').value = `${pad(startH)}:00`;
         document.getElementById('inp-end').value = `${pad(endH)}:00`;
         document.getElementById('inp-hours').value = totalHrs;
         document.getElementById('inp-party-size').value = partySize;
         document.getElementById('inp-total').value = total.toFixed(2);
+
         document.getElementById('btn-confirm').disabled = false;
         document.getElementById('sum-hint').style.display = 'none';
     }
-
-    document.getElementById('slot-date')?.addEventListener('change', loadSlots);
 
     /* ── Leaflet Map Modal ── */
     let currentMap = null;
@@ -898,7 +1184,6 @@
         }
         currentMarker.bindPopup(`<b>${name}</b>`).openPopup();
 
-        // Invalidate size to ensure it renders correctly inside the modal
         setTimeout(() => {
             currentMap.invalidateSize();
         }, 100);

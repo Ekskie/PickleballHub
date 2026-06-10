@@ -2,6 +2,60 @@
 
 {% block title %}Dashboard{% endblock %}
 
+{% block extra_head %}
+<style>
+    .ping-dot-green {
+        width: 10px;
+        height: 10px;
+        background-color: #10b981;
+        border-radius: 50%;
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        border: 2px solid var(--card-bg);
+    }
+
+    .ping-dot-green::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background-color: #10b981;
+        animation: pulse-ping-green 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+        left: 0;
+        top: 0;
+    }
+
+    @keyframes pulse-ping-green {
+        0% {
+            transform: scale(1);
+            opacity: 0.85;
+        }
+
+        70% {
+            transform: scale(2.5);
+            opacity: 0;
+        }
+
+        100% {
+            transform: scale(2.5);
+            opacity: 0;
+        }
+    }
+
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="dashboard-header">
     <h1 class="page-title">Dashboard</h1>
@@ -12,145 +66,364 @@
     <!-- Left Column (Main) -->
     <div class="dashboard-main">
 
-        <!-- Hero Widget: Next Reservation -->
-        <div class="glass-card full-width">
-            {% if next_reservation %}
-            <div class="reservation-grid">
-                <div class="court-image">
-                    <img src="{{ url_for('static', filename='images/court-hero.jpg') }}" alt="Pickleball Court">
-                </div>
-                <div class="reservation-info">
-                    <p class="small-caps">UPCOMING RESERVATION</p>
-                    <h2>{{ next_reservation.courts.name if next_reservation.courts else 'Court' }}</h2>
-                    <div class="info-row">
-                        <span><i class="ph ph-map-pin"></i> {{ next_reservation.facilities.name if
-                            next_reservation.facilities else 'Facility' }}</span>
-                        <span><i class="ph ph-calendar"></i> {{ next_reservation.date }}</span>
+        <!-- Player Performance Widget -->
+        <div class="glass-card full-width"
+            style="padding: 24px; position: relative; overflow: hidden; background: linear-gradient(135deg, var(--card-bg), var(--primary-orange-light)); border-left: 5px solid var(--primary-orange);">
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                <div>
+                    <span class="small-caps"
+                        style="color: var(--primary-orange); font-weight: 700; letter-spacing: 1px;"><i
+                            class="ph ph-sparkle"></i> Player Profile Stats</span>
+                    <h2 style="font-size: 1.5rem; font-weight: 800; margin-top: 4px; color: var(--text-primary);">{{
+                        current_user.full_name }}</h2>
+                    <div style="display: flex; gap: 8px; margin-top: 8px; align-items: center;">
+                        <span class="role-pill" style="font-size: 0.72rem;"><i class="ph ph-identification-card"></i> {{
+                            current_user.role }}</span>
+                        {% set rating = current_user.dupr|float %}
+                        {% if rating < 3.0 %} <span class="role-pill"
+                            style="background: rgba(100, 116, 139, 0.1); color: var(--text-muted);"><i
+                                class="ph ph-shield"></i> Beginner</span>
+                            {% elif rating < 4.0 %} <span class="role-pill"
+                                style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;"><i
+                                    class="ph ph-shield-star"></i> Intermediate</span>
+                                {% elif rating < 5.0 %} <span class="role-pill"
+                                    style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;"><i
+                                        class="ph ph-medal"></i> Advanced</span>
+                                    {% else %}
+                                    <span class="role-pill"
+                                        style="background: rgba(16, 185, 129, 0.1); color: #10b981;"><i
+                                            class="ph ph-crown"></i> Elite Pro</span>
+                                    {% endif %}
                     </div>
-                    <div class="info-time">{{ next_reservation.start_time }} - {{ next_reservation.end_time }}</div>
-                    <span class="status-badge success"><i class="ph ph-check-circle"></i> Confirmed</span>
+                </div>
+
+                <!-- Stats grid -->
+                <div style="display: flex; gap: 24px; flex-wrap: wrap;">
+                    <div
+                        style="text-align: center; background: var(--card-bg); padding: 12px 18px; border-radius: 10px; border: 1px solid var(--border-color); min-width: 100px; box-shadow: var(--shadow-sm);">
+                        <span
+                            style="font-size: 1.6rem; font-weight: 800; color: var(--primary-orange); display: block;">{{
+                            "%.2f"|format(current_user.dupr|float) }}</span>
+                        <span
+                            style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">DUPR
+                            Rating</span>
+                    </div>
+                    <div
+                        style="text-align: center; background: var(--card-bg); padding: 12px 18px; border-radius: 10px; border: 1px solid var(--border-color); min-width: 100px; box-shadow: var(--shadow-sm);">
+                        <span style="font-size: 1.6rem; font-weight: 800; color: var(--btn-navy); display: block;">{{
+                            current_user.elo }}</span>
+                        <span
+                            style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Elo
+                            Points</span>
+                    </div>
+                    <div
+                        style="text-align: center; background: var(--card-bg); padding: 12px 18px; border-radius: 10px; border: 1px solid var(--border-color); min-width: 90px; box-shadow: var(--shadow-sm);">
+                        <span style="font-size: 1.6rem; font-weight: 800; color: var(--btn-green); display: block;">{{
+                            player_stats.total_played|default(0) }}</span>
+                        <span
+                            style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Matches</span>
+                    </div>
+                    <div
+                        style="text-align: center; background: var(--card-bg); padding: 12px 18px; border-radius: 10px; border: 1px solid var(--border-color); min-width: 90px; box-shadow: var(--shadow-sm);">
+                        <span style="font-size: 1.6rem; font-weight: 800; color: #10b981; display: block;">{{
+                            player_stats.win_rate|default(0) }}%</span>
+                        <span
+                            style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Win
+                            Rate</span>
+                    </div>
                 </div>
             </div>
-            {% else %}
-            <div class="reservation-grid"
-                style="display: flex; align-items: center; justify-content: center; min-height: 150px;">
-                <div class="reservation-info text-center" style="text-align: center;">
-                    <p class="small-caps">NO UPCOMING RESERVATIONS</p>
-                    <h2>Ready to Play?</h2>
-                    <br>
-                    <a href="{{ url_for('player.reservation') }}" class="btn-pay"
-                        style="display: inline-block; padding: 10px 20px; background: var(--btn-navy); color: white; border-radius: 8px; text-decoration: none;">Book
-                        a Court</a>
+
+            <!-- Rating Progress Bar -->
+            <div style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 16px;">
+                {% set rating = current_user.dupr|float %}
+                {% if rating < 3.0 %} {% set next_level=3.0 %} {% set level_label="Intermediate" %} {% set
+                    prev_level=2.0 %} {% elif rating < 4.0 %} {% set next_level=4.0 %} {% set level_label="Advanced" %}
+                    {% set prev_level=3.0 %} {% elif rating < 5.0 %} {% set next_level=5.0 %} {% set
+                    level_label="Elite Pro" %} {% set prev_level=4.0 %} {% else %} {% set next_level=8.0 %} {% set
+                    level_label="Max Rating" %} {% set prev_level=5.0 %} {% endif %} {% set pct=(((rating - prev_level)
+                    / (next_level - prev_level)) * 100)|int %} {% if pct> 100 %}{% set pct = 100 %}{% elif pct < 0 %}{%
+                        set pct=0 %}{% endif %} <div
+                        style="display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 6px; font-weight: 600;">
+                        <span>Rating Progress: <strong>{{ pct }}%</strong> to {{ level_label }} ({{ next_level
+                            }})</span>
+                        <span style="color: var(--primary-orange);">{{ "%.2f"|format(rating) }} / {{ next_level
+                            }}</span>
+            </div>
+            <div
+                style="width: 100%; height: 8px; background: rgba(0, 0, 0, 0.05); border-radius: 99px; overflow: hidden;">
+                <div
+                    style="width: {{ pct }}%; height: 100%; background: linear-gradient(90deg, var(--primary-orange), #ea580c); border-radius: 99px;">
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Queue Tracker Widget -->
+    {% if my_queue %}
+    <div class="glass-card full-width"
+        style="margin-top: 10px; border-left: 5px solid #10b981; background: linear-gradient(135deg, var(--card-bg), rgba(16, 185, 129, 0.05)); padding: 20px; position: relative;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <div
+                    style="width: 54px; height: 54px; border-radius: 50%; background: rgba(16, 185, 129, 0.1); border: 2px solid #10b981; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 800; color: #10b981; position: relative; flex-shrink: 0;">
+                    {% if my_queue.status == 'playing' %}
+                    <i class="ph ph-tennis-ball" style="animation: spin 3s linear infinite;"></i>
+                    {% else %}
+                    #{{ my_queue.position }}
+                    {% endif %}
+                    <span class="ping-dot-green"></span>
+                </div>
+                <div>
+                    <span class="small-caps"
+                        style="color: #10b981; font-weight: 700; letter-spacing: 1px; font-size: 0.68rem; display: flex; align-items: center; gap: 4px;">
+                        {% if my_queue.status == 'playing' %}
+                        <i class="ph ph-sparkle"></i> LIVE: Currently On Court
+                        {% elif my_queue.status == 'next' %}
+                        <i class="ph ph-alarm"></i> LIVE: Up Next!
+                        {% else %}
+                        <i class="ph ph-activity"></i> Live Queue Status
+                        {% endif %}
+                    </span>
+                    <h3 style="font-size: 1.1rem; font-weight: 800; margin-top: 2px; color: var(--text-primary);">
+                        {{ my_queue.facilities.name if my_queue.facilities else 'Pickleball Facility' }}
+                    </h3>
+                    <div
+                        style="font-size: 0.8rem; color: var(--text-secondary); display: flex; align-items: center; gap: 12px; margin-top: 2px;">
+                        <span><i class="ph ph-tennis-ball" style="color: var(--text-muted);"></i> {{
+                            my_queue.courts.name if my_queue.courts else 'Pending Court' }}</span>
+                        <span>
+                            <i class="ph ph-hourglass" style="color: var(--text-muted);"></i>
+                            <span class="dash-wait-time-display" data-target-time="{{ my_queue.target_time }}"
+                                data-time-type="{{ my_queue.time_type }}">
+                                {% if my_queue.status == 'playing' %}
+                                {{ my_queue.estimated_wait_mins }} min left
+                                {% else %}
+                                ~{{ my_queue.estimated_wait_mins }} min wait
+                                {% endif %}
+                            </span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <a href="{{ url_for('player.queue') }}" class="action-box green"
+                style="padding: 10px 18px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; text-decoration: none; width: auto; flex-direction: row; gap: 6px; margin: 0;">
+                <i class="ph ph-list-numbers" style="font-size: 1rem;"></i> View Live Queue
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Hero Widget: Next Reservation -->
+    <div class="glass-card full-width" style="margin-top: 10px;">
+        {% if next_reservation %}
+        <div class="reservation-grid">
+            <div class="court-image">
+                <img src="{{ url_for('static', filename='images/court-hero.jpg') }}" alt="Pickleball Court"
+                    style="border-radius: 8px;">
+            </div>
+            <div class="reservation-info">
+                <p class="small-caps">UPCOMING RESERVATION</p>
+                <h2>{{ next_reservation.courts.name if next_reservation.courts else 'Court' }}</h2>
+                <div class="info-row">
+                    <span><i class="ph ph-map-pin"></i> {{ next_reservation.facilities.name if
+                        next_reservation.facilities else 'Facility' }}</span>
+                    <span><i class="ph ph-calendar"></i> {{ next_reservation.date }}</span>
+                </div>
+                <div class="info-time">{{ next_reservation.start_time[:5] }} - {{ next_reservation.end_time[:5] }}</div>
+                <span class="status-badge success"><i class="ph ph-check-circle"></i> Confirmed</span>
+            </div>
+        </div>
+        {% else %}
+        <div class="reservation-grid"
+            style="display: flex; align-items: center; justify-content: center; min-height: 150px;">
+            <div class="reservation-info text-center" style="text-align: center;">
+                <p class="small-caps">NO UPCOMING RESERVATIONS</p>
+                <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 12px;">Ready
+                    to hit the courts?</h2>
+                <a href="{{ url_for('player.reservation') }}" class="action-box orange"
+                    style="display: inline-flex; flex-direction: row; gap: 8px; padding: 10px 20px; color: white; border-radius: 8px; text-decoration: none; width: auto; font-size: 0.85rem; font-weight: 700; cursor: pointer; margin: 0 auto;">
+                    <i class="ph ph-calendar-plus" style="font-size: 1.1rem;"></i> Book a Court
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Available Courts Data Grid -->
+    <div class="glass-card">
+        <div class="widget-header">
+            <h3>Available Courts</h3>
+            <a href="{{ url_for('player.reservation') }}" class="view-all">View All</a>
+        </div>
+        <div class="table-container">
+            <table class="data-grid">
+                <thead>
+                    <tr>
+                        <th>FACILITY & COURT</th>
+                        <th>TYPE</th>
+                        <th>HOURLY RATE</th>
+                        <th>ACTION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if available_courts %}
+                    {% for c in available_courts %}
+                    <tr>
+                        <td class="bold">
+                            <span style="font-size: 0.85rem; color: var(--text-primary);">{{ c.name }}</span>
+                            <span
+                                style="display: block; font-size: 0.72rem; font-weight: 500; color: var(--text-muted); margin-top: 2px;"><i
+                                    class="ph ph-map-pin"></i> {{ c.facilities.name if c.facilities else 'Active
+                                Facility' }}</span>
+                        </td>
+                        <td><span class="status-pill success"
+                                style="text-transform: capitalize; font-size: 0.75rem; font-weight: 600;">{{ c.type
+                                }}</span></td>
+                        <td style="font-weight: 700; color: var(--primary-orange);">₱{{ "%.2f"|format(c.hourly_rate) }}
+                        </td>
+                        <td><a href="{{ url_for('player.reservation') }}" class="action-box orange"
+                                style="padding: 6px 12px; font-size: 0.75rem; font-weight: 700; border-radius: 6px; text-decoration: none; display: inline-block; cursor: pointer; margin: 0; width: auto;">Book
+                                Court</a></td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center"
+                            style="text-align: center; padding: 30px; color: var(--text-muted);">
+                            <i class="ph ph-tennis-ball"
+                                style="font-size: 1.8rem; opacity: 0.5; margin-bottom: 6px;"></i>
+                            <p style="font-size: 0.82rem;">No courts available currently.</p>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Upcoming Events -->
+    <div class="glass-card">
+        <div class="widget-header">
+            <h3>Upcoming Events</h3>
+            <a href="{{ url_for('player.events') }}" class="view-all">View All</a>
+        </div>
+        <div class="events-grid">
+            {% if upcoming_events %}
+            {% for e in upcoming_events %}
+            <div class="event-card"
+                style="display: flex; flex-direction: column; justify-content: space-between; border-left: 3.5px solid var(--primary-orange); padding-left: 14px;">
+                <div>
+                    <span class="small-caps"
+                        style="color: var(--primary-orange); font-size: 0.65rem; font-weight: 700; margin-bottom: 4px;">{{
+                        e.type | upper }}</span>
+                    <h4
+                        style="font-size: 0.92rem; font-weight: 700; margin: 2px 0 6px 0; color: var(--text-primary); line-height: 1.3;">
+                        {{ e.title }}</h4>
+                    <div
+                        style="font-size: 0.76rem; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; margin-bottom: 4px;">
+                        <i class="ph ph-calendar-blank" style="color: var(--text-muted);"></i> {{ e.event_date }}
+                    </div>
+                    <div
+                        style="font-size: 0.76rem; color: var(--text-secondary); display: flex; align-items: center; gap: 4px;">
+                        <i class="ph ph-map-pin" style="color: var(--text-muted);"></i> {{ e.location_label or "Main
+                        Facility" }}
+                    </div>
+                </div>
+                <a href="{{ url_for('player.events') }}" class="action-link"
+                    style="font-size: 0.75rem; font-weight: 700; margin-top: 10px; display: inline-flex; align-items: center; gap: 4px;">Join
+                    Event <i class="ph ph-caret-double-right"></i></a>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div style="grid-column: 1/-1; padding: 20px; text-align: center; color: var(--text-muted);">
+                <i class="ph ph-calendar-x" style="font-size: 1.8rem; opacity: 0.5; margin-bottom: 6px;"></i>
+                <p style="font-size: 0.82rem;">No upcoming events scheduled.</p>
             </div>
             {% endif %}
         </div>
+    </div>
+</div>
 
-        <!-- Available Courts Data Grid -->
-        <div class="glass-card">
-            <div class="widget-header">
-                <h3>Available Courts</h3>
-                <a href="#" class="view-all">View All</a>
-            </div>
-            <div class="table-container">
-                <table class="data-grid">
-                    <thead>
-                        <tr>
-                            <th>COURT</th>
-                            <th>TIME SLOT</th>
-                            <th>STATUS</th>
-                            <th>ACTION</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if available_courts %}
-                        {% for c in available_courts %}
-                        <tr>
-                            <td class="bold">{{ c.name }}</td>
-                            <td>{{ c.type | capitalize }}</td>
-                            <td><span class="status-pill success">Available</span></td>
-                            <td><a href="{{ url_for('player.reservation') }}" class="action-link">Book</a></td>
-                        </tr>
-                        {% endfor %}
-                        {% else %}
-                        <tr>
-                            <td colspan="4" class="text-center" style="text-align: center; padding: 20px;">No available
-                                courts currently.</td>
-                        </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
+<!-- Right Column (Sidebar) -->
+<div class="dashboard-side">
+    <!-- Quick Actions -->
+    <div class="glass-card">
+        <h3 class="widget-title" style="margin-bottom: 16px;">Quick Actions</h3>
+        <div class="action-grid">
+            <button class="action-box orange" onclick="window.location.href='{{ url_for('player.reservation') }}'">
+                <i class="ph ph-calendar-plus"></i>
+                <span>Reserve Court</span>
+            </button>
+            <button class="action-box navy" onclick="window.location.href='{{ url_for('player.tutorials') }}'">
+                <i class="ph ph-video"></i>
+                <span>View Tutorials</span>
+            </button>
+            <button class="action-box navy" onclick="window.location.href='{{ url_for('player.events') }}'">
+                <i class="ph ph-users"></i>
+                <span>View Events</span>
+            </button>
+            <button class="action-box green" onclick="window.location.href='{{ url_for('player.community') }}'">
+                <i class="ph ph-chat-text"></i>
+                <span>Community Feed</span>
+            </button>
         </div>
+    </div>
 
-        <!-- Upcoming Events -->
-        <div class="glass-card">
-            <div class="widget-header">
-                <h3>Upcoming Events</h3>
-                <a href="#" class="view-all">View All</a>
-            </div>
-            <div class="events-grid">
-                {% if upcoming_events %}
-                {% for e in upcoming_events %}
-                <div class="event-card">
-                    <h4>{{ e.title }}</h4>
-                    <p>{{ e.event_date }}</p>
+    <!-- Activity Feed -->
+    <div class="glass-card flex-fill">
+        <h3 class="widget-title">Activity Feed</h3>
+        <ul class="activity-feed">
+            {% if recent_activities %}
+            {% for a in recent_activities %}
+            <li>
+                <span class="dot"></span>
+                <div class="activity-info">
+                    <p><strong>System</strong> {{ a.title }}</p>
+                    <small>{{ a.created_at | community_timeago }}</small>
                 </div>
-                {% endfor %}
-                {% else %}
-                <p style="padding: 10px;">No upcoming events.</p>
-                {% endif %}
-            </div>
-        </div>
+            </li>
+            {% endfor %}
+            {% else %}
+            <li>
+                <p style="color: var(--text-muted); font-size: 0.85rem;">No recent activity.</p>
+            </li>
+            {% endif %}
+        </ul>
     </div>
-
-    <!-- Right Column (Sidebar) -->
-    <div class="dashboard-side">
-        <!-- Quick Actions -->
-        <div class="glass-card">
-            <h3 class="widget-title">Quick Actions</h3>
-            <div class="action-grid">
-                <button class="action-box orange" onclick="window.location.href='reservation'">
-                    <i class="ph ph-calendar-plus"></i>
-                    <span>Reserve Court</span>
-                </button>
-                <button class="action-box navy" onclick="window.location.href='tutorials'">
-                    <i class="ph ph-video"></i>
-                    <span>View Tutorials</span>
-                </button>
-                <button class="action-box navy" onclick="window.location.href='events'">
-                    <i class="ph ph-users"></i>
-                    <span>View Events</span>
-                </button>
-                <button class="action-box green" onclick="window.location.href='community'">
-                    <i class="ph ph-chat-text"></i>
-                    <span>Community Chat</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Activity Feed -->
-        <div class="glass-card flex-fill">
-            <h3 class="widget-title">Activity Feed</h3>
-            <ul class="activity-feed">
-                {% if recent_activities %}
-                {% for a in recent_activities %}
-                <li>
-                    <span class="dot"></span>
-                    <div class="activity-info">
-                        <p><strong>System</strong> {{ a.title }}</p>
-                        <small>{{ a.created_at | community_timeago }}</small>
-                    </div>
-                </li>
-                {% endfor %}
-                {% else %}
-                <li>
-                    <p style="color: var(--text-muted); font-size: 0.85rem;">No recent activity.</p>
-                </li>
-                {% endif %}
-            </ul>
-        </div>
-    </div>
+</div>
 
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        function updateDashboardWaitTimes() {
+            const displays = document.querySelectorAll('.dash-wait-time-display');
+            displays.forEach(el => {
+                const targetTimeStr = el.getAttribute('data-target-time');
+                const timeType = el.getAttribute('data-time-type');
+
+                if (targetTimeStr) {
+                    const targetTime = new Date(targetTimeStr + (targetTimeStr.includes('Z') || targetTimeStr.includes('+') ? '' : 'Z'));
+                    const now = new Date();
+
+                    let diffMs = targetTime - now;
+                    let diffMins = Math.floor(diffMs / 60000);
+                    if (diffMins < 0) diffMins = 0;
+
+                    if (timeType === 'Remaining') {
+                        el.innerText = `${diffMins} min left`;
+                    } else {
+                        el.innerText = `~${diffMins} min wait`;
+                    }
+                }
+            });
+        }
+
+        updateDashboardWaitTimes();
+        setInterval(updateDashboardWaitTimes, 30000); // run every 30 seconds
+    });
+</script>
 {% endblock %}

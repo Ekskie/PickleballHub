@@ -1,0 +1,885 @@
+{% extends "player/base_player.html" %}
+
+{% block title %}Match Lobby: {{ lobby.title }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .lobby-detail-layout {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr;
+        gap: 24px;
+        align-items: start;
+    }
+
+    @media (max-width: 768px) {
+        .lobby-detail-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .detail-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 20px;
+    }
+
+    .section-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 8px;
+    }
+
+    .member-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        background: var(--input-bg);
+        margin-bottom: 10px;
+    }
+
+    .member-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        background: var(--btn-navy);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.95rem;
+    }
+
+    .member-info {
+        flex: 1;
+        margin-left: 12px;
+    }
+
+    .member-name {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .member-role {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+
+    .info-label {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+
+    .info-val {
+        font-size: 0.95rem;
+        color: var(--text-primary);
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+
+    .badge-slots {
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .badge-slots.open {
+        background: rgba(16, 185, 129, 0.12);
+        color: var(--btn-green);
+    }
+
+    .badge-slots.full {
+        background: rgba(239, 68, 68, 0.12);
+        color: #ef4444;
+    }
+
+    .status-pill {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-pill.status-completed {
+        background: rgba(100, 116, 139, 0.12);
+        color: var(--text-muted);
+        border: 1px solid rgba(100, 116, 139, 0.2);
+    }
+
+    .status-pill.status-ongoing {
+        background: rgba(239, 68, 68, 0.12);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .status-pill.status-full {
+        background: rgba(245, 158, 11, 0.12);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    .status-pill.status-looking {
+        background: rgba(16, 185, 129, 0.12);
+        color: var(--btn-green);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    /* Live pulse animation for ongoing match */
+    .ping-dot {
+        width: 8px;
+        height: 8px;
+        background-color: #ef4444;
+        border-radius: 50%;
+        position: relative;
+        display: inline-block;
+    }
+
+    .ping-dot::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background-color: #ef4444;
+        animation: pulse-ping 1.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+        left: 0;
+        top: 0;
+    }
+
+    @keyframes pulse-ping {
+        0% {
+            transform: scale(1);
+            opacity: 0.8;
+        }
+        70% {
+            transform: scale(2.5);
+            opacity: 0;
+        }
+        100% {
+            transform: scale(2.5);
+            opacity: 0;
+        }
+    }
+
+    .member-chat-btn {
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+        background: var(--card-bg);
+        transition: var(--transition);
+        flex-shrink: 0;
+        cursor: pointer;
+    }
+    .member-chat-btn:hover {
+        background: var(--primary-orange-light) !important;
+        border-color: var(--primary-orange) !important;
+        transform: scale(1.05);
+    }
+
+    /* Modal Styling */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.55);
+        z-index: 1000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(4px);
+    }
+
+    .modal-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        padding: 24px;
+        width: 100%;
+        max-width: 520px;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .status-pill.match-type-ranked {
+        background: rgba(245, 158, 11, 0.12);
+        color: var(--primary-orange);
+        border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+
+    .status-pill.match-type-casual {
+        background: rgba(148, 163, 184, 0.12);
+        color: #94a3b8;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .teams-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .teams-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .team-panel {
+        background: rgba(255, 255, 255, 0.01);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 16px;
+    }
+
+    .team-panel-title {
+        font-size: 0.85rem;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .team-panel-title.team1 {
+        color: var(--primary-orange);
+    }
+
+    .team-panel-title.team2 {
+        color: #3b82f6;
+    }
+
+    .slot-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        background: var(--input-bg);
+        margin-bottom: 8px;
+        min-height: 62px;
+        transition: all 0.2s ease;
+    }
+
+    .slot-card.empty {
+        border-style: dashed;
+        background: transparent;
+    }
+
+    .slot-card.current-user {
+        border-color: var(--primary-orange);
+        box-shadow: 0 0 8px rgba(225, 86, 35, 0.12);
+    }
+
+    .claim-btn {
+        background: var(--btn-green);
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+
+    .claim-btn:hover {
+        opacity: 0.9;
+    }
+
+    .switch-btn {
+        background: transparent;
+        border: 1px solid var(--primary-orange);
+        color: var(--primary-orange);
+        padding: 5px 11px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .switch-btn:hover {
+        background: var(--primary-orange);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+    <a href="{{ url_for('player.matchmaker') }}" style="text-decoration: none; color: var(--text-muted); font-size: 0.9rem; display: flex; align-items: center; gap: 4px;">
+        <i class="ph ph-arrow-left"></i> Back to Matchmaker
+    </a>
+</div>
+
+<div class="lobby-detail-layout">
+    
+    <!-- Left: Lobby Information -->
+    <div>
+        <div class="detail-card">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 16px;">
+                <div>
+                    <h1 style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary); margin: 0 0 8px 0;">{{ lobby.title }}</h1>
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 4px;">
+                        {% if lobby.display_status == 'completed' %}
+                        <span class="status-pill status-completed"><i class="ph ph-check-circle"></i> Completed</span>
+                        {% elif lobby.display_status == 'ongoing' %}
+                        <span class="status-pill status-ongoing"><span class="ping-dot"></span> Ongoing</span>
+                        {% elif lobby.display_status == 'full' %}
+                        <span class="status-pill status-full"><i class="ph ph-users"></i> Ready</span>
+                        {% else %}
+                        <span class="status-pill status-looking"><i class="ph ph-users-three"></i> Looking for Players</span>
+                        {% endif %}
+
+                        <span class="status-pill match-type-{{ lobby.match_type }}">
+                            {% if lobby.match_type == 'ranked' %}
+                            <i class="ph ph-shield-check"></i> Ranked
+                            {% else %}
+                            <i class="ph ph-sparkles"></i> Casual
+                            {% endif %}
+                        </span>
+                        
+                        <span class="badge-slots {% if lobby.slots_filled < lobby.slots_total %}open{% else %}full{% endif %}" style="padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">
+                            {{ lobby.slots_total - lobby.slots_filled }} slots left
+                        </span>
+                    </div>
+                </div>
+                
+                <div style="text-align: right;">
+                    <div style="font-size: 0.85rem; color: var(--text-muted);">Required DUPR</div>
+                    <div style="font-size: 1.1rem; font-weight: 700; color: var(--primary-orange);">{{ lobby.min_dupr }} - {{ lobby.max_dupr }}</div>
+                </div>
+            </div>
+
+            <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5; margin-bottom: 24px;">
+                {{ lobby.description or "No description provided." }}
+            </p>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                <div>
+                    <div class="info-label"><i class="ph ph-map-pin"></i> Facility</div>
+                    <div class="info-val">{{ lobby.facility_name }} ({{ lobby.court_name }})</div>
+                </div>
+                <div>
+                    <div class="info-label"><i class="ph ph-calendar"></i> Date & Time</div>
+                    <div class="info-val">{{ lobby.date }} @ {{ lobby.start_time[:5] }} - {{ lobby.end_time[:5] }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Score Reporting Form (Visible to creator if open/full) -->
+        {% if current_user.id == lobby.creator_id and lobby.status in ['open', 'full'] %}
+        <div class="detail-card" style="border-color: var(--btn-green); background: rgba(16, 185, 129, 0.02);">
+            <h3 class="section-title" style="color: var(--btn-green); border-bottom-color: rgba(16, 185, 129, 0.2);">
+                <i class="ph ph-clipboard-text"></i> Report Match Outcome
+            </h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">
+                Once the game is complete, report the scores here to update ELO & DUPR ratings for all approved players.
+            </p>
+            
+            <form method="POST" action="{{ url_for('player.matchmaker_report', lobby_id=lobby.id) }}">
+                <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div class="form-group">
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Winning Team</label>
+                        <select name="winner_team" required style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary);">
+                            <option value="team1" selected>Team 1 (Host's Team)</option>
+                            <option value="team2">Team 2 (Opponent's Team)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Score (e.g. 11-8)</label>
+                        <input type="text" name="score" required placeholder="11-8"
+                               style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary); text-align: center;">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                    <div class="form-group">
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Host Score</label>
+                        <input type="number" name="host_score" required min="0" value="0"
+                               style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary); text-align: center;">
+                    </div>
+                    <div class="form-group">
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Opponent Score</label>
+                        <input type="number" name="opp_score" required min="0" value="0"
+                               style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary); text-align: center;">
+                    </div>
+                </div>
+                
+                <button type="submit" class="action-box green" style="width: 100%;">Submit & Recalculate Ratings</button>
+            </form>
+        </div>
+        {% endif %}
+
+        <!-- Completed Game Outcome Display -->
+        {% if lobby.status == 'completed' %}
+        <div class="detail-card" style="border-color: var(--primary-orange); background: rgba(225, 86, 35, 0.02);">
+            <h3 class="section-title" style="color: var(--primary-orange); border-bottom-color: rgba(225, 86, 35, 0.2);">
+                <i class="ph ph-check-square"></i> Game Complete
+            </h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
+                <div>
+                    <span style="font-size: 0.85rem; color: var(--text-secondary);">Winner</span>
+                    <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin: 4px 0 0 0;">
+                        {{ winner_name }}
+                    </h4>
+                </div>
+                <div style="text-align: right;">
+                    <span style="font-size: 0.85rem; color: var(--text-secondary);">Score</span>
+                    <h4 style="font-size: 1.4rem; font-weight: 800; color: var(--primary-orange); margin: 4px 0 0 0;">
+                        {{ lobby.score }}
+                    </h4>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Lobby Chat Wall Card -->
+        <div class="detail-card lobby-chat-card" style="margin-top: 24px;">
+            <h3 class="section-title">
+                <i class="ph ph-chat-circle-dots" style="color: var(--primary-orange);"></i> Lobby Discussion
+            </h3>
+            
+            {% if is_joined or current_user.id == lobby.creator_id %}
+            <!-- Chat Messages Area -->
+            <div class="chat-messages-container" id="lobbyChatContainer" style="max-height: 350px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 12px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 16px;">
+                {% for msg in messages %}
+                    {% set is_me = (msg.sender_id == current_user.id) %}
+                    {% set is_host = (msg.sender_id == lobby.creator_id) %}
+                    <div style="display: flex; flex-direction: column; align-items: {% if is_me %}flex-end{% else %}flex-start{% endif %}; max-width: 85%; align-self: {% if is_me %}flex-end{% else %}flex-start{% endif %};">
+                        
+                        <!-- Sender metadata (Only for others) -->
+                        {% if not is_me %}
+                        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 3px; margin-left: 4px;">
+                            <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-primary);">
+                                {{ msg.sender_name }}
+                            </span>
+                            {% if is_host %}
+                            <span style="font-size: 0.65rem; font-weight: 700; color: var(--primary-orange); background: rgba(225, 86, 35, 0.1); padding: 1px 6px; border-radius: 10px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 2px;">
+                                <i class="ph ph-crown" style="font-size: 0.75rem;"></i> Host
+                            </span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Message bubble -->
+                        <div style="padding: 10px 14px; border-radius: 12px; font-size: 0.88rem; line-height: 1.4; word-break: break-word;
+                                    {% if is_me %}
+                                    background: linear-gradient(135deg, var(--primary-orange), #f97316); color: white; border-bottom-right-radius: 2px;
+                                    {% else %}
+                                    background: var(--card-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-bottom-left-radius: 2px;
+                                    {% endif %}">
+                            {{ msg.content }}
+                        </div>
+                        
+                        <!-- Message timestamp -->
+                        <span style="font-size: 0.7rem; color: var(--text-muted); margin-top: 3px; padding: 0 4px;">
+                            {{ msg.formatted_time }}
+                        </span>
+                    </div>
+                {% else %}
+                <div style="text-align: center; padding: 32px 16px; color: var(--text-muted); font-size: 0.85rem;">
+                    <i class="ph ph-chats" style="font-size: 2rem; opacity: 0.4; margin-bottom: 8px; display: block; margin-left: auto; margin-right: auto;"></i>
+                    No messages yet. Send a message below to coordinate your match!
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Send Message Input form -->
+            <form method="POST" action="{{ url_for('player.matchmaker_message', lobby_id=lobby.id) }}" style="display: flex; gap: 8px; margin: 0;">
+                <input type="text" name="content" placeholder="Type a message to coordinate..." required autocomplete="off"
+                       style="flex: 1; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary); font-size: 0.875rem;">
+                <button type="submit" class="action-box green" style="width: auto; padding: 0 16px; margin: 0; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <i class="ph ph-paper-plane" style="font-size: 1.1rem;"></i> <span>Send</span>
+                </button>
+            </form>
+
+            {% else %}
+            <!-- Chat locked for non-members -->
+            <div style="text-align: center; padding: 36px 20px; background: var(--input-bg); border: 1px dashed var(--border-color); border-radius: 8px; color: var(--text-muted);">
+                <i class="ph ph-lock-keyhole" style="font-size: 2.2rem; opacity: 0.5; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto;"></i>
+                <h4 style="color: var(--text-primary); font-size: 0.95rem; font-weight: 700; margin-bottom: 6px;">Discussion Wall Locked</h4>
+                <p style="font-size: 0.82rem; line-height: 1.4; max-width: 320px; margin: 0 auto;">
+                    Lobby chat is exclusive to joined players and the host. Join this open play match to coordinate details!
+                </p>
+            </div>
+            {% endif %}
+        </div>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                const chatContainer = document.getElementById('lobbyChatContainer');
+                if (chatContainer) {
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }
+            });
+        </script>
+    </div>
+
+    <!-- Right: Participants & Actions -->
+    <div>
+        <!-- Host Card -->
+        <div class="detail-card">
+            <h3 class="section-title"><i class="ph ph-crown"></i> Match Host</h3>
+            <div class="member-row" style="border-color: var(--primary-orange); background: rgba(225, 86, 35, 0.03);">
+                <div class="member-avatar" style="background: var(--primary-orange); overflow: hidden;">{% if lobby.creator_avatar_url %}<img src="{{ lobby.creator_avatar_url }}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">{% else %}{{ creator_initials }}{% endif %}</div>
+                <div class="member-info">
+                    <div class="member-name">{{ lobby.creator_name }}</div>
+                    <div class="member-role">Creator • {{ "%.2f"|format(lobby.creator_dupr|float) }} DUPR</div>
+                </div>
+                {% if current_user.id != lobby.creator_id %}
+                <a href="{{ url_for('player.player_chat', target_id=lobby.creator_id) }}" class="member-chat-btn" title="Message Host">
+                    <i class="ph ph-chat-circle-dots" style="font-size: 1.15rem; color: var(--primary-orange);"></i>
+                </a>
+                {% endif %}
+            </div>
+            
+            {% if current_user.id == lobby.creator_id and lobby.status != 'completed' %}
+            <div style="display: flex; gap: 8px; margin-top: 14px;">
+                <button class="action-box green" style="font-size: 0.82rem; padding: 6px 12px; margin: 0; width: 100%; cursor: pointer;" onclick="openEditLobbyModal()">
+                    <i class="ph ph-note-pencil"></i> Edit Lobby
+                </button>
+                <button class="action-box" style="font-size: 0.82rem; padding: 6px 12px; margin: 0; width: 100%; background: #ef4444; color: white; border-color: #ef4444; cursor: pointer;" onclick="openDeleteLobbyModal()">
+                    <i class="ph ph-trash"></i> Delete Lobby
+                </button>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Team Lineups Card -->
+        <div class="detail-card">
+            <h3 class="section-title">
+                <i class="ph ph-users"></i> Team Lineups
+                <span style="font-size: 0.85rem; font-weight: 600; margin-left: auto; color: var(--text-muted);">
+                    {{ lobby.slots_filled }}/{{ lobby.slots_total }} Joined
+                </span>
+            </h3>
+
+            <div class="teams-grid">
+                <!-- Team 1 -->
+                <div class="team-panel">
+                    <div class="team-panel-title team1">
+                        <span>Team 1</span>
+                        <span style="font-size: 0.72rem; font-weight: 500; text-transform: none; color: var(--text-muted);">
+                            {% set t1_players = slots_grid.team1 | selectattr('player', 'ne', none) | map(attribute='player') | list %}
+                            {% if t1_players|length > 0 %}
+                                Avg DUPR: {{ "%.2f"|format(t1_players | map(attribute='dupr') | sum / t1_players|length) }}
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% for cell in slots_grid.team1 %}
+                        {% if cell.player %}
+                            <div class="slot-card occupied {% if cell.player.id == current_user.id %}current-user{% endif %}">
+                                <div style="display: flex; align-items: center; width: 100%; justify-content: space-between;">
+                                    <div style="display: flex; align-items: center;">
+                                        <div class="member-avatar" style="background: {% if cell.player.is_host %}var(--primary-orange){% else %}var(--btn-navy){% endif %}; width: 32px; height: 32px; font-size: 0.8rem; overflow: hidden;">
+                                            {% if cell.player.avatar_url %}<img src="{{ cell.player.avatar_url }}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;">{% else %}{{ cell.player.initials }}{% endif %}
+                                        </div>
+                                        <div class="member-info" style="margin-left: 8px;">
+                                            <div class="member-name" style="font-size: 0.82rem;">
+                                                {{ cell.player.name }}
+                                                {% if cell.player.is_host %}
+                                                    <span style="color: var(--primary-orange); font-size: 0.75rem;">★</span>
+                                                {% endif %}
+                                            </div>
+                                            <div class="member-role" style="font-size: 0.7rem;">
+                                                {{ "%.2f"|format(cell.player.dupr|float) }} DUPR
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% if current_user.id != cell.player.id %}
+                                    <a href="{{ url_for('player.player_chat', target_id=cell.player.id) }}" class="member-chat-btn" title="Message Player" style="width: 26px; height: 26px;">
+                                        <i class="ph ph-chat-circle-dots" style="font-size: 1rem; color: var(--primary-orange);"></i>
+                                    </a>
+                                    {% else %}
+                                    <span style="font-size: 0.65rem; font-weight: 700; color: var(--primary-orange); background: rgba(225, 86, 35, 0.1); padding: 1px 5px; border-radius: 4px; text-transform: uppercase;">You</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="slot-card empty">
+                                <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                                    <span style="font-size: 0.78rem; color: var(--text-muted); font-style: italic;">
+                                        <i class="ph ph-user-plus"></i> Slot {{ cell.slot }}
+                                    </span>
+                                    {% if lobby.status in ['open', 'full'] %}
+                                        {% if is_joined %}
+                                            <form method="POST" action="{{ url_for('player.matchmaker_switch', lobby_id=lobby.id) }}" style="margin:0;">
+                                                <input type="hidden" name="team" value="1">
+                                                <input type="hidden" name="slot" value="{{ cell.slot }}">
+                                                <button type="submit" class="switch-btn">Switch</button>
+                                            </form>
+                                        {% else %}
+                                            {% if lobby.status == 'open' and current_user.dupr >= lobby.min_dupr and current_user.dupr <= lobby.max_dupr and current_user.id != lobby.creator_id %}
+                                                <form method="POST" action="{{ url_for('player.matchmaker_join', lobby_id=lobby.id) }}" style="margin:0;">
+                                                    <input type="hidden" name="team" value="1">
+                                                    <input type="hidden" name="slot" value="{{ cell.slot }}">
+                                                    <button type="submit" class="claim-btn">Claim</button>
+                                                </form>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <!-- Team 2 -->
+                <div class="team-panel">
+                    <div class="team-panel-title team2">
+                        <span>Team 2</span>
+                        <span style="font-size: 0.72rem; font-weight: 500; text-transform: none; color: var(--text-muted);">
+                            {% set t2_players = slots_grid.team2 | selectattr('player', 'ne', none) | map(attribute='player') | list %}
+                            {% if t2_players|length > 0 %}
+                                Avg DUPR: {{ "%.2f"|format(t2_players | map(attribute='dupr') | sum / t2_players|length) }}
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% for cell in slots_grid.team2 %}
+                        {% if cell.player %}
+                            <div class="slot-card occupied {% if cell.player.id == current_user.id %}current-user{% endif %}">
+                                <div style="display: flex; align-items: center; width: 100%; justify-content: space-between;">
+                                    <div style="display: flex; align-items: center;">
+                                        <div class="member-avatar" style="background: var(--btn-navy); width: 32px; height: 32px; font-size: 0.8rem; overflow: hidden;">
+                                            {% if cell.player.avatar_url %}<img src="{{ cell.player.avatar_url }}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;">{% else %}{{ cell.player.initials }}{% endif %}
+                                        </div>
+                                        <div class="member-info" style="margin-left: 8px;">
+                                            <div class="member-name" style="font-size: 0.82rem;">{{ cell.player.name }}</div>
+                                            <div class="member-role" style="font-size: 0.7rem;">{{ "%.2f"|format(cell.player.dupr|float) }} DUPR</div>
+                                        </div>
+                                    </div>
+                                    {% if current_user.id != cell.player.id %}
+                                    <a href="{{ url_for('player.player_chat', target_id=cell.player.id) }}" class="member-chat-btn" title="Message Player" style="width: 26px; height: 26px;">
+                                        <i class="ph ph-chat-circle-dots" style="font-size: 1rem; color: var(--primary-orange);"></i>
+                                    </a>
+                                    {% else %}
+                                    <span style="font-size: 0.65rem; font-weight: 700; color: var(--primary-orange); background: rgba(225, 86, 35, 0.1); padding: 1px 5px; border-radius: 4px; text-transform: uppercase;">You</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="slot-card empty">
+                                <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                                    <span style="font-size: 0.78rem; color: var(--text-muted); font-style: italic;">
+                                        <i class="ph ph-user-plus"></i> Slot {{ cell.slot }}
+                                    </span>
+                                    {% if lobby.status in ['open', 'full'] %}
+                                        {% if is_joined %}
+                                            <form method="POST" action="{{ url_for('player.matchmaker_switch', lobby_id=lobby.id) }}" style="margin:0;">
+                                                <input type="hidden" name="team" value="2">
+                                                <input type="hidden" name="slot" value="{{ cell.slot }}">
+                                                <button type="submit" class="switch-btn">Switch</button>
+                                            </form>
+                                        {% else %}
+                                            {% if lobby.status == 'open' and current_user.dupr >= lobby.min_dupr and current_user.dupr <= lobby.max_dupr and current_user.id != lobby.creator_id %}
+                                                <form method="POST" action="{{ url_for('player.matchmaker_join', lobby_id=lobby.id) }}" style="margin:0;">
+                                                    <input type="hidden" name="team" value="2">
+                                                    <input type="hidden" name="slot" value="{{ cell.slot }}">
+                                                    <button type="submit" class="claim-btn">Claim</button>
+                                                </form>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Leave button if joined -->
+            {% if lobby.status in ['open', 'full'] and current_user.id != lobby.creator_id and is_joined %}
+                <form method="POST" action="{{ url_for('player.matchmaker_leave', lobby_id=lobby.id) }}">
+                    <button type="submit" class="action-box" style="width: 100%; background: #ef4444; color: white; border: none; margin-top: 10px;">
+                        <i class="ph ph-sign-out"></i> Leave Match Lobby
+                    </button>
+                </form>
+            {% endif %}
+
+            <!-- Warning if user rating doesn't match and not joined -->
+            {% if lobby.status == 'open' and current_user.id != lobby.creator_id and not is_joined %}
+                {% if current_user.dupr < lobby.min_dupr or current_user.dupr > lobby.max_dupr %}
+                    <div style="background: rgba(239, 68, 68, 0.06); border: 1px solid rgba(239, 68, 68, 0.2); padding: 12px; border-radius: 8px; font-size: 0.8rem; color: #ef4444; text-align: center; margin-top: 10px;">
+                        <i class="ph ph-warning"></i> Your DUPR rating ({{ "%.2f"|format(current_user.dupr|float) }}) does not meet the requirements for this lobby.
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+
+        <!-- Joined Players List Card -->
+        <div class="detail-card" style="margin-top: 20px;">
+            <h3 class="section-title">
+                <i class="ph ph-users"></i> Joined Players
+                <span style="font-size: 0.85rem; font-weight: normal; margin-left: auto;">
+                    {{ lobby.slots_filled }}/{{ lobby.slots_total }} Joined
+                </span>
+            </h3>
+            <div style="margin-bottom: 10px;">
+                {% for p in participants %}
+                <div class="member-row">
+                    <div style="display: flex; align-items: center; width: 100%; justify-content: space-between;">
+                        <div style="display: flex; align-items: center;">
+                            <div class="member-avatar" style="width: 32px; height: 32px; font-size: 0.8rem; background: var(--btn-navy); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; border-radius: 8px; overflow: hidden;">
+                                {% if p.avatar_url %}<img src="{{ p.avatar_url }}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;">{% else %}{{ p.initials }}{% endif %}
+                            </div>
+                            <div class="member-info" style="margin-left: 8px;">
+                                <div class="member-name" style="font-size: 0.82rem;">
+                                    {{ p.name }}
+                                </div>
+                                <div class="member-role" style="font-size: 0.7rem;">
+                                    {{ "%.2f"|format(p.profiles.dupr|float) }} DUPR • Team {{ p.team }} (Slot {{ p.slot }})
+                                </div>
+                            </div>
+                        </div>
+                        {% if current_user.id != p.player_id %}
+                        <a href="{{ url_for('player.player_chat', target_id=p.player_id) }}" class="member-chat-btn" title="Message Player" style="width: 26px; height: 26px;">
+                            <i class="ph ph-chat-circle-dots" style="font-size: 1rem; color: var(--primary-orange);"></i>
+                        </a>
+                        {% else %}
+                        <span style="font-size: 0.65rem; font-weight: 700; color: var(--primary-orange); background: rgba(225, 86, 35, 0.1); padding: 1px 5px; border-radius: 4px; text-transform: uppercase;">You</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <div style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 0.85rem;">
+                    No players have joined yet.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Lobby Modal -->
+{% if current_user.id == lobby.creator_id %}
+<div id="editLobbyModal" class="modal-overlay">
+    <div class="modal-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary);">Edit Open Play Lobby</h2>
+            <button onclick="closeEditLobbyModal()" style="background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer;"><i class="ph ph-x"></i></button>
+        </div>
+        
+        <form method="POST" action="{{ url_for('player.matchmaker_edit', lobby_id=lobby.id) }}">
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Lobby Title</label>
+                <input type="text" name="title" required value="{{ lobby.title }}" placeholder="e.g. Friendly Doubles Open Play"
+                       style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary);">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Description</label>
+                <textarea name="description" rows="3" placeholder="Tell other players what to expect (e.g. casual play, warm-ups, competitive rules)..."
+                          style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary); resize: vertical;">{{ lobby.description or '' }}</textarea>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                <div class="form-group">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Min DUPR Limit</label>
+                    <input type="number" step="0.01" name="min_dupr" value="{{ "%.2f"|format(lobby.min_dupr|float) }}" min="2.00" max="8.00" required
+                           style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary);">
+                </div>
+                <div class="form-group">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Max DUPR Limit</label>
+                    <input type="number" step="0.01" name="max_dupr" value="{{ "%.2f"|format(lobby.max_dupr|float) }}" min="2.00" max="8.00" required
+                           style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary);">
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Slots Total</label>
+                    <select name="slots_total" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary);">
+                        <option value="1" {% if lobby.slots_total == 1 %}selected{% endif %}>1 Player (Singles)</option>
+                        <option value="2" {% if lobby.slots_total == 2 %}selected{% endif %}>2 Players (Cutthroat)</option>
+                        <option value="3" {% if lobby.slots_total == 3 %}selected{% endif %}>3 Players (Doubles)</option>
+                    </select>
+                    <span style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 4px;">Must be &ge; currently joined ({{ lobby.slots_filled }}).</span>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Match Type</label>
+                    <select name="match_type" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary);">
+                        <option value="ranked" {% if lobby.match_type == 'ranked' %}selected{% endif %}>Ranked (Elo/DUPR Updated)</option>
+                        <option value="casual" {% if lobby.match_type == 'casual' %}selected{% endif %}>Casual (Practice Match)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                <button type="button" class="action-box" onclick="closeEditLobbyModal()">Cancel</button>
+                <button type="submit" class="action-box green">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Lobby Modal -->
+<div id="deleteLobbyModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 420px;">
+        <h2 style="font-size: 1.2rem; font-weight: 700; color: #ef4444; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <i class="ph ph-warning-octagon"></i> Delete Lobby?
+        </h2>
+        <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.4; margin-bottom: 20px;">
+            Are you sure you want to delete this open play match lobby? This action cannot be undone. All coordination messages and logs will be permanently deleted.
+        </p>
+        <form method="POST" action="{{ url_for('player.matchmaker_delete', lobby_id=lobby.id) }}">
+            <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                <button type="button" class="action-box" onclick="closeDeleteLobbyModal()">Cancel</button>
+                <button type="submit" class="action-box" style="background: #ef4444; color: white; border-color: #ef4444;">Delete Permanently</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openEditLobbyModal() {
+        document.getElementById('editLobbyModal').style.display = 'flex';
+    }
+    
+    function closeEditLobbyModal() {
+        document.getElementById('editLobbyModal').style.display = 'none';
+    }
+    
+    function openDeleteLobbyModal() {
+        document.getElementById('deleteLobbyModal').style.display = 'flex';
+    }
+    
+    function closeDeleteLobbyModal() {
+        document.getElementById('deleteLobbyModal').style.display = 'none';
+    }
+</script>
+{% endif %}
+{% endblock %}

@@ -133,3 +133,117 @@ def update_match_ratings(db, match_id):
         
     except Exception as e:
         print(f"[update_match_ratings] Failed to update match ratings for match {match_id}: {e}")
+
+def update_matchmaker_ratings(db, lobby_id):
+    """Recalculate ratings for players of a matchmaking lobby (Team 1 vs Team 2)."""
+    try:
+        # 1. Fetch lobby record
+        lob_resp = db.table('matchmaker_lobbies').select('*').eq('id', lobby_id).single().execute()
+        lobby = lob_resp.data
+        if not lobby or not lobby.get('winner_id') or lobby.get('status') != 'completed':
+            return
+            
+        # If casual play, do not update ratings!
+        if lobby.get('match_type') == 'casual':
+            print(f"[update_matchmaker_ratings] Skipping ratings update for casual lobby {lobby_id}")
+            return
+            
+        host_id = lobby.get('creator_id')
+        winner_id = lobby.get('winner_id')
+        played_at = lobby.get('created_at') or datetime.now(timezone.utc).isoformat()
+        
+        # 2. Fetch joined participants with their team/slot info
+        part_resp = db.table('lobby_participants').select('player_id, team, slot').eq('lobby_id', lobby_id).eq('status', 'joined').execute()
+        participants = part_resp.data or []
+        
+        # 3. Group players into Team 1 and Team 2
+        # Team 1: Host (always) + any participant on team 1
+        team1_ids = [host_id]
+        team2_ids = []
+        for p in participants:
+            if p.get('team') == 1:
+                team1_ids.append(p['player_id'])
+            elif p.get('team') == 2:
+                team2_ids.append(p['player_id'])
+                
+        # Determine who won
+        team1_won = winner_id in team1_ids
+        
+        # 4. Fetch profiles for all players
+        all_player_ids = team1_ids + team2_ids
+        prof_resp = db.table('profiles').select('id, elo, dupr, proficiency').in_('id', all_player_ids).execute()
+        profiles = {p['id']: p for p in (prof_resp.data or [])}
+        
+        # Initialize ratings if null
+        for pid in all_player_ids:
+            if pid not in profiles:
+                continue
+            p = profiles[pid]
+            if p.get('elo') is None or p.get('dupr') is None:
+                elo, dupr = init_player_rating(db, pid, p.get('proficiency'))
+                p['elo'] = elo
+                p['dupr'] = dupr
+                
+        # 5. Calculate Team Average Elo
+        t1_elos = [profiles[pid]['elo'] for pid in team1_ids if pid in profiles]
+        t2_elos = [profiles[pid]['elo'] for pid in team2_ids if pid in profiles]
+        
+        if not t1_elos or not t2_elos:
+            return
+            
+        avg_elo1 = sum(t1_elos) / len(t1_elos)
+        avg_elo2 = sum(t2_elos) / len(t2_elos)
+        
+        # Calculate expected outcome
+        expected1 = 1.0 / (1.0 + 10.0 ** ((avg_elo2 - avg_elo1) / 400.0))
+        expected2 = 1.0 - expected1
+        
+        actual1 = 1.0 if team1_won else 0.0
+        actual2 = 1.0 - actual1
+        
+        # 6. Apply updates for Team 1
+        for pid in team1_ids:
+            if pid not in profiles:
+                continue
+            p = profiles[pid]
+            old_elo = p['elo']
+            old_dupr = p['dupr']
+            
+            new_elo = round(old_elo + 32 * (actual1 - expected1))
+            new_dupr = elo_to_dupr(new_elo)
+            
+            db.table('profiles').update({'elo': new_elo, 'dupr': new_dupr}).eq('id', pid).execute()
+            ensure_initial_history(db, pid, old_elo, old_dupr, played_at)
+            
+            db.table('rating_history').insert({
+                'player_id': pid,
+                'match_id': None,
+                'elo': new_elo,
+                'dupr': new_dupr,
+                'recorded_at': played_at
+            }).execute()
+            
+        # 7. Apply updates for Team 2
+        for pid in team2_ids:
+            if pid not in profiles:
+                continue
+            p = profiles[pid]
+            old_elo = p['elo']
+            old_dupr = p['dupr']
+            
+            new_elo = round(old_elo + 32 * (actual2 - expected2))
+            new_dupr = elo_to_dupr(new_elo)
+            
+            db.table('profiles').update({'elo': new_elo, 'dupr': new_dupr}).eq('id', pid).execute()
+            ensure_initial_history(db, pid, old_elo, old_dupr, played_at)
+            
+            db.table('rating_history').insert({
+                'player_id': pid,
+                'match_id': None,
+                'elo': new_elo,
+                'dupr': new_dupr,
+                'recorded_at': played_at
+            }).execute()
+            
+    except Exception as e:
+        print(f"[update_matchmaker_ratings] Failed to update matchmaker ratings for lobby {lobby_id}: {e}")

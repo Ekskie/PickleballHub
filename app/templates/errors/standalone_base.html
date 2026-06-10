@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Out of Bounds! (404){% endblock %} - PickleballHub</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Base styles and Error page styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/error.css') }}">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body>
+
+    <!-- Animated glassmorphic background -->
+    <div class="background-wrap">
+        <div class="overlay"></div>
+    </div>
+
+    <!-- Navigation Header -->
+    {% include 'landings/navigation.html' %}
+
+    <!-- Main Content -->
+    <div class="error-container">
+        {% block content %}{% endblock %}
+    </div>
+
+</body>
+
+</html>

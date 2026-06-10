@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /* ── State ────────────────────────────────────────── */
     let activeConversationId  = null;
-    let activeOtherUser       = null;   // { id, name, role, initials }
+    let activeOtherUser       = null;   // { id, name, role, initials, avatar_url }
     let searchDebounce        = null;
     let allConversations      = [];     // cached for inline filter
     let latestMsgMap          = {};
@@ -86,7 +86,11 @@ document.addEventListener('DOMContentLoaded', () => {
         chatHeader.style.display       = 'flex';
         chatMessages.style.display     = 'flex';
         chatInputWrap.style.display    = 'flex';
-        chatHeaderAvatar.textContent   = user.initials;
+        if (user.avatar_url) {
+            chatHeaderAvatar.innerHTML = `<img src="${esc(user.avatar_url)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">`;
+        } else {
+            chatHeaderAvatar.textContent = user.initials;
+        }
         chatHeaderName.textContent     = user.name;
         chatHeaderRole.textContent     = user.role ? capitalise(user.role) : '';
     }
@@ -108,15 +112,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const ids = mine.map(r => r.conversation_id);
+        
+        // Fetch which conversation IDs are matchmaking lobbies to exclude them
+        let privateIds = ids;
+        try {
+            const { data: lobbies } = await supabaseClient
+                .from('matchmaker_lobbies')
+                .select('id')
+                .in('id', ids);
+            
+            if (lobbies && lobbies.length > 0) {
+                const lobbyIds = new Set(lobbies.map(l => l.id));
+                privateIds = ids.filter(id => !lobbyIds.has(id));
+            }
+        } catch (filterErr) {
+            console.error('[Messages] error filtering lobby conversations:', filterErr);
+        }
+
+        if (privateIds.length === 0) {
+            renderEmptyContacts();
+            return;
+        }
 
         // Fetch the OTHER participant with their profile
         const { data: others, error: oErr } = await supabaseClient
             .from('conversation_participants')
             .select(`
                 conversation_id,
-                profiles!conversation_participants_profile_id_fkey(id, first_name, last_name, role)
+                profiles!conversation_participants_profile_id_fkey(id, first_name, last_name, role, avatar_url)
             `)
-            .in('conversation_id', ids)
+            .in('conversation_id', privateIds)
             .neq('profile_id', currentUserId);
 
         if (oErr) { console.error('[Messages] loadConversations:', oErr); return; }
@@ -125,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const { data: latestMsgs } = await supabaseClient
             .from('messages')
             .select('conversation_id, content, created_at, sender_id, read_at')
-            .in('conversation_id', ids)
+            .in('conversation_id', privateIds)
             .order('created_at', { ascending: false });
 
         latestMsgMap = {};
@@ -173,6 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const name    = `${p.first_name || ''} ${p.last_name || ''}`.trim();
             const ini     = initials(p.first_name, p.last_name);
+            const avatarUrl = p.avatar_url || null;
             const latest  = latestMsgMap[row.conversation_id];
             const unread  = unreadMap[row.conversation_id] || 0;
             const isActive = activeConversationId === row.conversation_id;
@@ -191,11 +217,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 (unread > 0 && !isActive) ? 'unread' : ''
             ].filter(Boolean).join(' ');
 
+            const avatarHtml = avatarUrl
+                ? `<div class="contact-avatar" style="overflow:hidden;"><img src="${esc(avatarUrl)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"></div>`
+                : `<div class="contact-avatar">${esc(ini)}</div>`;
+
             const item = document.createElement('div');
             item.className = classes;
             item.dataset.convoId = row.conversation_id;
             item.innerHTML = `
-                <div class="contact-avatar">${esc(ini)}</div>
+                ${avatarHtml}
                 <div class="contact-info">
                     <p class="contact-name">${esc(name)}</p>
                     <p class="contact-snippet">${snippet}</p>
@@ -209,7 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             item.addEventListener('click', () =>
                 openConversation(row.conversation_id, {
-                    id: p.id, name, role: p.role, initials: ini
+                    id: p.id, name, role: p.role, initials: ini, avatar_url: avatarUrl
                 })
             );
             contactsList.appendChild(item);
@@ -395,7 +425,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const { data: users, error } = await supabaseClient
             .from('profiles')
-            .select('id, first_name, last_name, role')
+            .select('id, first_name, last_name, role, avatar_url')
             .neq('id', currentUserId)
             .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%`)
             .limit(12);
@@ -415,11 +445,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const name      = `${user.first_name || ''} ${user.last_name || ''}`.trim();
             const ini       = initials(user.first_name, user.last_name);
             const roleLabel = user.role ? capitalise(user.role) : 'User';
+            const avatarUrl = user.avatar_url || null;
+
+            const avatarHtml = avatarUrl
+                ? `<div class="user-result-avatar" style="overflow:hidden;"><img src="${esc(avatarUrl)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"></div>`
+                : `<div class="user-result-avatar">${esc(ini)}</div>`;
 
             const item = document.createElement('div');
             item.className = 'user-result-item';
             item.innerHTML = `
-                <div class="user-result-avatar">${esc(ini)}</div>
+                ${avatarHtml}
                 <div>
                     <div class="user-result-name">${esc(name)}</div>
                     <div class="user-result-role">${esc(roleLabel)}</div>
@@ -436,7 +471,7 @@ document.addEventListener('DOMContentLoaded', () => {
         closeModal();
         const ini      = initials(targetUser.first_name, targetUser.last_name);
         const name     = `${targetUser.first_name || ''} ${targetUser.last_name || ''}`.trim();
-        const userObj  = { id: targetUser.id, name, role: targetUser.role, initials: ini };
+        const userObj  = { id: targetUser.id, name, role: targetUser.role, initials: ini, avatar_url: targetUser.avatar_url || null };
 
         // Check if conversation already exists
         const { data: mine } = await supabaseClient

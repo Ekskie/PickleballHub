@@ -1,0 +1,375 @@
+{% extends "base.html" if current_user.is_logged_in else "errors/standalone_base.html" %}
+
+{% block title %}Out of Bounds! (404){% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/error.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="error-card {% if current_user.is_logged_in %}dashboard-mode{% endif %}">
+        <div class="error-badge">Fault! Code 404</div>
+        
+        <div class="illustration-wrap">
+            <img class="error-illustration" src="{{ url_for('static', filename='images/pickleball_404.png') }}" alt="Neon 404 Pickleball">
+        </div>
+
+        <h1 class="error-title">Out of Bounds!</h1>
+        <p class="error-description">
+            The page you are looking for has bounced out of the court. While we fetch the ball, try our mini-game or head back to safety!
+        </p>
+
+        <!-- Mini Game Container -->
+        <div class="game-container">
+            <div class="game-header">
+                <span class="game-title">
+                    <i class="ph-bold ph-tennis-ball"></i> Pickleball Keepy-Uppy
+                </span>
+                <div class="game-score-label">
+                    <span>Score: <strong id="scoreVal">0</strong></span>
+                    <span>High Score: <strong id="highScoreVal">0</strong></span>
+                </div>
+            </div>
+            
+            <div class="game-canvas-wrap">
+                <canvas id="gameCanvas" width="480" height="270"></canvas>
+                <div id="gameOverlay" class="game-overlay">
+                    <h4>Fault! Game Over</h4>
+                    <p>Keep the ball bouncing with your paddle.</p>
+                    <button class="btn-game-start" id="btnStart">Play Game</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="error-actions">
+            {% if current_user.is_logged_in %}
+                {% if current_user.role_raw == 'player' %}
+                    <a href="{{ url_for('player.dashboard') }}" class="btn-error-home primary"><i class="ph ph-squares-four"></i> Go to Dashboard</a>
+                {% elif current_user.role_raw == 'clubadmin' %}
+                    <a href="{{ url_for('clubadmin.dashboard') }}" class="btn-error-home primary"><i class="ph ph-squares-four"></i> Go to Dashboard</a>
+                {% elif current_user.role_raw == 'owner' %}
+                    <a href="{{ url_for('owner.dashboard') }}" class="btn-error-home primary"><i class="ph ph-squares-four"></i> Go to Dashboard</a>
+                {% elif current_user.role_raw == 'facilitystaff' %}
+                    <a href="{{ url_for('facilitystaff.dashboard') }}" class="btn-error-home primary"><i class="ph ph-squares-four"></i> Go to Dashboard</a>
+                {% elif current_user.role_raw == 'superadmin' %}
+                    <a href="{{ url_for('superadmin.dashboard') }}" class="btn-error-home primary"><i class="ph ph-squares-four"></i> Go to Dashboard</a>
+                {% else %}
+                    <a href="{{ url_for('main.index') }}" class="btn-error-home primary"><i class="ph ph-house"></i> Return Home</a>
+                {% endif %}
+            {% else %}
+                <a href="{{ url_for('main.index') }}" class="btn-error-home primary"><i class="ph ph-house"></i> Return Home</a>
+            {% endif %}
+            
+            <a href="{{ url_for('main.courts_listing') }}" class="btn-error-home secondary"><i class="ph ph-map-pin"></i> Browse Courts</a>
+        </div>
+    </div>
+
+    <!-- Interactive Game Script -->
+    <script>
+        (function() {
+            const canvas = document.getElementById('gameCanvas');
+            if (!canvas) return; // Prevent run errors in wrong context
+            
+            const ctx = canvas.getContext('2d');
+            const scoreVal = document.getElementById('scoreVal');
+            const highScoreVal = document.getElementById('highScoreVal');
+            const gameOverlay = document.getElementById('gameOverlay');
+            const btnStart = document.getElementById('btnStart');
+
+            // Game state
+            let gameRunning = false;
+            let score = 0;
+            let highScore = parseInt(localStorage.getItem('pb_high_score') || '0');
+            if (highScoreVal) highScoreVal.textContent = highScore;
+
+            // Ball details
+            let ball = {
+                x: 0,
+                y: 0,
+                radius: 8,
+                dx: 0,
+                dy: 0,
+                color: '#a3e635' // Neon Lime green
+            };
+
+            // Paddle details
+            let paddle = {
+                x: 0,
+                y: 0,
+                width: 76,
+                height: 10,
+                color: '#ff5722' // Orange
+            };
+
+            // Initialize Web Audio Context for synthesized sound effects
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            let audioCtx = null;
+
+            function playSound(freq, duration, type='sine') {
+                try {
+                    if (!audioCtx) {
+                        audioCtx = new AudioCtx();
+                    }
+                    if (audioCtx.state === 'suspended') {
+                        audioCtx.resume();
+                    }
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+                    gain.gain.setValueAtTime(0, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + duration);
+                } catch(e) {
+                    // Ignore audio errors
+                }
+            }
+
+            // Particle system for bounce effects
+            let particles = [];
+            function createExplosion(x, y, color) {
+                for(let i=0; i<8; i++) {
+                    particles.push({
+                        x: x,
+                        y: y,
+                        dx: (Math.random() - 0.5) * 4,
+                        dy: (Math.random() - 0.5) * 4,
+                        radius: Math.random() * 3 + 1,
+                        color: color,
+                        alpha: 1,
+                        decay: Math.random() * 0.03 + 0.02
+                    });
+                }
+            }
+
+            function updateParticles() {
+                for(let i = particles.length - 1; i >= 0; i--) {
+                    const p = particles[i];
+                    p.x += p.dx;
+                    p.y += p.dy;
+                    p.alpha -= p.decay;
+                    if(p.alpha <= 0) {
+                        particles.splice(i, 1);
+                    }
+                }
+            }
+
+            function drawParticles() {
+                particles.forEach(p => {
+                    ctx.save();
+                    ctx.globalAlpha = p.alpha;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color;
+                    ctx.fill();
+                    ctx.restore();
+                });
+            }
+
+            // Mouse controller
+            let rect = canvas.getBoundingClientRect();
+            
+            function updateRect() {
+                rect = canvas.getBoundingClientRect();
+            }
+            window.addEventListener('resize', updateRect);
+            canvas.addEventListener('mouseenter', updateRect);
+
+            canvas.addEventListener('mousemove', (e) => {
+                const relativeX = e.clientX - rect.left;
+                // Scale according to CSS size
+                const scaleX = canvas.width / rect.width;
+                paddle.x = (relativeX * scaleX) - (paddle.width / 2);
+
+                // Clamp paddle inside canvas bounds
+                if(paddle.x < 0) paddle.x = 0;
+                if(paddle.x + paddle.width > canvas.width) paddle.x = canvas.width - paddle.width;
+            });
+
+            // Touch controller for mobile support
+            canvas.addEventListener('touchmove', (e) => {
+                if(e.touches.length > 0) {
+                    e.preventDefault();
+                    updateRect();
+                    const relativeX = e.touches[0].clientX - rect.left;
+                    const scaleX = canvas.width / rect.width;
+                    paddle.x = (relativeX * scaleX) - (paddle.width / 2);
+
+                    if(paddle.x < 0) paddle.x = 0;
+                    if(paddle.x + paddle.width > canvas.width) paddle.x = canvas.width - paddle.width;
+                }
+            }, { passive: false });
+
+            function initGame() {
+                updateRect();
+                score = 0;
+                if (scoreVal) scoreVal.textContent = score;
+                
+                // Initial positioning
+                paddle.x = (canvas.width - paddle.width) / 2;
+                paddle.y = canvas.height - 20;
+
+                ball.x = canvas.width / 2;
+                ball.y = 50;
+                
+                // Random direction down
+                ball.dx = (Math.random() - 0.5) * 4;
+                ball.dy = 3;
+
+                particles = [];
+            }
+
+            function startGame() {
+                initGame();
+                gameRunning = true;
+                if (gameOverlay) gameOverlay.classList.add('hidden');
+                playSound(330, 0.15); // E4 start sound
+                setTimeout(() => playSound(440, 0.15), 100); // A4
+                requestAnimationFrame(gameLoop);
+            }
+
+            function gameOver() {
+                gameRunning = false;
+                if (gameOverlay) {
+                    gameOverlay.classList.remove('hidden');
+                    const gameOverTitle = gameOverlay.querySelector('h4');
+                    if (gameOverTitle) gameOverTitle.textContent = "Fault! Game Over";
+                    const gameOverText = gameOverlay.querySelector('p');
+                    if (gameOverText) gameOverText.innerHTML = `You scored <strong>${score}</strong> point(s). <br>Can you bounce it higher next time?`;
+                }
+                if (btnStart) btnStart.textContent = "Play Again";
+
+                playSound(220, 0.4, 'triangle'); // Low sad sound
+                
+                if(score > highScore) {
+                    highScore = score;
+                    localStorage.setItem('pb_high_score', highScore);
+                    if (highScoreVal) highScoreVal.textContent = highScore;
+                }
+            }
+
+            function drawPickleball(x, y, r) {
+                ctx.beginPath();
+                ctx.arc(x, y, r, 0, Math.PI * 2);
+                ctx.fillStyle = ball.color;
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = ball.color;
+                ctx.fill();
+                ctx.shadowBlur = 0; // reset shadow
+
+                ctx.fillStyle = '#0f1115';
+                const holeOffsets = [
+                    {x: -4, y: -2}, {x: 4, y: -2}, 
+                    {x: -2, y: 4}, {x: 2, y: 4},
+                    {x: 0, y: -5}, {x: 0, y: 0}
+                ];
+                holeOffsets.forEach(offset => {
+                    ctx.beginPath();
+                    ctx.arc(x + (offset.x * (r/8)), y + (offset.y * (r/8)), r / 6, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            }
+
+            function drawPaddle(x, y, w, h) {
+                ctx.beginPath();
+                ctx.roundRect(x, y, w, h, 4);
+                ctx.fillStyle = paddle.color;
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = paddle.color;
+                ctx.fill();
+                ctx.shadowBlur = 0; // reset shadow
+
+                ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                ctx.beginPath();
+                ctx.roundRect(x + 2, y + 2, w - 4, 3, 2);
+                ctx.fill();
+            }
+
+            function gameLoop() {
+                if(!gameRunning) return;
+
+                ctx.fillStyle = '#0f1115';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height / 2);
+                ctx.lineTo(canvas.width, canvas.height / 2);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height / 2 + 30);
+                ctx.lineTo(canvas.width, canvas.height / 2 + 30);
+                ctx.stroke();
+
+                ball.x += ball.dx;
+                ball.y += ball.dy;
+
+                if(ball.x - ball.radius < 0) {
+                    ball.x = ball.radius;
+                    ball.dx = -ball.dx;
+                    playSound(300, 0.08);
+                    createExplosion(0, ball.y, ball.color);
+                } else if(ball.x + ball.radius > canvas.width) {
+                    ball.x = canvas.width - ball.radius;
+                    ball.dx = -ball.dx;
+                    playSound(300, 0.08);
+                    createExplosion(canvas.width, ball.y, ball.color);
+                }
+
+                if(ball.y - ball.radius < 0) {
+                    ball.y = ball.radius;
+                    ball.dy = -ball.dy;
+                    playSound(300, 0.08);
+                    createExplosion(ball.x, 0, ball.color);
+                }
+
+                if(ball.y + ball.radius >= paddle.y && ball.y - ball.radius <= paddle.y + paddle.height) {
+                    if(ball.x >= paddle.x && ball.x <= paddle.x + paddle.width) {
+                        if (ball.dy > 0) {
+                            playSound(520, 0.1, 'sine');
+                            createExplosion(ball.x, paddle.y, ball.color);
+
+                            const hitPoint = (ball.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
+                            ball.dx = hitPoint * 4.5;
+                            ball.dy = -ball.dy;
+                            ball.y = paddle.y - ball.radius;
+
+                            score++;
+                            if (scoreVal) scoreVal.textContent = score;
+
+                            if (score % 3 === 0) {
+                                ball.dy = ball.dy * 1.08;
+                            }
+                        }
+                    }
+                }
+
+                if(ball.y - ball.radius > canvas.height) {
+                    gameOver();
+                    return;
+                }
+
+                updateParticles();
+                drawParticles();
+
+                drawPaddle(paddle.x, paddle.y, paddle.width, paddle.height);
+                drawPickleball(ball.x, ball.y, ball.radius);
+
+                requestAnimationFrame(gameLoop);
+            }
+
+            if (btnStart) btnStart.addEventListener('click', startGame);
+        })();
+    </script>
+{% endblock %}

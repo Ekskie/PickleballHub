@@ -39,7 +39,39 @@ def dashboard():
     available_courts = []
     upcoming_events = []
     recent_activities = []
-    
+
+    # Calculate player stats (Wins, Played, Win Rate)
+    player_stats = {'total_played': 0, 'wins': 0, 'win_rate': 0}
+    try:
+        # 1. Tournament matches
+        t_matches = db.table('tournament_matches').select('winner_id').or_(f"player1_id.eq.{player_id},player2_id.eq.{player_id}").eq('status', 'completed').execute()
+        t_data = t_matches.data or []
+        player_stats['total_played'] += len(t_data)
+        player_stats['wins'] += sum(1 for m in t_data if m.get('winner_id') == player_id)
+
+        # 2. Matchmaker lobbies (creator)
+        c_lobbies = db.table('matchmaker_lobbies').select('winner_id').eq('creator_id', player_id).eq('status', 'completed').execute()
+        c_data = c_lobbies.data or []
+        player_stats['total_played'] += len(c_data)
+        player_stats['wins'] += sum(1 for m in c_data if m.get('winner_id') == player_id)
+
+        # 3. Matchmaker lobbies (joined)
+        g_lobbies = db.table('lobby_participants').select(
+            'lobby:matchmaker_lobbies!lobby_id(winner_id)'
+        ).eq('player_id', player_id).eq('status', 'joined').execute()
+
+        for item in (g_lobbies.data or []):
+            lobby_data = item.get('lobby')
+            if lobby_data:
+                player_stats['total_played'] += 1
+                if lobby_data.get('winner_id') == player_id:
+                    player_stats['wins'] += 1
+
+        if player_stats['total_played'] > 0:
+            player_stats['win_rate'] = round((player_stats['wins'] / player_stats['total_played']) * 100)
+    except Exception as stat_err:
+        print(f"Error loading player stats for dashboard: {stat_err}")
+
     try:
         # Fetch next confirmed reservation
         res_resp = db.table('court_reservations').select(
@@ -48,12 +80,16 @@ def dashboard():
         if res_resp.data:
             next_reservation = res_resp.data[0]
 
-        # Fetch some available courts (mock query)
-        court_resp = db.table('courts').select('id, name, type, hourly_rate, status').eq('status', 'active').limit(4).execute()
+        # Fetch some available courts (including facility details)
+        court_resp = db.table('courts').select(
+            'id, name, type, hourly_rate, status, facilities(name)'
+        ).eq('status', 'active').limit(4).execute()
         available_courts = court_resp.data or []
 
-        # Fetch upcoming events
-        ev_resp = db.table('events').select('id, title, event_date').in_('status', ['upcoming', 'registration_open']).order('event_date').limit(3).execute()
+        # Fetch upcoming events (including details)
+        ev_resp = db.table('events').select(
+            'id, title, event_date, type, location_label'
+        ).in_('status', ['upcoming', 'registration_open']).order('event_date').limit(3).execute()
         upcoming_events = ev_resp.data or []
 
         # Fetch recent activities (notifications)
@@ -63,12 +99,21 @@ def dashboard():
     except Exception as e:
         flash(f"Error loading dashboard data: {e}", "error")
 
+    # Fetch active queue position for the live queue tracker widget
+    my_queue = None
+    try:
+        _, my_queue, _ = get_processed_queues(db, player_id)
+    except Exception as q_err:
+        print(f"Error fetching active queue for dashboard: {q_err}")
+
     return render_template(
         'player/dashboard.html',
         next_reservation=next_reservation,
         available_courts=available_courts,
         upcoming_events=upcoming_events,
-        recent_activities=recent_activities
+        recent_activities=recent_activities,
+        player_stats=player_stats,
+        my_queue=my_queue
     )
 
 
@@ -109,16 +154,31 @@ def profile():
         last_name = request.form.get('last_name', '').strip()
         phone = request.form.get('phone', '').strip()
         
+        avatar_file = request.files.get('avatar')
+        avatar_url = None
+        if avatar_file and avatar_file.filename:
+            try:
+                from app.decorators import upload_avatar
+                avatar_url = upload_avatar(db, player_id, avatar_file)
+            except Exception as e:
+                flash(f"Warning: Avatar upload failed - {e}", "warning")
+        
         try:
-            db.table('profiles').update({
+            update_data = {
                 'first_name': first_name,
                 'last_name': last_name,
                 'phone': phone
-            }).eq('id', player_id).execute()
+            }
+            if avatar_url:
+                update_data['avatar_url'] = avatar_url
+                
+            db.table('profiles').update(update_data).eq('id', player_id).execute()
             
             session['first_name'] = first_name
             session['last_name'] = last_name
             session['phone'] = phone
+            if avatar_url:
+                session['avatar_url'] = avatar_url
             
             flash("Profile updated successfully.", "success")
         except Exception as e:
@@ -169,9 +229,10 @@ def profile():
     except Exception as e:
         print(f"[profile_route] Error fetching rating history: {e}")
 
-    # Fetch player's completed tournament matches
+    # Fetch player's completed matches (tournaments + matchmaker lobbies)
     player_matches = []
     try:
+        # 1. Fetch completed tournament matches
         matches_resp = db.table('tournament_matches').select(
             'id, event_id, round_number, match_number, player1_score, player2_score, winner_id, status, played_at, '
             'player1:profiles!player1_id(id, first_name, last_name), '
@@ -180,8 +241,6 @@ def profile():
         ).or_(f"player1_id.eq.{player_id},player2_id.eq.{player_id}").eq('status', 'completed').order('played_at', desc=True).execute()
         
         raw_matches = matches_resp.data or []
-        
-        # Format matches for rendering
         for m in raw_matches:
             is_p1 = m.get('player1_id') == player_id
             opponent = m.get('player2') if is_p1 else m.get('player1')
@@ -202,6 +261,84 @@ def profile():
                 'result': result,
                 'played_at': m.get('played_at')
             })
+
+        # 2. Fetch completed matchmaking lobbies
+        raw_lobbies = []
+        creator_lobbies = db.table('matchmaker_lobbies').select(
+            'id, title, score, winner_id, creator_id, created_at, '
+            'creator:profiles!creator_id(id, first_name, last_name)'
+        ).eq('creator_id', player_id).eq('status', 'completed').execute()
+        if creator_lobbies.data:
+            raw_lobbies.extend(creator_lobbies.data)
+
+        joined_lobbies = db.table('lobby_participants').select(
+            'lobby_id, lobby:matchmaker_lobbies!lobby_id(id, title, score, winner_id, creator_id, created_at, creator:profiles!creator_id(id, first_name, last_name))'
+        ).eq('player_id', player_id).eq('status', 'joined').execute()
+        
+        if joined_lobbies.data:
+            for item in joined_lobbies.data:
+                lobby_data = item.get('lobby')
+                if lobby_data and lobby_data.get('status') == 'completed':
+                    if not any(x['id'] == lobby_data['id'] for x in raw_lobbies):
+                        raw_lobbies.append(lobby_data)
+
+        # Format matchmaking lobbies and append to list
+        for lob in raw_lobbies:
+            lob_id = lob['id']
+            opponent_name = "Unknown Player"
+            
+            if lob.get('creator_id') == player_id:
+                # Fetch participants to find opponent
+                part_resp = db.table('lobby_participants').select(
+                    'player_id, profiles!player_id(first_name, last_name)'
+                ).eq('lobby_id', lob_id).eq('status', 'joined').execute()
+                
+                if part_resp.data:
+                    opp_profile = None
+                    for p in part_resp.data:
+                        if p.get('player_id') != player_id:
+                            opp_profile = p.get('profiles') or {}
+                            break
+                    if opp_profile:
+                        opponent_name = f"{opp_profile.get('first_name', '')} {opp_profile.get('last_name', '')}".strip() or "Unknown Player"
+            else:
+                opp_profile = lob.get('creator') or {}
+                opponent_name = f"{opp_profile.get('first_name', '')} {opp_profile.get('last_name', '')}".strip() or "Unknown Player"
+
+            result = "DRAW"
+            if lob.get('winner_id') == player_id:
+                result = "WIN"
+            elif lob.get('winner_id') is not None:
+                result = "LOSS"
+
+            player_matches.append({
+                'id': lob['id'],
+                'event_title': 'Matchmaker: ' + lob['title'],
+                'opponent_name': opponent_name,
+                'score': lob.get('score') or "N/A",
+                'result': result,
+                'played_at': lob.get('created_at')
+            })
+
+        # 3. Sort chronologically by date descending
+        def get_match_time(m):
+            t = m.get('played_at')
+            if not t:
+                return datetime.min.replace(tzinfo=PH_TZ)
+            try:
+                # Strip timezone suffix to parse safely
+                t_str = str(t)
+                if t_str.endswith('Z'):
+                    t_str = t_str[:-1] + '+00:00'
+                elif '+' not in t_str and '-' not in t_str[10:]:
+                    # Append default offset
+                    t_str = t_str + '+00:00'
+                return datetime.fromisoformat(t_str)
+            except Exception:
+                return datetime.min.replace(tzinfo=PH_TZ)
+                
+        player_matches.sort(key=get_match_time, reverse=True)
+
     except Exception as e:
         print(f"[profile_route] Error fetching player matches: {e}")
 
@@ -261,6 +398,41 @@ def api_reservation_slots():
             'status', ['confirmed', 'pending_payment']
         ).execute()
         return jsonify(resp.data or [])
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@player_bp.route('/reservation/api/facility_occupancy')
+@require_role('player')
+def api_facility_occupancy():
+    """Return all active courts and their bookings for a facility on a given date."""
+    facility_id = request.args.get('facility_id')
+    date        = request.args.get('date')
+    if not facility_id or not date:
+        return jsonify({'courts': [], 'reservations': []})
+    db = get_db()
+    try:
+        # Fetch active courts
+        courts_resp = db.table('courts').select(
+            'id, name, type, hourly_rate, status, image_url'
+        ).eq('facility_id', facility_id).eq('status', 'active').order('name').execute()
+        courts = courts_resp.data or []
+        
+        court_ids = [c['id'] for c in courts]
+        if not court_ids:
+            return jsonify({'courts': [], 'reservations': []})
+            
+        # Fetch confirmed or pending bookings
+        res_resp = db.table('court_reservations').select(
+            'court_id, start_time, end_time'
+        ).in_('court_id', court_ids).eq('date', date).in_(
+            'status', ['confirmed', 'pending_payment']
+        ).execute()
+        
+        return jsonify({
+            'courts': courts,
+            'reservations': res_resp.data or []
+        })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -864,6 +1036,69 @@ def clubs():
         
     return render_template('player/clubs.html', clubs=clubs_list)
 
+
+@player_bp.route('/clubs/<club_id>')
+@require_role('player')
+def club_detail(club_id):
+    player_id = session.get('user_id')
+    db = get_db()
+    club = None
+    members = []
+    events_list = []
+    my_membership = None
+    
+    try:
+        # 1. Fetch club details and admin profile
+        club_resp = db.table('clubs').select(
+            'id, name, description, logo_url, location, membership_type, membership_fee, admin_id, '
+            'profiles!admin_id(id, first_name, last_name, dupr, elo, avatar_url)'
+        ).eq('id', club_id).eq('status', 'active').single().execute()
+        club = club_resp.data
+        if not club:
+            flash("Club not found.", "error")
+            return redirect(url_for('player.clubs'))
+            
+        # 2. Fetch fellow members (active memberships)
+        members_resp = db.table('club_memberships').select(
+            'id, joined_at, status, profiles!player_id(id, first_name, last_name, dupr, elo, avatar_url)'
+        ).eq('club_id', club_id).eq('status', 'active').order('joined_at', desc=True).execute()
+        
+        # Attach initials to members
+        members = []
+        for m in (members_resp.data or []):
+            prof = m.get('profiles') or {}
+            first = prof.get('first_name') or 'P'
+            last = prof.get('last_name') or ''
+            initials = (first[0] + (last[0] if last else '')).upper()
+            m['initials'] = initials
+            m['name'] = f"{first} {last}".strip()
+            m['avatar_url'] = prof.get('avatar_url') or None
+            members.append(m)
+        
+        # 3. Fetch current user's membership details
+        my_mem_resp = db.table('club_memberships').select('*').eq('club_id', club_id).eq('player_id', player_id).execute()
+        if my_mem_resp.data:
+            my_membership = my_mem_resp.data[0]
+            
+        # 4. Fetch club events (events where organizer_id = club's admin_id)
+        events_resp = db.table('events').select(
+            'id, title, event_date, type, location_label, status'
+        ).eq('organizer_id', club['admin_id']).in_('status', ['registration_open', 'upcoming']).order('event_date').limit(4).execute()
+        events_list = events_resp.data or []
+        
+    except Exception as e:
+        flash(f"Error loading club details: {e}", "error")
+        return redirect(url_for('player.clubs'))
+        
+    return render_template(
+        'player/club_detail.html',
+        club=club,
+        members=members,
+        my_membership=my_membership,
+        events=events_list
+    )
+
+
 @player_bp.route('/my-clubs')
 @require_role('player')
 def my_clubs():
@@ -1028,5 +1263,971 @@ def tournament_bracket(event_id):
                            max_round=max_round,
                            champion=champion,
                            player_id=player_id)
+
+
+# ── Open Play Matchmaker Routes ───────────────────────────────────────────────
+
+def get_lobby_display_status(lobby_status, res_date, res_start, res_end):
+    if lobby_status == 'completed':
+        return 'completed'
+    
+    try:
+        start_str = f"{res_date} {res_start}"
+        end_str = f"{res_date} {res_end}"
+        
+        if len(res_start) == 5:
+            start_dt = datetime.strptime(start_str, '%Y-%m-%d %H:%M').replace(tzinfo=PH_TZ)
+        else:
+            start_dt = datetime.strptime(start_str, '%Y-%m-%d %H:%M:%S').replace(tzinfo=PH_TZ)
+            
+        if len(res_end) == 5:
+            end_dt = datetime.strptime(end_str, '%Y-%m-%d %H:%M').replace(tzinfo=PH_TZ)
+        else:
+            end_dt = datetime.strptime(end_str, '%Y-%m-%d %H:%M:%S').replace(tzinfo=PH_TZ)
+            
+        now = datetime.now(PH_TZ)
+        if now > end_dt:
+            return 'completed'
+        elif start_dt <= now <= end_dt:
+            return 'ongoing'
+        elif lobby_status == 'full':
+            return 'full'
+        else:
+            return 'open'
+    except Exception as e:
+        print(f"Error computing lobby display status: {e}")
+        return lobby_status
+
+
+@player_bp.route('/matchmaker')
+@require_role('player')
+def matchmaker():
+    player_id = session.get('user_id')
+    db = get_db()
+    lobbies = []
+    reservations = []
+    search_query = request.args.get('search', '').strip()
+    dupr_level = request.args.get('dupr_level', '').strip()
+    selected_tab = request.args.get('tab', 'all').strip()
+
+    try:
+        # Fetch active court reservations that belong to this player to populate the dropdown
+        today_str = datetime.now(PH_TZ).strftime('%Y-%m-%d')
+        res_resp = db.table('court_reservations').select(
+            'id, date, start_time, end_time, facilities(name), courts(name)'
+        ).eq('player_id', player_id).eq('status', 'confirmed').gte('date', today_str).execute()
+        reservations = res_resp.data or []
+
+        # Filter out reservations already listed in matchmaker_lobbies
+        already_listed = db.table('matchmaker_lobbies').select('reservation_id').eq('creator_id', player_id).neq('status', 'cancelled').execute()
+        listed_ids = {r['reservation_id'] for r in (already_listed.data or [])}
+        reservations = [r for r in reservations if r['id'] not in listed_ids]
+
+        # Fetch joined matchmaking lobby IDs for tab filtering
+        joined_lobby_ids = set()
+        if player_id:
+            my_joined = db.table('lobby_participants').select('lobby_id').eq('player_id', player_id).eq('status', 'joined').execute()
+            joined_lobby_ids = {p['lobby_id'] for p in (my_joined.data or [])}
+
+        # Fetch active lobbies (status: open, full, completed)
+        lob_resp = db.table('matchmaker_lobbies').select(
+            'id, creator_id, reservation_id, title, description, min_dupr, max_dupr, slots_total, slots_filled, status, created_at, match_type, '
+            'creator:profiles!creator_id(first_name, last_name, elo, dupr, proficiency), '
+            'reservation:court_reservations!reservation_id(date, start_time, end_time, courts(name), facilities(name))'
+        ).neq('status', 'cancelled').order('created_at', desc=True).execute()
+
+        raw_lobbies = lob_resp.data or []
+        for lobby in raw_lobbies:
+            creator = lobby.get('creator') or {}
+            res = lobby.get('reservation') or {}
+            court = res.get('courts') or {}
+            facility = res.get('facilities') or {}
+
+            lobby_item = {
+                'id': lobby['id'],
+                'creator_id': lobby['creator_id'],
+                'title': lobby['title'],
+                'description': lobby['description'],
+                'min_dupr': float(lobby['min_dupr']),
+                'max_dupr': float(lobby['max_dupr']),
+                'slots_total': lobby['slots_total'],
+                'slots_filled': lobby['slots_filled'],
+                'status': lobby['status'],
+                'match_type': lobby.get('match_type') or 'ranked',
+                'creator_name': f"{creator.get('first_name', '')} {creator.get('last_name', '')}".strip() or "Anonymous Player",
+                'creator_dupr': creator.get('dupr') if creator.get('dupr') is not None else 3.00,
+                'facility_name': facility.get('name', 'Unknown Facility'),
+                'court_name': court.get('name', 'Court'),
+                'date': res.get('date') or today_str,
+                'start_time': res.get('start_time') or '00:00',
+                'end_time': res.get('end_time') or '00:00',
+            }
+            lobby_item['display_status'] = get_lobby_display_status(
+                lobby_item['status'], lobby_item['date'], lobby_item['start_time'], lobby_item['end_time']
+            )
+            
+            # Apply tab filters
+            if selected_tab == 'hosted':
+                if lobby_item['creator_id'] != player_id:
+                    continue
+            elif selected_tab == 'joined':
+                if lobby_item['id'] not in joined_lobby_ids:
+                    continue
+
+            # Apply search filter
+            if search_query:
+                sq = search_query.lower()
+                if (sq not in lobby_item['title'].lower() and 
+                    sq not in lobby_item['creator_name'].lower() and
+                    sq not in lobby_item['facility_name'].lower()):
+                    continue
+
+            # Apply DUPR category filters
+            if dupr_level:
+                if dupr_level == 'beginner' and not (2.0 <= lobby_item['min_dupr'] <= 3.24):
+                    continue
+                elif dupr_level == 'intermediate' and not (3.25 <= lobby_item['min_dupr'] <= 4.49):
+                    continue
+                elif dupr_level == 'advanced' and not (4.50 <= lobby_item['min_dupr'] <= 8.00):
+                    continue
+
+            lobbies.append(lobby_item)
+
+    except Exception as e:
+        flash(f"Error loading Matchmaker: {e}", "error")
+
+    return render_template(
+        'player/matchmaker.html',
+        lobbies=lobbies,
+        reservations=reservations,
+        search_query=search_query,
+        selected_level=dupr_level,
+        selected_tab=selected_tab
+    )
+
+
+@player_bp.route('/matchmaker/create', methods=['POST'])
+@require_role('player')
+def matchmaker_create():
+    player_id = session.get('user_id')
+    reservation_id = request.form.get('reservation_id')
+    title = request.form.get('title', '').strip()
+    description = request.form.get('description', '').strip()
+    min_dupr = float(request.form.get('min_dupr', 2.00))
+    max_dupr = float(request.form.get('max_dupr', 8.00))
+    slots_total = int(request.form.get('slots_total', 3))
+    match_type = request.form.get('match_type', 'ranked').strip()
+
+    if not all([reservation_id, title]):
+        flash("Missing lobby creation fields.", "error")
+        return redirect(url_for('player.matchmaker'))
+
+    db = get_db()
+    try:
+        # Verify reservation belongs to player and is confirmed
+        res = db.table('court_reservations').select('id, status').eq('id', reservation_id).eq('player_id', player_id).single().execute()
+        if not res.data or res.data['status'] != 'confirmed':
+            flash("Invalid or unconfirmed court booking.", "error")
+            return redirect(url_for('player.matchmaker'))
+
+        lobby_resp = db.table('matchmaker_lobbies').insert({
+            'creator_id': player_id,
+            'reservation_id': reservation_id,
+            'title': title,
+            'description': description,
+            'min_dupr': min_dupr,
+            'max_dupr': max_dupr,
+            'slots_total': slots_total,
+            'slots_filled': 0,
+            'status': 'open',
+            'match_type': match_type
+        }).execute()
+
+        if lobby_resp.data:
+            lobby_id = lobby_resp.data[0]['id']
+            try:
+                # Initialize conversation for the lobby
+                db.table('conversations').insert({'id': lobby_id}).execute()
+                # Add creator as participant
+                db.table('conversation_participants').insert({
+                    'conversation_id': lobby_id,
+                    'profile_id': player_id
+                }).execute()
+            except Exception as convo_err:
+                print(f"Error creating lobby conversation: {convo_err}")
+
+        flash("Matchmaking lobby published successfully!", "success")
+    except Exception as e:
+        flash(f"Error publishing lobby: {e}", "error")
+
+    return redirect(url_for('player.matchmaker'))
+
+
+@player_bp.route('/matchmaker/<lobby_id>')
+@require_role('player')
+def matchmaker_detail(lobby_id):
+    player_id = session.get('user_id')
+    db = get_db()
+    lobby = None
+    participants = []
+    is_joined = False
+    winner_name = ""
+    lobby_messages = []
+
+    try:
+        lob_resp = db.table('matchmaker_lobbies').select(
+            'id, creator_id, reservation_id, title, description, min_dupr, max_dupr, slots_total, slots_filled, status, score, winner_id, match_type, '
+            'creator:profiles!creator_id(first_name, last_name, elo, dupr, proficiency, avatar_url), '
+            'reservation:court_reservations!reservation_id(date, start_time, end_time, courts(name), facilities(name))'
+        ).eq('id', lobby_id).single().execute()
+
+        if not lob_resp.data:
+            flash("Lobby not found.", "error")
+            return redirect(url_for('player.matchmaker'))
+
+        raw_lob = lob_resp.data
+        creator = raw_lob.get('creator') or {}
+        res = raw_lob.get('reservation') or {}
+        court = res.get('courts') or {}
+        facility = res.get('facilities') or {}
+
+        lobby = {
+            'id': raw_lob['id'],
+            'creator_id': raw_lob['creator_id'],
+            'title': raw_lob['title'],
+            'description': raw_lob['description'],
+            'min_dupr': float(raw_lob['min_dupr']),
+            'max_dupr': float(raw_lob['max_dupr']),
+            'slots_total': raw_lob['slots_total'],
+            'slots_filled': raw_lob['slots_filled'],
+            'status': raw_lob['status'],
+            'score': raw_lob.get('score'),
+            'winner_id': raw_lob.get('winner_id'),
+            'match_type': raw_lob.get('match_type') or 'ranked',
+            'creator_name': f"{creator.get('first_name', '')} {creator.get('last_name', '')}".strip() or "Anonymous Player",
+            'creator_dupr': creator.get('dupr') if creator.get('dupr') is not None else 3.00,
+            'creator_avatar_url': creator.get('avatar_url') or None,
+            'facility_name': facility.get('name', 'Unknown Facility'),
+            'court_name': court.get('name', 'Court'),
+            'date': res.get('date') or datetime.now(PH_TZ).strftime('%Y-%m-%d'),
+            'start_time': res.get('start_time') or '00:00',
+            'end_time': res.get('end_time') or '00:00',
+        }
+        lobby['display_status'] = get_lobby_display_status(
+            lobby['status'], lobby['date'], lobby['start_time'], lobby['end_time']
+        )
+
+        creator_first = creator.get('first_name') or 'H'
+        creator_last = creator.get('last_name') or ''
+        creator_initials = (creator_first[0] + (creator_last[0] if creator_last else '')).upper()
+
+        # Fetch participants (including team and slot)
+        part_resp = db.table('lobby_participants').select(
+            'id, player_id, status, team, slot, profiles!player_id(first_name, last_name, elo, dupr, avatar_url)'
+        ).eq('lobby_id', lobby_id).eq('status', 'joined').execute()
+        
+        raw_participants = part_resp.data or []
+        
+        # Build Team slots grid
+        # Team 1 Slot 1 is always the Creator/Host
+        slots_grid = {
+            'team1': [
+                {'slot': 1, 'player': {
+                    'id': lobby['creator_id'],
+                    'name': lobby['creator_name'],
+                    'dupr': lobby['creator_dupr'],
+                    'initials': creator_initials,
+                    'avatar_url': lobby.get('creator_avatar_url'),
+                    'is_host': True
+                }}
+            ],
+            'team2': []
+        }
+        
+        if lobby['slots_total'] == 3: # Doubles
+            slots_grid['team1'].append({'slot': 2, 'player': None})
+            slots_grid['team2'].append({'slot': 1, 'player': None})
+            slots_grid['team2'].append({'slot': 2, 'player': None})
+        elif lobby['slots_total'] == 1: # Singles
+            slots_grid['team2'].append({'slot': 1, 'player': None})
+        else: # Fallback slots
+            for s in range(1, lobby['slots_total'] + 1):
+                slots_grid['team2'].append({'slot': s, 'player': None})
+
+        participants = []
+        occupied_slots = {
+            (1, 1): True # Host is always Team 1, Slot 1
+        }
+        unmapped_participants = []
+
+        for p in raw_participants:
+            p_profile = p.get('profiles') or {}
+            first = p_profile.get('first_name') or 'P'
+            last = p_profile.get('last_name') or ''
+            p['initials'] = (first[0] + (last[0] if last else '')).upper()
+            p['name'] = f"{first} {last}".strip() or "Anonymous Player"
+            p['avatar_url'] = p_profile.get('avatar_url') or None
+            participants.append(p)
+            
+            if p['player_id'] == player_id:
+                is_joined = True
+                
+            player_info = {
+                'id': p['player_id'],
+                'name': p['name'],
+                'dupr': p_profile.get('dupr') if p_profile.get('dupr') is not None else 3.00,
+                'initials': p['initials'],
+                'avatar_url': p_profile.get('avatar_url') or None,
+                'is_host': False,
+                'participant_id': p['id']
+            }
+            
+            t = p.get('team')
+            s = p.get('slot')
+            
+            # First pass: map valid, non-conflicting slots
+            if t in [1, 2] and s is not None:
+                if (t, s) not in occupied_slots:
+                    team_key = f"team{t}"
+                    slot_idx = s - 1
+                    if team_key in slots_grid and 0 <= slot_idx < len(slots_grid[team_key]):
+                        slots_grid[team_key][slot_idx]['player'] = player_info
+                        occupied_slots[(t, s)] = True
+                        continue
+            
+            # Otherwise, map in the second pass
+            unmapped_participants.append((p['id'], player_info))
+
+        # Second pass: auto-heal conflicting/missing slot assignments
+        for part_id, player_info in unmapped_participants:
+            found = False
+            # Find first empty slot, prioritizing Team 2, then Team 1
+            for team_key in ['team2', 'team1']:
+                if found:
+                    break
+                for cell in slots_grid[team_key]:
+                    if cell['player'] is None:
+                        cell['player'] = player_info
+                        found = True
+                        t_val = 1 if team_key == 'team1' else 2
+                        s_val = cell['slot']
+                        occupied_slots[(t_val, s_val)] = True
+                        # Update DB to persist the heal
+                        try:
+                            db.table('lobby_participants').update({
+                                'team': t_val,
+                                'slot': s_val
+                            }).eq('id', part_id).execute()
+                            
+                            # Also update the local list data
+                            p_in_list = next((x for x in participants if x['id'] == part_id), None)
+                            if p_in_list:
+                                p_in_list['team'] = t_val
+                                p_in_list['slot'] = s_val
+                        except Exception as auto_heal_err:
+                            print(f"[auto_heal] Failed to update slot for participant {part_id}: {auto_heal_err}")
+                        break
+
+        if lobby['status'] == 'completed' and lobby['winner_id']:
+            # Find winner team name
+            # Check if winner is Host or on Team 1
+            is_winner_team1 = False
+            if lobby['winner_id'] == lobby['creator_id']:
+                is_winner_team1 = True
+            else:
+                for p in participants:
+                    if p['player_id'] == lobby['winner_id'] and p.get('team') == 1:
+                        is_winner_team1 = True
+                        break
+            
+            if is_winner_team1:
+                winner_name = "Team 1"
+            else:
+                winner_name = "Team 2"
+
+        # Lazy initialize chat conversation for existing lobbies
+        convo_check = db.table('conversations').select('id').eq('id', lobby_id).execute()
+        if not convo_check.data:
+            try:
+                db.table('conversations').insert({'id': lobby_id}).execute()
+                # Add host
+                db.table('conversation_participants').upsert({
+                    'conversation_id': lobby_id,
+                    'profile_id': lobby['creator_id']
+                }, on_conflict='conversation_id,profile_id').execute()
+                # Add current participants
+                for p in participants:
+                    db.table('conversation_participants').upsert({
+                        'conversation_id': lobby_id,
+                        'profile_id': p['player_id']
+                    }, on_conflict='conversation_id,profile_id').execute()
+            except Exception as lazy_err:
+                print(f"Lazy conversation creation warning: {lazy_err}")
+
+        # Fetch lobby chat messages
+        try:
+            msg_resp = db.table('messages').select(
+                'id, sender_id, content, created_at, profiles!sender_id(first_name, last_name)'
+            ).eq('conversation_id', lobby_id).order('created_at', desc=False).execute()
+            
+            for m in (msg_resp.data or []):
+                m_prof = m.get('profiles') or {}
+                m_first = m_prof.get('first_name') or 'Player'
+                m_last = m_prof.get('last_name') or ''
+                m['sender_name'] = f"{m_first} {m_last}".strip()
+                m['sender_initials'] = (m_first[0] + (m_last[0] if m_last else '')).upper()
+                
+                # Format time nicely (e.g. 02:30 PM)
+                try:
+                    dt = datetime.fromisoformat(m['created_at'].replace('Z', '+00:00'))
+                    m['formatted_time'] = dt.astimezone(PH_TZ).strftime('%I:%M %p')
+                except Exception:
+                    m['formatted_time'] = ''
+                
+                lobby_messages.append(m)
+        except Exception as msg_err:
+            print(f"Error fetching lobby messages: {msg_err}")
+
+    except Exception as e:
+        flash(f"Error loading lobby: {e}", "error")
+        return redirect(url_for('player.matchmaker'))
+
+    return render_template(
+        'player/matchmaker_detail.html',
+        lobby=lobby,
+        participants=participants,
+        slots_grid=slots_grid,
+        creator_initials=creator_initials,
+        is_joined=is_joined,
+        winner_name=winner_name,
+        messages=lobby_messages
+    )
+
+
+@player_bp.route('/matchmaker/<lobby_id>/join', methods=['POST'])
+@require_role('player')
+def matchmaker_join(lobby_id):
+    player_id = session.get('user_id')
+    team = request.form.get('team', type=int)
+    slot = request.form.get('slot', type=int)
+    db = get_db()
+    
+    try:
+        # Get lobby details
+        lob_resp = db.table('matchmaker_lobbies').select('status, slots_total, slots_filled, creator_id, min_dupr, max_dupr').eq('id', lobby_id).single().execute()
+        lobby = lob_resp.data
+        if not lobby or lobby['status'] != 'open':
+            flash("Lobby is not open.", "error")
+            return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+        
+        if lobby['creator_id'] == player_id:
+            flash("You cannot join your own lobby.", "error")
+            return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+
+        # Verify rating
+        prof_resp = db.table('profiles').select('dupr').eq('id', player_id).single().execute()
+        player_dupr = float(prof_resp.data.get('dupr') or 3.00)
+        if not (float(lobby['min_dupr']) <= player_dupr <= float(lobby['max_dupr'])):
+            flash("Your DUPR rating does not meet lobby requirements.", "error")
+            return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+
+        # Check availability
+        if lobby['slots_filled'] >= lobby['slots_total']:
+            flash("Lobby is already full.", "error")
+            return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+
+        # Resolve or validate empty slot choice
+        if not team or not slot:
+            # Auto-assign empty slot
+            occupied = {}
+            part_resp = db.table('lobby_participants').select('team, slot').eq('lobby_id', lobby_id).eq('status', 'joined').execute()
+            for p in (part_resp.data or []):
+                occupied[(p['team'], p['slot'])] = True
+                
+            found = False
+            if lobby['slots_total'] == 3: # Doubles
+                for t, s in [(1, 2), (2, 1), (2, 2)]:
+                    if (t, s) not in occupied:
+                        team, slot = t, s
+                        found = True
+                        break
+            else: # Singles / others
+                for s in range(1, lobby['slots_total'] + 1):
+                    if (2, s) not in occupied:
+                        team, slot = 2, s
+                        found = True
+                        break
+            if not found:
+                flash("No empty slots available.", "error")
+                return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+        else:
+            # Validate slot is empty
+            if team == 1 and slot == 1:
+                flash("Host slot is occupied.", "error")
+                return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+                
+            check_occ = db.table('lobby_participants').select('id').eq('lobby_id', lobby_id).eq('team', team).eq('slot', slot).eq('status', 'joined').execute()
+            if check_occ.data:
+                flash("The requested slot is already occupied.", "error")
+                return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+
+        # Insert participant
+        db.table('lobby_participants').upsert({
+            'lobby_id': lobby_id,
+            'player_id': player_id,
+            'status': 'joined',
+            'team': team,
+            'slot': slot
+        }, on_conflict='lobby_id,player_id').execute()
+
+        # Update slots count & status
+        new_filled = lobby['slots_filled'] + 1
+        status = 'full' if new_filled >= lobby['slots_total'] else 'open'
+        db.table('matchmaker_lobbies').update({
+            'slots_filled': new_filled,
+            'status': status
+        }).eq('id', lobby_id).execute()
+
+        try:
+            # Ensure conversation exists
+            convo_check = db.table('conversations').select('id').eq('id', lobby_id).execute()
+            if not convo_check.data:
+                db.table('conversations').insert({'id': lobby_id}).execute()
+                # Add creator too
+                db.table('conversation_participants').upsert({
+                    'conversation_id': lobby_id,
+                    'profile_id': lobby['creator_id']
+                }, on_conflict='conversation_id,profile_id').execute()
+
+            # Add to conversation participants
+            db.table('conversation_participants').upsert({
+                'conversation_id': lobby_id,
+                'profile_id': player_id
+            }, on_conflict='conversation_id,profile_id').execute()
+        except Exception as convo_err:
+            print(f"Error adding player to conversation: {convo_err}")
+
+        flash("Joined open play match lobby!", "success")
+    except Exception as e:
+        flash(f"Error joining lobby: {e}", "error")
+    return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+
+
+@player_bp.route('/matchmaker/<lobby_id>/switch', methods=['POST'])
+@require_role('player')
+def matchmaker_switch(lobby_id):
+    player_id = session.get('user_id')
+    team = request.form.get('team', type=int)
+    slot = request.form.get('slot', type=int)
+    
+    if not team or not slot:
+        flash("Invalid slot selection.", "error")
+        return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+        
+    if team == 1 and slot == 1:
+        flash("Cannot switch to host slot.", "error")
+        return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+        
+    db = get_db()
+    try:
+        # Verify lobby status
+        lob_resp = db.table('matchmaker_lobbies').select('status').eq('id', lobby_id).single().execute()
+        if not lob_resp.data or lob_resp.data['status'] not in ['open', 'full']:
+            flash("Lobby is not editable.", "error")
+            return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+            
+        # Check if target slot is occupied
+        occ_check = db.table('lobby_participants').select('id').eq('lobby_id', lobby_id).eq('team', team).eq('slot', slot).eq('status', 'joined').execute()
+        if occ_check.data:
+            flash("Target slot is occupied.", "error")
+            return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+            
+        # Verify player is already joined
+        my_part = db.table('lobby_participants').select('id').eq('lobby_id', lobby_id).eq('player_id', player_id).eq('status', 'joined').execute()
+        if not my_part.data:
+            flash("You must be joined to switch slots.", "error")
+            return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+            
+        # Update slot
+        db.table('lobby_participants').update({
+            'team': team,
+            'slot': slot
+        }).eq('id', my_part.data[0]['id']).execute()
+        
+        flash("Switched slot successfully!", "success")
+    except Exception as e:
+        flash(f"Error switching slot: {e}", "error")
+        
+    return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+
+
+@player_bp.route('/matchmaker/<lobby_id>/leave', methods=['POST'])
+@require_role('player')
+def matchmaker_leave(lobby_id):
+    player_id = session.get('user_id')
+    db = get_db()
+    try:
+        lob_resp = db.table('matchmaker_lobbies').select('slots_filled, status').eq('id', lobby_id).single().execute()
+        lobby = lob_resp.data
+        if not lobby:
+            flash("Lobby not found.", "error")
+            return redirect(url_for('player.matchmaker'))
+
+        db.table('lobby_participants').delete().eq('lobby_id', lobby_id).eq('player_id', player_id).execute()
+
+        # Update slots count & status
+        new_filled = max(0, lobby['slots_filled'] - 1)
+        db.table('matchmaker_lobbies').update({
+            'slots_filled': new_filled,
+            'status': 'open'
+        }).eq('id', lobby_id).execute()
+
+        try:
+            # Remove from conversation participants
+            db.table('conversation_participants').delete().eq('conversation_id', lobby_id).eq('profile_id', player_id).execute()
+        except Exception as convo_err:
+            print(f"Error removing player from conversation: {convo_err}")
+
+        flash("Left open play match lobby.", "success")
+    except Exception as e:
+        flash(f"Error leaving lobby: {e}", "error")
+    return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+
+
+@player_bp.route('/matchmaker/<lobby_id>/message', methods=['POST'])
+@require_role('player')
+def matchmaker_message(lobby_id):
+    player_id = session.get('user_id')
+    content = request.form.get('content', '').strip()
+    if not content:
+        return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+        
+    db = get_db()
+    try:
+        # Check if conversation exists
+        convo_check = db.table('conversations').select('id').eq('id', lobby_id).execute()
+        if not convo_check.data:
+            flash("Lobby chat is not initialized.", "error")
+            return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+            
+        # Verify user is a participant of the conversation
+        part_check = db.table('conversation_participants').select('profile_id').eq('conversation_id', lobby_id).eq('profile_id', player_id).execute()
+        if not part_check.data:
+            flash("You must join the lobby first to send messages.", "error")
+            return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+            
+        # Send message
+        db.table('messages').insert({
+            'conversation_id': lobby_id,
+            'sender_id': player_id,
+            'content': content
+        }).execute()
+        
+    except Exception as e:
+        flash(f"Error sending message: {e}", "error")
+        
+    return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+
+
+@player_bp.route('/matchmaker/<lobby_id>/edit', methods=['POST'])
+@require_role('player')
+def matchmaker_edit(lobby_id):
+    player_id = session.get('user_id')
+    db = get_db()
+    
+    title = request.form.get('title', '').strip()
+    description = request.form.get('description', '').strip()
+    min_dupr = float(request.form.get('min_dupr', 2.00))
+    max_dupr = float(request.form.get('max_dupr', 8.00))
+    slots_total = int(request.form.get('slots_total', 3))
+    match_type = request.form.get('match_type', 'ranked').strip()
+    
+    if not title:
+        flash("Title is required.", "error")
+        return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+        
+    try:
+        # Fetch lobby
+        lob_resp = db.table('matchmaker_lobbies').select('creator_id, slots_filled, status').eq('id', lobby_id).single().execute()
+        lobby = lob_resp.data
+        if not lobby or lobby['creator_id'] != player_id:
+            flash("Unauthorized.", "error")
+            return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+            
+        if lobby['status'] == 'completed':
+            flash("Cannot edit a completed match.", "error")
+            return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+            
+        if slots_total < lobby['slots_filled']:
+            flash(f"Cannot set slots total below the number of currently joined players ({lobby['slots_filled']}).", "error")
+            return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+            
+        # Update lobby details
+        status = 'full' if lobby['slots_filled'] >= slots_total else 'open'
+        db.table('matchmaker_lobbies').update({
+            'title': title,
+            'description': description,
+            'min_dupr': min_dupr,
+            'max_dupr': max_dupr,
+            'slots_total': slots_total,
+            'status': status,
+            'match_type': match_type
+        }).eq('id', lobby_id).execute()
+        
+        flash("Match lobby updated successfully!", "success")
+    except Exception as e:
+        flash(f"Error updating lobby: {e}", "error")
+        
+    return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+
+
+@player_bp.route('/matchmaker/<lobby_id>/delete', methods=['POST'])
+@require_role('player')
+def matchmaker_delete(lobby_id):
+    player_id = session.get('user_id')
+    db = get_db()
+    
+    try:
+        # Fetch lobby
+        lob_resp = db.table('matchmaker_lobbies').select('creator_id, status').eq('id', lobby_id).single().execute()
+        lobby = lob_resp.data
+        if not lobby or lobby['creator_id'] != player_id:
+            flash("Unauthorized.", "error")
+            return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+            
+        if lobby['status'] == 'completed':
+            flash("Cannot delete a completed match.", "error")
+            return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+            
+        # Delete lobby (cascades to participants)
+        db.table('matchmaker_lobbies').delete().eq('id', lobby_id).execute()
+        
+        # Also clean up conversation
+        try:
+            db.table('conversations').delete().eq('id', lobby_id).execute()
+        except Exception as convo_err:
+            print(f"Error deleting lobby conversation: {convo_err}")
+            
+        flash("Matchmaking lobby deleted successfully.", "success")
+    except Exception as e:
+        flash(f"Error deleting lobby: {e}", "error")
+        return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+        
+    return redirect(url_for('player.matchmaker'))
+
+
+@player_bp.route('/matchmaker/<lobby_id>/report', methods=['POST'])
+@require_role('player')
+def matchmaker_report(lobby_id):
+    player_id = session.get('user_id')
+    winner_team = request.form.get('winner_team', 'team1') # 'team1' or 'team2'
+    score = request.form.get('score', '').strip()
+    host_score = request.form.get('host_score', type=int)
+    opp_score = request.form.get('opp_score', type=int)
+
+    db = get_db()
+    try:
+        # Fetch lobby details
+        lob_resp = db.table('matchmaker_lobbies').select('creator_id, status').eq('id', lobby_id).single().execute()
+        lobby = lob_resp.data
+        if not lobby or lobby['creator_id'] != player_id or lobby['status'] == 'completed':
+            flash("Unauthorized or match already reported.", "error")
+            return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+
+        # Fetch guests
+        part_resp = db.table('lobby_participants').select('player_id, team').eq('lobby_id', lobby_id).eq('status', 'joined').execute()
+        joined = part_resp.data or []
+        
+        if not joined:
+            flash("Lobby needs at least 1 guest player to report score.", "error")
+            return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+
+        # Map winner team to a player ID to satisfy winner_id schema constraint
+        if winner_team == 'team1':
+            winner_id = lobby['creator_id'] # Host represents Team 1
+        else:
+            # Find a guest player on Team 2
+            team2_players = [p['player_id'] for p in joined if p.get('team') == 2]
+            if team2_players:
+                winner_id = team2_players[0]
+            else:
+                winner_id = joined[0]['player_id'] # fallback
+
+        # 1. Mark lobby as completed
+        db.table('matchmaker_lobbies').update({
+            'status': 'completed',
+            'score': score,
+            'winner_id': winner_id
+        }).eq('id', lobby_id).execute()
+
+        # 2. Call update_matchmaker_ratings to update ratings in profiles + rating_history
+        from app.ratings import update_matchmaker_ratings
+        update_matchmaker_ratings(db, lobby_id)
+
+        flash("Match score reported and player ratings updated!", "success")
+    except Exception as e:
+        flash(f"Error reporting score: {e}", "error")
+
+    return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+
+
+# ── Public Leaderboard & Directory Routes ──────────────────────────────────────
+
+@player_bp.route('/leaderboard')
+@require_role('player')
+def leaderboard():
+    player_id = session.get('user_id')
+    db = get_db()
+    rankings = []
+    search_query = request.args.get('search', '').strip()
+    proficiency_filter = request.args.get('proficiency', '').strip()
+
+    try:
+        # Fetch all players
+        p_query = db.table('profiles').select('id, first_name, last_name, elo, dupr, proficiency, avatar_url').eq('role', 'player')
+        if proficiency_filter:
+            p_query = p_query.eq('proficiency', proficiency_filter)
+        
+        prof_resp = p_query.execute()
+        players = prof_resp.data or []
+
+        # Get completed matches
+        matches_resp = db.table('tournament_matches').select('player1_id, player2_id, winner_id, status').eq('status', 'completed').execute()
+        matches = matches_resp.data or []
+
+        stats = {}
+        for p in players:
+            stats[p['id']] = {'wins': 0, 'losses': 0, 'played': 0}
+
+        for m in matches:
+            for pid in [m['player1_id'], m['player2_id']]:
+                if pid in stats:
+                    stats[pid]['played'] += 1
+                    if m['winner_id'] == pid:
+                        stats[pid]['wins'] += 1
+                    else:
+                        stats[pid]['losses'] += 1
+
+        # Format rankings
+        for p in players:
+            name = f"{p.get('first_name') or ''} {p.get('last_name') or ''}".strip() or "Anonymous Player"
+            if search_query and search_query.lower() not in name.lower():
+                continue
+
+            first = p.get('first_name') or 'P'
+            last = p.get('last_name') or ''
+            initials = (first[0] + (last[0] if last else '')).upper()
+
+            s = stats.get(p['id'], {'wins': 0, 'losses': 0, 'played': 0})
+            win_rate = round((s['wins'] / s['played']) * 100) if s['played'] > 0 else 0
+
+            rankings.append({
+                'id': p['id'],
+                'name': name,
+                'initials': initials,
+                'avatar_url': p.get('avatar_url') or None,
+                'dupr': float(p.get('dupr') if p.get('dupr') is not None else 3.00),
+                'elo': p.get('elo') or 1200,
+                'proficiency': p.get('proficiency') or 'beginner',
+                'wins': s['wins'],
+                'losses': s['losses'],
+                'win_rate': win_rate
+            })
+
+        # Sort by DUPR rating descending, then Elo descending
+        rankings.sort(key=lambda x: (-x['dupr'], -x['elo']))
+
+        for i, r in enumerate(rankings):
+            r['rank'] = i + 1
+
+    except Exception as e:
+        flash(f"Error loading leaderboard: {e}", "error")
+
+    return render_template(
+        'player/leaderboard.html',
+        rankings=rankings,
+        search_query=search_query,
+        selected_prof=proficiency_filter
+    )
+
+
+@player_bp.route('/leaderboard/challenge/<target_id>')
+@require_role('player')
+def leaderboard_challenge(target_id):
+    player_id = session.get('user_id')
+    if player_id == target_id:
+        return redirect(url_for('player.leaderboard'))
+    
+    db = get_db()
+    try:
+        # Check if conversation already exists
+        mine = db.table('conversation_participants').select('conversation_id').eq('profile_id', player_id).execute()
+        my_ids = [r['conversation_id'] for r in (mine.data or [])]
+
+        convo_id = None
+        if my_ids:
+            shared = db.table('conversation_participants').select('conversation_id').eq('profile_id', target_id).in_('conversation_id', my_ids).execute()
+            if shared.data:
+                convo_id = shared.data[0]['conversation_id']
+
+        if not convo_id:
+            # Create conversation
+            new_convo = db.table('conversations').insert({}).execute()
+            convo_id = new_convo.data[0]['id']
+
+            # Add participants
+            db.table('conversation_participants').insert([
+                {'conversation_id': convo_id, 'profile_id': player_id},
+                {'conversation_id': convo_id, 'profile_id': target_id}
+            ]).execute()
+
+            # Send automated message
+            msg_content = f"Hi! I saw you on the Leaderboard rankings. I'd love to challenge you to an Open Play Match! 🏓"
+            db.table('messages').insert({
+                'conversation_id': convo_id,
+                'sender_id': player_id,
+                'content': msg_content
+            }).execute()
+
+        return redirect(url_for('player.messages') + f"#convo-{convo_id}")
+    except Exception as e:
+        flash(f"Error starting challenge: {e}", "error")
+        return redirect(url_for('player.leaderboard'))
+
+
+@player_bp.route('/chat/<target_id>')
+@require_role('player')
+def player_chat(target_id):
+    player_id = session.get('user_id')
+    if player_id == target_id:
+        return redirect(url_for('player.messages'))
+    
+    db = get_db()
+    try:
+        # Check if conversation already exists
+        mine = db.table('conversation_participants').select('conversation_id').eq('profile_id', player_id).execute()
+        my_ids = [r['conversation_id'] for r in (mine.data or [])]
+
+        convo_id = None
+        if my_ids:
+            shared = db.table('conversation_participants').select('conversation_id').eq('profile_id', target_id).in_('conversation_id', my_ids).execute()
+            if shared.data:
+                convo_id = shared.data[0]['conversation_id']
+
+        if not convo_id:
+            # Create conversation
+            new_convo = db.table('conversations').insert({}).execute()
+            convo_id = new_convo.data[0]['id']
+
+            # Add participants
+            db.table('conversation_participants').insert([
+                {'conversation_id': convo_id, 'profile_id': player_id},
+                {'conversation_id': convo_id, 'profile_id': target_id}
+            ]).execute()
+
+        return redirect(url_for('player.messages') + f"#convo-{convo_id}")
+    except Exception as e:
+        flash(f"Error starting chat: {e}", "error")
+        return redirect(url_for('player.dashboard'))
 
 

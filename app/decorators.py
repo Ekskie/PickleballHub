@@ -56,3 +56,22 @@ def require_role(*allowed_roles):
 
         return decorated_function
     return decorator
+
+
+def upload_avatar(db, user_id, avatar_file):
+    """Uploads an avatar file to Supabase storage and returns public URL, or None."""
+    if avatar_file and avatar_file.filename:
+        try:
+            import time
+            ext = avatar_file.filename.split('.')[-1]
+            filename = f"avatar_{user_id}_{int(time.time())}.{ext}"
+            db.storage.from_('profile-images').upload(
+                file=avatar_file.read(),
+                path=filename,
+                file_options={"content-type": avatar_file.content_type}
+            )
+            return db.storage.from_('profile-images').get_public_url(filename)
+        except Exception as e:
+            print(f"[upload_avatar] Failed: {e}")
+            raise e
+    return None

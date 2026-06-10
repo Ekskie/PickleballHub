@@ -244,6 +244,115 @@
         background: var(--primary-orange);
         flex-shrink: 0;
     }
+
+    /* ---- Simulator Card Styles ---- */
+    .sim-card-body {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-top: 10px;
+    }
+
+    .sim-input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .sim-input-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .sim-result-box {
+        background: rgba(16, 185, 129, 0.04);
+        border: 1px solid rgba(16, 185, 129, 0.15);
+        border-radius: 10px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .sim-result-box.loss {
+        background: rgba(239, 68, 68, 0.04);
+        border-color: rgba(239, 68, 68, 0.15);
+    }
+
+    .sim-metric-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .sim-metric-label {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .sim-metric-value {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .sim-change-badge {
+        padding: 4px 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .sim-change-badge.positive {
+        background: rgba(16, 185, 129, 0.12);
+        color: #10b981;
+    }
+
+    .sim-change-badge.negative {
+        background: rgba(239, 68, 68, 0.12);
+        color: #ef4444;
+    }
+
+    .sim-toggle-btn {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        background: var(--bg-color);
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .sim-toggle-btn:hover {
+        background: var(--input-bg);
+        color: var(--text-primary);
+    }
+
+    .sim-toggle-btn.active-win {
+        background: var(--btn-green);
+        color: white;
+        border-color: var(--btn-green);
+    }
+
+    .sim-toggle-btn.active-loss {
+        background: #ef4444;
+        color: white;
+        border-color: #ef4444;
+    }
 </style>
 {% endblock %}
 
@@ -254,10 +363,22 @@
 
 <div class="profile-layout">
 
-    <!-- Left: Profile Card -->
-    <div class="glass-card">
-        <form method="POST" action="{{ url_for(request.blueprint ~ '.profile') }}" class="profile-card">
-            <div class="profile-avatar">{{ current_user.initials }}</div>
+    <!-- Left Column Wrapper -->
+    <div style="display: flex; flex-direction: column; gap: 24px; width: 100%;">
+        <!-- Left: Profile Card -->
+        <div class="glass-card">
+        <form method="POST" action="{{ url_for(request.blueprint ~ '.profile') }}" class="profile-card" enctype="multipart/form-data">
+            <div class="profile-avatar" style="position: relative; cursor: pointer; transition: transform 0.2s;" onclick="document.getElementById('avatar-input').click()" title="Click to change profile picture" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+                {% if current_user.avatar_url %}
+                    <img src="{{ current_user.avatar_url }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
+                {% else %}
+                    {{ current_user.initials }}
+                {% endif %}
+                <div style="position: absolute; bottom: -4px; right: -4px; background: var(--primary-orange); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--card-bg); font-size: 0.8rem; box-shadow: var(--shadow-sm);">
+                    <i class="ph ph-camera"></i>
+                </div>
+            </div>
+            <input type="file" id="avatar-input" name="avatar" accept="image/*" style="display: none;" onchange="previewAvatar(this)">
             
             <div style="width: 100%; margin-bottom: 15px; text-align: left;">
                 <label style="font-size: 0.8rem; color: var(--text-muted);">First Name</label>
@@ -314,6 +435,66 @@
                 <i class="ph ph-lock-key"></i> Update Password
             </button>
         </form>
+    </div>
+
+        <!-- DUPR Match Simulator -->
+        <div class="glass-card">
+            <h3 style="font-size:1.05rem; font-weight:700; color:var(--text-primary); margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+                <i class="ph ph-calculator" style="color:var(--btn-green); font-size:1.2rem;"></i> DUPR Match Simulator
+            </h3>
+            <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:16px; line-height:1.4;">
+                Predict the impact of a match on your ratings. Adjust the opponent's rating and toggle the result below.
+            </p>
+
+            <div class="sim-card-body">
+                <!-- Opponent Rating Input -->
+                <div class="sim-input-group">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                        <label style="font-size: 0.8rem; font-weight:600; color: var(--text-secondary);">Opponent DUPR</label>
+                        <span style="font-size: 0.75rem; color: var(--text-muted);" id="sim-opp-elo-text">(1400 Elo)</span>
+                    </div>
+                    <div class="sim-input-row">
+                        <input type="range" id="sim-opp-dupr-slider" min="2.0" max="8.0" step="0.05" value="3.5" style="flex:1; accent-color:var(--btn-green); height:6px; border-radius:3px; cursor:pointer;">
+                        <input type="number" id="sim-opp-dupr-num" min="2.0" max="8.0" step="0.01" value="3.50" style="width:72px; padding:6px 8px; border:1px solid var(--border-color); border-radius:6px; background:var(--input-bg); color:var(--text-primary); text-align:center; font-weight:700; font-size:0.85rem;">
+                    </div>
+                </div>
+
+                <!-- Match Outcome Choice -->
+                <div style="display:flex; gap:10px; margin-bottom:8px; margin-top:4px;">
+                    <button type="button" id="btn-sim-win" class="sim-toggle-btn active-win">
+                        <i class="ph ph-trophy"></i> Win Match
+                    </button>
+                    <button type="button" id="btn-sim-loss" class="sim-toggle-btn">
+                        <i class="ph ph-skull"></i> Lose Match
+                    </button>
+                </div>
+
+                <!-- Simulated Results Card -->
+                <div id="sim-results-box" class="sim-result-box">
+                    <div class="sim-metric-row">
+                        <span class="sim-metric-label">Win Probability</span>
+                        <span class="sim-metric-value" id="sim-win-prob">50.0%</span>
+                    </div>
+                    
+                    <hr style="border:0; border-top:1px dashed var(--border-color); margin:4px 0;">
+
+                    <div class="sim-metric-row">
+                        <span class="sim-metric-label">Rating Change</span>
+                        <span class="sim-change-badge positive" id="sim-rating-change">+0 Elo</span>
+                    </div>
+
+                    <div class="sim-metric-row">
+                        <span class="sim-metric-label">Simulated DUPR</span>
+                        <span class="sim-metric-value" style="font-size:1.05rem;" id="sim-new-dupr-text">3.50 (+0.00)</span>
+                    </div>
+
+                    <div class="sim-metric-row">
+                        <span class="sim-metric-label">Simulated Elo</span>
+                        <span class="sim-metric-value" id="sim-new-elo-text">1400 Elo</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Right: Statistics & Activity -->
@@ -512,7 +693,125 @@
                 
                 ratingChart.update();
             };
+
+            // ---- DUPR Match Simulator Logic ----
+            const slider = document.getElementById('sim-opp-dupr-slider');
+            const numInput = document.getElementById('sim-opp-dupr-num');
+            const btnWin = document.getElementById('btn-sim-win');
+            const btnLoss = document.getElementById('btn-sim-loss');
+            const oppEloText = document.getElementById('sim-opp-elo-text');
+            const winProb = document.getElementById('sim-win-prob');
+            const ratingChange = document.getElementById('sim-rating-change');
+            const newDuprText = document.getElementById('sim-new-dupr-text');
+            const newEloText = document.getElementById('sim-new-elo-text');
+            const resultsBox = document.getElementById('sim-results-box');
+
+            const myElo = {{ current_user.elo|default(1200)|int }};
+            const myDupr = {{ current_user.dupr|default(3.0)|float }};
+            let isWin = true;
+
+            function duprToElo(dupr) {
+                return Math.round(800 + (dupr - 2.0) * 400);
+            }
+            function eloToDupr(elo) {
+                let dupr = 2.0 + (elo - 800) / 400.0;
+                return Math.max(2.0, Math.min(8.0, Math.round(dupr * 100) / 100));
+            }
+
+            function calculateSimulation() {
+                const oppDupr = parseFloat(numInput.value) || 2.0;
+                const oppElo = duprToElo(oppDupr);
+                oppEloText.textContent = `(${oppElo} Elo)`;
+
+                // Expected outcome
+                const expected = 1.0 / (1.0 + Math.pow(10.0, (oppElo - myElo) / 400.0));
+                const probPct = (expected * 100).toFixed(1);
+                winProb.textContent = `${probPct}%`;
+
+                // Actual outcome
+                const actual = isWin ? 1.0 : 0.0;
+
+                // New ratings (K = 32)
+                const eloDiff = Math.round(32 * (actual - expected));
+                const newElo = Math.round(myElo + eloDiff);
+                const newDupr = eloToDupr(newElo);
+                const duprDiff = newDupr - myDupr;
+
+                // Update display
+                newEloText.textContent = `${newElo} Elo`;
+                
+                // Format diffs
+                const eloDiffSign = eloDiff >= 0 ? `+${eloDiff}` : `${eloDiff}`;
+                const duprDiffSign = duprDiff >= 0 ? `+${duprDiff.toFixed(2)}` : `${duprDiff.toFixed(2)}`;
+
+                if (isWin) {
+                    resultsBox.classList.remove('loss');
+                    ratingChange.className = "sim-change-badge positive";
+                    ratingChange.innerHTML = `<i class="ph ph-trend-up"></i> ${eloDiffSign} Elo`;
+                    newDuprText.innerHTML = `<span style="color:var(--btn-green); font-weight:700;">${newDupr.toFixed(2)}</span> <span style="font-size:0.8rem; color:var(--text-muted);">(${duprDiffSign})</span>`;
+                } else {
+                    resultsBox.classList.add('loss');
+                    ratingChange.className = "sim-change-badge negative";
+                    ratingChange.innerHTML = `<i class="ph ph-trend-down"></i> ${eloDiffSign} Elo`;
+                    newDuprText.innerHTML = `<span style="color:#ef4444; font-weight:700;">${newDupr.toFixed(2)}</span> <span style="font-size:0.8rem; color:var(--text-muted);">(${duprDiffSign})</span>`;
+                }
+            }
+
+            if (slider && numInput) {
+                // Sync slider and number input
+                slider.addEventListener('input', function() {
+                    numInput.value = parseFloat(slider.value).toFixed(2);
+                    calculateSimulation();
+                });
+
+                numInput.addEventListener('input', function() {
+                    let val = parseFloat(numInput.value);
+                    if (isNaN(val)) val = 2.0;
+                    if (val < 2.0) val = 2.0;
+                    if (val > 8.0) val = 8.0;
+                    slider.value = val;
+                    calculateSimulation();
+                });
+
+                numInput.addEventListener('blur', function() {
+                    numInput.value = parseFloat(slider.value).toFixed(2);
+                });
+
+                // Toggle outcomes
+                btnWin.addEventListener('click', function() {
+                    isWin = true;
+                    btnWin.classList.add('active-win');
+                    btnLoss.classList.remove('active-loss');
+                    calculateSimulation();
+                });
+
+                btnLoss.addEventListener('click', function() {
+                    isWin = false;
+                    btnWin.classList.remove('active-win');
+                    btnLoss.classList.add('active-loss');
+                    calculateSimulation();
+                });
+
+                // Run initial calculation
+                calculateSimulation();
+            }
         });
+
+        function previewAvatar(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const avatarDiv = document.querySelector('.profile-avatar');
+                    avatarDiv.innerHTML = `
+                        <img src="${e.target.result}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
+                        <div style="position: absolute; bottom: -4px; right: -4px; background: var(--primary-orange); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--card-bg); font-size: 0.8rem; box-shadow: var(--shadow-sm);">
+                            <i class="ph ph-camera"></i>
+                        </div>
+                    `;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
     </script>
 
 </div>

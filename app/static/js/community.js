@@ -70,10 +70,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!currentUserId || !currentAvatarEl) return;
         try {
             const { data } = await supabaseClient.from('profiles')
-                .select('first_name, last_name').eq('id', currentUserId).single();
+                .select('first_name, last_name, avatar_url').eq('id', currentUserId).single();
             if (data) {
                 const ini = initials(data.first_name, data.last_name);
-                currentAvatarEl.textContent = ini;
+                if (data.avatar_url) {
+                    currentAvatarEl.innerHTML = `<img src="${escapeHTML(data.avatar_url)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">`;
+                } else {
+                    currentAvatarEl.textContent = ini;
+                }
                 currentUserName = `${data.first_name || ''} ${data.last_name || ''}`.trim();
             }
         } catch (_) { }
@@ -130,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .from('community_posts')
             .select(`
                 *,
-                author:profiles!community_posts_author_id_fkey(first_name, last_name, role),
+                author:profiles!community_posts_author_id_fkey(first_name, last_name, role, avatar_url),
                 post_likes(profile_id),
                 community_comments(id)
             `)
@@ -175,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const { data: posts } = await supabaseClient
             .from('community_posts')
-            .select(`*, author:profiles!community_posts_author_id_fkey(first_name, last_name, role), post_likes(profile_id), community_comments(id)`)
+            .select(`*, author:profiles!community_posts_author_id_fkey(first_name, last_name, role, avatar_url), post_likes(profile_id), community_comments(id)`)
             .order('created_at', { ascending: false });
 
         allPosts = posts || [];
@@ -237,6 +241,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const avatarColors = ['#1A213B', '#29A356', '#3B82F6', '#8B5CF6', '#E15623', '#0EA5E9'];
         const colorIdx = (author.first_name?.charCodeAt(0) || 0) % avatarColors.length;
         const avatarColor = avatarColors[colorIdx];
+        const authorAvatarUrl = author.avatar_url || null;
+
+        const feedAvatarHtml = authorAvatarUrl
+            ? `<div class="feed-avatar" style="overflow:hidden;"><img src="${escapeHTML(authorAvatarUrl)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"></div>`
+            : `<div class="feed-avatar" style="background:${avatarColor}">${escapeHTML(postInitials)}</div>`;
 
         const card = document.createElement('div');
         card.className = `feed-post-card${featured ? ' feed-post-featured' : ''}`;
@@ -245,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
         card.innerHTML = `
             ${featured ? `<div class="featured-badge"><i class="ph ph-sparkle"></i> New for you</div>` : ''}
             <div class="feed-post-header">
-                <div class="feed-avatar" style="background:${avatarColor}">${escapeHTML(postInitials)}</div>
+                ${feedAvatarHtml}
                 <div class="feed-post-meta">
                     <h4>${escapeHTML(fullName)}${role ? `<span class="author-role">${escapeHTML(role)}</span>` : ''}</h4>
                     <span class="post-time"><i class="ph ph-clock"></i>${timeAgo(post.created_at)}</span>
@@ -455,7 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
         listEl.innerHTML = '<p class="comments-loading">Loading comments…</p>';
         const { data: comments, error } = await supabaseClient
             .from('community_comments')
-            .select(`*, author:profiles!community_comments_author_id_fkey(first_name, last_name, role)`)
+            .select(`*, author:profiles!community_comments_author_id_fkey(first_name, last_name, role, avatar_url)`)
             .eq('post_id', postId)
             .order('created_at', { ascending: true });
         if (error) { listEl.innerHTML = '<p class="no-comments-msg">Could not load comments.</p>'; return; }
@@ -476,11 +485,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const fullName = `${a.first_name || 'Unknown'} ${a.last_name || ''}`.trim();
             const role = a.role ? a.role.replace(/_/g, ' ') : '';
             const canDel = c.author_id === currentUserId;
+            const commentAvatarUrl = a.avatar_url || null;
+            const commentAvatarHtml = commentAvatarUrl
+                ? `<div class="comment-avatar" style="overflow:hidden;"><img src="${escapeHTML(commentAvatarUrl)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"></div>`
+                : `<div class="comment-avatar">${escapeHTML(ini)}</div>`;
             const item = document.createElement('div');
             item.className = 'comment-item';
             item.dataset.commentId = c.id;
             item.innerHTML = `
-                <div class="comment-avatar">${escapeHTML(ini)}</div>
+                ${commentAvatarHtml}
                 <div class="comment-body-wrap">
                     <div class="comment-author-name">${escapeHTML(fullName)}
                         ${role ? `<span class="comment-role">(${escapeHTML(role)})</span>` : ''}

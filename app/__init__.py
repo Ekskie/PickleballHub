@@ -1,6 +1,6 @@
 import os
 import sys
-from flask import Flask, session
+from flask import Flask, session, render_template
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
@@ -87,7 +87,7 @@ def create_app():
         if client:
             try:
                 resp = client.table('profiles').select(
-                    'first_name, last_name, phone, role, elo, dupr, proficiency'
+                    'first_name, last_name, phone, role, elo, dupr, proficiency, avatar_url'
                 ).eq('id', user_id).single().execute()
 
                 if resp.data:
@@ -122,6 +122,7 @@ def create_app():
                         'elo':          elo,
                         'dupr':         dupr,
                         'proficiency':  d.get('proficiency'),
+                        'avatar_url':   d.get('avatar_url'),
                     }, supabase_url=supabase_url, supabase_anon_key=supabase_key)
             except Exception as exc:
                 print(f"[context_processor] Supabase error: {exc}", file=sys.stderr)
@@ -151,6 +152,7 @@ def create_app():
             'elo':          session.get('elo', elo_def),
             'dupr':         session.get('dupr', dupr_def),
             'proficiency':  session.get('proficiency'),
+            'avatar_url':   session.get('avatar_url'),
         }, supabase_url=supabase_url, supabase_anon_key=supabase_key)
 
     # ── Template Filters ──────────────────────────────────────────────────────
@@ -177,6 +179,11 @@ def create_app():
             return dt.strftime('%b ') + str(dt.day)
         except Exception:
             return ''
+
+    # ── Error Handlers ────────────────────────────────────────────────────────
+    @app.errorhandler(404)
+    def page_not_found(e):
+        return render_template('errors/404.html'), 404
 
     return app
 

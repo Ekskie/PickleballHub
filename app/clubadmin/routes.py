@@ -479,7 +479,7 @@ def leaderboard():
             if stats:
                 # Fetch player profiles
                 player_ids = list(stats.keys())
-                prof_resp = db.table('profiles').select('id, first_name, last_name, elo, dupr, proficiency').in_('id', player_ids).execute()
+                prof_resp = db.table('profiles').select('id, first_name, last_name, elo, dupr, proficiency, avatar_url').in_('id', player_ids).execute()
                 profiles_map = {p['id']: p for p in (prof_resp.data or [])}
 
                 from app.ratings import get_initial_rating
@@ -499,6 +499,7 @@ def leaderboard():
                         'id': pid,
                         'name': f"{prof.get('first_name', '')} {prof.get('last_name', '')}".strip(),
                         'initials': ((prof.get('first_name') or ' ')[0] + (prof.get('last_name') or ' ')[0]).upper(),
+                        'avatar_url': prof.get('avatar_url') or None,
                         'played': s['played'],
                         'wins': s['wins'],
                         'losses': s['losses'],
@@ -524,15 +525,33 @@ def profile():
         first_name = request.form.get('first_name', '').strip()
         last_name = request.form.get('last_name', '').strip()
         phone = request.form.get('phone', '').strip()
+        
+        avatar_file = request.files.get('avatar')
+        avatar_url = None
+        if avatar_file and avatar_file.filename:
+            try:
+                from app.decorators import upload_avatar
+                avatar_url = upload_avatar(db, user_id, avatar_file)
+            except Exception as e:
+                flash(f"Warning: Avatar upload failed - {e}", "warning")
+                
         try:
-            db.table('profiles').update({
+            update_data = {
                 'first_name': first_name,
                 'last_name': last_name,
                 'phone': phone
-            }).eq('id', user_id).execute()
+            }
+            if avatar_url:
+                update_data['avatar_url'] = avatar_url
+                
+            db.table('profiles').update(update_data).eq('id', user_id).execute()
+            
             session['first_name'] = first_name
             session['last_name'] = last_name
             session['phone'] = phone
+            if avatar_url:
+                session['avatar_url'] = avatar_url
+                
             flash("Profile updated successfully.", "success")
         except Exception as e:
             flash(f"Error updating profile: {e}", "error")

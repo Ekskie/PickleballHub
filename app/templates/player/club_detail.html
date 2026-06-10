@@ -1,0 +1,504 @@
+{% extends "player/base_player.html" %}
+
+{% block title %}Club Details: {{ club.name }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .club-detail-layout {
+        display: grid;
+        grid-template-columns: 1.6fr 1fr;
+        gap: 24px;
+        align-items: start;
+    }
+
+    @media (max-width: 900px) {
+        .club-detail-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Club Banner */
+    .club-banner {
+        height: 200px;
+        background: linear-gradient(135deg, var(--btn-navy), var(--primary-orange-light));
+        border-radius: 16px;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 24px;
+        box-shadow: var(--shadow-card);
+        border: 1px solid var(--border-color);
+    }
+
+    .club-banner-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(15, 18, 24, 0.85) 0%, rgba(15, 18, 24, 0.2) 100%);
+        display: flex;
+        align-items: flex-end;
+        padding: 24px;
+    }
+
+    .club-banner-logo {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        border: 4px solid var(--card-bg);
+        background: var(--card-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2rem;
+        color: var(--text-muted);
+        object-fit: cover;
+        box-shadow: var(--shadow-sm);
+        flex-shrink: 0;
+    }
+
+    .club-banner-info {
+        margin-left: 20px;
+        color: #fff;
+    }
+
+    .club-banner-title {
+        font-size: 1.6rem;
+        font-weight: 800;
+        margin: 0;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    }
+
+    .club-banner-meta {
+        display: flex;
+        gap: 16px;
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.85);
+        margin-top: 6px;
+        align-items: center;
+    }
+
+    .club-banner-meta span {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* Cards & Section headers */
+    .club-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        padding: 24px;
+        margin-bottom: 20px;
+        box-shadow: var(--shadow-card);
+    }
+
+    .club-card-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 8px;
+    }
+
+    /* Members list directory */
+    .member-search-wrap {
+        position: relative;
+        margin-bottom: 16px;
+    }
+
+    .member-search-input {
+        width: 100%;
+        padding: 10px 14px 10px 38px;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        background: var(--input-bg);
+        color: var(--text-primary);
+        font-size: 0.85rem;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+    .member-search-input:focus {
+        border-color: var(--primary-orange);
+    }
+
+    .member-search-wrap i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        font-size: 1.1rem;
+    }
+
+    .member-directory {
+        max-height: 320px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding-right: 4px;
+    }
+
+    .member-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        border-radius: 10px;
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        transition: transform 0.25s, box-shadow 0.25s;
+    }
+
+    .member-card:hover {
+        transform: translateX(2px);
+        border-color: var(--primary-orange-light);
+    }
+
+    .member-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--btn-navy);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+
+    .member-info {
+        flex: 1;
+        margin-left: 12px;
+    }
+
+    .member-name {
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .member-stats {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        display: flex;
+        gap: 8px;
+    }
+
+    /* Actions */
+    .btn-message-admin {
+        width: 100%;
+        padding: 12px;
+        background: var(--btn-navy);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: var(--transition);
+        text-decoration: none;
+        margin-top: 10px;
+    }
+
+    .btn-message-admin:hover {
+        opacity: 0.95;
+    }
+
+    .status-pill {
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-pill.active {
+        background: rgba(16, 185, 129, 0.12);
+        color: var(--btn-green);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .status-pill.pending {
+        background: rgba(245, 158, 11, 0.12);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    /* Event Cards */
+    .club-events-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .club-event-card {
+        padding: 14px;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        background: var(--input-bg);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 8px;
+        border-left: 4px solid var(--primary-orange);
+    }
+
+    .club-event-title {
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .club-event-meta {
+        font-size: 0.78rem;
+        color: var(--text-secondary);
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .club-event-meta span {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .club-event-meta i {
+        color: var(--text-muted);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+    <a href="{{ url_for('player.clubs') }}" style="text-decoration: none; color: var(--text-muted); font-size: 0.9rem; display: flex; align-items: center; gap: 4px;">
+        <i class="ph ph-arrow-left"></i> Back to Clubs
+    </a>
+</div>
+
+<!-- Club Banner Header -->
+<div class="club-banner">
+    {% if club.logo_url %}
+        <div style="position: absolute; inset: 0; background-image: url('{{ club.logo_url }}'); background-size: cover; background-position: center; filter: blur(5px) brightness(0.65);"></div>
+    {% endif %}
+    <div class="club-banner-overlay">
+        <div style="display: flex; align-items: center; width: 100%; flex-wrap: wrap; gap: 16px;">
+            {% if club.logo_url %}
+                <img class="club-banner-logo" src="{{ club.logo_url }}" alt="{{ club.name }} logo">
+            {% else %}
+                <div class="club-banner-logo"><i class="ph ph-shield"></i></div>
+            {% endif %}
+            <div class="club-banner-info">
+                <h1 class="club-banner-title">{{ club.name }}</h1>
+                <div class="club-banner-meta">
+                    <span><i class="ph ph-map-pin"></i> {{ club.location or 'No location' }}</span>
+                    <span><i class="ph ph-users"></i> {{ members|length }} Active Members</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="club-detail-layout">
+    
+    <!-- Left Column: Details & Members -->
+    <div>
+        <!-- Description -->
+        <div class="club-card">
+            <h3 class="club-card-title"><i class="ph ph-info" style="color: var(--primary-orange);"></i> About Club</h3>
+            <p style="font-size: 0.92rem; color: var(--text-secondary); line-height: 1.6; margin: 0;">
+                {{ club.description or 'No description provided for this club.' }}
+            </p>
+        </div>
+
+        <!-- Members Directory -->
+        <div class="club-card">
+            <h3 class="club-card-title"><i class="ph ph-address-book" style="color: var(--btn-green);"></i> Members Directory</h3>
+            
+            <div class="member-search-wrap">
+                <i class="ph ph-magnifying-glass"></i>
+                <input type="text" id="memberSearch" class="member-search-input" placeholder="Search members by name...">
+            </div>
+
+            <div class="member-directory" id="memberDirectory">
+                {% for m in members %}
+                <div class="member-card" data-name="{{ m.name|lower }}">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="member-avatar" style="overflow: hidden;">{% if m.avatar_url %}<img src="{{ m.avatar_url }}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">{% else %}{{ m.initials }}{% endif %}</div>
+                        <div class="member-info">
+                            <div class="member-name">{{ m.name }}</div>
+                            <div class="member-stats">
+                                <span>DUPR: {{ "%.2f"|format(m.profiles.dupr|float) }}</span>
+                                <span>•</span>
+                                <span>Elo: {{ m.profiles.elo }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% if current_user.id != m.profiles.id %}
+                    <a href="{{ url_for('player.player_chat', target_id=m.profiles.id) }}" class="member-chat-btn" title="Message Member">
+                        <i class="ph ph-chat-circle-dots" style="font-size: 1.15rem; color: var(--primary-orange);"></i>
+                    </a>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div style="text-align: center; padding: 24px; color: var(--text-muted); font-size: 0.85rem;">
+                    No members listed yet.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Membership & Events -->
+    <div>
+        <!-- Membership Widget -->
+        <div class="club-card">
+            <h3 class="club-card-title"><i class="ph ph-shield-check" style="color: var(--primary-orange);"></i> Membership Status</h3>
+            
+            <div style="text-align: center; padding: 10px 0 20px 0;">
+                {% if my_membership %}
+                    {% if my_membership.status == 'active' %}
+                        <div style="margin-bottom: 16px;">
+                            <span class="status-pill active"><i class="ph ph-check-circle"></i> Active Member</span>
+                        </div>
+                        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 16px;">
+                            You joined this club on {{ my_membership.joined_at.split('T')[0] }}.
+                        </p>
+                        <form action="{{ url_for('player.leave_club', club_id=club.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to leave this club?');">
+                            <button type="submit" class="btn-cancel" style="width: 100%; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer;">
+                                <i class="ph ph-sign-out"></i> Leave Club
+                            </button>
+                        </form>
+                    {% elif my_membership.status == 'pending' %}
+                        <div style="margin-bottom: 16px;">
+                            <span class="status-pill pending"><i class="ph ph-hourglass-high"></i> Pending Approval</span>
+                        </div>
+                        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 16px;">
+                            Your membership request is currently awaiting club admin review.
+                        </p>
+                        <form action="{{ url_for('player.leave_club', club_id=club.id) }}" method="POST">
+                            <button type="submit" class="btn-cancel" style="width: 100%; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer;">
+                                Cancel Join Request
+                            </button>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <div style="margin-bottom: 16px;">
+                        <span class="status-pill" style="background: rgba(148, 163, 184, 0.12); color: var(--text-secondary); border: 1px solid rgba(148, 163, 184, 0.2);"><i class="ph ph-user"></i> Guest Player</span>
+                    </div>
+                    
+                    {% if club.membership_type == 'free' %}
+                        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 16px;">
+                            This club is free to join. Apply now to participate in club discussions and events.
+                        </p>
+                    {% else %}
+                        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 16px;">
+                            This is a paid club with a membership fee of <strong>₱{{ "%.2f"|format(club.membership_fee) }}</strong>.
+                        </p>
+                    {% endif %}
+                    
+                    <form action="{{ url_for('player.join_club', club_id=club.id) }}" method="POST">
+                        <button type="submit" class="action-box orange" style="width: 100%; padding: 12px; border-radius: 10px; font-weight: 700; border: none; cursor: pointer;">
+                            <i class="ph ph-plus-circle"></i> Join Club
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Club Organizer Details -->
+        <div class="club-card">
+            <h3 class="club-card-title"><i class="ph ph-crown" style="color: var(--primary-orange);"></i> Club Administrator</h3>
+            <div style="display: flex; align-items: center; gap: 12px; background: var(--input-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
+                <div class="member-avatar" style="background: var(--primary-orange); overflow: hidden;">
+                    {% if club.profiles.avatar_url %}
+                        <img src="{{ club.profiles.avatar_url }}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                    {% else %}
+                        {{ club.profiles.first_name[0]|upper if club.profiles else 'A' }}
+                    {% endif %}
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-size: 0.9rem; font-weight: 700; color: var(--text-primary);">
+                        {{ club.profiles.first_name }} {{ club.profiles.last_name }}
+                    </div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted);">
+                        Club Organizer • ELO: {{ club.profiles.elo }}
+                    </div>
+                </div>
+            </div>
+            {% if current_user.id != club.admin_id %}
+            <a href="{{ url_for('player.player_chat', target_id=club.admin_id) }}" class="btn-message-admin">
+                <i class="ph ph-chat-circle"></i> Contact Organizer
+            </a>
+            {% endif %}
+        </div>
+
+        <!-- Upcoming Club Events -->
+        <div class="club-card">
+            <h3 class="club-card-title"><i class="ph ph-calendar-plus" style="color: var(--primary-orange);"></i> Club Events</h3>
+            
+            <div class="club-events-list">
+                {% for ev in events %}
+                <div class="club-event-card">
+                    <h4 class="club-event-title">{{ ev.title }}</h4>
+                    <div class="club-event-meta">
+                        <span><i class="ph ph-calendar"></i> {{ ev.event_date }}</span>
+                        <span><i class="ph ph-map-pin"></i> {{ ev.location_label or 'Main Facility' }}</span>
+                        <span>
+                            <i class="ph ph-trophy"></i> 
+                            <span class="role-pill" style="padding: 2px 6px; font-size: 0.65rem; text-transform: uppercase;">
+                                {{ ev.type }}
+                            </span>
+                        </span>
+                    </div>
+                    <a href="{{ url_for('player.events') }}" style="font-size: 0.78rem; font-weight: 700; color: var(--primary-orange); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px;">
+                        Event Page <i class="ph ph-caret-double-right"></i>
+                    </a>
+                </div>
+                {% else %}
+                <div style="text-align: center; padding: 24px; color: var(--text-muted); font-size: 0.85rem; background: var(--input-bg); border-radius: 10px; border: 1px dashed var(--border-color);">
+                    <i class="ph ph-calendar-x" style="font-size: 1.8rem; display: block; margin-bottom: 8px; opacity: 0.4;"></i>
+                    No upcoming events scheduled.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const searchInput = document.getElementById("memberSearch");
+        const memberCards = document.querySelectorAll("#memberDirectory .member-card");
+        
+        searchInput?.addEventListener("input", (e) => {
+            const query = e.target.value.trim().toLowerCase();
+            
+            memberCards.forEach(card => {
+                const name = card.getAttribute("data-name") || "";
+                if (!query || name.includes(query)) {
+                    card.style.display = "flex";
+                } else {
+                    card.style.display = "none";
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
