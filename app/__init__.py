@@ -161,10 +161,24 @@ def create_app():
         """Convert an ISO timestamp to a human-readable relative time string."""
         import datetime
         try:
-            dt = datetime.datetime.fromisoformat(str(iso_str).replace('Z', '+00:00'))
+            if not iso_str:
+                return ''
+            if isinstance(iso_str, datetime.datetime):
+                dt = iso_str
+            else:
+                dt = datetime.datetime.fromisoformat(str(iso_str).replace('Z', '+00:00'))
+            
+            # Ensure timezone awareness
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=datetime.timezone.utc)
+                
             now = datetime.datetime.now(datetime.timezone.utc)
             diff = now - dt
             seconds = int(diff.total_seconds())
+            
+            if seconds < 0:
+                seconds = 0
+                
             if seconds < 60:
                 return 'just now'
             minutes = seconds // 60
@@ -176,9 +190,9 @@ def create_app():
             days = hours // 24
             if days < 7:
                 return f'{days}d ago'
-            return dt.strftime('%b ') + str(dt.day)
+            return dt.strftime('%b %d')
         except Exception:
-            return ''
+            return str(iso_str)[:16] if iso_str else ''
 
     # ── Error Handlers ────────────────────────────────────────────────────────
     @app.errorhandler(404)

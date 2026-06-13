@@ -130,6 +130,52 @@
                 opacity: 1;
             }
         }
+
+        /* Page Transition Loading Overlay */
+        #page-loading-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        html.dark-mode #page-loading-overlay {
+            background: rgba(15, 18, 25, 0.5);
+        }
+
+        #page-loading-overlay.active {
+            display: flex;
+        }
+
+        .page-spinner {
+            width: 44px;
+            height: 44px;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--primary-orange);
+            border-radius: 50%;
+            animation: pageSpinnerRotate 0.8s linear infinite;
+        }
+
+        .page-spinner-text {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.3px;
+        }
+
+        @keyframes pageSpinnerRotate {
+            to { transform: rotate(360deg); }
+        }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
@@ -199,11 +245,13 @@
                             class="badge"></span></button></a>
                 <a href="{{ url_for(current_user.role_raw ~ '.profile') }}" class="user-profile"
                     id="header-user-profile">
-                    <div class="avatar" style="overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                    <div class="avatar"
+                        style="overflow: hidden; display: flex; align-items: center; justify-content: center;">
                         {% if current_user.avatar_url %}
-                            <img src="{{ current_user.avatar_url }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
+                        <img src="{{ current_user.avatar_url }}" alt="Avatar"
+                            style="width: 100%; height: 100%; object-fit: cover;">
                         {% else %}
-                            {{ current_user.initials }}
+                        {{ current_user.initials }}
                         {% endif %}
                     </div>
                     <div class="avatar-info">
@@ -217,7 +265,12 @@
         <!-- Dynamic Content Area -->
         <div class="content-background"></div>
 
-        <main class="content-area">
+        <main class="content-area" style="position: relative;">
+            <!-- Page Loading Overlay -->
+            <div id="page-loading-overlay">
+                <div class="page-spinner"></div>
+                <span class="page-spinner-text">Loading...</span>
+            </div>
             <!-- Flash Messages -->
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -446,6 +499,58 @@
                     .subscribe();
             }
         });
+
+        // --- Page Transition Loading Overlay ---
+        (function() {
+            const overlay = document.getElementById('page-loading-overlay');
+            if (!overlay) return;
+
+            document.addEventListener('click', function(e) {
+                const link = e.target.closest('a');
+                if (!link) return;
+
+                const href = link.getAttribute('href');
+                if (!href) return;
+
+                // Skip non-navigating links
+                if (href.startsWith('#') || href.startsWith('javascript:') ||
+                    link.getAttribute('target') === '_blank' ||
+                    link.closest('.modal-overlay') ||
+                    link.closest('#support-modal') ||
+                    e.ctrlKey || e.metaKey || e.shiftKey) {
+                    return;
+                }
+
+                // Only intercept same-origin links
+                try {
+                    const url = new URL(link.href, window.location.href);
+                    if (url.origin !== window.location.origin) return;
+                    // Skip logout and current page
+                    if (url.pathname === window.location.pathname) return;
+                    if (href.includes('logout')) return;
+                } catch (err) { return; }
+
+                // Show loading overlay immediately
+                overlay.classList.add('active');
+
+                // Update sidebar active state instantly
+                const sidebar = document.querySelector('.sidebar-nav');
+                if (sidebar) {
+                    sidebar.querySelectorAll('li').forEach(li => li.classList.remove('active'));
+                    const clickedLi = link.closest('li');
+                    if (clickedLi && sidebar.contains(clickedLi)) {
+                        clickedLi.classList.add('active');
+                    }
+                }
+            });
+
+            // Safety: hide on back/forward navigation (bfcache)
+            window.addEventListener('pageshow', function(e) {
+                if (e.persisted) {
+                    overlay.classList.remove('active');
+                }
+            });
+        })();
     </script>
 
 </body>

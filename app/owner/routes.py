@@ -724,6 +724,14 @@ def match_score(event_id, match_id):
         fac_ids = [f['id'] for f in (fac_resp.data or [])]
         db.table('events').select('id').eq('id', event_id).in_('facility_id', fac_ids).single().execute()
 
+        # Get match before updating to pass to ratings logic
+        prev_match = None
+        try:
+            m_resp = db.table('tournament_matches').select('*').eq('id', match_id).single().execute()
+            prev_match = m_resp.data
+        except Exception:
+            pass
+
         db.table('tournament_matches').update({
             'player1_score': p1_score,
             'player2_score': p2_score,
@@ -734,7 +742,7 @@ def match_score(event_id, match_id):
 
         # Calculate and update player ratings
         from app.ratings import update_match_ratings
-        update_match_ratings(db, match_id)
+        update_match_ratings(db, match_id, prev_match=prev_match)
 
         _advance_bracket(db, event_id)
         flash("Score recorded! Bracket and ratings updated.", "success")

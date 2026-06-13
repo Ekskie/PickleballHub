@@ -44,7 +44,25 @@ def ensure_initial_history(db, player_id, elo, dupr, recorded_at):
     except Exception as e:
         print(f"[ensure_initial_history] Failed to ensure initial history for user {player_id}: {e}")
 
-def update_match_ratings(db, match_id):
+def adjust_profile_stats(db, player_id, wins_change, losses_change):
+    """Increment/decrement wins and losses on the player profile safely."""
+    if not player_id:
+        return
+    try:
+        p_resp = db.table('profiles').select('wins, losses').eq('id', player_id).single().execute()
+        if p_resp.data:
+            # Support fallback if columns don't exist yet in the database
+            if 'wins' in p_resp.data and 'losses' in p_resp.data:
+                current_wins = p_resp.data.get('wins') or 0
+                current_losses = p_resp.data.get('losses') or 0
+                db.table('profiles').update({
+                    'wins': max(0, current_wins + wins_change),
+                    'losses': max(0, current_losses + losses_change)
+                }).eq('id', player_id).execute()
+    except Exception as e:
+        print(f"[adjust_profile_stats] Failed to adjust wins/losses for {player_id}: {e}")
+
+def update_match_ratings(db, match_id, prev_match=None):
     """Recalculate ratings for players of a match and write to profiles and history."""
     try:
         # 1. Fetch match record
@@ -107,6 +125,38 @@ def update_match_ratings(db, match_id):
         # 7. Update profiles
         db.table('profiles').update({'elo': new_elo1, 'dupr': new_dupr1}).eq('id', p1_id).execute()
         db.table('profiles').update({'elo': new_elo2, 'dupr': new_dupr2}).eq('id', p2_id).execute()
+        
+        # Update wins and losses
+        curr_winner = winner_id
+        curr_loser = p2_id if winner_id == p1_id else (p1_id if winner_id == p2_id else None)
+        
+        if prev_match and prev_match.get('stats_applied'):
+            # Revert previous stats
+            prev_winner = prev_match.get('winner_id')
+            prev_loser = p2_id if prev_winner == p1_id else (p1_id if prev_winner == p2_id else None)
+            
+            if prev_winner:
+                adjust_profile_stats(db, prev_winner, -1, 0)
+            if prev_loser:
+                adjust_profile_stats(db, prev_loser, 0, -1)
+                
+            # Apply current stats
+            if curr_winner:
+                adjust_profile_stats(db, curr_winner, 1, 0)
+            if curr_loser:
+                adjust_profile_stats(db, curr_loser, 0, 1)
+        else:
+            # First time applying stats
+            if curr_winner:
+                adjust_profile_stats(db, curr_winner, 1, 0)
+            if curr_loser:
+                adjust_profile_stats(db, curr_loser, 0, 1)
+                
+        # Mark stats as applied on the match record
+        try:
+            db.table('tournament_matches').update({'stats_applied': True}).eq('id', match_id).execute()
+        except Exception as e:
+            print(f"[update_match_ratings] Failed to update stats_applied for match {match_id}: {e}")
         
         # 8. Record history
         match_created = match.get('created_at') or datetime.now(timezone.utc).isoformat()
@@ -244,6 +294,21 @@ def update_matchmaker_ratings(db, lobby_id):
                 'dupr': new_dupr,
                 'recorded_at': played_at
             }).execute()
+            
+        # 8. Apply wins and losses in profiles if not already applied
+        if not lobby.get('stats_applied'):
+            winners = team1_ids if team1_won else team2_ids
+            losers = team2_ids if team1_won else team1_ids
+            
+            for pid in winners:
+                adjust_profile_stats(db, pid, 1, 0)
+            for pid in losers:
+                adjust_profile_stats(db, pid, 0, 1)
+                
+            try:
+                db.table('matchmaker_lobbies').update({'stats_applied': True}).eq('id', lobby_id).execute()
+            except Exception as e:
+                print(f"[update_matchmaker_ratings] Failed to mark stats_applied for lobby {lobby_id}: {e}")
             
     except Exception as e:
         print(f"[update_matchmaker_ratings] Failed to update matchmaker ratings for lobby {lobby_id}: {e}")

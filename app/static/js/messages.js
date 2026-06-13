@@ -262,12 +262,39 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ══════════════════════════════════════════════════
        OPEN A CONVERSATION
     ══════════════════════════════════════════════════ */
+    function highlightActiveContact(convoId) {
+        const items = contactsList.querySelectorAll('.contact-item');
+        items.forEach(item => {
+            if (item.dataset.convoId === convoId) {
+                item.classList.add('active');
+                item.classList.remove('unread');
+                const badge = item.querySelector('.unread-badge');
+                if (badge) badge.remove();
+            } else {
+                item.classList.remove('active');
+            }
+        });
+    }
+
+    function showLoader() {
+        chatMessages.innerHTML = `
+            <div class="chat-loading">
+                <i class="ph ph-spinner"></i>
+                <p>Loading messages...</p>
+            </div>`;
+    }
+
     async function openConversation(convoId, user) {
         activeConversationId = convoId;
         activeOtherUser      = user;
+        
+        // Highlight active contact immediately and show loading spinner
+        highlightActiveContact(convoId);
         showChat(user);
+        showLoader();
+
         await markAsRead(convoId);
-        await loadMessages();
+        await loadMessages(convoId);
         loadConversations(); // refresh sidebar (clear unread badge)
     }
 
@@ -288,8 +315,8 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ══════════════════════════════════════════════════
        LOAD MESSAGES
     ══════════════════════════════════════════════════ */
-    async function loadMessages() {
-        if (!activeConversationId) return;
+    async function loadMessages(convoId = activeConversationId) {
+        if (!convoId) return;
 
         const { data: msgs, error } = await supabaseClient
             .from('messages')
@@ -297,11 +324,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 *,
                 sender:profiles!messages_sender_id_fkey(first_name, last_name)
             `)
-            .eq('conversation_id', activeConversationId)
+            .eq('conversation_id', convoId)
             .order('created_at', { ascending: true });
 
         if (error) { console.error('[Messages] loadMessages:', error); return; }
-        renderMessages(msgs || []);
+        
+        if (activeConversationId === convoId) {
+            renderMessages(msgs || []);
+        }
     }
 
     function renderMessages(msgs) {

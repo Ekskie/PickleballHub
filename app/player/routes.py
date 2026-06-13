@@ -43,34 +43,47 @@ def dashboard():
     # Calculate player stats (Wins, Played, Win Rate)
     player_stats = {'total_played': 0, 'wins': 0, 'win_rate': 0}
     try:
-        # 1. Tournament matches
-        t_matches = db.table('tournament_matches').select('winner_id').or_(f"player1_id.eq.{player_id},player2_id.eq.{player_id}").eq('status', 'completed').execute()
-        t_data = t_matches.data or []
-        player_stats['total_played'] += len(t_data)
-        player_stats['wins'] += sum(1 for m in t_data if m.get('winner_id') == player_id)
+        # Check if wins and losses columns exist in profiles
+        prof_resp = db.table('profiles').select('wins, losses').eq('id', player_id).single().execute()
+        if prof_resp.data and 'wins' in prof_resp.data and 'losses' in prof_resp.data:
+            player_stats['wins'] = prof_resp.data.get('wins') or 0
+            losses = prof_resp.data.get('losses') or 0
+            player_stats['total_played'] = player_stats['wins'] + losses
+            if player_stats['total_played'] > 0:
+                player_stats['win_rate'] = round((player_stats['wins'] / player_stats['total_played']) * 100)
+        else:
+            raise KeyError("wins/losses columns not found in profiles")
+    except Exception:
+        # Fallback to dynamic calculation if wins/losses columns don't exist yet
+        try:
+            # 1. Tournament matches
+            t_matches = db.table('tournament_matches').select('winner_id').or_(f"player1_id.eq.{player_id},player2_id.eq.{player_id}").eq('status', 'completed').execute()
+            t_data = t_matches.data or []
+            player_stats['total_played'] += len(t_data)
+            player_stats['wins'] += sum(1 for m in t_data if m.get('winner_id') == player_id)
 
-        # 2. Matchmaker lobbies (creator)
-        c_lobbies = db.table('matchmaker_lobbies').select('winner_id').eq('creator_id', player_id).eq('status', 'completed').execute()
-        c_data = c_lobbies.data or []
-        player_stats['total_played'] += len(c_data)
-        player_stats['wins'] += sum(1 for m in c_data if m.get('winner_id') == player_id)
+            # 2. Matchmaker lobbies (creator)
+            c_lobbies = db.table('matchmaker_lobbies').select('winner_id').eq('creator_id', player_id).eq('status', 'completed').execute()
+            c_data = c_lobbies.data or []
+            player_stats['total_played'] += len(c_data)
+            player_stats['wins'] += sum(1 for m in c_data if m.get('winner_id') == player_id)
 
-        # 3. Matchmaker lobbies (joined)
-        g_lobbies = db.table('lobby_participants').select(
-            'lobby:matchmaker_lobbies!lobby_id(winner_id)'
-        ).eq('player_id', player_id).eq('status', 'joined').execute()
+            # 3. Matchmaker lobbies (joined) - Only count completed lobbies
+            g_lobbies = db.table('lobby_participants').select(
+                'lobby:matchmaker_lobbies!lobby_id(winner_id, status)'
+            ).eq('player_id', player_id).eq('status', 'joined').execute()
 
-        for item in (g_lobbies.data or []):
-            lobby_data = item.get('lobby')
-            if lobby_data:
-                player_stats['total_played'] += 1
-                if lobby_data.get('winner_id') == player_id:
-                    player_stats['wins'] += 1
+            for item in (g_lobbies.data or []):
+                lobby_data = item.get('lobby')
+                if lobby_data and lobby_data.get('status') == 'completed':
+                    player_stats['total_played'] += 1
+                    if lobby_data.get('winner_id') == player_id:
+                        player_stats['wins'] += 1
 
-        if player_stats['total_played'] > 0:
-            player_stats['win_rate'] = round((player_stats['wins'] / player_stats['total_played']) * 100)
-    except Exception as stat_err:
-        print(f"Error loading player stats for dashboard: {stat_err}")
+            if player_stats['total_played'] > 0:
+                player_stats['win_rate'] = round((player_stats['wins'] / player_stats['total_played']) * 100)
+        except Exception as stat_err:
+            print(f"Error loading player stats for dashboard fallback: {stat_err}")
 
     try:
         # Fetch next confirmed reservation
@@ -970,7 +983,7 @@ def community():
 
 
 @player_bp.route('/messages')
-# @require_role('player')
+@require_role('player')
 def messages():
     return render_template('player/messages.html')
 
@@ -997,6 +1010,18 @@ def mark_notifications_read():
     db = get_db()
     try:
         db.table('notifications').update({'is_read': True}).eq('user_id', player_id).eq('is_read', False).execute()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@player_bp.route('/notifications/delete/<notif_id>', methods=['POST'])
+@require_role('player')
+def delete_notification(notif_id):
+    player_id = session.get('user_id')
+    db = get_db()
+    try:
+        db.table('notifications').delete().eq('id', notif_id).eq('user_id', player_id).execute()
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -2083,56 +2108,87 @@ def leaderboard():
     proficiency_filter = request.args.get('proficiency', '').strip()
 
     try:
-        # Fetch all players
-        p_query = db.table('profiles').select('id, first_name, last_name, elo, dupr, proficiency, avatar_url').eq('role', 'player')
+        # Fetch all players, including wins and losses if they exist
+        p_query = db.table('profiles').select('id, first_name, last_name, elo, dupr, proficiency, avatar_url, wins, losses').eq('role', 'player')
         if proficiency_filter:
             p_query = p_query.eq('proficiency', proficiency_filter)
         
         prof_resp = p_query.execute()
         players = prof_resp.data or []
 
-        # Get completed matches
-        matches_resp = db.table('tournament_matches').select('player1_id, player2_id, winner_id, status').eq('status', 'completed').execute()
-        matches = matches_resp.data or []
+        # Check if wins and losses columns exist in the retrieved profiles
+        has_wins_losses = len(players) > 0 and 'wins' in players[0] and 'losses' in players[0]
 
-        stats = {}
-        for p in players:
-            stats[p['id']] = {'wins': 0, 'losses': 0, 'played': 0}
+        if has_wins_losses:
+            # Persistent mode: Read wins and losses directly from the profiles table
+            for p in players:
+                name = f"{p.get('first_name') or ''} {p.get('last_name') or ''}".strip() or "Anonymous Player"
+                if search_query and search_query.lower() not in name.lower():
+                    continue
 
-        for m in matches:
-            for pid in [m['player1_id'], m['player2_id']]:
-                if pid in stats:
-                    stats[pid]['played'] += 1
-                    if m['winner_id'] == pid:
-                        stats[pid]['wins'] += 1
-                    else:
-                        stats[pid]['losses'] += 1
+                first = p.get('first_name') or 'P'
+                last = p.get('last_name') or ''
+                initials = (first[0] + (last[0] if last else '')).upper()
 
-        # Format rankings
-        for p in players:
-            name = f"{p.get('first_name') or ''} {p.get('last_name') or ''}".strip() or "Anonymous Player"
-            if search_query and search_query.lower() not in name.lower():
-                continue
+                wins = p.get('wins') or 0
+                losses = p.get('losses') or 0
+                played = wins + losses
+                win_rate = round((wins / played) * 100) if played > 0 else 0
 
-            first = p.get('first_name') or 'P'
-            last = p.get('last_name') or ''
-            initials = (first[0] + (last[0] if last else '')).upper()
+                rankings.append({
+                    'id': p['id'],
+                    'name': name,
+                    'initials': initials,
+                    'avatar_url': p.get('avatar_url') or None,
+                    'dupr': float(p.get('dupr') if p.get('dupr') is not None else 3.00),
+                    'elo': p.get('elo') or 1200,
+                    'proficiency': p.get('proficiency') or 'beginner',
+                    'wins': wins,
+                    'losses': losses,
+                    'win_rate': win_rate
+                })
+        else:
+            # Fallback dynamic mode: Count tournament matches
+            matches_resp = db.table('tournament_matches').select('player1_id, player2_id, winner_id, status').eq('status', 'completed').execute()
+            matches = matches_resp.data or []
 
-            s = stats.get(p['id'], {'wins': 0, 'losses': 0, 'played': 0})
-            win_rate = round((s['wins'] / s['played']) * 100) if s['played'] > 0 else 0
+            stats = {}
+            for p in players:
+                stats[p['id']] = {'wins': 0, 'losses': 0, 'played': 0}
 
-            rankings.append({
-                'id': p['id'],
-                'name': name,
-                'initials': initials,
-                'avatar_url': p.get('avatar_url') or None,
-                'dupr': float(p.get('dupr') if p.get('dupr') is not None else 3.00),
-                'elo': p.get('elo') or 1200,
-                'proficiency': p.get('proficiency') or 'beginner',
-                'wins': s['wins'],
-                'losses': s['losses'],
-                'win_rate': win_rate
-            })
+            for m in matches:
+                for pid in [m['player1_id'], m['player2_id']]:
+                    if pid in stats:
+                        stats[pid]['played'] += 1
+                        if m['winner_id'] == pid:
+                            stats[pid]['wins'] += 1
+                        else:
+                            stats[pid]['losses'] += 1
+
+            for p in players:
+                name = f"{p.get('first_name') or ''} {p.get('last_name') or ''}".strip() or "Anonymous Player"
+                if search_query and search_query.lower() not in name.lower():
+                    continue
+
+                first = p.get('first_name') or 'P'
+                last = p.get('last_name') or ''
+                initials = (first[0] + (last[0] if last else '')).upper()
+
+                s = stats.get(p['id'], {'wins': 0, 'losses': 0, 'played': 0})
+                win_rate = round((s['wins'] / s['played']) * 100) if s['played'] > 0 else 0
+
+                rankings.append({
+                    'id': p['id'],
+                    'name': name,
+                    'initials': initials,
+                    'avatar_url': p.get('avatar_url') or None,
+                    'dupr': float(p.get('dupr') if p.get('dupr') is not None else 3.00),
+                    'elo': p.get('elo') or 1200,
+                    'proficiency': p.get('proficiency') or 'beginner',
+                    'wins': s['wins'],
+                    'losses': s['losses'],
+                    'win_rate': win_rate
+                })
 
         # Sort by DUPR rating descending, then Elo descending
         rankings.sort(key=lambda x: (-x['dupr'], -x['elo']))

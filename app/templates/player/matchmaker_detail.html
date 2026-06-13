@@ -406,6 +406,14 @@
             <h3 class="section-title" style="color: var(--btn-green); border-bottom-color: rgba(16, 185, 129, 0.2);">
                 <i class="ph ph-clipboard-text"></i> Report Match Outcome
             </h3>
+            
+            {% if lobby.display_status == 'completed' %}
+            <div style="background: rgba(245, 158, 11, 0.07); border: 1px solid rgba(245, 158, 11, 0.2); padding: 12px 16px; border-radius: 8px; font-size: 0.82rem; color: #f59e0b; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; font-weight: 600;">
+                <i class="ph ph-clock" style="font-size: 1.1rem;"></i>
+                <span>This match has concluded according to the scheduled time. Host, please report the final score to finalize rankings.</span>
+            </div>
+            {% endif %}
+            
             <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">
                 Once the game is complete, report the scores here to update ELO & DUPR ratings for all approved players.
             </p>
@@ -446,23 +454,26 @@
 
         <!-- Completed Game Outcome Display -->
         {% if lobby.status == 'completed' %}
-        <div class="detail-card" style="border-color: var(--primary-orange); background: rgba(225, 86, 35, 0.02);">
-            <h3 class="section-title" style="color: var(--primary-orange); border-bottom-color: rgba(225, 86, 35, 0.2);">
-                <i class="ph ph-check-square"></i> Game Complete
+        <div class="detail-card" style="border: 1px solid rgba(225, 86, 35, 0.25); background: linear-gradient(135deg, rgba(22, 26, 34, 0.9), rgba(225, 86, 35, 0.04)); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); border-left: 5px solid var(--primary-orange);">
+            <h3 class="section-title" style="color: var(--primary-orange); border-bottom-color: rgba(225, 86, 35, 0.15);">
+                <i class="ph ph-trophy"></i> Match Finalized
             </h3>
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0;">
                 <div>
-                    <span style="font-size: 0.85rem; color: var(--text-secondary);">Winner</span>
-                    <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin: 4px 0 0 0;">
-                        {{ winner_name }}
+                    <span style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 600;">Match Winner</span>
+                    <h4 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin-top: 4px; display: flex; align-items: center; gap: 6px;">
+                        <i class="ph ph-crown" style="color: #f59e0b;"></i> {{ winner_name }}
                     </h4>
                 </div>
-                <div style="text-align: right;">
-                    <span style="font-size: 0.85rem; color: var(--text-secondary);">Score</span>
-                    <h4 style="font-size: 1.4rem; font-weight: 800; color: var(--primary-orange); margin: 4px 0 0 0;">
+                <div style="text-align: right; background: rgba(225, 86, 35, 0.1); border: 1px solid rgba(225, 86, 35, 0.2); padding: 8px 16px; border-radius: 8px;">
+                    <span style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--primary-orange); font-weight: 700; display: block; margin-bottom: 2px;">Final Score</span>
+                    <h4 style="font-size: 1.5rem; font-weight: 900; color: var(--text-primary); margin: 0; font-family: monospace; letter-spacing: 1px;">
                         {{ lobby.score }}
                     </h4>
                 </div>
+            </div>
+            <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color); font-size: 0.78rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px;">
+                <i class="ph ph-info"></i> ELO ratings and DUPR parameters have been recalculated.
             </div>
         </div>
         {% endif %}

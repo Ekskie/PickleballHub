@@ -210,10 +210,73 @@
 <script>
     function dismissNotif(btn) {
         const item = btn.closest('.notif-item');
+        const notifId = item.getAttribute('data-id');
+        const isUnread = item.classList.contains('unread');
+
+        // Visual fade out
         item.style.opacity = '0';
         item.style.transform = 'translateX(20px)';
         item.style.transition = 'opacity 0.3s, transform 0.3s';
-        setTimeout(() => item.remove(), 300);
+
+        // Delete from database
+        fetch(`/player/notifications/delete/${notifId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                setTimeout(() => {
+                    item.remove();
+                    
+                    // Update unread label count
+                    const unreadCount = document.querySelectorAll('.notif-item.unread').length;
+                    const label = document.querySelector('.unread-label');
+                    if (label) {
+                        label.textContent = `(${unreadCount} unread)`;
+                    }
+
+                    // Dynamically update header bell badge count
+                    if (isUnread) {
+                        const badge = document.querySelector('.notification-bell .badge');
+                        if (badge) {
+                            const currentCount = parseInt(badge.textContent || '0');
+                            const nextCount = currentCount - 1;
+                            if (nextCount <= 0) {
+                                badge.style.display = 'none';
+                                badge.textContent = '0';
+                            } else {
+                                badge.textContent = nextCount;
+                            }
+                        }
+                    }
+
+                    // Check if list is empty now
+                    const list = document.querySelector('.notif-list');
+                    if (list && list.querySelectorAll('.notif-item').length === 0) {
+                        list.innerHTML = `
+                            <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                                <i class="ph ph-bell-slash" style="font-size: 3rem; margin-bottom: 10px;"></i>
+                                <p>No notifications yet.</p>
+                            </div>`;
+                    }
+                }, 300);
+            } else {
+                // Restore visual state if delete fails
+                item.style.opacity = '';
+                item.style.transform = '';
+                if (typeof showToast === 'function') {
+                    showToast('Error', 'Could not delete notification.', 'error');
+                } else {
+                    alert('Could not delete notification.');
+                }
+            }
+        })
+        .catch(err => {
+            item.style.opacity = '';
+            item.style.transform = '';
+            console.error('Dismiss error:', err);
+        });
     }
 
     function markAllRead() {
@@ -223,7 +286,17 @@
         }).then(res => res.json()).then(data => {
             if(data.success) {
                 document.querySelectorAll('.notif-item.unread').forEach(el => el.classList.remove('unread'));
-                document.querySelector('.unread-label').textContent = '(0 unread)';
+                const label = document.querySelector('.unread-label');
+                if (label) {
+                    label.textContent = '(0 unread)';
+                }
+                
+                // Clear top header bell badge count
+                const badge = document.querySelector('.notification-bell .badge');
+                if (badge) {
+                    badge.style.display = 'none';
+                    badge.textContent = '0';
+                }
             }
         });
     }
