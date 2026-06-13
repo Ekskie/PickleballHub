@@ -5,6 +5,8 @@
         href="{{ url_for('clubadmin.dashboard') }}"><i class="ph ph-squares-four"></i> Club Overview</a></li>
 <li class="{% if request.endpoint == 'clubadmin.members' %}active{% endif %}"><a
         href="{{ url_for('clubadmin.members') }}"><i class="ph ph-users"></i> Members</a></li>
+<li class="{% if request.endpoint == 'clubadmin.ledger' %}active{% endif %}"><a
+        href="{{ url_for('clubadmin.ledger') }}"><i class="ph ph-receipt"></i> Payment Ledger</a></li>
 <li class="{% if request.endpoint == 'clubadmin.events' %}active{% endif %}"><a
         href="{{ url_for('clubadmin.events') }}"><i class="ph ph-calendar-star"></i> Club Events</a></li>
 <li class="{% if request.endpoint == 'clubadmin.tournaments' %}active{% endif %}"><a
@@ -22,6 +24,7 @@
 
 <li class="{% if request.endpoint == 'clubadmin.club_setup' %}active{% endif %}"><a
         href="{{ url_for('clubadmin.club_setup') }}"><i class="ph ph-gear"></i> Club Setup</a></li>
+<script src="{{ url_for('static', filename='js/clubadmin_common.js') }}" defer></script>
 {% endblock %}
 
 {% block custom_profile_name %}

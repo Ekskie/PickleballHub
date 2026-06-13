@@ -44,6 +44,72 @@ def load_club():
     except Exception:
         g.club = None
 
+    # Dynamic expiration check for this club
+    if g.club:
+        try:
+            now_str = datetime.now(timezone.utc).isoformat()
+            
+            # 1. Process expired memberships
+            expired_res = db.table('club_memberships')\
+                .select('id, player_id')\
+                .eq('club_id', g.club['id'])\
+                .eq('status', 'active')\
+                .lt('expires_at', now_str)\
+                .execute()
+                
+            for em in (expired_res.data or []):
+                db.table('club_memberships').update({'status': 'expired'}).eq('id', em['id']).execute()
+                try:
+                    db.table('notifications').insert({
+                        'user_id': em['player_id'],
+                        'title': '⚠️ Membership Expired',
+                        'message': f"Your membership at {g.club['name']} has expired. Please renew to continue participating in events.",
+                        'type': 'warning',
+                        'link': f"/player/clubs/{g.club['id']}"
+                    }).execute()
+                except Exception as ne:
+                    print("Failed to insert notification:", ne)
+                    
+            # 2. Process expiring warning notifications (expiring within 3 days)
+            warning_threshold = (datetime.now(timezone.utc) + timedelta(days=3)).isoformat()
+            expiring_res = db.table('club_memberships')\
+                .select('id, player_id, expires_at')\
+                .eq('club_id', g.club['id'])\
+                .eq('status', 'active')\
+                .lt('expires_at', warning_threshold)\
+                .gt('expires_at', now_str)\
+                .execute()
+                
+            for em in (expiring_res.data or []):
+                already_warned = False
+                try:
+                    notif_check = db.table('notifications')\
+                        .select('id')\
+                        .eq('user_id', em['player_id'])\
+                        .eq('title', '⚠️ Membership Expiring Soon')\
+                        .execute()
+                    if notif_check.data:
+                        already_warned = True
+                except Exception:
+                    pass
+                    
+                if not already_warned:
+                    try:
+                        expires_dt = datetime.fromisoformat(em['expires_at'].replace('Z', '+00:00'))
+                        exp_date_str = expires_dt.strftime('%b %d, %Y')
+                        db.table('notifications').insert({
+                            'user_id': em['player_id'],
+                            'title': '⚠️ Membership Expiring Soon',
+                            'message': f"Your membership at {g.club['name']} is expiring soon on {exp_date_str}. Please renew your membership to avoid interruption.",
+                            'type': 'warning',
+                            'link': f"/player/clubs/{g.club['id']}"
+                        }).execute()
+                    except Exception as ne:
+                        print("Failed to insert warning notification:", ne)
+                        
+        except Exception as ee:
+            print("Failed to auto-expire memberships:", ee)
+
     # Redirect to setup if no club exists and not already on setup page
     if not g.club and request.endpoint and request.endpoint not in ['clubadmin.club_setup', 'clubadmin.profile', 'auth.logout']:
         flash("Please set up your club profile first.", "info")
@@ -61,6 +127,7 @@ def club_setup():
         location = request.form.get('location', '').strip()
         membership_type = request.form.get('membership_type', 'free')
         membership_fee = request.form.get('membership_fee', 0)
+        membership_duration = request.form.get('membership_duration', 'lifetime')
         
         if not name:
             flash("Club name is required.", "error")
@@ -73,6 +140,7 @@ def club_setup():
             'location': location,
             'membership_type': membership_type,
             'membership_fee': float(membership_fee) if membership_type == 'paid' else 0,
+            'membership_duration': membership_duration if membership_type == 'paid' else 'lifetime',
             'status': 'active'
         }
         
@@ -110,32 +178,208 @@ def club_setup():
 def dashboard():
     db = get_db()
     stats = {'members': 0, 'events': 0, 'top_player': None, 'recent_members': [], 'activity': []}
+    active_members = []
     
     if g.club:
         try:
             # Members count
-            mem_resp = db.table('club_memberships').select('id', count='exact').eq('club_id', g.club['id']).eq('status', 'active').execute()
+            mem_resp = db.table('club_memberships').select('id, player_id', count='exact').eq('club_id', g.club['id']).eq('status', 'active').execute()
             stats['members'] = mem_resp.count or 0
             
             # Upcoming Events count
             admin_id = session.get('user_id')
-            ev_resp = db.table('events').select('id', count='exact').eq('organizer_id', admin_id).in_('status', ['registration_open', 'upcoming', 'full']).execute()
+            ev_resp = db.table('events').select('id, organizer_id', count='exact').eq('organizer_id', admin_id).in_('status', ['registration_open', 'upcoming', 'full']).execute()
             stats['events'] = ev_resp.count or 0
             
             # Recent members
             recent_resp = db.table('club_memberships').select(
-                'id, status, joined_at, profiles!player_id(first_name, last_name)'
+                'id, player_id, status, joined_at, profiles!player_id(first_name, last_name, proficiency)'
             ).eq('club_id', g.club['id']).order('joined_at', desc=True).limit(5).execute()
             stats['recent_members'] = recent_resp.data or []
             
             # Activity feed
             act_resp = db.table('notifications').select('*').eq('user_id', admin_id).order('created_at', desc=True).limit(5).execute()
             stats['activity'] = act_resp.data or []
+
+            # Fetch active members for casual match logger dropdowns and top player stats
+            members_resp = db.table('club_memberships').select(
+                'player_id, profiles!player_id(first_name, last_name, elo, dupr, proficiency)'
+            ).eq('club_id', g.club['id']).eq('status', 'active').execute()
+            
+            # Find the top rated player (highest elo) from active members
+            top_player = None
+            highest_elo = -1
+            from app.ratings import get_initial_rating
+            for m in (members_resp.data or []):
+                prof = m.get('profiles') or {}
+                if prof:
+                    elo = prof.get('elo')
+                    dupr = prof.get('dupr')
+                    if elo is None or dupr is None:
+                        elo_def, dupr_def = get_initial_rating(prof.get('proficiency'))
+                        if elo is None: elo = elo_def
+                        if dupr is None: dupr = dupr_def
+                    try:
+                        dupr_val = float(dupr) if dupr is not None else 0.0
+                    except ValueError:
+                        dupr_val = 0.0
+                    
+                    if elo > highest_elo:
+                        highest_elo = elo
+                        top_player = {
+                            'id': m['player_id'],
+                            'name': f"{prof.get('first_name', '')} {prof.get('last_name', '')}".strip(),
+                            'score': f"DUPR: {dupr_val:.2f} | ELO: {elo}"
+                        }
+                    
+                    active_members.append({
+                        'id': m['player_id'],
+                        'name': f"{prof.get('first_name', '')} {prof.get('last_name', '')}".strip()
+                    })
+            stats['top_player'] = top_player
+            # Sort active members alphabetically
+            active_members.sort(key=lambda x: x['name'])
             
         except Exception as e:
             print("Dashboard error:", e)
             
-    return render_template('clubadmin/dashboard.html', stats=stats)
+    return render_template('clubadmin/dashboard.html', stats=stats, active_members=active_members)
+
+@clubadmin_bp.route('/log-casual-match', methods=['POST'])
+@require_role('clubadmin')
+def log_casual_match():
+    db = get_db()
+    if not g.club:
+        flash("Club profile required.", "error")
+        return redirect(url_for('clubadmin.dashboard'))
+        
+    match_type = request.form.get('match_type', 'singles')
+    p1_score = request.form.get('player1_score', type=int)
+    p2_score = request.form.get('player2_score', type=int)
+    
+    if p1_score is None or p2_score is None:
+        flash("Scores must be valid integers.", "error")
+        return redirect(url_for('clubadmin.dashboard'))
+
+    try:
+        if match_type == 'singles':
+            p1_id = request.form.get('player1_id')
+            p2_id = request.form.get('player2_id')
+            
+            if not p1_id or not p2_id or p1_id == p2_id:
+                flash("Please select two distinct players.", "error")
+                return redirect(url_for('clubadmin.dashboard'))
+                
+            winner_id = p1_id if p1_score > p2_score else (p2_id if p2_score > p1_score else None)
+            if not winner_id:
+                flash("Ties are not currently supported; a winner must be declared by score.", "error")
+                return redirect(url_for('clubadmin.dashboard'))
+                
+            # Log singles casual match to tournament_matches with event_id=Null
+            match_resp = db.table('tournament_matches').insert({
+                'event_id': None,
+                'round_number': None,
+                'match_number': None,
+                'player1_id': p1_id,
+                'player2_id': p2_id,
+                'player1_score': p1_score,
+                'player2_score': p2_score,
+                'winner_id': winner_id,
+                'status': 'completed',
+                'played_at': datetime.now(PH_TZ).isoformat()
+            }).execute()
+            
+            if match_resp.data:
+                match_id = match_resp.data[0]['id']
+                from app.ratings import update_match_ratings
+                update_match_ratings(db, match_id)
+                
+            flash("Singles casual match logged. Ratings updated!", "success")
+            
+        else: # doubles
+            p1a_id = request.form.get('player1a_id')
+            p1b_id = request.form.get('player1b_id')
+            p2a_id = request.form.get('player2a_id')
+            p2b_id = request.form.get('player2b_id')
+            
+            all_pids = [p1a_id, p1b_id, p2a_id, p2b_id]
+            if not all(all_pids) or len(set(all_pids)) != 4:
+                flash("Please select four distinct players for doubles.", "error")
+                return redirect(url_for('clubadmin.dashboard'))
+                
+            # Calculate Team Average Elo & update ratings directly
+            prof_resp = db.table('profiles').select('id, elo, dupr, proficiency').in_('id', all_pids).execute()
+            profiles = {p['id']: p for p in (prof_resp.data or [])}
+            
+            from app.ratings import init_player_rating, elo_to_dupr, adjust_profile_stats, ensure_initial_history
+            for pid in all_pids:
+                if pid not in profiles:
+                    continue
+                p = profiles[pid]
+                if p.get('elo') is None or p.get('dupr') is None:
+                    elo, dupr = init_player_rating(db, pid, p.get('proficiency'))
+                    p['elo'] = elo
+                    p['dupr'] = dupr
+                    
+            t1_ids = [p1a_id, p1b_id]
+            t2_ids = [p2a_id, p2b_id]
+            
+            avg_elo1 = sum(profiles[pid]['elo'] for pid in t1_ids) / 2
+            avg_elo2 = sum(profiles[pid]['elo'] for pid in t2_ids) / 2
+            
+            expected1 = 1.0 / (1.0 + 10.0 ** ((avg_elo2 - avg_elo1) / 400.0))
+            expected2 = 1.0 - expected1
+            
+            team1_won = p1_score > p2_score
+            actual1 = 1.0 if team1_won else 0.0
+            actual2 = 1.0 - actual1
+            
+            played_at = datetime.now(PH_TZ).isoformat()
+            
+            # Apply Team 1 updates
+            for pid in t1_ids:
+                p = profiles[pid]
+                old_elo = p['elo']
+                old_dupr = p['dupr']
+                new_elo = round(old_elo + 32 * (actual1 - expected1))
+                new_dupr = elo_to_dupr(new_elo)
+                
+                db.table('profiles').update({'elo': new_elo, 'dupr': new_dupr}).eq('id', pid).execute()
+                ensure_initial_history(db, pid, old_elo, old_dupr, played_at)
+                db.table('rating_history').insert({
+                    'player_id': pid,
+                    'match_id': None,
+                    'elo': new_elo,
+                    'dupr': new_dupr,
+                    'recorded_at': played_at
+                }).execute()
+                adjust_profile_stats(db, pid, 1 if team1_won else 0, 0 if team1_won else 1)
+                
+            # Apply Team 2 updates
+            for pid in t2_ids:
+                p = profiles[pid]
+                old_elo = p['elo']
+                old_dupr = p['dupr']
+                new_elo = round(old_elo + 32 * (actual2 - expected2))
+                new_dupr = elo_to_dupr(new_elo)
+                
+                db.table('profiles').update({'elo': new_elo, 'dupr': new_dupr}).eq('id', pid).execute()
+                ensure_initial_history(db, pid, old_elo, old_dupr, played_at)
+                db.table('rating_history').insert({
+                    'player_id': pid,
+                    'match_id': None,
+                    'elo': new_elo,
+                    'dupr': new_dupr,
+                    'recorded_at': played_at
+                }).execute()
+                adjust_profile_stats(db, pid, 0 if team1_won else 1, 1 if team1_won else 0)
+                
+            flash("Doubles casual match logged. Ratings updated!", "success")
+            
+    except Exception as e:
+        flash(f"Error logging casual match: {e}", "error")
+        
+    return redirect(url_for('clubadmin.dashboard'))
 
 @clubadmin_bp.route('/members')
 @require_role('clubadmin')
@@ -146,13 +390,155 @@ def members():
     if g.club:
         try:
             resp = db.table('club_memberships').select(
-                'id, status, joined_at, gcash_ref, player_id, profiles!player_id(first_name, last_name, phone)'
+                'id, status, joined_at, gcash_ref, player_id, profiles!player_id(first_name, last_name, phone, elo, dupr, proficiency, avatar_url)'
             ).eq('club_id', g.club['id']).order('joined_at', desc=True).execute()
             members_list = resp.data or []
+            
+            # Post-process to calculate fallbacks/initials
+            from app.ratings import get_initial_rating
+            for m in members_list:
+                prof = m.get('profiles') or {}
+                if prof:
+                    first = (prof.get('first_name') or ' ')[0]
+                    last = (prof.get('last_name') or ' ')[0]
+                    prof['initials'] = (first + last).upper().strip() or '?'
+                    
+                    elo = prof.get('elo')
+                    dupr = prof.get('dupr')
+                    if elo is None or dupr is None:
+                        elo_def, dupr_def = get_initial_rating(prof.get('proficiency'))
+                        if elo is None: prof['elo'] = elo_def
+                        if dupr is None: prof['dupr'] = dupr_def
         except Exception as e:
             flash(f"Error loading members: {e}", "error")
             
     return render_template('clubadmin/members.html', members=members_list)
+
+@clubadmin_bp.route('/members/<player_id>/details')
+@require_role('clubadmin')
+def member_details(player_id):
+    db = get_db()
+    if not g.club:
+        return jsonify({'error': 'Club not found'}), 404
+        
+    try:
+        # 1. Fetch membership & profile
+        mem_resp = db.table('club_memberships').select(
+            'joined_at, status, expires_at, gcash_ref, receipt_url, player_id, profiles!player_id(first_name, last_name, phone, elo, dupr, proficiency, avatar_url)'
+        ).eq('club_id', g.club['id']).eq('player_id', player_id).single().execute()
+        
+        if not mem_resp.data:
+            return jsonify({'error': 'Member not found'}), 404
+            
+        mem_data = mem_resp.data
+        profile = mem_data.get('profiles') or {}
+        
+        # 2. Fetch rating history
+        hist_resp = db.table('rating_history').select('elo, dupr, recorded_at').eq('player_id', player_id).order('recorded_at', desc=True).limit(10).execute()
+        rating_hist = hist_resp.data or []
+        
+        # 3. Fetch active registrations
+        reg_resp = db.table('event_registrations').select(
+            'status, registered_at, events(title, event_date, type, status)'
+        ).eq('player_id', player_id).execute()
+        
+        registrations = []
+        for r in (reg_resp.data or []):
+            ev = r.get('events') or {}
+            registrations.append({
+                'title': ev.get('title'),
+                'date': ev.get('event_date'),
+                'type': ev.get('type'),
+                'status': r.get('status')
+            })
+            
+        # 4. Fetch tournament matches (history)
+        matches_resp = db.table('tournament_matches').select(
+            'round_number, match_number, player1_id, player2_id, winner_id, player1_score, player2_score, status, played_at, '
+            'events(title), '
+            'player1:profiles!player1_id(first_name, last_name), '
+            'player2:profiles!player2_id(first_name, last_name)'
+        ).or_(f"player1_id.eq.{player_id},player2_id.eq.{player_id}").order('played_at', desc=True).limit(10).execute()
+        
+        matches = []
+        for m in (matches_resp.data or []):
+            ev = m.get('events') or {}
+            p1 = m.get('player1') or {}
+            p2 = m.get('player2') or {}
+            
+            p1_name = f"{p1.get('first_name','')} {p1.get('last_name','')}".strip()
+            p2_name = f"{p2.get('first_name','')} {p2.get('last_name','')}".strip()
+            
+            opponent = p2_name if m['player1_id'] == player_id else p1_name
+            
+            result = 'Pending'
+            if m['status'] == 'completed':
+                if m['winner_id'] == player_id:
+                    result = 'Win'
+                else:
+                    result = 'Loss'
+                    
+            score_str = f"{m.get('player1_score') or 0} - {m.get('player2_score') or 0}"
+            
+            matches.append({
+                'event_title': ev.get('title') or 'Casual Match',
+                'opponent': opponent,
+                'round': m['round_number'],
+                'score': score_str,
+                'result': result,
+                'date': m.get('played_at','').split('T')[0] if m.get('played_at') else ''
+            })
+            
+        # Build the final dict
+        data = {
+            'first_name': profile.get('first_name'),
+            'last_name': profile.get('last_name'),
+            'phone': profile.get('phone') or '—',
+            'elo': profile.get('elo'),
+            'dupr': profile.get('dupr'),
+            'proficiency': (profile.get('proficiency') or 'beginner').title(),
+            'avatar_url': profile.get('avatar_url'),
+            'status': mem_data['status'],
+            'joined_at': mem_data['joined_at'].split('T')[0] if mem_data['joined_at'] else '—',
+            'expires_at': mem_data['expires_at'].split('T')[0] if mem_data['expires_at'] else 'Lifetime',
+            'gcash_ref': mem_data['gcash_ref'],
+            'receipt_url': mem_data['receipt_url'],
+            'membership_fee': g.club.get('membership_fee', 0),
+            'rating_history': rating_hist,
+            'registrations': registrations,
+            'matches': matches
+        }
+        return jsonify(data)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@clubadmin_bp.route('/ledger')
+@require_role('clubadmin')
+def ledger():
+    db = get_db()
+    transactions = []
+    
+    if g.club:
+        try:
+            # Fetch all memberships for this club where gcash_ref is not null/empty
+            resp = db.table('club_memberships').select(
+                'id, status, joined_at, gcash_ref, receipt_url, expires_at, player_id, '
+                'profiles!player_id(first_name, last_name, avatar_url, phone)'
+            ).eq('club_id', g.club['id']).neq('gcash_ref', None).neq('gcash_ref', '').order('joined_at', desc=True).execute()
+            
+            transactions = resp.data or []
+            
+            # Post-process user initials
+            for t in transactions:
+                prof = t.get('profiles') or {}
+                first = (prof.get('first_name') or ' ')[0]
+                last = (prof.get('last_name') or ' ')[0]
+                prof['initials'] = (first + last).upper().strip() or '?'
+        except Exception as e:
+            flash(f"Error loading ledger: {e}", "error")
+            
+    return render_template('clubadmin/ledger.html', transactions=transactions)
 
 @clubadmin_bp.route('/members/<membership_id>/approve', methods=['POST'])
 @require_role('clubadmin')
@@ -162,7 +548,24 @@ def approve_member(membership_id):
         return redirect(url_for('clubadmin.dashboard'))
         
     try:
-        db.table('club_memberships').update({'status': 'active'}).eq('id', membership_id).eq('club_id', g.club['id']).execute()
+        # Calculate expires_at
+        expires_at = None
+        duration = g.club.get('membership_duration', 'lifetime')
+        if duration == 'monthly':
+            expires_at = (datetime.now(timezone.utc) + timedelta(days=30)).isoformat()
+        elif duration == 'quarterly':
+            expires_at = (datetime.now(timezone.utc) + timedelta(days=90)).isoformat()
+        elif duration == 'annually':
+            expires_at = (datetime.now(timezone.utc) + timedelta(days=365)).isoformat()
+            
+        update_data = {
+            'status': 'active',
+            'joined_at': datetime.now(timezone.utc).isoformat()
+        }
+        if expires_at:
+            update_data['expires_at'] = expires_at
+            
+        db.table('club_memberships').update(update_data).eq('id', membership_id).eq('club_id', g.club['id']).execute()
         flash("Member approved successfully.", "success")
     except Exception as e:
         flash(f"Error approving member: {e}", "error")
@@ -219,9 +622,20 @@ def event_participants(event_id):
         if event_details:
             # Fetch participants
             reg_resp = db.table('event_registrations').select(
-                'id, status, registered_at, profiles!player_id(first_name, last_name, phone)'
+                'id, player_id, status, registered_at, profiles!player_id(first_name, last_name, phone, avatar_url)'
             ).eq('event_id', event_id).execute()
             participants = reg_resp.data or []
+            
+            # Map auth emails dynamically
+            try:
+                auth_users = supabase_admin.auth.admin.list_users()
+                email_map = {u.id: u.email for u in auth_users}
+                for p in participants:
+                    p_id = p.get('player_id')
+                    if p_id and p.get('profiles'):
+                        p['profiles']['email'] = email_map.get(p_id, 'N/A')
+            except Exception as ae:
+                print("Failed to map auth emails:", ae)
         else:
             flash("Event not found or unauthorized.", "error")
             return redirect(url_for('clubadmin.events'))
@@ -278,9 +692,9 @@ def tournament_manage(event_id):
         # Get matches
         matches_resp = db.table('tournament_matches').select(
             'id, round_number, match_number, player1_id, player2_id, winner_id, player1_score, player2_score, status, played_at, '
-            'player1:profiles!player1_id(id, first_name, last_name), '
-            'player2:profiles!player2_id(id, first_name, last_name), '
-            'winner:profiles!winner_id(id, first_name, last_name)'
+            'player1:profiles!player1_id(id, first_name, last_name, avatar_url), '
+            'player2:profiles!player2_id(id, first_name, last_name, avatar_url), '
+            'winner:profiles!winner_id(id, first_name, last_name, avatar_url)'
         ).eq('event_id', event_id).order('round_number').order('match_number').execute()
         matches = matches_resp.data or []
         

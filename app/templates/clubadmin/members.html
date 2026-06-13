@@ -13,12 +13,21 @@
             <i class="ph ph-magnifying-glass"></i>
             <input type="text" id="memberSearch" placeholder="Search by name or phone..." oninput="filterMembers()">
         </div>
-        <div class="filter-actions">
+        <div class="filter-actions" style="display:flex;gap:8px;">
             <select id="statusFilter" onchange="filterMembers()"
                 style="padding:0.5rem 10px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);cursor:pointer;border-radius:8px;font-size:0.85rem;">
                 <option value="all">All Statuses</option>
                 <option value="active">Active</option>
                 <option value="pending">Pending</option>
+                <option value="expired">Expired</option>
+            </select>
+            <select id="skillFilter" onchange="filterMembers()"
+                style="padding:0.5rem 10px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);cursor:pointer;border-radius:8px;font-size:0.85rem;">
+                <option value="all">All Skill Levels</option>
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+                <option value="pro">Pro</option>
             </select>
         </div>
     </div>
@@ -28,6 +37,8 @@
             <thead>
                 <tr>
                     <th>MEMBER</th>
+                    <th>SKILL LEVEL</th>
+                    <th style="text-align:center;">RATING</th>
                     <th>PHONE</th>
                     <th>JOIN DATE</th>
                     <th>STATUS</th>
@@ -39,37 +50,73 @@
                     {% for m in members %}
                     <tr class="member-row"
                         data-name="{{ (m.profiles.first_name ~ ' ' ~ m.profiles.last_name)|lower }}"
-                        data-status="{{ m.status }}">
-                        <td class="bold">{{ m.profiles.first_name }} {{ m.profiles.last_name }}</td>
+                        data-status="{{ m.status }}"
+                        data-skill="{{ (m.profiles.proficiency or 'beginner')|lower }}">
+                        <td class="bold">
+                            <div style="display:flex;align-items:center;gap:12px;">
+                                <div style="width:36px;height:36px;border-radius:50%;background:var(--btn-navy);color:white;display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;flex-shrink:0;overflow:hidden;">
+                                    {% if m.profiles.avatar_url %}
+                                        <img src="{{ m.profiles.avatar_url }}" style="width:100%;height:100%;object-fit:cover;">
+                                    {% else %}
+                                        {{ m.profiles.initials }}
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div class="clickable-name" onclick="openMemberDrawer('{{ m.player_id }}')">{{ m.profiles.first_name }} {{ m.profiles.last_name }}</div>
+                                    <div style="font-size:0.75rem;color:var(--text-muted);font-weight:normal;">ID: {{ m.player_id[:8] }}...</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {% set skill = (m.profiles.proficiency or 'beginner')|lower %}
+                            <span class="status-pill {{ skill }}">{{ (m.profiles.proficiency or 'Beginner') | title }}</span>
+                        </td>
+                        <td style="text-align:center;">
+                            <span style="font-weight:700;color:var(--btn-green);font-size:0.95rem;display:block;">
+                                {{ "%.2f"|format(m.profiles.dupr|float) }}
+                            </span>
+                            <span style="font-size:0.7rem;color:var(--text-secondary);">
+                                {{ m.profiles.elo }} Elo
+                            </span>
+                        </td>
                         <td style="color:var(--text-secondary);font-size:0.85rem;">{{ m.profiles.phone or '—' }}</td>
                         <td>{{ m.joined_at.split('T')[0] }}</td>
                         <td>
                             {% if m.status == 'active' %}
                                 <span class="status-pill success">Active</span>
                             {% elif m.status == 'pending' %}
-                                <span class="status-pill warning" style="color:#f59e0b;background:rgba(245,158,11,0.1);">
+                                <span class="status-pill pending">
                                     Pending
                                     {% if m.gcash_ref %}
                                     <br><small style="color:var(--text-muted);font-size:0.7rem;">Ref: {{ m.gcash_ref }}</small>
                                     {% endif %}
+                                    {% if m.receipt_url %}
+                                    <br><a href="#" onclick="showReceipt('{{ m.receipt_url }}', '{{ m.gcash_ref }}'); return false;" style="color:#00c6ff;text-decoration:underline;font-size:0.75rem;display:inline-flex;align-items:center;gap:4px;margin-top:4px;"><i class="ph ph-image"></i> View Receipt</a>
+                                    {% endif %}
                                 </span>
+                            {% elif m.status == 'expired' %}
+                                <span class="status-pill expired">Expired</span>
                             {% else %}
-                                <span class="status-pill">{{ m.status|title }}</span>
+                                <span class="status-pill {{ m.status }}">{{ m.status|title }}</span>
                             {% endif %}
                         </td>
                         <td style="display:flex;gap:8px;align-items:center;">
                             {% if m.status == 'pending' %}
                             <form action="{{ url_for('clubadmin.approve_member', membership_id=m.id) }}" method="POST" style="margin:0;">
-                                <button type="submit"
-                                    style="background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:0.8rem;display:inline-flex;align-items:center;gap:4px;">
+                                <button type="submit" title="Approve Member"
+                                    style="background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3);border-radius:6px;padding:6px 10px;cursor:pointer;font-size:0.8rem;display:inline-flex;align-items:center;gap:4px;">
                                     <i class="ph ph-check-circle"></i> Approve
                                 </button>
                             </form>
                             {% endif %}
+                            <a href="{{ url_for('clubadmin.messages') }}?chat_user={{ m.player_id }}" title="Send Message"
+                               style="background:rgba(0,198,255,0.12);color:#00c6ff;border:1px solid rgba(0,198,255,0.2);border-radius:6px;padding:6px 10px;cursor:pointer;font-size:0.8rem;display:inline-flex;align-items:center;text-decoration:none;">
+                                <i class="ph ph-chat-circle-dots"></i>
+                            </a>
                             <form action="{{ url_for('clubadmin.remove_member', membership_id=m.id) }}" method="POST" style="margin:0;"
                                   onsubmit="return confirm('Remove {{ m.profiles.first_name }} from the club?');">
-                                <button type="submit"
-                                    style="background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.2);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:0.8rem;display:inline-flex;align-items:center;gap:4px;">
+                                <button type="submit" title="Remove Member"
+                                    style="background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.2);border-radius:6px;padding:6px 10px;cursor:pointer;font-size:0.8rem;display:inline-flex;align-items:center;gap:4px;">
                                     <i class="ph ph-trash"></i>
                                 </button>
                             </form>
@@ -78,7 +125,7 @@
                     {% endfor %}
                 {% else %}
                     <tr>
-                        <td colspan="5" style="text-align:center;padding:40px;color:var(--text-muted);">
+                        <td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted);">
                             <i class="ph ph-users" style="font-size:2rem;display:block;margin-bottom:8px;opacity:0.4;"></i>
                             No members yet.
                         </td>
@@ -98,11 +145,13 @@
 function filterMembers() {
     const query = document.getElementById('memberSearch').value.toLowerCase();
     const status = document.getElementById('statusFilter').value;
+    const skill = document.getElementById('skillFilter').value;
     let visible = 0;
     document.querySelectorAll('.member-row').forEach(row => {
         const matchName   = row.dataset.name.includes(query);
         const matchStatus = status === 'all' || row.dataset.status === status;
-        const show = matchName && matchStatus;
+        const matchSkill  = skill === 'all' || row.dataset.skill === skill;
+        const show = matchName && matchStatus && matchSkill;
         row.style.display = show ? '' : 'none';
         if (show) visible++;
     });

@@ -30,6 +30,36 @@ def get_db():
     return _cached_db
 
 
+def check_player_memberships_expiry(db, player_id):
+    """Check if any of the player's active memberships has expired and update status."""
+    if not player_id:
+        return
+    try:
+        now_str = datetime.now(timezone.utc).isoformat()
+        resp = db.table('club_memberships')\
+            .select('id, club_id, expires_at, clubs(name)')\
+            .eq('player_id', player_id)\
+            .eq('status', 'active')\
+            .lt('expires_at', now_str)\
+            .execute()
+        
+        for em in (resp.data or []):
+            db.table('club_memberships').update({'status': 'expired'}).eq('id', em['id']).execute()
+            club_name = em.get('clubs', {}).get('name', 'the club')
+            try:
+                db.table('notifications').insert({
+                    'user_id': player_id,
+                    'title': '⚠️ Membership Expired',
+                    'message': f"Your membership for {club_name} has expired. Please renew your membership to continue enjoying member benefits.",
+                    'type': 'warning',
+                    'link': f"/player/clubs/{em['club_id']}"
+                }).execute()
+            except Exception as ne:
+                print("Failed to insert notification:", ne)
+    except Exception as e:
+        print("Error checking player membership expiry:", e)
+
+
 @player_bp.route('/dashboard')
 @require_role('player')
 def dashboard():
@@ -1067,6 +1097,7 @@ def clubs():
 def club_detail(club_id):
     player_id = session.get('user_id')
     db = get_db()
+    check_player_memberships_expiry(db, player_id)
     club = None
     members = []
     events_list = []
@@ -1129,6 +1160,7 @@ def club_detail(club_id):
 def my_clubs():
     player_id = session.get('user_id')
     db = get_db()
+    check_player_memberships_expiry(db, player_id)
     my_clubs_list = []
     try:
         resp = db.table('club_memberships').select(
@@ -1191,11 +1223,33 @@ def club_payment(club_id):
                 flash("GCash Reference Number is required.", "error")
                 return redirect(url_for('player.club_payment', club_id=club_id))
                 
+            receipt_file = request.files.get('receipt')
+            receipt_url = None
+            if receipt_file and receipt_file.filename:
+                try:
+                    import time
+                    ext = receipt_file.filename.split('.')[-1]
+                    filename = f"club_receipt_{player_id}_{int(time.time())}.{ext}"
+                    db.storage.from_('kyc-documents').upload(
+                        file=receipt_file.read(),
+                        path=filename,
+                        file_options={"content-type": receipt_file.content_type}
+                    )
+                    receipt_url = db.storage.from_('kyc-documents').get_public_url(filename)
+                except Exception as upload_err:
+                    flash(f"Warning: Receipt upload failed - {upload_err}", "warning")
+                    
+            if not receipt_url:
+                flash("Receipt screenshot is required for paid memberships.", "error")
+                return redirect(url_for('player.club_payment', club_id=club_id))
+                
             db.table('club_memberships').upsert({
                 'club_id': club_id,
                 'player_id': player_id,
                 'status': 'pending',
-                'gcash_ref': gcash_ref
+                'gcash_ref': gcash_ref,
+                'receipt_url': receipt_url,
+                'joined_at': datetime.now(timezone.utc).isoformat()
             }, on_conflict='club_id,player_id').execute()
             
             flash("Payment submitted! Waiting for admin approval.", "success")
@@ -1265,9 +1319,9 @@ def tournament_bracket(event_id):
         match_resp = db.table('tournament_matches').select(
             'id, round_number, match_number, player1_id, player2_id, winner_id, '
             'player1_score, player2_score, status, '
-            'player1:profiles!player1_id(id, first_name, last_name), '
-            'player2:profiles!player2_id(id, first_name, last_name), '
-            'winner:profiles!winner_id(id, first_name, last_name)'
+            'player1:profiles!player1_id(id, first_name, last_name, avatar_url), '
+            'player2:profiles!player2_id(id, first_name, last_name, avatar_url), '
+            'winner:profiles!winner_id(id, first_name, last_name, avatar_url)'
         ).eq('event_id', event_id).order('round_number').order('match_number').execute()
         matches = match_resp.data or []
 
@@ -2285,5 +2339,82 @@ def player_chat(target_id):
     except Exception as e:
         flash(f"Error starting chat: {e}", "error")
         return redirect(url_for('player.dashboard'))
+
+
+@player_bp.route('/leaderboard/<player_id>/details')
+@require_role('player')
+def player_details(player_id):
+    db = get_db()
+    try:
+        # Fetch profile
+        prof_resp = db.table('profiles').select('first_name, last_name, phone, elo, dupr, proficiency, avatar_url, wins, losses').eq('id', player_id).single().execute()
+        if not prof_resp.data:
+            return jsonify({'error': 'Player not found'}), 404
+        profile = prof_resp.data
+        
+        # Calculate win rate
+        wins = profile.get('wins') or 0
+        losses = profile.get('losses') or 0
+        played = wins + losses
+        win_rate = round((wins / played) * 100) if played > 0 else 0
+        
+        # Fetch ratings history
+        hist_resp = db.table('rating_history').select('elo, dupr, recorded_at').eq('player_id', player_id).order('recorded_at', desc=True).limit(10).execute()
+        rating_hist = hist_resp.data or []
+        
+        # Fetch recent tournament matches
+        matches_resp = db.table('tournament_matches').select(
+            'round_number, match_number, player1_id, player2_id, winner_id, player1_score, player2_score, status, played_at, '
+            'events(title), '
+            'player1:profiles!player1_id(first_name, last_name), '
+            'player2:profiles!player2_id(first_name, last_name)'
+        ).or_(f"player1_id.eq.{player_id},player2_id.eq.{player_id}").order('played_at', desc=True).limit(10).execute()
+        
+        matches = []
+        for m in (matches_resp.data or []):
+            ev = m.get('events') or {}
+            p1 = m.get('player1') or {}
+            p2 = m.get('player2') or {}
+            
+            p1_name = f"{p1.get('first_name','')} {p1.get('last_name','')}".strip()
+            p2_name = f"{p2.get('first_name','')} {p2.get('last_name','')}".strip()
+            
+            opponent = p2_name if m['player1_id'] == player_id else p1_name
+            
+            result = 'Pending'
+            if m['status'] == 'completed':
+                if m['winner_id'] == player_id:
+                    result = 'Win'
+                else:
+                    result = 'Loss'
+            
+            score_str = f"{m.get('player1_score') or 0} - {m.get('player2_score') or 0}"
+            
+            matches.append({
+                'event_title': ev.get('title') or 'Casual Match',
+                'opponent': opponent,
+                'round': m['round_number'],
+                'score': score_str,
+                'result': result,
+                'date': m.get('played_at','').split('T')[0] if m.get('played_at') else ''
+            })
+            
+        data = {
+            'first_name': profile.get('first_name'),
+            'last_name': profile.get('last_name'),
+            'phone': profile.get('phone') or '—',
+            'elo': profile.get('elo') or 1200,
+            'dupr': profile.get('dupr') or 3.00,
+            'proficiency': (profile.get('proficiency') or 'beginner').title(),
+            'avatar_url': profile.get('avatar_url'),
+            'wins': wins,
+            'losses': losses,
+            'win_rate': win_rate,
+            'rating_history': rating_hist,
+            'matches': matches
+        }
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 

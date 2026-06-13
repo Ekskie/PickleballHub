@@ -1,0 +1,127 @@
+{% extends "clubadmin/base_clubadmin.html" %}
+{% block title %}Payment Ledger{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="page-title">Payment Ledger</h1>
+    <span style="color:var(--text-secondary);font-size:0.9rem;">{{ transactions|length }} transaction(s) logged</span>
+</div>
+
+<div class="glass-card">
+    <div class="widget-header" style="margin-bottom:16px;">
+        <div class="header-search" style="flex:1;max-width:360px;">
+            <i class="ph ph-magnifying-glass"></i>
+            <input type="text" id="ledgerSearch" placeholder="Search by name or reference..." oninput="filterLedger()">
+        </div>
+        <div class="filter-actions" style="display:flex;gap:8px;">
+            <select id="statusFilter" onchange="filterLedger()"
+                style="padding:0.5rem 10px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);cursor:pointer;border-radius:8px;font-size:0.85rem;">
+                <option value="all">All Statuses</option>
+                <option value="active">Active (Approved)</option>
+                <option value="pending">Pending</option>
+                <option value="expired">Expired</option>
+                <option value="rejected">Rejected</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="data-grid">
+            <thead>
+                <tr>
+                    <th>TRANSACTION DATE</th>
+                    <th>MEMBER</th>
+                    <th>AMOUNT</th>
+                    <th>GCASH REFERENCE</th>
+                    <th>STATUS</th>
+                    <th>RECEIPT</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if transactions %}
+                    {% for t in transactions %}
+                    <tr class="ledger-row"
+                        data-name="{{ (t.profiles.first_name ~ ' ' ~ t.profiles.last_name)|lower }}"
+                        data-ref="{{ t.gcash_ref|lower }}"
+                        data-status="{{ t.status }}">
+                        <td style="color:var(--text-secondary); font-size:0.85rem;">
+                            {{ t.joined_at.split('T')[0] if t.joined_at else '—' }}
+                        </td>
+                        <td class="bold">
+                            <div style="display:flex;align-items:center;gap:12px;">
+                                <div style="width:32px;height:32px;border-radius:50%;background:var(--btn-navy);color:white;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;flex-shrink:0;overflow:hidden;">
+                                    {% if t.profiles.avatar_url %}
+                                        <img src="{{ t.profiles.avatar_url }}" style="width:100%;height:100%;object-fit:cover;">
+                                    {% else %}
+                                        {{ t.profiles.initials }}
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div class="clickable-name" style="font-size:0.9rem;" onclick="openMemberDrawer('{{ t.player_id }}')">{{ t.profiles.first_name }} {{ t.profiles.last_name }}</div>
+                                    <small style="color:var(--text-muted); font-size:0.7rem; font-weight:normal;">{{ t.profiles.phone or 'No phone' }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="bold" style="color:var(--text-primary); font-size:0.95rem;">
+                            ₱{{ "%.2f"|format(g.club.membership_fee) }}
+                        </td>
+                        <td style="font-family:monospace; color:var(--text-primary); font-size:0.95rem; letter-spacing:0.5px;">
+                            {{ t.gcash_ref }}
+                        </td>
+                        <td>
+                            {% if t.status == 'active' %}
+                                <span class="status-pill success">Active</span>
+                            {% elif t.status == 'pending' %}
+                                <span class="status-pill pending">Pending</span>
+                            {% elif t.status == 'expired' %}
+                                <span class="status-pill expired">Expired</span>
+                            {% else %}
+                                <span class="status-pill {{ t.status }}">{{ t.status|title }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if t.receipt_url %}
+                                <button onclick="showReceipt('{{ t.receipt_url }}', '{{ t.gcash_ref }}')"
+                                        style="background:rgba(0,198,255,0.12); color:#00c6ff; border:1px solid rgba(0,198,255,0.2); border-radius:6px; padding:6px 12px; cursor:pointer; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px; font-weight:600;">
+                                    <i class="ph ph-image"></i> View Receipt
+                                </button>
+                            {% else %}
+                                <span style="color:var(--text-muted); font-size:0.8rem; font-style:italic;">No upload</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">
+                            <i class="ph ph-receipt" style="font-size:2rem;display:block;margin-bottom:8px;opacity:0.4;"></i>
+                            No transactions logged yet.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <div id="noResultsMsg" style="display:none;text-align:center;padding:30px;color:var(--text-muted);">
+        <i class="ph ph-magnifying-glass" style="font-size:1.5rem;display:block;margin-bottom:6px;opacity:0.4;"></i>
+        No transactions match your search.
+    </div>
+</div>
+<script>
+function filterLedger() {
+    const query = document.getElementById('ledgerSearch').value.toLowerCase();
+    const status = document.getElementById('statusFilter').value;
+    let visible = 0;
+    document.querySelectorAll('.ledger-row').forEach(row => {
+        const matchName   = row.dataset.name.includes(query);
+        const matchRef    = row.dataset.ref.includes(query);
+        const matchStatus = status === 'all' || row.dataset.status === status;
+        const show = (matchName || matchRef) && matchStatus;
+        row.style.display = show ? '' : 'none';
+        if (show) visible++;
+    });
+    document.getElementById('noResultsMsg').style.display = visible === 0 ? 'block' : 'none';
+}
+</script>
+{% endblock %}

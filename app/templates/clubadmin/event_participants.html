@@ -40,8 +40,24 @@
                     {% for p in participants %}
                     <tr>
                         <td class="bold">
-                            {{ p.profiles.first_name if p.profiles else 'Unknown' }} 
-                            {{ p.profiles.last_name if p.profiles else '' }}
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div style="width:32px; height:32px; border-radius:50%; background:var(--btn-navy); color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; flex-shrink:0; overflow:hidden;">
+                                    {% if p.profiles and p.profiles.avatar_url %}
+                                        <img src="{{ p.profiles.avatar_url }}" style="width:100%;height:100%;object-fit:cover;">
+                                    {% else %}
+                                        {{ (p.profiles.first_name[0] ~ p.profiles.last_name[0])|upper if p.profiles else '?' }}
+                                    {% endif %}
+                                </div>
+                                {% if p.player_id %}
+                                    <span class="clickable-name" onclick="openMemberDrawer('{{ p.player_id }}')">
+                                        {{ p.profiles.first_name if p.profiles else 'Unknown' }} 
+                                        {{ p.profiles.last_name if p.profiles else '' }}
+                                    </span>
+                                {% else %}
+                                    {{ p.profiles.first_name if p.profiles else 'Unknown' }} 
+                                    {{ p.profiles.last_name if p.profiles else '' }}
+                                {% endif %}
+                            </div>
                         </td>
                         <td>{{ p.profiles.email if p.profiles else 'N/A' }}</td>
                         <td>{{ p.profiles.phone if p.profiles else 'N/A' }}</td>

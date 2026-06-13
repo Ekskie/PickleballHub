@@ -583,9 +583,9 @@ def tournament_manage(event_id):
         # Get matches
         matches_resp = db.table('tournament_matches').select(
             'id, round_number, match_number, player1_id, player2_id, winner_id, player1_score, player2_score, status, played_at, '
-            'player1:profiles!player1_id(id, first_name, last_name), '
-            'player2:profiles!player2_id(id, first_name, last_name), '
-            'winner:profiles!winner_id(id, first_name, last_name)'
+            'player1:profiles!player1_id(id, first_name, last_name, avatar_url), '
+            'player2:profiles!player2_id(id, first_name, last_name, avatar_url), '
+            'winner:profiles!winner_id(id, first_name, last_name, avatar_url)'
         ).eq('event_id', event_id).order('round_number').order('match_number').execute()
         matches = matches_resp.data or []
         

@@ -378,7 +378,7 @@
 
                         <!-- Player 1 -->
                         <div class="mp-row {% if match.winner_id == match.player1_id %}is-winner{% elif match.status == 'completed' %}is-loser{% endif %}">
-                            <div class="mp-avatar">{{ match.player1.first_name[0] ~ match.player1.last_name[0] if match.player1 else '?' }}</div>
+                            <div class="mp-avatar" style="overflow:hidden;">{% if match.player1 and match.player1.avatar_url %}<img src="{{ match.player1.avatar_url }}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">{% else %}{{ match.player1.first_name[0] ~ match.player1.last_name[0] if match.player1 else '?' }}{% endif %}</div>
                             <span class="mp-name">{{ p1_name }}</span>
                             <span class="mp-score">{{ match.player1_score if match.player1_score is not none else '–' }}</span>
                         </div>
@@ -386,7 +386,7 @@
                         <!-- Player 2 -->
                         <div class="mp-row {% if match.winner_id == match.player2_id %}is-winner{% elif match.status == 'completed' and match.player2 %}is-loser{% endif %}">
                             {% if match.player2 %}
-                            <div class="mp-avatar">{{ match.player2.first_name[0] ~ match.player2.last_name[0] }}</div>
+                            <div class="mp-avatar" style="overflow:hidden;">{% if match.player2.avatar_url %}<img src="{{ match.player2.avatar_url }}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">{% else %}{{ match.player2.first_name[0] ~ match.player2.last_name[0] }}{% endif %}</div>
                             <span class="mp-name">{{ p2_name }}</span>
                             <span class="mp-score">{{ match.player2_score if match.player2_score is not none else '–' }}</span>
                             {% else %}
@@ -479,7 +479,7 @@ function avatarColor(name) {
 }
 
 document.querySelectorAll('.mp-avatar:not(.bye-avatar)').forEach(el => {
-    el.style.background = avatarColor(el.textContent.trim());
+    if (!el.querySelector('img')) el.style.background = avatarColor(el.textContent.trim());
 });
 
 function drawConnectors() {

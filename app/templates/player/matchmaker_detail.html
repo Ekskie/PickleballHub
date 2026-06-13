@@ -568,7 +568,7 @@
             <div class="member-row" style="border-color: var(--primary-orange); background: rgba(225, 86, 35, 0.03);">
                 <div class="member-avatar" style="background: var(--primary-orange); overflow: hidden;">{% if lobby.creator_avatar_url %}<img src="{{ lobby.creator_avatar_url }}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">{% else %}{{ creator_initials }}{% endif %}</div>
                 <div class="member-info">
-                    <div class="member-name">{{ lobby.creator_name }}</div>
+                    <div class="member-name"><span class="clickable-name" onclick="openPlayerDrawer('{{ lobby.creator_id }}')">{{ lobby.creator_name }}</span></div>
                     <div class="member-role">Creator • {{ "%.2f"|format(lobby.creator_dupr|float) }} DUPR</div>
                 </div>
                 {% if current_user.id != lobby.creator_id %}
@@ -621,7 +621,7 @@
                                         </div>
                                         <div class="member-info" style="margin-left: 8px;">
                                             <div class="member-name" style="font-size: 0.82rem;">
-                                                {{ cell.player.name }}
+                                                <span class="clickable-name" onclick="openPlayerDrawer('{{ cell.player.id }}')">{{ cell.player.name }}</span>
                                                 {% if cell.player.is_host %}
                                                     <span style="color: var(--primary-orange); font-size: 0.75rem;">★</span>
                                                 {% endif %}
@@ -689,7 +689,7 @@
                                             {% if cell.player.avatar_url %}<img src="{{ cell.player.avatar_url }}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;">{% else %}{{ cell.player.initials }}{% endif %}
                                         </div>
                                         <div class="member-info" style="margin-left: 8px;">
-                                            <div class="member-name" style="font-size: 0.82rem;">{{ cell.player.name }}</div>
+                                            <div class="member-name" style="font-size: 0.82rem;"><span class="clickable-name" onclick="openPlayerDrawer('{{ cell.player.id }}')">{{ cell.player.name }}</span></div>
                                             <div class="member-role" style="font-size: 0.7rem;">{{ "%.2f"|format(cell.player.dupr|float) }} DUPR</div>
                                         </div>
                                     </div>
@@ -769,7 +769,7 @@
                             </div>
                             <div class="member-info" style="margin-left: 8px;">
                                 <div class="member-name" style="font-size: 0.82rem;">
-                                    {{ p.name }}
+                                    <span class="clickable-name" onclick="openPlayerDrawer('{{ p.player_id }}')">{{ p.name }}</span>
                                 </div>
                                 <div class="member-role" style="font-size: 0.7rem;">
                                     {{ "%.2f"|format(p.profiles.dupr|float) }} DUPR • Team {{ p.team }} (Slot {{ p.slot }})

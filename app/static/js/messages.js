@@ -592,4 +592,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /* ── Initial load ─────────────────────────────────── */
     loadConversations();
+
+    // Check if we should auto-open a chat from URL search params (e.g. ?chat_user=...)
+    const urlParams = new URLSearchParams(window.location.search);
+    const chatUserId = urlParams.get('chat_user');
+    if (chatUserId) {
+        (async () => {
+            const { data: user, error } = await supabaseClient
+                .from('profiles')
+                .select('id, first_name, last_name, role, avatar_url')
+                .eq('id', chatUserId)
+                .single();
+            if (!error && user) {
+                // Wait briefly for initial load to finish rendering conversations list
+                setTimeout(() => {
+                    startConversationWith(user);
+                }, 600);
+            }
+        })();
+    }
 });

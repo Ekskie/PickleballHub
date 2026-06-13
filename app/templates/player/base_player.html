@@ -24,4 +24,5 @@
                 href="{{ url_for('player.tutorials') }}"><i class="ph ph-video"></i> Tutorials</a></li>
 <li class="{% if request.endpoint == 'player.messages' %}active{% endif %}"><a
                 href="{{ url_for('player.messages') }}"><i class="ph ph-chat-circle-dots"></i> Messages</a></li>
+<script src="{{ url_for('static', filename='js/player_common.js') }}" defer></script>
 {% endblock %}

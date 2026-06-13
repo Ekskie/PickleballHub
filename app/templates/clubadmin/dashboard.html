@@ -30,7 +30,13 @@
                 <i class="ph ph-medal" style="font-size: 2rem; color: #f59e0b;"></i>
                 <div class="stat-info">
                     <h3>Top Rated Player</h3>
-                    <p class="stat-value" style="font-size: 1.4rem;">{{ stats.top_player.name if stats.top_player else 'N/A' }}</p>
+                    <p class="stat-value" style="font-size: 1.4rem;">
+                        {% if stats.top_player %}
+                            <span class="clickable-name" onclick="openMemberDrawer('{{ stats.top_player.id }}')">{{ stats.top_player.name }}</span>
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </p>
                     <span class="stat-change" style="color: #f59e0b;">{{ stats.top_player.score if stats.top_player else 'N/A' }}</span>
                 </div>
             </div>
@@ -39,7 +45,7 @@
         <div class="glass-card">
             <div class="widget-header">
                 <h3>Recent Members</h3>
-                <a href="#" class="view-all">View Roster</a>
+                <a href="{{ url_for('clubadmin.members') }}" class="view-all">View Roster</a>
             </div>
             <div class="table-container">
                 <table class="data-grid">
@@ -55,19 +61,28 @@
                         {% if stats.recent_members %}
                             {% for m in stats.recent_members %}
                             <tr>
-                                <td class="bold">{{ m.profiles.first_name }} {{ m.profiles.last_name }}</td>
+                                <td class="bold">
+                                    <span class="clickable-name" onclick="openMemberDrawer('{{ m.player_id }}')">
+                                        {{ m.profiles.first_name }} {{ m.profiles.last_name }}
+                                    </span>
+                                </td>
                                 <td>
                                     {% set dt = m.joined_at.split('T')[0] %}
                                     {{ dt }}
                                 </td>
-                                <td>-</td>
+                                <td>
+                                    {% set skill = (m.profiles.proficiency or 'beginner')|lower %}
+                                    <span class="status-pill {{ skill }}">{{ (m.profiles.proficiency or 'Beginner') | title }}</span>
+                                </td>
                                 <td>
                                     {% if m.status == 'active' %}
                                         <span class="status-pill success">Active</span>
                                     {% elif m.status == 'pending' %}
-                                        <span class="status-pill warning">Pending Approval</span>
+                                        <span class="status-pill pending">Pending</span>
+                                    {% elif m.status == 'expired' %}
+                                        <span class="status-pill expired">Expired</span>
                                     {% else %}
-                                        <span class="status-pill error">{{ m.status | title }}</span>
+                                        <span class="status-pill {{ m.status }}">{{ m.status | title }}</span>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -87,14 +102,18 @@
     <div class="dashboard-side">
         <div class="glass-card">
             <h3 class="widget-title">Quick Actions</h3>
-            <div class="action-grid">
-                <button class="action-box orange">
+            <div class="action-grid" style="display: flex; flex-direction: column; gap: 10px;">
+                <button class="action-box orange" onclick="openInviteModal()" style="width: 100%; border: none; cursor: pointer;">
                     <i class="ph ph-user-plus"></i>
                     <span>Invite Member</span>
                 </button>
-                <button class="action-box navy">
+                <a href="{{ url_for('clubadmin.create_event') }}" class="action-box navy" style="width: 100%; text-decoration: none; box-sizing: border-box; display: flex; align-items: center; justify-content: center;">
                     <i class="ph ph-calendar-plus"></i>
                     <span>Create Event</span>
+                </a>
+                <button class="action-box green" onclick="openMatchLoggerModal()" style="width: 100%; border: none; cursor: pointer; background: rgba(74,222,128,0.12); color: #4ade80; border: 1px solid rgba(74,222,128,0.25);">
+                    <i class="ph ph-game-controller"></i>
+                    <span>Log Casual Match</span>
                 </button>
             </div>
         </div>
@@ -132,5 +151,333 @@
 .stat-change { font-size: 0.8rem; font-weight: 600; }
 .stat-change.positive { color: #4ade80; }
 .stat-change.negative { color: #f87171; }
+
+/* ── Modal Overlay ── */
+.modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.6);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+.modal-overlay.open {
+    display: flex;
+}
+.modal-box {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 24px;
+    width: 480px;
+    max-width: 90%;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+    position: relative;
+    color: var(--text-primary);
+}
+.drawer-submit {
+    width: 100%; padding: 13px;
+    background: var(--primary-orange); color: #fff;
+    border: none; border-radius: 10px;
+    font-size: 0.95rem; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+    transition: background .2s, transform .15s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.drawer-submit:hover { background: #f4511e; transform: translateY(-1px); }
 </style>
+<!-- Invite Modal -->
+<div class="modal-overlay" id="inviteModal" onclick="closeInviteModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h3 style="margin:0;font-size:1.2rem;display:flex;align-items:center;gap:8px;color:var(--text-primary);">
+                <i class="ph ph-user-plus" style="color:var(--primary-orange);"></i> Invite Club Members
+            </h3>
+            <button onclick="closeInviteModal(event)" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:1.2rem;">&#x2715;</button>
+        </div>
+        <p style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:20px;line-height:1.4;">
+            Share this link with players to invite them to join **{{ g.club.name if g.club else 'your club' }}**. Once they click the link, they can request to join.
+        </p>
+        
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+            <input type="text" id="inviteLinkInput" readonly 
+                   value="{{ url_for('player.club_detail', club_id=g.club.id, _external=True) if g.club else 'No Club Set' }}"
+                   style="flex:1;padding:10px 12px;border:1px solid var(--border-color);border-radius:8px;background:var(--input-bg);color:var(--text-primary);font-size:0.9rem;outline:none;"
+                   onclick="this.select()">
+            <button onclick="copyInviteLink()" 
+                    style="padding:10px 16px;background:var(--primary-orange);color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.9rem;transition:background 0.2s;"
+                    onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1.0'"
+                    id="copyLinkBtn">
+                <i class="ph ph-copy"></i> Copy
+            </button>
+        </div>
+        <span id="copyFeedback" style="display:none;color:#4ade80;font-size:0.78rem;font-weight:600;display:flex;align-items:center;gap:4px;">
+            <i class="ph ph-check-circle"></i> Link copied to clipboard!
+        </span>
+    </div>
+</div>
+
+<!-- Match Logger Modal -->
+<div class="modal-overlay" id="matchLoggerModal" onclick="closeMatchLoggerModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()" style="width:520px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+            <h3 style="margin:0;font-size:1.2rem;display:flex;align-items:center;gap:8px;color:var(--text-primary);">
+                <i class="ph ph-game-controller" style="color:#4ade80;"></i> Record Casual Match
+            </h3>
+            <button onclick="closeMatchLoggerModal(event)" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:1.2rem;">&#x2715;</button>
+        </div>
+        
+        {% if active_members|length < 2 %}
+        <div style="text-align:center;padding:20px;color:var(--text-muted);">
+            <i class="ph ph-users-three" style="font-size:2.5rem;opacity:0.4;display:block;margin-bottom:10px;"></i>
+            At least 2 active club members are required to log casual matches.
+        </div>
+        {% else %}
+        <form action="{{ url_for('clubadmin.log_casual_match') }}" method="POST" id="casualMatchForm">
+            <!-- Format selector -->
+            <div style="margin-bottom:16px;">
+                <label style="font-size:0.8rem;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">MATCH FORMAT</label>
+                <select name="match_type" id="casualFormatSelect" onchange="toggleCasualFormat()"
+                        style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);font-weight:600;">
+                    <option value="singles">Singles (1 vs 1)</option>
+                    <option value="doubles">Doubles (2 vs 2)</option>
+                </select>
+            </div>
+
+            <!-- Singles Players -->
+            <div id="singlesFields" style="margin-bottom:20px;">
+                <div style="display:flex;gap:12px;margin-bottom:12px;align-items:center;">
+                    <div style="flex:1;">
+                        <label style="font-size:0.78rem;font-weight:600;color:var(--text-muted);margin-bottom:4px;display:block;">PLAYER 1</label>
+                        <select name="player1_id" id="singlesP1" class="player-select" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);">
+                            <option value="" disabled selected>Select Player 1...</option>
+                            {% for member in active_members %}
+                            <option value="{{ member.id }}">{{ member.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div style="width:80px;">
+                        <label style="font-size:0.78rem;font-weight:600;color:var(--text-muted);margin-bottom:4px;display:block;text-align:center;">SCORE</label>
+                        <input type="number" name="player1_score" id="singlesS1" min="0" placeholder="0" style="width:100%;padding:9px;border-radius:8px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);text-align:center;font-weight:700;">
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:12px;align-items:center;">
+                    <div style="flex:1;">
+                        <label style="font-size:0.78rem;font-weight:600;color:var(--text-muted);margin-bottom:4px;display:block;">PLAYER 2</label>
+                        <select name="player2_id" id="singlesP2" class="player-select" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);">
+                            <option value="" disabled selected>Select Player 2...</option>
+                            {% for member in active_members %}
+                            <option value="{{ member.id }}">{{ member.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div style="width:80px;">
+                        <label style="font-size:0.78rem;font-weight:600;color:var(--text-muted);margin-bottom:4px;display:block;text-align:center;">SCORE</label>
+                        <input type="number" name="player2_score" id="singlesS2" min="0" placeholder="0" style="width:100%;padding:9px;border-radius:8px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);text-align:center;font-weight:700;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Doubles Players -->
+            <div id="doublesFields" style="display:none;margin-bottom:20px;">
+                <!-- Team 1 -->
+                <div style="border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:14px;margin-bottom:14px;">
+                    <h4 style="margin:0 0 10px;font-size:0.85rem;color:#0ea5e9;text-transform:uppercase;letter-spacing:0.5px;">TEAM 1</h4>
+                    <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;">
+                        <div style="flex:1;">
+                            <label style="font-size:0.72rem;color:var(--text-muted);display:block;margin-bottom:4px;">PLAYER A</label>
+                            <select name="player1a_id" id="doublesP1a" class="player-select" style="width:100%;padding:9px;border-radius:8px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);font-size:0.85rem;">
+                                <option value="" disabled selected>Select Player 1A...</option>
+                                {% for member in active_members %}
+                                <option value="{{ member.id }}">{{ member.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div style="flex:1;">
+                            <label style="font-size:0.72rem;color:var(--text-muted);display:block;margin-bottom:4px;">PLAYER B</label>
+                            <select name="player1b_id" id="doublesP1b" class="player-select" style="width:100%;padding:9px;border-radius:8px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);font-size:0.85rem;">
+                                <option value="" disabled selected>Select Player 1B...</option>
+                                {% for member in active_members %}
+                                <option value="{{ member.id }}">{{ member.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div style="width:80px;">
+                            <label style="font-size:0.72rem;color:var(--text-muted);display:block;margin-bottom:4px;text-align:center;">SCORE</label>
+                            <input type="number" name="team1_score" id="doublesS1" min="0" placeholder="0" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);text-align:center;font-weight:700;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Team 2 -->
+                <div style="padding-bottom:6px;margin-bottom:14px;">
+                    <h4 style="margin:0 0 10px;font-size:0.85rem;color:#ec4899;text-transform:uppercase;letter-spacing:0.5px;">TEAM 2</h4>
+                    <div style="display:flex;gap:12px;align-items:center;">
+                        <div style="flex:1;">
+                            <label style="font-size:0.72rem;color:var(--text-muted);display:block;margin-bottom:4px;">PLAYER A</label>
+                            <select name="player2a_id" id="doublesP2a" class="player-select" style="width:100%;padding:9px;border-radius:8px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);font-size:0.85rem;">
+                                <option value="" disabled selected>Select Player 2A...</option>
+                                {% for member in active_members %}
+                                <option value="{{ member.id }}">{{ member.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div style="flex:1;">
+                            <label style="font-size:0.72rem;color:var(--text-muted);display:block;margin-bottom:4px;">PLAYER B</label>
+                            <select name="player2b_id" id="doublesP2b" class="player-select" style="width:100%;padding:9px;border-radius:8px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);font-size:0.85rem;">
+                                <option value="" disabled selected>Select Player 2B...</option>
+                                {% for member in active_members %}
+                                <option value="{{ member.id }}">{{ member.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div style="width:80px;">
+                            <label style="font-size:0.72rem;color:var(--text-muted);display:block;margin-bottom:4px;text-align:center;">SCORE</label>
+                            <input type="number" name="team2_score" id="doublesS2" min="0" placeholder="0" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);text-align:center;font-weight:700;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="drawer-submit" style="background:#4ade80;transition:background 0.2s;" onmouseover="this.style.background='#22c55e'" onmouseout="this.style.background='#4ade80'">
+                <i class="ph ph-check-square"></i> Log Match &amp; Recalculate Ratings
+            </button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+/* ── Invite Modal Handlers ── */
+function openInviteModal() {
+    document.getElementById('inviteModal').classList.add('open');
+    document.getElementById('copyFeedback').style.display = 'none';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeInviteModal(e) {
+    document.getElementById('inviteModal').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+function copyInviteLink() {
+    const input = document.getElementById('inviteLinkInput');
+    input.select();
+    navigator.clipboard.writeText(input.value).then(() => {
+        document.getElementById('copyFeedback').style.display = 'flex';
+    }).catch(err => {
+        console.error('Could not copy link:', err);
+    });
+}
+
+/* ── Casual Match Logger Handlers ── */
+function openMatchLoggerModal() {
+    document.getElementById('matchLoggerModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeMatchLoggerModal(e) {
+    document.getElementById('matchLoggerModal').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+function toggleCasualFormat() {
+    const fmt = document.getElementById('casualFormatSelect').value;
+    const singles = document.getElementById('singlesFields');
+    const doubles = document.getElementById('doublesFields');
+    
+    if (fmt === 'singles') {
+        singles.style.display = 'block';
+        doubles.style.display = 'none';
+        
+        document.getElementById('singlesP1').required = true;
+        document.getElementById('singlesP2').required = true;
+        document.getElementById('singlesS1').required = true;
+        document.getElementById('singlesS2').required = true;
+        
+        if (document.getElementById('doublesP1a')) {
+            document.getElementById('doublesP1a').required = false;
+            document.getElementById('doublesP1b').required = false;
+            document.getElementById('doublesP2a').required = false;
+            document.getElementById('doublesP2b').required = false;
+            document.getElementById('doublesS1').required = false;
+            document.getElementById('doublesS2').required = false;
+            
+            document.getElementById('doublesS1').name = '';
+            document.getElementById('doublesS2').name = '';
+        }
+        
+        document.getElementById('singlesS1').name = 'player1_score';
+        document.getElementById('singlesS2').name = 'player2_score';
+    } else {
+        singles.style.display = 'none';
+        doubles.style.display = 'block';
+        
+        document.getElementById('singlesP1').required = false;
+        document.getElementById('singlesP2').required = false;
+        document.getElementById('singlesS1').required = false;
+        document.getElementById('singlesS2').required = false;
+        
+        document.getElementById('doublesP1a').required = true;
+        document.getElementById('doublesP1b').required = true;
+        document.getElementById('doublesP2a').required = true;
+        document.getElementById('doublesP2b').required = true;
+        document.getElementById('doublesS1').required = true;
+        document.getElementById('doublesS2').required = true;
+        
+        document.getElementById('singlesS1').name = '';
+        document.getElementById('singlesS2').name = '';
+        document.getElementById('doublesS1').name = 'player1_score';
+        document.getElementById('doublesS2').name = 'player2_score';
+    }
+}
+
+document.getElementById('casualMatchForm')?.addEventListener('submit', function(e) {
+    const fmt = document.getElementById('casualFormatSelect').value;
+    if (fmt === 'singles') {
+        const p1 = document.getElementById('singlesP1').value;
+        const p2 = document.getElementById('singlesP2').value;
+        const s1 = parseInt(document.getElementById('singlesS1').value);
+        const s2 = parseInt(document.getElementById('singlesS2').value);
+        
+        if (p1 === p2) {
+            e.preventDefault();
+            alert("Please select two different players.");
+            return;
+        }
+        if (s1 === s2) {
+            e.preventDefault();
+            alert("Ties are not currently supported; one player must win.");
+            return;
+        }
+    } else {
+        const p1a = document.getElementById('doublesP1a').value;
+        const p1b = document.getElementById('doublesP1b').value;
+        const p2a = document.getElementById('doublesP2a').value;
+        const p2b = document.getElementById('doublesP2b').value;
+        const s1 = parseInt(document.getElementById('doublesS1').value);
+        const s2 = parseInt(document.getElementById('doublesS2').value);
+        
+        const set = new Set([p1a, p1b, p2a, p2b]);
+        if (set.size < 4) {
+            e.preventDefault();
+            alert("Please select four unique players. No duplicate players allowed.");
+            return;
+        }
+        if (s1 === s2) {
+            e.preventDefault();
+            alert("Ties are not currently supported; one team must win.");
+            return;
+        }
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('casualFormatSelect')) {
+        toggleCasualFormat();
+    }
+});
+</script>
+
 {% endblock %}

@@ -26,11 +26,18 @@
         </ol>
     </div>
 
-    <form method="POST" action="{{ url_for('player.club_payment', club_id=club.id) }}">
+    <form method="POST" action="{{ url_for('player.club_payment', club_id=club.id) }}" enctype="multipart/form-data">
         <div style="margin-bottom: 20px;">
             <label for="gcash_ref" style="display: block; margin-bottom: 8px; color: var(--text-secondary); font-weight: 600;">GCash Reference Number <span style="color: red;">*</span></label>
             <input type="text" id="gcash_ref" name="gcash_ref" required placeholder="e.g. 100123456789"
                    style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary); font-family: monospace; font-size: 1.1rem; letter-spacing: 1px;">
+        </div>
+
+        <div style="margin-bottom: 24px;">
+            <label for="receipt" style="display: block; margin-bottom: 8px; color: var(--text-secondary); font-weight: 600;">GCash Receipt Screenshot <span style="color: red;">*</span></label>
+            <input type="file" id="receipt" name="receipt" accept="image/*" required
+                   style="width: 100%; padding: 10px; border: 1px dashed var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary); cursor: pointer;">
+            <small style="color: var(--text-muted); display: block; margin-top: 4px; font-size: 0.8rem;">Please upload a clear screenshot of your GCash receipt.</small>
         </div>
 
         <div style="display: flex; gap: 12px;">
