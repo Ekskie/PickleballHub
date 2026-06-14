@@ -1,5 +1,33 @@
 {% extends "facilitystaff/base_facilitystaff.html" %}
 {% block title %}Court Schedule{% endblock %}
+
+{% block extra_head %}
+<style>
+.btn-sm { 
+    padding: 6px 12px; 
+    border-radius: 8px; 
+    font-size: 0.78rem; 
+    font-weight: 600; 
+    cursor: pointer; 
+    border: none; 
+    transition: all 0.2s; 
+    display: inline-flex; 
+    align-items: center; 
+    gap: 4px; 
+}
+.btn-sm-outline { 
+    background: transparent; 
+    border: 1px solid var(--border-color); 
+    color: var(--text-secondary); 
+}
+.btn-sm-outline:hover { 
+    border-color: var(--text-muted); 
+    color: var(--text-primary); 
+    background: rgba(255, 255, 255, 0.05);
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="dashboard-header">
     <h1 class="page-title">Court Schedule</h1>
@@ -30,7 +58,7 @@
                         <tr>
                             <td class="bold">{{ court.name }}</td>
                             <td>
-                                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
                                     {% set court_res = reservations | selectattr('court_id', 'equalto', court.id) | list %}
                                     {% if court_res %}
                                         {% for res in court_res %}
@@ -47,7 +75,12 @@
                                             </div>
                                         {% endfor %}
                                     {% else %}
-                                        <span style="color: var(--text-muted); font-size: 0.85rem; padding: 8px;">No bookings scheduled.</span>
+                                        <div style="display: inline-flex; align-items: center; gap: 10px;">
+                                            <span style="color: var(--text-muted); font-size: 0.85rem;">No bookings scheduled.</span>
+                                            <a href="{{ url_for('facilitystaff.walkin') }}?court_id={{ court.id }}" class="btn-sm btn-sm-outline" style="text-decoration: none;">
+                                                <i class="ph ph-plus-circle"></i> Walk-In
+                                            </a>
+                                        </div>
                                     {% endif %}
                                 </div>
                             </td>

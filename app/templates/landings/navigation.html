@@ -1,8 +1,8 @@
 <nav class="landing-nav">
     <a href="{{ url_for('main.index') }}">
         <div class="logo">
-            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="PickleballHub Logo">
-            PickleballHub
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="{{ platform_settings.platform_name }} Logo">
+            {{ platform_settings.platform_name }}
         </div>
     </a>
     <div class="nav-links">

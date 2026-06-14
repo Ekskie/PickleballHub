@@ -113,7 +113,7 @@ def verifications():
     db = get_db()
     facilities = []
     try:
-        resp = db.table('facilities').select('*, profiles!owner_id(first_name, last_name)').order('created_at', desc=True).execute()
+        resp = db.table('facilities').select('*, profiles!owner_id(first_name, last_name), courts(*)').order('created_at', desc=True).execute()
         facilities = resp.data or []
     except Exception as e:
         flash(f'Error loading verifications: {e}', 'error')
@@ -211,7 +211,23 @@ def profile():
         except Exception as e:
             flash(f"Error updating profile: {e}", "error")
         return redirect(url_for('adminstaff.profile'))
-    return render_template('adminstaff/profile.html')
+    
+    # GET — load stats and render
+    stats = {'open_tickets': 0, 'pending_kyc': 0, 'open_disputes': 0, 'total_facilities': 0, 'resolved_tickets': 0, 'total_tickets': 0}
+    try:
+        stats['open_tickets'] = db.table('tickets').select('id', count='exact').eq('status', 'open').execute().count or 0
+        stats['resolved_tickets'] = db.table('tickets').select('id', count='exact').eq('status', 'closed').execute().count or 0
+        stats['total_tickets'] = stats['open_tickets'] + stats['resolved_tickets']
+        
+        stats['pending_kyc'] = db.table('facilities').select('id', count='exact').eq('kyc_status', 'pending_approval').execute().count or 0
+        try:
+            stats['open_disputes'] = db.table('disputes').select('id', count='exact').eq('status', 'open').execute().count or 0
+        except Exception:
+            stats['open_disputes'] = 0
+        stats['total_facilities'] = db.table('facilities').select('id', count='exact').execute().count or 0
+    except Exception as e:
+        print(f"Error fetching stats for profile: {e}")
+    return render_template('adminstaff/profile.html', stats=stats)
 
 @adminstaff_bp.route('/notifications')
 @require_role('adminstaff')

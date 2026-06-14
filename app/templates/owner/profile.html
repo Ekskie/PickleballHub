@@ -268,7 +268,7 @@
                        style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg); color: var(--text-primary);">
             </div>
             
-            <p class="player-id" style="margin-top: 0;">Player ID: PBH-{{ current_user.id[:8] | upper if current_user.id else '544A69CB' }}</p>
+            <p class="player-id" style="margin-top: 0;">Owner ID: PBH-{{ current_user.id[:8] | upper if current_user.id else '' }}</p>
 
             <div class="profile-contact">
                 <div class="contact-row">
@@ -282,7 +282,7 @@
                 </div>
                 <div class="contact-row">
                     <i class="ph ph-shield-check"></i>
-                    <span class="membership-badge">Free</span>
+                    <span class="membership-badge">Facility Owner</span>
                 </div>
             </div>
 
@@ -294,37 +294,28 @@
 
     <!-- Right: Statistics & Activity -->
     <div class="glass-card">
-        <p class="stats-section-title">Player Statistics</p>
+        <p class="stats-section-title">Owner Statistics</p>
 
         <div class="stat-boxes">
             <div class="stat-box orange">
-                <span class="stat-value">{{ stats.courts if stats else 0 }}</span>
-                <span class="stat-label">Courts Booked</span>
+                <span class="stat-value">{{ stats.facilities if stats else 0 }}</span>
+                <span class="stat-label">Facilities</span>
             </div>
             <div class="stat-box navy">
-                <span class="stat-value">{{ stats.events if stats else 0 }}</span>
-                <span class="stat-label">Events Joined</span>
+                <span class="stat-value">{{ stats.courts if stats else 0 }}</span>
+                <span class="stat-label">Total Courts</span>
             </div>
             <div class="stat-box green">
-                <span class="stat-value">{{ stats.tournaments if stats else 0 }}</span>
-                <span class="stat-label">Tournaments</span>
+                <span class="stat-value">{{ stats.staff if stats else 0 }}</span>
+                <span class="stat-label">Active Staff</span>
             </div>
         </div>
 
-        <p class="fairness-label">Fairness Rating</p>
-        <div class="fairness-bar-wrap">
-            <div class="fairness-track">
-                <div class="fairness-fill"></div>
-            </div>
-            <span class="fairness-score">0.85</span>
-        </div>
-        <p class="fairness-note">Your fairness score is based on peak-time booking frequency. Higher is better.</p>
-
-        <p class="recent-activity-title">Recent Activity</p>
+        <p class="recent-activity-title">Recent Actions</p>
         <ul class="activity-list">
-            <li><span class="dot"></span> Booked Court 2 – Apr 28</li>
-            <li><span class="dot"></span> Joined Weekend Doubles</li>
-            <li><span class="dot"></span> Completed session – Court 1</li>
+            <li><span class="dot"></span> Managed facility courts & staff assignments</li>
+            <li><span class="dot"></span> Reviewed tournament brackets and registrations</li>
+            <li><span class="dot"></span> Monitored live revenue reports and dashboards</li>
         </ul>
     </div>
 

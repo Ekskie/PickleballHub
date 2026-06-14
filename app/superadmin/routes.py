@@ -55,7 +55,7 @@ def dashboard():
 
         # Recent facility registrations
         rf_resp = db.table('facilities').select(
-            'id, name, location, status, kyc_status, created_at, profiles!owner_id(first_name, last_name)'
+            'id, name, location, status, kyc_status, created_at, profiles!owner_id(first_name, last_name), courts(*)'
         ).order('created_at', desc=True).limit(6).execute()
         recent_facilities = rf_resp.data or []
 
@@ -81,7 +81,7 @@ def facilities():
     db = get_db()
     facilities = []
     try:
-        resp = db.table('facilities').select('*, profiles!owner_id(first_name, last_name)').order('created_at', desc=True).execute()
+        resp = db.table('facilities').select('*, profiles!owner_id(first_name, last_name), courts(*)').order('created_at', desc=True).execute()
         facilities = resp.data or []
     except Exception as e:
         flash(f'Error loading facilities: {e}', 'error')
@@ -101,6 +101,22 @@ def update_kyc_status(facility_id):
     except Exception as e:
         flash(f'Error updating status: {e}', 'error')
     return redirect(url_for('superadmin.facilities'))
+
+@superadmin_bp.route('/facilities/<facility_id>/platform_status', methods=['POST'])
+@require_role('superadmin')
+def update_platform_status(facility_id):
+    status = request.form.get('status')
+    if status not in ['active', 'suspended', 'pending']:
+        flash('Invalid status.', 'error')
+        return redirect(url_for('superadmin.facilities'))
+    db = get_db()
+    try:
+        db.table('facilities').update({'status': status}).eq('id', facility_id).execute()
+        flash(f'Facility platform status updated to {status}.', 'success')
+    except Exception as e:
+        flash(f'Error updating platform status: {e}', 'error')
+    return redirect(url_for('superadmin.facilities'))
+
 
 @superadmin_bp.route('/users')
 @require_role('superadmin')
@@ -228,6 +244,13 @@ def settings():
         'support_email': 'support@pickleballhub.com',
         'maintenance_mode': False,
         'require_2fa': False,
+        'seo_meta_title': 'PickleballHub - Centralized Court & Tournament Management',
+        'seo_meta_description': 'Discover and book pickleball courts, participate in tournaments, and connect with players.',
+        'seo_meta_keywords': 'pickleball, courts, booking, tournament, matchmaker',
+        'seo_og_image': '',
+        'google_analytics_id': '',
+        'facebook_pixel_id': '',
+        'custom_head_scripts': '',
     }
 
     if request.method == 'POST':
@@ -237,9 +260,21 @@ def settings():
                 {'key': 'support_email', 'value': request.form.get('support_email', '').strip()},
                 {'key': 'maintenance_mode', 'value': '1' if request.form.get('maintenance_mode') else '0'},
                 {'key': 'require_2fa', 'value': '1' if request.form.get('require_2fa') else '0'},
+                {'key': 'seo_meta_title', 'value': request.form.get('seo_meta_title', '').strip()},
+                {'key': 'seo_meta_description', 'value': request.form.get('seo_meta_description', '').strip()},
+                {'key': 'seo_meta_keywords', 'value': request.form.get('seo_meta_keywords', '').strip()},
+                {'key': 'seo_og_image', 'value': request.form.get('seo_og_image', '').strip()},
+                {'key': 'google_analytics_id', 'value': request.form.get('google_analytics_id', '').strip()},
+                {'key': 'facebook_pixel_id', 'value': request.form.get('facebook_pixel_id', '').strip()},
+                {'key': 'custom_head_scripts', 'value': request.form.get('custom_head_scripts', '').strip()},
             ]
             for row in rows:
                 db.table('platform_settings').upsert(row, on_conflict='key').execute()
+            
+            # Clear settings cache so it reloads immediately
+            from app.settings_helper import clear_settings_cache
+            clear_settings_cache()
+            
             flash('Settings saved successfully!', 'success')
         except Exception as e:
             flash(f'Error saving settings: {e}', 'error')

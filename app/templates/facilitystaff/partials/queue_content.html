@@ -28,8 +28,15 @@
                                 {% endif %}
                             </td>
                             <td>
-                                {{ q.profiles.first_name if q.profiles else 'Unknown' }} 
-                                {{ q.profiles.last_name if q.profiles else '' }}
+                                <div style="display: inline-flex; align-items: center; gap: 8px;">
+                                    <span>
+                                        {{ q.profiles.first_name if q.player_id else q.guest_name }} 
+                                        {{ q.profiles.last_name if q.player_id else '(Walk-in)' }}
+                                    </span>
+                                    {% if q.player_id %}
+                                    <a href="{{ url_for('facilitystaff.messages') }}?chat_user={{ q.player_id }}" class="chat-shortcut" title="Chat with Player" style="color: var(--text-muted); transition: color 0.2s; display: inline-flex; align-items: center; margin-top: 1px;"><i class="ph ph-chat-circle-dots" style="font-size: 1.05rem;"></i></a>
+                                    {% endif %}
+                                </div>
                             </td>
                             <td>
                                 {% if q.status == 'playing' %}
@@ -54,31 +61,18 @@
                             <td>
                                 <div style="display: flex; gap: 8px;">
                                     {% if q.status == 'waiting' %}
-                                        <form method="POST" action="{{ url_for('facilitystaff.update_queue') }}" style="margin:0;">
-                                            <input type="hidden" name="queue_id" value="{{ q.id }}">
-                                            <input type="hidden" name="status" value="next">
-                                            <button type="submit" class="action-box green" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto; cursor:pointer; border:none; color:white;">Call Next</button>
-                                        </form>
+                                        <button type="button" onclick="updateQueueStatus('{{ q.id }}', 'next', this)" class="action-box green" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; width: auto; cursor:pointer; border:none; color:white; background:var(--btn-green); border-radius: 6px; font-weight: 600;">Call Next</button>
                                     {% endif %}
                                     {% if q.status == 'next' %}
-                                        <form method="POST" action="{{ url_for('facilitystaff.update_queue') }}" style="margin:0;">
-                                            <input type="hidden" name="queue_id" value="{{ q.id }}">
-                                            <input type="hidden" name="status" value="playing">
-                                            <button type="submit" class="action-box navy" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto; cursor:pointer; border:none; color:white;">Start Game</button>
-                                        </form>
+                                        <button type="button" onclick="updateQueueStatus('{{ q.id }}', 'playing', this)" class="action-box navy" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; width: auto; cursor:pointer; border:none; color:white; background:var(--btn-navy); border-radius: 6px; font-weight: 600;">Start Game</button>
+                                        {% if q.player_id %}
+                                        <button type="button" onclick="nudgePlayer('{{ q.player_id }}', this)" class="action-box orange" style="padding: 0.35rem 0.5rem; font-size: 0.8rem; width: auto; cursor:pointer; border:none; color:white; background:var(--primary-orange); border-radius: 6px; font-weight: 600;" title="Nudge Player"><i class="ph ph-bell"></i></button>
+                                        {% endif %}
                                     {% endif %}
                                     {% if q.status == 'playing' %}
-                                        <form method="POST" action="{{ url_for('facilitystaff.update_queue') }}" style="margin:0;">
-                                            <input type="hidden" name="queue_id" value="{{ q.id }}">
-                                            <input type="hidden" name="status" value="completed">
-                                            <button type="submit" class="action-box navy" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto; cursor:pointer; border:none; color:white;">Complete</button>
-                                        </form>
+                                        <button type="button" onclick="updateQueueStatus('{{ q.id }}', 'completed', this)" class="action-box navy" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; width: auto; cursor:pointer; border:none; color:white; background:var(--btn-navy); border-radius: 6px; font-weight: 600;">Complete</button>
                                     {% endif %}
-                                    <form method="POST" action="{{ url_for('facilitystaff.update_queue') }}" onsubmit="return confirm('Remove player from queue?');" style="margin:0;">
-                                        <input type="hidden" name="queue_id" value="{{ q.id }}">
-                                        <input type="hidden" name="status" value="cancelled">
-                                        <button type="submit" class="action-box red" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto; background: #fee2e2; color: #ef4444; border:none; cursor:pointer;"><i class="ph ph-trash"></i></button>
-                                    </form>
+                                    <button type="button" onclick="if(confirm('Remove player from queue?')) updateQueueStatus('{{ q.id }}', 'cancelled', this)" class="action-box red" style="padding: 0.35rem 0.5rem; font-size: 0.8rem; width: auto; background: #fee2e2; color: #ef4444; border:none; cursor:pointer; border-radius: 6px;"><i class="ph ph-trash"></i></button>
                                 </div>
                             </td>
                         </tr>

@@ -67,8 +67,17 @@
                     </div>
                 </div>
 
-                <!-- GCash Reference (conditional) -->
+                <!-- GCash Reference & QR Code (conditional) -->
                 <div id="gcash_ref_section" style="margin-bottom:20px;display:none;">
+                    <div style="display: flex; gap: 20px; align-items: center; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 15px; border-radius: 12px; margin-bottom: 15px;">
+                        <div style="width: 100px; height: 100px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); background: white; flex-shrink: 0;">
+                            <img src="/static/images/gcash_qr.png" alt="GCash Merchant QR" style="width: 100%; height: 100%; object-fit: contain;">
+                        </div>
+                        <div>
+                            <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">Scan to Pay</h4>
+                            <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; margin: 0;">Scan this QR code with GCash or any QR Ph app. Once paid, input the reference code below to confirm.</p>
+                        </div>
+                    </div>
                     <label class="field-label">GCash / QR Reference Number</label>
                     <input type="text" name="gcash_ref" class="form-input field-input" placeholder="e.g. 1234567890">
                 </div>
@@ -126,6 +135,15 @@ document.querySelectorAll('.pm-radio').forEach(radio => {
         const needsRef = ['gcash', 'qr_ph'].includes(radio.value);
         document.getElementById('gcash_ref_section').style.display = needsRef ? 'block' : 'none';
     });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const params = new URLSearchParams(window.location.search);
+    const courtId = params.get('court_id');
+    if (courtId) {
+        courtSel.value = courtId;
+        calcTotal();
+    }
 });
 </script>
 {% endblock %}

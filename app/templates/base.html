@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Dashboard{% endblock %} - PickleballHub</title>
+    <title>{% block title %}Dashboard{% endblock %} - {{ platform_settings.platform_name }}</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -177,6 +177,7 @@
             to { transform: rotate(360deg); }
         }
     </style>
+    {% include 'seo_tags.html' %}
     {% block extra_head %}{% endblock %}
 </head>
 
@@ -186,8 +187,8 @@
         <a href="{{ url_for('player.dashboard') }}" style="text-decoration: none;">
             <div class="sidebar-header">
                 <img class="sidebar-logo" src="{{ url_for('static', filename='images/logo.png') }}"
-                    alt="PickleballHub Logo">
-                <h2>PickleballHub</h2>
+                    alt="{{ platform_settings.platform_name }} Logo">
+                <h2>{{ platform_settings.platform_name }}</h2>
             </div>
         </a>
         <div class="sidebar-profile">
@@ -530,8 +531,10 @@
                     if (href.includes('logout')) return;
                 } catch (err) { return; }
 
-                // Show loading overlay immediately
-                overlay.classList.add('active');
+                // Show loading overlay after a short delay to allow browser click and navigation to register first
+                setTimeout(() => {
+                    overlay.classList.add('active');
+                }, 50);
 
                 // Update sidebar active state instantly
                 const sidebar = document.querySelector('.sidebar-nav');
@@ -553,6 +556,41 @@
         })();
     </script>
 
+    <!-- Global Click-to-Enlarge Image Preview Modal -->
+    <div id="imagePreviewModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 99999; align-items: center; justify-content: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); opacity: 0; transition: opacity 0.25s ease;" onclick="closeImageModal()">
+        <button style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.1); border: none; border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; font-size: 1.5rem; transition: background 0.2s;" onclick="closeImageModal()">
+            <i class="ph ph-x"></i>
+        </button>
+        <img id="modalPreviewImg" src="" alt="Preview" style="max-width: 90%; max-height: 85%; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); transform: scale(0.9); transition: transform 0.25s ease;" onclick="event.stopPropagation();">
+    </div>
+
+    <script>
+        // Global Image Preview Modal Controller
+        function openImageModal(src) {
+            const modal = document.getElementById('imagePreviewModal');
+            const modalImg = document.getElementById('modalPreviewImg');
+            if (!modal || !modalImg) return;
+            
+            modalImg.src = src;
+            modal.style.display = 'flex';
+            modal.offsetHeight; // force layout recalculation
+            modal.style.opacity = '1';
+            modalImg.style.transform = 'scale(1)';
+        }
+
+        function closeImageModal() {
+            const modal = document.getElementById('imagePreviewModal');
+            const modalImg = document.getElementById('modalPreviewImg');
+            if (!modal || !modalImg) return;
+            
+            modal.style.opacity = '0';
+            modalImg.style.transform = 'scale(0.9)';
+            setTimeout(() => {
+                modal.style.display = 'none';
+                modalImg.src = '';
+            }, 250);
+        }
+    </script>
 </body>
 
 </html>

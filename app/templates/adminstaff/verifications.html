@@ -1,12 +1,79 @@
 {% extends "adminstaff/base_adminstaff.html" %}
 {% block title %}Verifications{% endblock %}
 {% block content %}
-<div class="dashboard-header">
+
+{% set total_facilities = facilities|length %}
+{% set pending_kyc = facilities | selectattr('kyc_status', 'equalto', 'pending_approval') | list | length %}
+{% set verified_kyc = facilities | selectattr('kyc_status', 'equalto', 'verified') | list | length %}
+{% set rejected_kyc = facilities | selectattr('kyc_status', 'equalto', 'rejected') | list | length %}
+
+<div class="dashboard-header" style="margin-bottom: 24px;">
     <h1 class="page-title">Facility KYC Verifications</h1>
+    <small style="color:var(--text-secondary); font-size: 0.85rem; font-weight: 500;">Review documents, inspect court registrations, and manage approval statuses</small>
 </div>
-<div class="glass-card">
+
+<!-- Facilities Stats Summary Bar -->
+<div class="stats-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px;">
+    <div class="glass-card" style="padding: 16px; display: flex; align-items: center; gap: 14px; border-radius: 12px !important; box-shadow: var(--shadow-sm) !important; transform: none !important; border-color: var(--border-color-soft) !important;">
+        <div style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--primary-orange); background: rgba(255,87,34,0.08); border: 1px solid rgba(255,87,34,0.15); flex-shrink: 0;">
+            <i class="ph ph-buildings"></i>
+        </div>
+        <div>
+            <h4 style="margin: 0; font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Total Facilities</h4>
+            <p style="margin: 2px 0 0 0; font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">{{ total_facilities }}</p>
+        </div>
+    </div>
+    <div class="glass-card" style="padding: 16px; display: flex; align-items: center; gap: 14px; border-radius: 12px !important; box-shadow: var(--shadow-sm) !important; transform: none !important; border-color: var(--border-color-soft) !important;">
+        <div style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #10b981; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.15); flex-shrink: 0;">
+            <i class="ph ph-shield-check"></i>
+        </div>
+        <div>
+            <h4 style="margin: 0; font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Verified KYC</h4>
+            <p style="margin: 2px 0 0 0; font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">{{ verified_kyc }}</p>
+        </div>
+    </div>
+    <div class="glass-card" style="padding: 16px; display: flex; align-items: center; gap: 14px; border-radius: 12px !important; box-shadow: var(--shadow-sm) !important; transform: none !important; border-color: var(--border-color-soft) !important;">
+        <div style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #f59e0b; background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.15); flex-shrink: 0;">
+            <i class="ph ph-hourglass-high"></i>
+        </div>
+        <div>
+            <h4 style="margin: 0; font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Pending Review</h4>
+            <p style="margin: 2px 0 0 0; font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">{{ pending_kyc }}</p>
+        </div>
+    </div>
+    <div class="glass-card" style="padding: 16px; display: flex; align-items: center; gap: 14px; border-radius: 12px !important; box-shadow: var(--shadow-sm) !important; transform: none !important; border-color: var(--border-color-soft) !important;">
+        <div style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #ef4444; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.15); flex-shrink: 0;">
+            <i class="ph ph-shield-warning"></i>
+        </div>
+        <div>
+            <h4 style="margin: 0; font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Rejected KYC</h4>
+            <p style="margin: 2px 0 0 0; font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">{{ rejected_kyc }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="glass-card" style="padding: 24px;">
+    <!-- Filter and Search Header -->
+    <div class="widget-header" style="display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color-soft); padding-bottom: 16px;">
+        <div style="flex: 1; max-width: 400px; position: relative; display: flex; align-items: center;">
+            <i class="ph ph-magnifying-glass" style="position: absolute; left: 14px; color: var(--text-muted); font-size: 1.1rem; z-index: 10;"></i>
+            <input type="text" id="facilitySearchInput" placeholder="Search facilities by name or owner..."
+                   style="width: 100%; padding: 10px 14px 10px 42px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-primary); font-size: 0.9rem; outline: none; transition: all 0.2s;">
+        </div>
+        <div class="filter-actions" style="display: flex; gap: 10px;">
+            <select id="kycFilter" class="dropdown-trigger" style="padding: 10px 14px; cursor: pointer; font-size: 0.85rem; outline: none; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary);">
+                <option value="all">All KYC Statuses</option>
+                <option value="verified">Verified</option>
+                <option value="pending_approval">Pending Approval</option>
+                <option value="rejected">Rejected</option>
+                <option value="unverified">Unverified</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Data Grid -->
     <div class="table-container">
-        <table class="data-grid">
+        <table class="data-grid" id="verificationsTable">
             <thead>
                 <tr>
                     <th>FACILITY NAME</th>
@@ -14,48 +81,134 @@
                     <th>CREATED AT</th>
                     <th>DOCUMENTS</th>
                     <th>STATUS</th>
-                    <th>ACTIONS</th>
+                    <th style="text-align: right; padding-right: 24px !important;">ACTIONS</th>
                 </tr>
             </thead>
             <tbody>
                 {% for f in facilities %}
-                <tr>
-                    <td class="bold">{{ f.name }}</td>
-                    <td>{{ f.profiles.first_name }} {{ f.profiles.last_name }}</td>
-                    <td>{{ f.created_at | community_timeago }}</td>
+                <tr class="facility-row" 
+                    data-row-id="{{ f.id }}"
+                    data-name="{{ f.name | lower }}" 
+                    data-owner="{{ (f.profiles.first_name ~ ' ' ~ f.profiles.last_name) | lower if f.profiles else '' }}"
+                    data-kyc="{{ f.kyc_status }}">
+                    <td class="bold">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 44px; height: 44px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color-soft); background: var(--stat-icon-bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: var(--shadow-sm);">
+                                {% if f.image_url %}
+                                <img src="{{ f.image_url }}" alt="{{ f.name }}" style="width: 100%; height: 100%; object-fit: cover; cursor: zoom-in;" onclick="openImageModal(this.src)">
+                                {% else %}
+                                <i class="ph ph-buildings" style="font-size: 1.3rem; color: var(--primary-orange);"></i>
+                                {% endif %}
+                            </div>
+                            <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
+                                <span>{{ f.name }}</span>
+                                {% if f.courts %}
+                                <button class="dropdown-trigger" 
+                                        style="padding: 2px 8px; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 4px; border-radius: 6px; background: rgba(0,0,0,0.03); color: var(--text-primary); cursor: pointer; border: 1px solid var(--border-color-soft); font-weight: 600;"
+                                        data-count="{{ f.courts|length }}"
+                                        onclick="toggleCourtsRow(event, '{{ f.id }}')">
+                                    <i class="ph ph-squares-four"></i> View Courts ({{ f.courts|length }})
+                                </button>
+                                {% else %}
+                                <span style="font-size: 0.72rem; color: var(--text-muted); padding-left: 2px; font-weight: 500;">
+                                    <i class="ph ph-squares-four"></i> 0 courts
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{ f.profiles.first_name }} {{ f.profiles.last_name if f.profiles else '' }}</td>
+                    <td style="color: var(--text-secondary); font-size: 0.85rem;">{{ f.created_at | community_timeago }}</td>
                     <td>
                         {% if f.kyc_document_url %}
-                        <a href="{{ f.kyc_document_url }}" target="_blank" class="action-link" style="color:var(--primary-orange);"><i class="ph ph-file-text"></i> View Document</a>
+                            {% set is_img = f.kyc_document_url.lower().endswith(('.png', '.jpg', '.jpeg', '.webp', '.gif')) %}
+                            {% if is_img %}
+                            <a href="#" class="action-link" style="color: var(--primary-orange); display: inline-flex; align-items: center; gap: 4px;" onclick="openImageModal('{{ f.kyc_document_url }}'); return false;">
+                                <i class="ph ph-image"></i> View Document
+                            </a>
+                            {% else %}
+                            <a href="{{ f.kyc_document_url }}" target="_blank" class="action-link" style="color: var(--primary-orange); display: inline-flex; align-items: center; gap: 4px;">
+                                <i class="ph ph-file-text"></i> View Document
+                            </a>
+                            {% endif %}
                         {% else %}
-                        <span style="color:var(--text-muted);">None provided</span>
+                        <span style="color: var(--text-muted); font-size: 0.85rem;">None provided</span>
                         {% endif %}
                     </td>
                     <td>
                         {% if f.kyc_status == 'verified' %}
-                            <span class="status-pill success" style="background: rgba(16,185,129,0.1); color: #10b981;">Verified</span>
+                            <span class="status-pill success"><i class="ph ph-shield-check"></i> Verified</span>
                         {% elif f.kyc_status == 'pending_approval' %}
-                            <span class="status-pill warning" style="background: rgba(245,158,11,0.1); color: #f59e0b;">Pending</span>
+                            <span class="status-pill warning"><i class="ph ph-hourglass-high"></i> Pending</span>
                         {% elif f.kyc_status == 'rejected' %}
-                            <span class="status-pill danger" style="background: rgba(239,68,68,0.1); color: #ef4444;">Rejected</span>
+                            <span class="status-pill danger"><i class="ph ph-shield-warning"></i> Rejected</span>
                         {% else %}
-                            <span class="status-pill" style="background: rgba(255,255,255,0.1);">Unverified</span>
+                            <span class="status-pill" style="background: rgba(255,255,255,0.1);"><i class="ph ph-shield-warning"></i> Unverified</span>
                         {% endif %}
                     </td>
-                    <td>
+                    <td style="text-align: right; padding-right: 24px !important;">
                         <form method="POST" action="{{ url_for('adminstaff.update_kyc_status', facility_id=f.id) }}" style="display:inline-block; margin:0;">
                             <input type="hidden" name="status" value="verified">
                             <button type="submit" class="action-box green" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto;" onclick="return confirm('Approve this facility?');"><i class="ph ph-check"></i> Approve</button>
                         </form>
                         <form method="POST" action="{{ url_for('adminstaff.update_kyc_status', facility_id=f.id) }}" style="display:inline-block; margin:0;">
                             <input type="hidden" name="status" value="rejected">
-                            <button type="submit" class="action-box red" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto; background: rgba(239, 68, 68, 0.2); color: #ef4444;" onclick="return confirm('Reject this facility?');"><i class="ph ph-x"></i> Reject</button>
+                            <button type="submit" class="action-box red" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto; background: rgba(239, 68, 68, 0.12); color: #ef4444;" onclick="return confirm('Reject this facility?');"><i class="ph ph-x"></i> Reject</button>
                         </form>
                         <form method="POST" action="{{ url_for('adminstaff.update_kyc_status', facility_id=f.id) }}" style="display:inline-block; margin:0;">
                             <input type="hidden" name="status" value="unverified">
-                            <button type="submit" class="action-box" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto; background: rgba(255, 255, 255, 0.1); color: var(--text-primary);" onclick="return confirm('Reset status to Unverified?');"><i class="ph ph-arrow-counter-clockwise"></i> Reset</button>
+                            <button type="submit" class="action-box" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto; background: rgba(255, 255, 255, 0.05); color: var(--text-primary); border: 1px solid var(--border-color-soft);" onclick="return confirm('Reset status to Unverified?');"><i class="ph ph-arrow-counter-clockwise"></i> Reset</button>
                         </form>
                     </td>
                 </tr>
+                {% if f.courts %}
+                <tr id="courts-row-{{ f.id }}" class="courts-detail-row" style="display: none;">
+                    <td colspan="6" style="padding: 16px 24px !important; background: var(--action-box-bg); border-bottom: 1px solid var(--table-border-color) !important;">
+                        <div style="padding: 14px; background: var(--table-bg); border-radius: 10px; border: 1px solid var(--border-color-soft); box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                            <div style="font-weight: 600; font-size: 0.85rem; color: var(--text-primary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                                <i class="ph ph-squares-four" style="color: var(--primary-orange);"></i> Registered Courts ({{ f.courts|length }})
+                            </div>
+                            <div style="overflow-x: auto;">
+                                <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem;">
+                                    <thead>
+                                        <tr style="border-bottom: 2px solid var(--table-border-color);">
+                                            <th style="padding: 8px 12px; text-align: left; color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 600; background: transparent !important; border-bottom: 2px solid var(--table-border-color) !important;">Court Name</th>
+                                            <th style="padding: 8px 12px; text-align: left; color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 600; background: transparent !important; border-bottom: 2px solid var(--table-border-color) !important;">Type</th>
+                                            <th style="padding: 8px 12px; text-align: left; color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 600; background: transparent !important; border-bottom: 2px solid var(--table-border-color) !important;">Hourly Rate</th>
+                                            <th style="padding: 8px 12px; text-align: left; color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 600; background: transparent !important; border-bottom: 2px solid var(--table-border-color) !important;">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for court in f.courts %}
+                                        <tr style="border-bottom: 1px solid var(--table-border-color); background: transparent !important;">
+                                            <td style="padding: 8px 12px; font-weight: 500; color: var(--text-primary); border-bottom: 1px solid var(--table-border-color) !important;">
+                                                <div style="display: flex; align-items: center; gap: 10px;">
+                                                    <div style="width: 32px; height: 32px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color-soft); background: var(--action-box-bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: var(--shadow-sm);">
+                                                        {% if court.image_url %}
+                                                        <img src="{{ court.image_url }}" alt="{{ court.name }}" style="width: 100%; height: 100%; object-fit: cover; cursor: zoom-in;" onclick="openImageModal(this.src)">
+                                                        {% else %}
+                                                        <i class="ph ph-squares-four" style="font-size: 0.95rem; color: var(--text-secondary);"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                    <span>{{ court.name }}</span>
+                                                </div>
+                                            </td>
+                                            <td style="padding: 8px 12px; color: var(--text-secondary); text-transform: capitalize; border-bottom: 1px solid var(--table-border-color) !important;">{{ court.type }}</td>
+                                            <td style="padding: 8px 12px; color: var(--text-secondary); border-bottom: 1px solid var(--table-border-color) !important;">₱{{ "{:,.2f}".format(court.hourly_rate) }}</td>
+                                            <td style="padding: 8px 12px; border-bottom: 1px solid var(--table-border-color) !important;">
+                                                <span class="status-pill {% if court.status == 'active' %}success{% else %}warning{% endif %}" style="font-size: 0.7rem; padding: 2px 6px; text-transform: uppercase; font-weight: 600;">
+                                                    {{ court.status }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endif %}
                 {% else %}
                 <tr>
                     <td colspan="6" style="text-align:center; padding:2rem; color:var(--text-muted);">No facilities found.</td>
@@ -65,4 +218,66 @@
         </table>
     </div>
 </div>
+
+<script>
+const searchInput = document.getElementById('facilitySearchInput');
+const kycFilter = document.getElementById('kycFilter');
+const rows = document.querySelectorAll('.facility-row');
+
+function filterTable() {
+    const query = searchInput.value.toLowerCase().trim();
+    const kycVal = kycFilter.value;
+
+    rows.forEach(row => {
+        const name = row.dataset.name;
+        const owner = row.dataset.owner;
+        const kyc = row.dataset.kyc;
+        const rowId = row.dataset.rowId;
+
+        const matchesSearch = !query || name.includes(query) || owner.includes(query);
+        const matchesKYC = kycVal === 'all' || kyc === kycVal;
+
+        const detailRow = document.getElementById(`courts-row-${rowId}`);
+
+        if (matchesSearch && matchesKYC) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+            if (detailRow) {
+                detailRow.style.display = 'none';
+                const btn = row.querySelector(`button[onclick*="toggleCourtsRow"]`);
+                if (btn) {
+                    const count = btn.dataset.count;
+                    btn.innerHTML = `<i class="ph ph-squares-four"></i> View Courts (${count})`;
+                    btn.style.background = 'rgba(0,0,0,0.03)';
+                    btn.style.color = 'var(--text-primary)';
+                }
+            }
+        }
+    });
+}
+
+if (searchInput) searchInput.addEventListener('input', filterTable);
+if (kycFilter) kycFilter.addEventListener('change', filterTable);
+
+function toggleCourtsRow(event, rowId) {
+    event.stopPropagation();
+    const detailRow = document.getElementById(`courts-row-${rowId}`);
+    const btn = event.currentTarget;
+    if (!detailRow) return;
+
+    if (detailRow.style.display === 'none' || detailRow.style.display === '') {
+        detailRow.style.display = 'table-row';
+        btn.innerHTML = `<i class="ph ph-caret-up"></i> Hide Courts`;
+        btn.style.background = 'rgba(255, 87, 34, 0.1)';
+        btn.style.color = 'var(--primary-orange)';
+    } else {
+        detailRow.style.display = 'none';
+        const count = btn.dataset.count;
+        btn.innerHTML = `<i class="ph ph-squares-four"></i> View Courts (${count})`;
+        btn.style.background = 'rgba(0,0,0,0.03)';
+        btn.style.color = 'var(--text-primary)';
+    }
+}
+</script>
 {% endblock %}

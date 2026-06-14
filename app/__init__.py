@@ -155,6 +155,26 @@ def create_app():
             'avatar_url':   session.get('avatar_url'),
         }, supabase_url=supabase_url, supabase_anon_key=supabase_key)
 
+    @app.context_processor
+    def inject_platform_settings():
+        """Inject platform settings (SEO, tracking, name, email) into all templates."""
+        from app.settings_helper import load_platform_settings
+        global _cached_admin_db
+        if _cached_admin_db is None:
+            import os
+            import httpx
+            from supabase import create_client, ClientOptions
+            url = os.environ.get('SUPABASE_URL')
+            key = os.environ.get('SERVICE_ROLE_KEY') or os.environ.get('SUPABASE_KEY')
+            if url and key:
+                try:
+                    http_client = httpx.Client(http2=False, limits=httpx.Limits(keepalive_expiry=10.0), timeout=30.0)
+                    _cached_admin_db = create_client(url, key, options=ClientOptions(httpx_client=http_client))
+                except Exception:
+                    pass
+        settings = load_platform_settings()
+        return dict(platform_settings=settings)
+
     # ── Template Filters ──────────────────────────────────────────────────────
     @app.template_filter('community_timeago')
     def community_timeago(iso_str):

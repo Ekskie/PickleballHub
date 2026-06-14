@@ -77,5 +77,52 @@
             });
         }
     });
+
+    async function updateQueueStatus(queueId, nextStatus, button) {
+        if (button) button.disabled = true;
+        try {
+            const response = await fetch("{{ url_for('facilitystaff.update_queue') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    queue_id: queueId,
+                    status: nextStatus
+                })
+            });
+            const res = await response.json();
+            if (res.success) {
+                showToast('Success', res.message, 'success');
+            } else {
+                showToast('Error', res.message || 'Failed to update queue.', 'error');
+                if (button) button.disabled = false;
+            }
+        } catch(err) {
+            showToast('Error', 'An error occurred.', 'error');
+            if (button) button.disabled = false;
+        }
+    }
+
+    async function nudgePlayer(playerId, button) {
+        if (button) button.disabled = true;
+        try {
+            const response = await fetch(`/facilitystaff/nudge/${playerId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const res = await response.json();
+            if (res.success) {
+                showToast('Nudged', res.message, 'success');
+            } else {
+                showToast('Error', res.message || 'Failed to nudge player.', 'error');
+            }
+        } catch(err) {
+            showToast('Error', 'An error occurred.', 'error');
+        }
+        if (button) button.disabled = false;
+    }
 </script>
 {% endblock %}

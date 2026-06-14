@@ -2,26 +2,78 @@
 {% block title %}Disputes & Reports{% endblock %}
 
 {% block content %}
-<div class="dashboard-header">
+{% set total_disputes = disputes|length %}
+{% set open_disputes = disputes | selectattr('status', 'equalto', 'open') | list | length %}
+{% set investigating_disputes = disputes | selectattr('status', 'equalto', 'investigating') | list | length %}
+{% set resolved_disputes = (disputes | selectattr('status', 'equalto', 'resolved') | list | length) + (disputes | selectattr('status', 'equalto', 'dismissed') | list | length) %}
+
+<div class="dashboard-header" style="margin-bottom: 24px;">
     <h1 class="page-title">Disputes &amp; Reports</h1>
-    <div style="display:flex;gap:10px;align-items:center;">
-        <span style="color:var(--text-secondary);font-size:0.9rem;">{{ disputes|length }} total dispute(s)</span>
+    <small style="color:var(--text-secondary); font-size: 0.85rem; font-weight: 500;">Arbitrate booking conflicts, investigate misconduct, and document resolutions</small>
+</div>
+
+<!-- Disputes Stats Summary Bar -->
+<div class="stats-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px;">
+    <div class="glass-card" style="padding: 16px; display: flex; align-items: center; gap: 14px; border-radius: 12px !important; box-shadow: var(--shadow-sm) !important; transform: none !important; border-color: var(--border-color-soft) !important;">
+        <div style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #6366f1; background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.15); flex-shrink: 0;">
+            <i class="ph ph-warning-circle"></i>
+        </div>
+        <div>
+            <h4 style="margin: 0; font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Total Cases</h4>
+            <p style="margin: 2px 0 0 0; font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">{{ total_disputes }}</p>
+        </div>
+    </div>
+    <div class="glass-card" style="padding: 16px; display: flex; align-items: center; gap: 14px; border-radius: 12px !important; box-shadow: var(--shadow-sm) !important; transform: none !important; border-color: var(--border-color-soft) !important;">
+        <div style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #ef4444; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.15); flex-shrink: 0;">
+            <i class="ph ph-shield-warning"></i>
+        </div>
+        <div>
+            <h4 style="margin: 0; font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Open Disputes</h4>
+            <p style="margin: 2px 0 0 0; font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">{{ open_disputes }}</p>
+        </div>
+    </div>
+    <div class="glass-card" style="padding: 16px; display: flex; align-items: center; gap: 14px; border-radius: 12px !important; box-shadow: var(--shadow-sm) !important; transform: none !important; border-color: var(--border-color-soft) !important;">
+        <div style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #f59e0b; background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.15); flex-shrink: 0;">
+            <i class="ph ph-hourglass-high"></i>
+        </div>
+        <div>
+            <h4 style="margin: 0; font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Investigating</h4>
+            <p style="margin: 2px 0 0 0; font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">{{ investigating_disputes }}</p>
+        </div>
+    </div>
+    <div class="glass-card" style="padding: 16px; display: flex; align-items: center; gap: 14px; border-radius: 12px !important; box-shadow: var(--shadow-sm) !important; transform: none !important; border-color: var(--border-color-soft) !important;">
+        <div style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #10b981; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.15); flex-shrink: 0;">
+            <i class="ph ph-check-circle"></i>
+        </div>
+        <div>
+            <h4 style="margin: 0; font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Closed Cases</h4>
+            <p style="margin: 2px 0 0 0; font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">{{ resolved_disputes }}</p>
+        </div>
     </div>
 </div>
 
-<!-- Status filter tabs -->
-<div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
-    {% for status, label, color in [('all','All','var(--primary)'),('open','Open','#f87171'),('investigating','Investigating','#f59e0b'),('resolved','Resolved','#4ade80'),('dismissed','Dismissed','var(--text-secondary)')] %}
-    <button onclick="filterDisputes('{{ status }}')"
-            id="tab-{{ status }}"
-            class="dispute-tab {% if status == 'all' %}active{% endif %}"
-            style="padding:6px 16px;border-radius:20px;border:1px solid {{ color }};background:transparent;color:{{ color }};cursor:pointer;font-size:0.85rem;font-weight:600;transition:all .2s;">
-        {{ label }}
-    </button>
-    {% endfor %}
-</div>
+<div class="glass-card" style="padding: 24px;">
+    <!-- Search and Tabs Header -->
+    <div class="widget-header" style="display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color-soft); padding-bottom: 16px; flex-wrap: wrap;">
+        <div style="flex: 1; max-width: 400px; position: relative; display: flex; align-items: center;">
+            <i class="ph ph-magnifying-glass" style="position: absolute; left: 14px; color: var(--text-muted); font-size: 1.1rem; z-index: 10;"></i>
+            <input type="text" id="disputeSearchInput" placeholder="Search by subject, reporter, or reported..."
+                   style="width: 100%; padding: 10px 14px 10px 42px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-primary); font-size: 0.9rem; outline: none; transition: all 0.2s;">
+        </div>
+        
+        <!-- Status filter tabs -->
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin: 0;">
+            {% for status, label, color in [('all','All','var(--text-secondary)'),('open','Open','#f87171'),('investigating','Investigating','#f59e0b'),('resolved','Resolved','#4ade80'),('dismissed','Dismissed','var(--text-muted)')] %}
+            <button onclick="filterDisputes('{{ status }}')"
+                    id="tab-{{ status }}"
+                    class="dispute-tab {% if status == 'all' %}active{% endif %}"
+                    style="padding:6px 14px; border-radius:20px; border:1px solid var(--border-color-soft); background:transparent; color: var(--text-primary); cursor:pointer; font-size:0.8rem; font-weight:600; transition:all .2s;">
+                {{ label }}
+            </button>
+            {% endfor %}
+        </div>
+    </div>
 
-<div class="glass-card">
     <div class="table-container">
         <table class="data-grid" id="disputeTable">
             <thead>
@@ -32,12 +84,16 @@
                     <th>SUBJECT</th>
                     <th>SUBMITTED</th>
                     <th>STATUS</th>
-                    <th>ACTIONS</th>
+                    <th style="text-align: right; padding-right: 24px !important;">ACTIONS</th>
                 </tr>
             </thead>
             <tbody>
                 {% for d in disputes %}
-                <tr class="dispute-row" data-status="{{ d.status }}">
+                <tr class="dispute-row" 
+                    data-status="{{ d.status }}"
+                    data-reporter="{{ (d.reporter.first_name ~ ' ' ~ d.reporter.last_name) | lower if d.reporter else 'anonymous' }}"
+                    data-reported="{{ (d.reported.first_name ~ ' ' ~ d.reported.last_name) | lower if d.reported else '—' }}"
+                    data-subject="{{ d.subject | lower }}">
                     <td>
                         <span class="type-badge type-{{ d.type }}">
                             {% set type_icons = {
@@ -59,33 +115,33 @@
                         {% if d.reported %}{{ d.reported.first_name }} {{ d.reported.last_name }}
                         {% else %}<span style="color:var(--text-secondary);">—</span>{% endif %}
                     </td>
-                    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                    <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
                         title="{{ d.subject }}">{{ d.subject }}</td>
-                    <td style="color:var(--text-secondary);font-size:0.85rem;">
+                    <td style="color:var(--text-secondary); font-size:0.85rem;">
                         {{ d.created_at[:10] if d.created_at else '—' }}
                     </td>
                     <td>
-                        {% set status_colors = {
-                            'open': '#f87171',
-                            'investigating': '#f59e0b',
-                            'resolved': '#4ade80',
-                            'dismissed': 'var(--text-secondary)'
-                        } %}
-                        <span class="status-pill" style="background:rgba(255,255,255,0.05);color:{{ status_colors.get(d.status, 'var(--text-secondary)') }};">
-                            {{ d.status | title }}
-                        </span>
+                        {% if d.status == 'open' %}
+                            <span class="status-pill danger">Open</span>
+                        {% elif d.status == 'investigating' %}
+                            <span class="status-pill warning">Investigating</span>
+                        {% elif d.status == 'resolved' %}
+                            <span class="status-pill success">Resolved</span>
+                        {% else %}
+                            <span class="status-pill info" style="background: rgba(255,255,255,0.05); border-color: var(--border-color-soft); color: var(--text-secondary);">Dismissed</span>
+                        {% endif %}
                     </td>
-                    <td>
+                    <td style="text-align: right; padding-right: 24px !important;">
                         <button onclick="openDisputeModal('{{ d.id }}', `{{ d.subject | replace('`', '') }}`, `{{ d.description | replace('`', '') | replace('\n', ' ') }}`, '{{ d.status }}', `{{ d.resolution | replace('`', '') if d.resolution else '' }}`)"
-                                class="action-link" style="border:none;background:transparent;cursor:pointer;">
+                                class="action-box orange" style="padding: 4px 12px; font-size: 0.8rem; width: auto; font-weight: 600;">
                             Review
                         </button>
                     </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="7" style="text-align:center;padding:50px;color:var(--text-secondary);">
-                        <i class="ph ph-shield-check" style="font-size:3rem;display:block;margin-bottom:10px;color:#4ade80;"></i>
+                    <td colspan="7" style="text-align:center; padding:50px; color:var(--text-secondary);">
+                        <i class="ph ph-shield-check" style="font-size:3rem; display:block; margin-bottom:10px; color:#4ade80;"></i>
                         <p>No disputes reported.</p>
                     </td>
                 </tr>
@@ -96,21 +152,21 @@
 </div>
 
 <!-- Resolve Modal -->
-<div id="disputeModal" style="display:none;position:fixed;z-index:1000;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);">
-    <div style="background:var(--card-bg);border:1px solid var(--border-color);border-radius:14px;width:520px;max-width:95%;margin:6% auto;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,0.4);">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-            <h2 style="margin:0;font-size:1.2rem;">Review Dispute</h2>
-            <button onclick="closeDisputeModal()" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:1.4rem;">&times;</button>
+<div id="disputeModal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); z-index:1000; align-items:center; justify-content:center;">
+    <div class="glass-card modal-content" style="background: var(--modal-box-bg) !important; border: 1px solid var(--modal-box-border) !important; padding:28px; width:100%; max-width:520px; border-radius:16px !important; box-shadow:0 20px 60px rgba(0,0,0,0.4) !important; transform:none !important;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2 style="margin:0; font-size:1.2rem; color: var(--text-primary);">Review Dispute</h2>
+            <button onclick="closeDisputeModal()" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1.4rem;">&times;</button>
         </div>
 
-        <div id="modalSubject" style="font-weight:700;margin-bottom:8px;font-size:1rem;"></div>
-        <div id="modalDescription" style="color:var(--text-secondary);font-size:0.9rem;padding:12px;background:rgba(255,255,255,0.04);border-radius:8px;margin-bottom:20px;line-height:1.6;"></div>
+        <div id="modalSubject" style="font-weight:700; margin-bottom:8px; font-size:1rem; color: var(--text-primary);"></div>
+        <div id="modalDescription" style="color:var(--text-secondary); font-size:0.9rem; padding:12px; background:var(--action-box-bg); border: 1px solid var(--border-color-soft); border-radius:8px; margin-bottom:20px; line-height:1.6; max-height: 180px; overflow-y: auto;"></div>
 
         <form id="disputeForm" method="POST">
             <div style="margin-bottom:16px;">
-                <label style="display:block;margin-bottom:6px;font-weight:600;font-size:0.9rem;">Update Status</label>
+                <label style="display:block; margin-bottom:6px; font-weight:600; font-size:0.9rem; color: var(--text-secondary);">Update Status</label>
                 <select name="status" id="modalStatus"
-                        style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);">
+                        style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:var(--input-bg); color:var(--text-primary); outline: none;">
                     <option value="open">Open</option>
                     <option value="investigating">Investigating</option>
                     <option value="resolved">Resolved</option>
@@ -118,19 +174,19 @@
                 </select>
             </div>
             <div style="margin-bottom:20px;">
-                <label style="display:block;margin-bottom:6px;font-weight:600;font-size:0.9rem;">Resolution / Notes</label>
+                <label style="display:block; margin-bottom:6px; font-weight:600; font-size:0.9rem; color: var(--text-secondary);">Resolution / Notes</label>
                 <textarea name="resolution" id="modalResolution" rows="4"
                           placeholder="Describe how this dispute was handled..."
-                          style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);resize:vertical;font-family:inherit;"></textarea>
+                          style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:var(--input-bg); color:var(--text-primary); resize:vertical; font-family:inherit; outline: none;"></textarea>
             </div>
-            <div style="display:flex;gap:10px;justify-content:flex-end;">
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
                 <button type="button" onclick="closeDisputeModal()"
-                        style="padding:10px 20px;border-radius:8px;border:1px solid var(--border-color);background:transparent;color:var(--text-primary);cursor:pointer;">
+                        style="padding:10px 20px; border-radius:8px; border:1px solid var(--border-color); background:transparent; color:var(--text-primary); cursor:pointer; font-weight:600;">
                     Cancel
                 </button>
                 <button type="submit"
                         class="action-box orange"
-                        style="padding:10px 24px;border:none;border-radius:8px;cursor:pointer;font-weight:600;">
+                        style="padding:10px 24px; border:none; border-radius:8px; cursor:pointer; font-weight:600; width: auto;">
                     Save Decision
                 </button>
             </div>
@@ -140,28 +196,60 @@
 
 <style>
 .type-badge {
-    display:inline-flex;align-items:center;gap:5px;
-    padding:4px 10px;border-radius:20px;font-size:0.8rem;font-weight:600;
-    background:rgba(99,102,241,0.12);color:#a5b4fc;
+    display:inline-flex; align-items:center; gap:5px;
+    padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:600;
+    background:rgba(99,102,241,0.12); color:#a5b4fc;
 }
-.type-badge.type-booking_conflict { background:rgba(248,113,113,0.12);color:#f87171; }
-.type-badge.type-payment_dispute { background:rgba(245,158,11,0.12);color:#f59e0b; }
-.type-badge.type-misconduct { background:rgba(168,85,247,0.12);color:#c084fc; }
-.type-badge.type-facility_issue { background:rgba(99,102,241,0.12);color:#818cf8; }
-.dispute-tab.active { background:rgba(255,255,255,0.1) !important; }
+.type-badge.type-booking_conflict { background:rgba(248,113,113,0.12); color:#f87171; }
+.type-badge.type-payment_dispute { background:rgba(245,158,11,0.12); color:#f59e0b; }
+.type-badge.type-misconduct { background:rgba(168,85,247,0.12); color:#c084fc; }
+.type-badge.type-facility_issue { background:rgba(99,102,241,0.12); color:#818cf8; }
+.dispute-tab.active { 
+    background: var(--primary-orange) !important; 
+    border-color: var(--primary-orange) !important;
+    color: white !important; 
+}
 </style>
 
 <script>
+let currentStatusFilter = 'all';
+
 function filterDisputes(status) {
+    currentStatusFilter = status;
     document.querySelectorAll('.dispute-tab').forEach(t => t.classList.remove('active'));
     document.getElementById('tab-' + status).classList.add('active');
-    document.querySelectorAll('.dispute-row').forEach(row => {
-        row.style.display = (status === 'all' || row.dataset.status === status) ? '' : 'none';
+    applyFilters();
+}
+
+const searchInput = document.getElementById('disputeSearchInput');
+if (searchInput) {
+    searchInput.addEventListener('input', applyFilters);
+}
+
+function applyFilters() {
+    const query = searchInput.value.toLowerCase().trim();
+    const rows = document.querySelectorAll('.dispute-row');
+
+    rows.forEach(row => {
+        const status = row.dataset.status;
+        const reporter = row.dataset.reporter;
+        const reported = row.dataset.reported;
+        const subject = row.dataset.subject;
+
+        const matchesStatus = (currentStatusFilter === 'all' || status === currentStatusFilter);
+        const matchesSearch = !query || reporter.includes(query) || reported.includes(query) || subject.includes(query);
+
+        if (matchesStatus && matchesSearch) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
     });
 }
 
 function openDisputeModal(id, subject, description, status, resolution) {
-    document.getElementById('disputeModal').style.display = 'block';
+    const modal = document.getElementById('disputeModal');
+    modal.style.display = 'flex';
     document.getElementById('modalSubject').textContent = subject;
     document.getElementById('modalDescription').textContent = description;
     document.getElementById('modalStatus').value = status;

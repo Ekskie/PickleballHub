@@ -222,8 +222,15 @@ def queue_partial():
 @facilitystaff_bp.route('/queue/update', methods=['POST'])
 @require_role('facilitystaff')
 def update_queue():
-    queue_id = request.form.get('queue_id')
-    new_status = request.form.get('status')
+    is_json = False
+    if request.is_json:
+        is_json = True
+        data = request.get_json()
+        queue_id = data.get('queue_id')
+        new_status = data.get('status')
+    else:
+        queue_id = request.form.get('queue_id')
+        new_status = request.form.get('status')
     
     db = get_db()
     try:
@@ -243,13 +250,42 @@ def update_queue():
                     'link': '/player/queue'
                 }).execute()
                 
-            flash('Queue status updated!', 'success')
+            msg = 'Queue status updated!'
+            if is_json:
+                return jsonify({'success': True, 'message': msg})
+            flash(msg, 'success')
         else:
-            flash('Invalid status.', 'error')
+            msg = 'Invalid status.'
+            if is_json:
+                return jsonify({'success': False, 'message': msg}), 400
+            flash(msg, 'error')
     except Exception as e:
-        flash(f'Error updating queue: {e}', 'error')
+        msg = f'Error updating queue: {e}'
+        if is_json:
+            return jsonify({'success': False, 'message': msg}), 500
+        flash(msg, 'error')
         
     return redirect(request.referrer or url_for('facilitystaff.queue'))
+
+@facilitystaff_bp.route('/nudge/<player_id>', methods=['POST'])
+@require_role('facilitystaff')
+def nudge_player(player_id):
+    db = get_db()
+    try:
+        p_resp = db.table('profiles').select('first_name').eq('id', player_id).single().execute()
+        if p_resp.data:
+            db.table('notifications').insert({
+                'user_id': player_id,
+                'title': 'Operations Desk Nudge',
+                'message': 'Your court is ready! Please proceed to your assigned court immediately.',
+                'type': 'warning',
+                'link': '/player/queue'
+            }).execute()
+            return jsonify({'success': True, 'message': 'Player nudged successfully!'})
+        else:
+            return jsonify({'success': False, 'message': 'Player not found.'}), 404
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Error nudging player: {e}'}), 500
 
 @facilitystaff_bp.route('/schedule')
 @require_role('facilitystaff')

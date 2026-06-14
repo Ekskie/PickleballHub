@@ -1,77 +1,190 @@
 {% extends "superadmin/base_superadmin.html" %}
 {% block title %}System Reports & Analytics{% endblock %}
 
-{% block extra_head %}
+{% block superadmin_extra_head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+    /* Reports Specific Layouts */
+    .reports-stat-box {
+        padding: 24px !important;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .stat-icon-wrapper {
+        width: 54px;
+        height: 54px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+        background: var(--stat-icon-bg);
+        border: 1px solid var(--stat-icon-border);
+        flex-shrink: 0;
+        transition: transform 0.3s ease;
+    }
+
+    .reports-stat-box:hover .stat-icon-wrapper {
+        transform: scale(1.1) rotate(-5deg);
+    }
+
+    .stat-detail {
+        flex: 1;
+    }
+
+    .stat-detail h3 {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .stat-detail .stat-val {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin: 4px 0;
+        color: var(--text-primary);
+        line-height: 1.2;
+    }
+
+    .stat-detail .stat-lbl {
+        font-size: 0.76rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .stat-lbl.green { color: #10b981; }
+    .stat-lbl.amber { color: #f59e0b; }
+    .stat-lbl.indigo { color: #818cf8; }
+    .stat-lbl.orange { color: #ff5722; }
+
+    /* Metadata details lists */
+    .distribution-list {
+        margin: 16px 0 0 0;
+        padding: 0;
+        list-style: none;
+        font-size: 0.85rem;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .distribution-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--text-secondary);
+    }
+
+    .distribution-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .color-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-header">
-    <h1 class="page-title">System Reports &amp; Analytics</h1>
+<div class="dashboard-header" style="margin-bottom: 24px;">
+    <h1 class="page-title" style="margin: 0 0 4px 0;">Platform Reports &amp; Analytics</h1>
+    <small style="color:var(--text-secondary); font-size: 0.85rem; font-weight: 500;">Financial audits, booking rates, and user demographic breakdowns</small>
 </div>
 
 <!-- Summary Cards -->
-<div class="stats-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:24px;">
-    <div class="glass-card stat-box">
-        <i class="ph ph-currency-circle-dollar" style="font-size:2rem;color:#4ade80;"></i>
-        <div class="stat-info">
+<div class="stats-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:20px; margin-bottom:24px;">
+    
+    <div class="glass-card reports-stat-box">
+        <div class="stat-icon-wrapper" style="color:#10b981; background:rgba(16,185,129,0.08); border-color:rgba(16,185,129,0.15);">
+            <i class="ph ph-currency-circle-dollar"></i>
+        </div>
+        <div class="stat-detail">
             <h3>Total Revenue</h3>
-            <p class="stat-value">₱{{ "{:,.0f}".format(stats.total_revenue) }}</p>
-            <span class="stat-change positive"><i class="ph ph-trend-up"></i> All time</span>
+            <p class="stat-val">₱{{ "{:,.0f}".format(stats.total_revenue) }}</p>
+            <span class="stat-lbl green"><i class="ph ph-trend-up"></i> Platform Bookings</span>
         </div>
     </div>
-    <div class="glass-card stat-box">
-        <i class="ph ph-calendar-check" style="font-size:2rem;color:var(--primary);"></i>
-        <div class="stat-info">
+
+    <div class="glass-card reports-stat-box">
+        <div class="stat-icon-wrapper" style="color:var(--primary-orange); background:rgba(255,87,34,0.08); border-color:rgba(255,87,34,0.15);">
+            <i class="ph ph-calendar-check"></i>
+        </div>
+        <div class="stat-detail">
             <h3>Total Bookings</h3>
-            <p class="stat-value">{{ "{:,}".format(stats.total_bookings) }}</p>
-            <span class="stat-change positive">Court reservations</span>
+            <p class="stat-val">{{ "{:,}".format(stats.total_bookings) }}</p>
+            <span class="stat-lbl orange"><i class="ph ph-check-circle"></i> Court Reservations</span>
         </div>
     </div>
-    <div class="glass-card stat-box">
-        <i class="ph ph-trophy" style="font-size:2rem;color:#f59e0b;"></i>
-        <div class="stat-info">
+
+    <div class="glass-card reports-stat-box">
+        <div class="stat-icon-wrapper" style="color:#f59e0b; background:rgba(245,158,11,0.08); border-color:rgba(245,158,11,0.15);">
+            <i class="ph ph-trophy"></i>
+        </div>
+        <div class="stat-detail">
             <h3>Total Events</h3>
-            <p class="stat-value">{{ stats.total_events }}</p>
-            <span class="stat-change positive">Tournaments + socials</span>
+            <p class="stat-val">{{ stats.total_events }}</p>
+            <span class="stat-lbl amber"><i class="ph ph-medal"></i> Tournaments &amp; Socials</span>
         </div>
     </div>
-    <div class="glass-card stat-box">
-        <i class="ph ph-users" style="font-size:2rem;color:#a5b4fc;"></i>
-        <div class="stat-info">
+
+    <div class="glass-card reports-stat-box">
+        <div class="stat-icon-wrapper" style="color:#6366f1; background:rgba(99,102,241,0.08); border-color:rgba(99,102,241,0.15);">
+            <i class="ph ph-users"></i>
+        </div>
+        <div class="stat-detail">
             <h3>Registered Users</h3>
-            <p class="stat-value">{{ "{:,}".format(stats.total_users) }}</p>
-            <span class="stat-change positive">All roles</span>
+            <p class="stat-val">{{ "{:,}".format(stats.total_users) }}</p>
+            <span class="stat-lbl indigo"><i class="ph ph-shield"></i> All Platform Roles</span>
         </div>
     </div>
+
 </div>
 
 <!-- Charts Row 1 -->
-<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:20px;">
+<div class="charts-row" style="display:grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 20px;">
     <!-- Revenue Line Chart -->
-    <div class="glass-card">
-        <div class="widget-header">
-            <h3><i class="ph ph-chart-line" style="margin-right:6px;"></i>Revenue — Last 6 Months</h3>
+    <div class="glass-card" style="padding: 24px;">
+        <div class="widget-header" style="border-bottom: 1px solid var(--border-color-soft); padding-bottom: 12px; margin-bottom: 16px;">
+            <h3 style="margin: 0; font-size: 1.05rem; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                <i class="ph ph-chart-line" style="color: #10b981;"></i> Revenue Trend — Last 6 Months
+            </h3>
         </div>
-        <div style="position:relative;height:260px;padding-top:10px;">
+        <div style="position:relative; height:260px;">
             <canvas id="revenueChart"></canvas>
         </div>
     </div>
 
     <!-- User Role Pie -->
-    <div class="glass-card">
-        <div class="widget-header">
-            <h3><i class="ph ph-users-three" style="margin-right:6px;"></i>User Distribution</h3>
+    <div class="glass-card" style="padding: 24px;">
+        <div class="widget-header" style="border-bottom: 1px solid var(--border-color-soft); padding-bottom: 12px; margin-bottom: 16px;">
+            <h3 style="margin: 0; font-size: 1.05rem; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                <i class="ph ph-users-three" style="color: #6366f1;"></i> User Distribution
+            </h3>
         </div>
-        <div style="position:relative;height:200px;padding-top:10px;">
+        <div style="position:relative; height:180px;">
             <canvas id="roleChart"></canvas>
         </div>
-        <ul style="margin-top:12px;padding:0;list-style:none;font-size:0.82rem;display:flex;flex-direction:column;gap:5px;">
+        <ul class="distribution-list">
             {% set role_colors = ['#6366f1','#4ade80','#f59e0b','#f87171','#a5b4fc'] %}
             {% for lbl in role_chart.labels %}
-            <li style="display:flex;justify-content:space-between;">
-                <span><span style="width:9px;height:9px;border-radius:50%;background:{{ role_colors[loop.index0 % 5] }};display:inline-block;margin-right:6px;"></span>{{ lbl | title }}</span>
-                <strong>{{ role_chart.data[loop.index0] }}</strong>
+            <li class="distribution-item">
+                <span class="distribution-label">
+                    <span class="color-dot" style="background:{{ role_colors[loop.index0 % 5] }};"></span>
+                    {{ lbl | title }}
+                </span>
+                <strong style="color: var(--text-primary);">{{ role_chart.data[loop.index0] }}</strong>
             </li>
             {% endfor %}
         </ul>
@@ -79,43 +192,43 @@
 </div>
 
 <!-- Charts Row 2 -->
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+<div class="charts-row" style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
     <!-- Booking Volume Bar -->
-    <div class="glass-card">
-        <div class="widget-header">
-            <h3><i class="ph ph-chart-bar" style="margin-right:6px;"></i>Bookings — Last 6 Months</h3>
+    <div class="glass-card" style="padding: 24px;">
+        <div class="widget-header" style="border-bottom: 1px solid var(--border-color-soft); padding-bottom: 12px; margin-bottom: 16px;">
+            <h3 style="margin: 0; font-size: 1.05rem; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                <i class="ph ph-chart-bar" style="color: var(--primary-orange);"></i> Bookings Volume — Last 6 Months
+            </h3>
         </div>
-        <div style="position:relative;height:240px;padding-top:10px;">
+        <div style="position:relative; height:240px;">
             <canvas id="bookingChart"></canvas>
         </div>
     </div>
 
     <!-- KYC Status Doughnut -->
-    <div class="glass-card">
-        <div class="widget-header">
-            <h3><i class="ph ph-shield-check" style="margin-right:6px;"></i>KYC Verification Status</h3>
+    <div class="glass-card" style="padding: 24px;">
+        <div class="widget-header" style="border-bottom: 1px solid var(--border-color-soft); padding-bottom: 12px; margin-bottom: 16px;">
+            <h3 style="margin: 0; font-size: 1.05rem; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                <i class="ph ph-shield-check" style="color: #f59e0b;"></i> KYC Verification Statuses
+            </h3>
         </div>
-        <div style="position:relative;height:200px;padding-top:10px;">
+        <div style="position:relative; height:180px;">
             <canvas id="kycChart"></canvas>
         </div>
-        <ul style="margin-top:12px;padding:0;list-style:none;font-size:0.82rem;display:flex;flex-direction:column;gap:5px;">
+        <ul class="distribution-list">
             {% set kyc_colors = ['#4ade80','#f59e0b','#6366f1','#f87171'] %}
             {% for lbl in kyc_chart.labels %}
-            <li style="display:flex;justify-content:space-between;">
-                <span><span style="width:9px;height:9px;border-radius:50%;background:{{ kyc_colors[loop.index0] }};display:inline-block;margin-right:6px;"></span>{{ lbl }}</span>
-                <strong>{{ kyc_chart.data[loop.index0] }}</strong>
+            <li class="distribution-item">
+                <span class="distribution-label">
+                    <span class="color-dot" style="background:{{ kyc_colors[loop.index0] }};"></span>
+                    {{ lbl }}
+                </span>
+                <strong style="color: var(--text-primary);">{{ kyc_chart.data[loop.index0] }}</strong>
             </li>
             {% endfor %}
         </ul>
     </div>
 </div>
-
-<style>
-.stat-box { display:flex;align-items:center;gap:15px; }
-.stat-info h3 { font-size:0.9rem;color:var(--text-secondary);margin:0; }
-.stat-value { font-size:1.6rem;font-weight:700;margin:5px 0;color:var(--text-primary); }
-.stat-change { font-size:0.8rem;font-weight:600;color:#4ade80; }
-</style>
 
 <script>
 Chart.defaults.color = 'rgba(255,255,255,0.65)';
@@ -136,11 +249,14 @@ new Chart(document.getElementById('revenueChart'), {
             fill: true,
             tension: 0.4,
             pointBackgroundColor: '#4ade80',
-            pointRadius: 4,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            borderWidth: 2
         }]
     },
     options: {
-        responsive: true, maintainAspectRatio: false,
+        responsive: true,
+        maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
             x: { grid: gridOpts },
@@ -155,12 +271,18 @@ new Chart(document.getElementById('roleChart'), {
     type: 'doughnut',
     data: {
         labels: {{ role_chart.labels | tojson }},
-        datasets: [{ data: {{ role_chart.data | tojson }},
+        datasets: [{
+            data: {{ role_chart.data | tojson }},
             backgroundColor: ['#6366f1','#4ade80','#f59e0b','#f87171','#a5b4fc'],
-            borderWidth: 0 }]
+            borderWidth: 0
+        }]
     },
-    options: { responsive: true, maintainAspectRatio: false, cutout: '65%',
-               plugins: { legend: { display: false } } }
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '72%',
+        plugins: { legend: { display: false } }
+    }
 });
 
 // Booking Bar Chart
@@ -171,14 +293,15 @@ new Chart(document.getElementById('bookingChart'), {
         datasets: [{
             label: 'Bookings',
             data: {{ booking_chart.data | tojson }},
-            backgroundColor: 'rgba(99,102,241,0.6)',
+            backgroundColor: 'rgba(99,102,241,0.65)',
             borderColor: '#6366f1',
             borderWidth: 1,
             borderRadius: 5,
         }]
     },
     options: {
-        responsive: true, maintainAspectRatio: false,
+        responsive: true,
+        maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
             x: { grid: gridOpts },
@@ -192,12 +315,18 @@ new Chart(document.getElementById('kycChart'), {
     type: 'doughnut',
     data: {
         labels: {{ kyc_chart.labels | tojson }},
-        datasets: [{ data: {{ kyc_chart.data | tojson }},
+        datasets: [{
+            data: {{ kyc_chart.data | tojson }},
             backgroundColor: ['#4ade80','#f59e0b','#6366f1','#f87171'],
-            borderWidth: 0 }]
+            borderWidth: 0
+        }]
     },
-    options: { responsive: true, maintainAspectRatio: false, cutout: '65%',
-               plugins: { legend: { display: false } } }
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '72%',
+        plugins: { legend: { display: false } }
+    }
 });
 </script>
 {% endblock %}

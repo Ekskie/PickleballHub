@@ -1,82 +1,215 @@
 {% extends "superadmin/base_superadmin.html" %}
 {% block title %}Super Admin Dashboard{% endblock %}
 
-{% block extra_head %}
+{% block superadmin_extra_head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+    /* Dashboard Specific Styles */
+    .dashboard-stat-box {
+        padding: 24px !important;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .stat-icon-wrapper {
+        width: 54px;
+        height: 54px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+        background: var(--stat-icon-bg);
+        border: 1px solid var(--stat-icon-border);
+        flex-shrink: 0;
+        transition: transform 0.3s ease;
+    }
+
+    .dashboard-stat-box:hover .stat-icon-wrapper {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .stat-detail {
+        flex: 1;
+    }
+
+    .stat-detail h3 {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .stat-detail .stat-val {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin: 4px 0;
+        color: var(--text-primary);
+        line-height: 1.2;
+    }
+
+    .stat-detail .stat-lbl {
+        font-size: 0.76rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .stat-lbl.green { color: #10b981; }
+    .stat-lbl.amber { color: #f59e0b; }
+    .stat-lbl.indigo { color: #818cf8; }
+
+    /* Quick Action Widgets */
+    .quick-actions-card {
+        padding: 24px !important;
+    }
+
+    .action-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-top: 16px;
+    }
+
+    .action-item-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 18px 12px;
+        border-radius: 12px;
+        background: var(--action-box-bg);
+        border: 1px solid var(--border-color-soft);
+        color: var(--text-primary);
+        text-decoration: none;
+        transition: all 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+        cursor: pointer;
+    }
+
+    .action-item-box i {
+        font-size: 1.6rem;
+        transition: transform 0.3s ease;
+    }
+
+    .action-item-box span {
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .action-item-box:hover {
+        background: rgba(255, 87, 34, 0.08);
+        border-color: rgba(255, 87, 34, 0.3);
+        color: var(--primary-orange);
+        transform: translateY(-2px);
+    }
+
+    .action-item-box:hover i {
+        transform: scale(1.15);
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-header">
-    <h1 class="page-title">Super Admin Dashboard</h1>
-    <small style="color:var(--text-secondary);">Live platform metrics</small>
+<div class="dashboard-header" style="margin-bottom: 24px;">
+    <h1 class="page-title" style="margin: 0 0 4px 0;">Super Admin Overview</h1>
+    <small style="color:var(--text-secondary); font-size: 0.85rem; font-weight: 500;">Real-time platform metrics and analytics</small>
 </div>
 
 <!-- Stat Cards -->
-<div class="stats-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:20px;">
-    <div class="glass-card stat-box">
-        <i class="ph ph-users" style="font-size:2rem;color:var(--primary);"></i>
-        <div class="stat-info">
+<div class="stats-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:20px; margin-bottom:24px;">
+    
+    <div class="glass-card dashboard-stat-box">
+        <div class="stat-icon-wrapper" style="color:var(--primary-orange); background:rgba(255,87,34,0.08); border-color:rgba(255,87,34,0.15);">
+            <i class="ph ph-users"></i>
+        </div>
+        <div class="stat-detail">
             <h3>Total Players</h3>
-            <p class="stat-value">{{ "{:,}".format(stats.total_players) }}</p>
-            <span class="stat-change positive"><i class="ph ph-trend-up"></i> Registered</span>
+            <p class="stat-val">{{ "{:,}".format(stats.total_players) }}</p>
+            <span class="stat-lbl indigo"><i class="ph ph-trend-up"></i> Active Accounts</span>
         </div>
     </div>
-    <div class="glass-card stat-box">
-        <i class="ph ph-buildings" style="font-size:2rem;color:var(--secondary);"></i>
-        <div class="stat-info">
+
+    <div class="glass-card dashboard-stat-box">
+        <div class="stat-icon-wrapper" style="color:#6366f1; background:rgba(99,102,241,0.08); border-color:rgba(99,102,241,0.15);">
+            <i class="ph ph-buildings"></i>
+        </div>
+        <div class="stat-detail">
             <h3>Active Facilities</h3>
-            <p class="stat-value">{{ stats.total_facilities }}</p>
-            <span class="stat-change positive"><i class="ph ph-check-circle"></i> Online</span>
+            <p class="stat-val">{{ stats.total_facilities }}</p>
+            <span class="stat-lbl green"><i class="ph ph-circle-wavy-check"></i> Bookable Online</span>
         </div>
     </div>
-    <div class="glass-card stat-box">
-        <i class="ph ph-currency-circle-dollar" style="font-size:2rem;color:#4ade80;"></i>
-        <div class="stat-info">
+
+    <div class="glass-card dashboard-stat-box">
+        <div class="stat-icon-wrapper" style="color:#10b981; background:rgba(16,185,129,0.08); border-color:rgba(16,185,129,0.15);">
+            <i class="ph ph-currency-circle-dollar"></i>
+        </div>
+        <div class="stat-detail">
             <h3>Platform Revenue</h3>
-            <p class="stat-value">₱{{ "{:,.0f}".format(stats.total_revenue) }}</p>
-            <span class="stat-change positive"><i class="ph ph-trend-up"></i> All time</span>
+            <p class="stat-val">₱{{ "{:,.0f}".format(stats.total_revenue) }}</p>
+            <span class="stat-lbl green"><i class="ph ph-trend-up"></i> Gross Bookings</span>
         </div>
     </div>
-    <div class="glass-card stat-box">
-        <i class="ph ph-shield-warning" style="font-size:2rem;color:#f59e0b;"></i>
-        <div class="stat-info">
+
+    <div class="glass-card dashboard-stat-box">
+        <div class="stat-icon-wrapper" style="color:#f59e0b; background:rgba(245,158,11,0.08); border-color:rgba(245,158,11,0.15);">
+            <i class="ph ph-shield-warning"></i>
+        </div>
+        <div class="stat-detail">
             <h3>Pending KYC</h3>
-            <p class="stat-value">{{ stats.pending_kyc }}</p>
-            <span class="stat-change {% if stats.pending_kyc == 0 %}positive{% else %}negative{% endif %}">
-                {% if stats.pending_kyc == 0 %}All verified{% else %}Needs review{% endif %}
+            <p class="stat-val">{{ stats.pending_kyc }}</p>
+            <span class="stat-lbl {% if stats.pending_kyc == 0 %}green{% else %}amber{% endif %}">
+                <i class="ph {% if stats.pending_kyc == 0 %}ph-shield-check{% else %}ph-hourglass-high{% endif %}"></i>
+                {% if stats.pending_kyc == 0 %}All Verified{% else %}Requires Review{% endif %}
             </span>
         </div>
     </div>
 </div>
 
-<div class="dashboard-grid">
-    <!-- Main -->
-    <div class="dashboard-main">
+<div class="dashboard-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; align-items: start;">
+    <!-- Main Pane -->
+    <div class="dashboard-main" style="display: flex; flex-direction: column; gap: 20px;">
         <!-- Recent Facility Onboarding -->
-        <div class="glass-card">
-            <div class="widget-header">
-                <h3>Recent Facility Registrations</h3>
-                <a href="{{ url_for('superadmin.facilities') }}" class="view-all">View All</a>
+        <div class="glass-card" style="padding: 24px;">
+            <div class="widget-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color-soft); padding-bottom: 14px; margin-bottom: 20px;">
+                <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                    <i class="ph ph-clock-counter-clockwise" style="color: var(--primary-orange);"></i> Recent Facility Registrations
+                </h3>
+                <a href="{{ url_for('superadmin.facilities') }}" class="dropdown-trigger" style="text-decoration: none; font-size: 0.8rem; padding: 4px 10px;">
+                    View All <i class="ph ph-arrow-right"></i>
+                </a>
             </div>
             <div class="table-container">
                 <table class="data-grid">
                     <thead>
                         <tr>
-                            <th>FACILITY</th>
-                            <th>OWNER</th>
-                            <th>LOCATION</th>
-                            <th>REGISTERED</th>
-                            <th>KYC STATUS</th>
-                            <th>ACTION</th>
+                            <th>Facility Name</th>
+                            <th>Owner</th>
+                            <th>Location</th>
+                            <th>Registered</th>
+                            <th>KYC Review</th>
+                            <th style="text-align: right;">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for f in recent_facilities %}
                         <tr>
-                            <td class="bold">{{ f.name }}</td>
+                            <td class="bold" style="color: var(--text-primary); font-weight: 600;">
+                                <div style="display:flex; flex-direction:column; gap:2px;">
+                                    <span>{{ f.name }}</span>
+                                    <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 500;">
+                                        <i class="ph ph-squares-four"></i> {{ f.courts|length if f.courts else 0 }} Court{{ 's' if not f.courts or f.courts|length != 1 }}
+                                    </span>
+                                </div>
+                            </td>
                             <td>{{ f.profiles.first_name ~ ' ' ~ f.profiles.last_name if f.profiles else '—' }}</td>
-                            <td style="color:var(--text-secondary);font-size:0.85rem;">{{ f.location or '—' }}</td>
-                            <td style="color:var(--text-secondary);font-size:0.85rem;">{{ f.created_at[:10] if f.created_at else '—' }}</td>
+                            <td style="font-size:0.85rem;">{{ f.location or '—' }}</td>
+                            <td style="font-size:0.85rem;">{{ f.created_at[:10] if f.created_at else '—' }}</td>
                             <td>
                                 {% if f.kyc_status == 'verified' %}
                                     <span class="status-pill success">Verified</span>
@@ -88,12 +221,19 @@
                                     <span class="status-pill">Unverified</span>
                                 {% endif %}
                             </td>
-                            <td>
-                                <a href="{{ url_for('superadmin.facilities') }}" class="action-link">Review</a>
+                            <td style="text-align: right;">
+                                <a href="{{ url_for('superadmin.facilities') }}" class="dropdown-trigger" style="text-decoration: none; font-size: 0.78rem; padding: 4px 10px; display: inline-flex; align-items: center; gap: 4px;">
+                                    <i class="ph ph-eye"></i> Review
+                                </a>
                             </td>
                         </tr>
                         {% else %}
-                        <tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text-secondary);">No facilities yet.</td></tr>
+                        <tr>
+                            <td colspan="6" style="text-align:center; padding:40px; color:var(--text-muted);">
+                                <i class="ph ph-folder-open" style="font-size: 2rem; display: block; margin-bottom: 8px;"></i>
+                                No facility applications yet.
+                            </td>
+                        </tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -101,59 +241,53 @@
         </div>
     </div>
 
-    <!-- Sidebar -->
-    <div class="dashboard-side">
-        <div class="glass-card">
-            <h3 class="widget-title">Quick Actions</h3>
+    <!-- Sidebar Pane -->
+    <div class="dashboard-side" style="display: flex; flex-direction: column; gap: 20px;">
+        
+        <!-- Quick Actions -->
+        <div class="glass-card quick-actions-card">
+            <h3 class="widget-title" style="margin: 0; font-size: 1.05rem; color: var(--text-primary); border-bottom: 1px solid var(--border-color-soft); padding-bottom: 12px;">Quick Operations</h3>
             <div class="action-grid">
-                <a href="{{ url_for('superadmin.users') }}" class="action-box orange" style="text-decoration:none;text-align:center;">
-                    <i class="ph ph-user-plus"></i>
-                    <span>Add Admin</span>
+                <a href="{{ url_for('superadmin.users') }}" class="action-item-box">
+                    <i class="ph ph-user-plus" style="color: #6366f1;"></i>
+                    <span>Add Staff</span>
                 </a>
-                <a href="{{ url_for('superadmin.facilities') }}" class="action-box navy" style="text-decoration:none;text-align:center;">
-                    <i class="ph ph-building"></i>
+                <a href="{{ url_for('superadmin.facilities') }}" class="action-item-box">
+                    <i class="ph ph-buildings" style="color: #ff5722;"></i>
                     <span>Facilities</span>
                 </a>
-                <a href="{{ url_for('superadmin.reports') }}" class="action-box green" style="text-decoration:none;text-align:center;">
-                    <i class="ph ph-chart-line"></i>
+                <a href="{{ url_for('superadmin.reports') }}" class="action-item-box">
+                    <i class="ph ph-chart-bar" style="color: #10b981;"></i>
                     <span>Reports</span>
                 </a>
-                <a href="{{ url_for('superadmin.settings') }}" class="action-box" style="text-decoration:none;text-align:center;background:rgba(99,102,241,0.15);color:#818cf8;">
-                    <i class="ph ph-gear"></i>
+                <a href="{{ url_for('superadmin.settings') }}" class="action-item-box">
+                    <i class="ph ph-gear" style="color: #f59e0b;"></i>
                     <span>Settings</span>
                 </a>
             </div>
         </div>
 
-        <div class="glass-card flex-fill">
-            <h3 class="widget-title">User Distribution</h3>
-            <div style="position:relative;height:180px;">
+        <!-- User Distribution -->
+        <div class="glass-card" style="padding: 24px;">
+            <h3 class="widget-title" style="margin: 0 0 16px 0; font-size: 1.05rem; color: var(--text-primary); border-bottom: 1px solid var(--border-color-soft); padding-bottom: 12px;">User Distribution</h3>
+            <div style="position:relative; height:180px; margin-bottom: 16px;">
                 <canvas id="roleChart"></canvas>
             </div>
-            <ul style="margin-top:12px;padding:0;list-style:none;font-size:0.82rem;display:flex;flex-direction:column;gap:6px;">
+            <ul style="margin: 0; padding: 0; list-style: none; font-size: 0.85rem; display: flex; flex-direction: column; gap: 8px;">
                 {% set role_colors = ['#6366f1','#4ade80','#f59e0b','#f87171','#a5b4fc','#34d399'] %}
                 {% for label in user_role_chart.labels %}
-                <li style="display:flex;justify-content:space-between;align-items:center;">
-                    <span style="display:flex;align-items:center;gap:6px;">
-                        <span style="width:10px;height:10px;border-radius:50%;background:{{ role_colors[loop.index0 % role_colors|length] }};display:inline-block;"></span>
+                <li style="display:flex; justify-content:space-between; align-items:center; color: var(--text-secondary);">
+                    <span style="display:flex; align-items:center; gap:8px;">
+                        <span style="width:10px; height:10px; border-radius:50%; background:{{ role_colors[loop.index0 % role_colors|length] }}; display:inline-block;"></span>
                         {{ label | title }}
                     </span>
-                    <strong>{{ user_role_chart.data[loop.index0] }}</strong>
+                    <strong style="color: var(--text-primary);">{{ user_role_chart.data[loop.index0] }}</strong>
                 </li>
                 {% endfor %}
             </ul>
         </div>
     </div>
 </div>
-
-<style>
-.stat-box { display:flex;align-items:center;gap:15px; }
-.stat-info h3 { font-size:0.9rem;color:var(--text-secondary);margin:0; }
-.stat-value { font-size:1.8rem;font-weight:700;margin:5px 0;color:var(--text-primary); }
-.stat-change { font-size:0.8rem;font-weight:600; }
-.stat-change.positive { color:#4ade80; }
-.stat-change.negative { color:#f87171; }
-</style>
 
 <script>
 Chart.defaults.color = 'rgba(255,255,255,0.7)';
@@ -172,7 +306,7 @@ new Chart(document.getElementById('roleChart'), {
     options: {
         responsive: true,
         maintainAspectRatio: false,
-        cutout: '68%',
+        cutout: '72%',
         plugins: { legend: { display: false } }
     }
 });

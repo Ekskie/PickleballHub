@@ -72,17 +72,14 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        background: var(--btn-green-light);
-        color: var(--btn-green);
+        background: rgba(225, 86, 35, 0.08);
+        color: var(--primary-orange);
+        border: 1px solid rgba(225, 86, 35, 0.2);
         font-size: 0.75rem;
         font-weight: 600;
         padding: 4px 10px;
         border-radius: 20px;
-    }
-
-    html.dark-mode .membership-badge {
-        background: rgba(41, 163, 86, 0.15);
-        color: #4ade80;
+        text-transform: uppercase;
     }
 
     .btn-edit-profile {
@@ -124,8 +121,8 @@
     }
 
     .stat-box {
-        background: var(--bg-color);
-        border: 1px solid var(--border-color);
+        background: var(--action-box-bg);
+        border: 1px solid var(--border-color-soft);
         border-radius: 10px;
         padding: 16px;
         text-align: center;
@@ -148,11 +145,7 @@
     }
 
     .stat-box.navy .stat-value {
-        color: var(--btn-navy);
-    }
-
-    html.dark-mode .stat-box.navy .stat-value {
-        color: #93c5fd;
+        color: #6366f1;
     }
 
     .stat-box.green .stat-value {
@@ -177,7 +170,7 @@
     .fairness-track {
         flex: 1;
         height: 8px;
-        background: var(--border-color);
+        background: var(--border-color-soft);
         border-radius: 99px;
         overflow: hidden;
     }
@@ -186,7 +179,6 @@
         height: 100%;
         background: var(--btn-green);
         border-radius: 99px;
-        width: 85%;
         transition: width 0.6s ease;
     }
 
@@ -216,6 +208,7 @@
         display: flex;
         flex-direction: column;
         gap: 10px;
+        padding: 0;
     }
 
     .activity-list li {
@@ -268,7 +261,7 @@
                        style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg); color: var(--text-primary);">
             </div>
             
-            <p class="player-id" style="margin-top: 0;">Player ID: PBH-{{ current_user.id[:8] | upper if current_user.id else '544A69CB' }}</p>
+            <p class="player-id" style="margin-top: 0;">Staff ID: PBH-STF-{{ current_user.id[:8] | upper if current_user.id else '544A69CB' }}</p>
 
             <div class="profile-contact">
                 <div class="contact-row">
@@ -282,7 +275,7 @@
                 </div>
                 <div class="contact-row">
                     <i class="ph ph-shield-check"></i>
-                    <span class="membership-badge">Free</span>
+                    <span class="membership-badge">Staff Operator</span>
                 </div>
             </div>
 
@@ -294,37 +287,42 @@
 
     <!-- Right: Statistics & Activity -->
     <div class="glass-card">
-        <p class="stats-section-title">Player Statistics</p>
+        <p class="stats-section-title">Operational Overview</p>
 
         <div class="stat-boxes">
             <div class="stat-box orange">
-                <span class="stat-value">{{ stats.courts if stats else 0 }}</span>
-                <span class="stat-label">Courts Booked</span>
+                <span class="stat-value">{{ stats.resolved_tickets if stats else 0 }}</span>
+                <span class="stat-label">Resolved Tickets</span>
             </div>
             <div class="stat-box navy">
-                <span class="stat-value">{{ stats.events if stats else 0 }}</span>
-                <span class="stat-label">Events Joined</span>
+                <span class="stat-value">{{ stats.pending_kyc if stats else 0 }}</span>
+                <span class="stat-label">Pending KYC</span>
             </div>
             <div class="stat-box green">
-                <span class="stat-value">{{ stats.tournaments if stats else 0 }}</span>
-                <span class="stat-label">Tournaments</span>
+                <span class="stat-value">{{ stats.open_disputes if stats else 0 }}</span>
+                <span class="stat-label">Open Disputes</span>
             </div>
         </div>
 
-        <p class="fairness-label">Fairness Rating</p>
+        <p class="fairness-label">Support Resolution Rate</p>
         <div class="fairness-bar-wrap">
             <div class="fairness-track">
-                <div class="fairness-fill"></div>
+                {% if stats and stats.total_tickets > 0 %}
+                    {% set resolution_rate = (stats.resolved_tickets / stats.total_tickets) * 100 %}
+                {% else %}
+                    {% set resolution_rate = 100.0 %}
+                {% endif %}
+                <div class="fairness-fill" style="width: {{ resolution_rate }}%;"></div>
             </div>
-            <span class="fairness-score">0.85</span>
+            <span class="fairness-score">{{ "%.1f"|format(resolution_rate) }}%</span>
         </div>
-        <p class="fairness-note">Your fairness score is based on peak-time booking frequency. Higher is better.</p>
+        <p class="fairness-note">Based on support tickets resolved vs total tickets assigned to system queue.</p>
 
-        <p class="recent-activity-title">Recent Activity</p>
+        <p class="recent-activity-title">Operational Guidelines</p>
         <ul class="activity-list">
-            <li><span class="dot"></span> Booked Court 2 – Apr 28</li>
-            <li><span class="dot"></span> Joined Weekend Doubles</li>
-            <li><span class="dot"></span> Completed session – Court 1</li>
+            <li><span class="dot"></span> Review facilities verification documents within 24 hours of submission.</li>
+            <li><span class="dot"></span> Mediate court reservation disputes fairly following platform rules.</li>
+            <li><span class="dot"></span> Respond and resolve support tickets under the verified SLA agreements.</li>
         </ul>
     </div>
 

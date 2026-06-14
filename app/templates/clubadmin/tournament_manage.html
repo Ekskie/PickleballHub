@@ -423,15 +423,41 @@
                             {% endif %}
                         </div>
 
+                        <!-- Court/Referee Info -->
+                        {% if match.court_name or match.referee_name %}
+                        <div style="padding: 6px 12px; font-size: 0.74rem; border-top: 1px dashed rgba(255,255,255,0.06); display: flex; justify-content: space-between; align-items: center; color: var(--text-secondary); background: rgba(0,0,0,0.1);">
+                            <span style="display: flex; align-items: center; gap: 4px;">
+                                <i class="ph ph-map-pin" style="color: var(--primary-orange);"></i> 
+                                {{ match.court_name }}
+                            </span>
+                            {% if match.referee_name %}
+                            <span style="display: flex; align-items: center; gap: 4px;">
+                                <i class="ph ph-whistle" style="color: #60a5fa;"></i> 
+                                Ref: {{ match.referee_name }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
                         <!-- Footer -->
                         <div class="match-footer-bar">
                             <span class="match-round-label">R{{ round_num }} · M{{ match.match_number }}</span>
                             {% if match.status == 'pending' and match.player2 %}
-                            <button class="score-btn" onclick="openDrawer(
-                                '{{ match.id }}',
-                                '{{ match.player1_id }}', '{{ p1_name }}',
-                                '{{ match.player2_id }}', '{{ p2_name }}'
-                            )"><i class="ph ph-pencil-simple"></i> Enter Score</button>
+                            <div style="display: flex; gap: 4px;">
+                                <button class="score-btn" onclick="openAssignModal(
+                                    '{{ match.id }}',
+                                    '{{ match.court_id or '' }}',
+                                    '{{ match.court_name or '' }}',
+                                    '{{ match.referee_name or '' }}'
+                                )" style="background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-secondary); padding: 5px 10px;" title="Assign Court & Referee">
+                                    <i class="ph ph-map-pin"></i> Assign
+                                </button>
+                                <button class="score-btn" onclick="openDrawer(
+                                    '{{ match.id }}',
+                                    '{{ match.player1_id }}', '{{ p1_name }}',
+                                    '{{ match.player2_id }}', '{{ p2_name }}'
+                                )" style="padding: 5px 10px;"><i class="ph ph-pencil-simple"></i> Score</button>
+                            </div>
                             {% elif match.status == 'completed' %}
                             <span class="done-badge"><i class="ph ph-check-circle"></i> Done</span>
                             {% endif %}
@@ -495,6 +521,41 @@
 
             <button type="submit" class="drawer-submit">
                 <i class="ph ph-trophy"></i> Save Score &amp; Advance Bracket
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- ── Assign Court/Ref Modal ── -->
+<div class="drawer-backdrop" id="assign-backdrop" onclick="closeAssignModal()"></div>
+<div class="score-drawer" id="assign-drawer">
+    <div class="drawer-header">
+        <h2><i class="ph ph-map-pin"></i> Court &amp; Referee Assignment</h2>
+        <button class="drawer-close" onclick="closeAssignModal()">&#x2715;</button>
+    </div>
+    <div class="drawer-body">
+        <form id="assignForm" method="POST">
+            <!-- Court Select from Booked -->
+            <label class="score-field-label">Select Booked Court</label>
+            <select id="assign_court_id" name="court_id" class="drawer-winner-select" onchange="updateCourtNameFromSelect()">
+                <option value="">-- Custom / Text Entry Only --</option>
+                {% for ec in booked_courts %}
+                    {% if ec.courts %}
+                    <option value="{{ ec.courts.id }}" data-name="{{ ec.courts.name }}">{{ ec.courts.name }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+
+            <!-- Custom Court Name -->
+            <label class="score-field-label">Court Name/Number</label>
+            <input type="text" id="assign_court_name" name="court_name" class="score-number-input" style="width: 100%; text-align: left; font-size: 0.95rem; font-weight: normal; margin-bottom: 20px;" placeholder="e.g. Court 3">
+
+            <!-- Referee Name -->
+            <label class="score-field-label">Referee Name</label>
+            <input type="text" id="assign_referee_name" name="referee_name" class="score-number-input" style="width: 100%; text-align: left; font-size: 0.95rem; font-weight: normal; margin-bottom: 24px;" placeholder="e.g. John Doe">
+
+            <button type="submit" class="drawer-submit">
+                <i class="ph ph-floppy-disk"></i> Save Assignment
             </button>
         </form>
     </div>
@@ -611,7 +672,39 @@ function closeDrawer() {
     document.body.style.overflow = '';
 }
 
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+function openAssignModal(matchId, courtId, courtName, refereeName) {
+    document.getElementById('assign_court_id').value = courtId;
+    document.getElementById('assign_court_name').value = courtName;
+    document.getElementById('assign_referee_name').value = refereeName;
+    
+    const baseUrl = "{{ url_for('clubadmin.match_assign', event_id=event.id, match_id='MATCH_ID') }}";
+    document.getElementById('assignForm').action = baseUrl.replace('MATCH_ID', matchId);
+
+    document.getElementById('assign-drawer').classList.add('open');
+    document.getElementById('assign-backdrop').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeAssignModal() {
+    document.getElementById('assign-drawer').classList.remove('open');
+    document.getElementById('assign-backdrop').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+function updateCourtNameFromSelect() {
+    const sel = document.getElementById('assign_court_id');
+    const opt = sel.options[sel.selectedIndex];
+    if (opt && opt.value) {
+        document.getElementById('assign_court_name').value = opt.dataset.name;
+    }
+}
+
+document.addEventListener('keydown', e => { 
+    if (e.key === 'Escape') { 
+        closeDrawer(); 
+        closeAssignModal(); 
+    } 
+});
 
 /* ── Confetti Burst ── */
 function launchConfetti() {

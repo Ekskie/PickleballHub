@@ -1318,7 +1318,7 @@ def tournament_bracket(event_id):
 
         match_resp = db.table('tournament_matches').select(
             'id, round_number, match_number, player1_id, player2_id, winner_id, '
-            'player1_score, player2_score, status, '
+            'player1_score, player2_score, status, court_id, court_name, referee_name, '
             'player1:profiles!player1_id(id, first_name, last_name, avatar_url), '
             'player2:profiles!player2_id(id, first_name, last_name, avatar_url), '
             'winner:profiles!winner_id(id, first_name, last_name, avatar_url)'

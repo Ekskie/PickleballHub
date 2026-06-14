@@ -622,7 +622,7 @@ def event_participants(event_id):
         if event_details:
             # Fetch participants
             reg_resp = db.table('event_registrations').select(
-                'id, player_id, status, registered_at, profiles!player_id(first_name, last_name, phone, avatar_url)'
+                'id, player_id, status, registered_at, check_in_status, checked_in_at, profiles!player_id(first_name, last_name, phone, avatar_url)'
             ).eq('event_id', event_id).execute()
             participants = reg_resp.data or []
             
@@ -644,6 +644,36 @@ def event_participants(event_id):
         flash(f'Error loading participants: {e}', 'error')
         
     return render_template('clubadmin/event_participants.html', event=event_details, participants=participants)
+
+@clubadmin_bp.route('/events/<event_id>/registrations/<reg_id>/checkin', methods=['POST'])
+@require_role('clubadmin')
+def event_check_in(event_id, reg_id):
+    clubadmin_id = session.get('user_id')
+    db = get_db()
+    
+    status = request.form.get('status', 'pending')
+    if status not in ['pending', 'checked_in', 'no_show']:
+        status = 'pending'
+        
+    checked_in_at = datetime.now(PH_TZ).isoformat() if status == 'checked_in' else None
+    
+    try:
+        # Verify event belongs to this clubadmin
+        ev_resp = db.table('events').select('id').eq('id', event_id).eq('organizer_id', clubadmin_id).single().execute()
+        if not ev_resp.data:
+            flash("Event not found or unauthorized.", "error")
+            return redirect(url_for('clubadmin.events'))
+            
+        db.table('event_registrations').update({
+            'check_in_status': status,
+            'checked_in_at': checked_in_at
+        }).eq('id', reg_id).eq('event_id', event_id).execute()
+        
+        flash("Participant attendance updated.", "success")
+    except Exception as e:
+        flash(f"Error updating attendance: {e}", "error")
+        
+    return redirect(url_for('clubadmin.event_participants', event_id=event_id))
 
 @clubadmin_bp.route('/tournaments')
 @require_role('clubadmin')
@@ -691,12 +721,18 @@ def tournament_manage(event_id):
         
         # Get matches
         matches_resp = db.table('tournament_matches').select(
-            'id, round_number, match_number, player1_id, player2_id, winner_id, player1_score, player2_score, status, played_at, '
+            'id, round_number, match_number, player1_id, player2_id, winner_id, player1_score, player2_score, status, played_at, court_id, court_name, referee_name, '
             'player1:profiles!player1_id(id, first_name, last_name, avatar_url), '
             'player2:profiles!player2_id(id, first_name, last_name, avatar_url), '
             'winner:profiles!winner_id(id, first_name, last_name, avatar_url)'
         ).eq('event_id', event_id).order('round_number').order('match_number').execute()
         matches = matches_resp.data or []
+        
+        # Get booked courts for this event
+        court_resp = db.table('event_courts').select(
+            'court_id, courts(id, name)'
+        ).eq('event_id', event_id).execute()
+        booked_courts = court_resp.data or []
         
         # Bracket Generation logic check
         has_bracket = len(matches) > 0
@@ -706,7 +742,8 @@ def tournament_manage(event_id):
                                all_tournaments=all_tournaments,
                                participants=participants,
                                matches=matches,
-                               has_bracket=has_bracket)
+                               has_bracket=has_bracket,
+                               booked_courts=booked_courts)
                                
     except Exception as e:
         flash(f"Error loading tournament manage: {e}", "error")
@@ -863,6 +900,41 @@ def match_score(event_id, match_id):
     except Exception as e:
         flash(f"Error recording score: {e}", "error")
 
+    return redirect(url_for('clubadmin.tournament_manage', event_id=event_id))
+
+@clubadmin_bp.route('/tournaments/<event_id>/matches/<match_id>/assign', methods=['POST'])
+@require_role('clubadmin')
+def match_assign(event_id, match_id):
+    admin_id = session.get('user_id')
+    db = get_db()
+    
+    court_id = request.form.get('court_id') or None
+    court_name = request.form.get('court_name') or None
+    referee_name = request.form.get('referee_name') or None
+    
+    # If court_id is provided, try to resolve court name from database as a default/override if custom name isn't set
+    if court_id and not court_name:
+        try:
+            c_resp = db.table('courts').select('name').eq('id', court_id).single().execute()
+            if c_resp.data:
+                court_name = c_resp.data['name']
+        except Exception as ce:
+            print("Failed to resolve court name:", ce)
+
+    try:
+        # Verify ownership
+        db.table('events').select('id').eq('id', event_id).eq('organizer_id', admin_id).single().execute()
+        
+        db.table('tournament_matches').update({
+            'court_id': court_id,
+            'court_name': court_name,
+            'referee_name': referee_name
+        }).eq('id', match_id).eq('event_id', event_id).execute()
+        
+        flash("Match assignment updated.", "success")
+    except Exception as e:
+        flash(f"Error updating assignment: {e}", "error")
+        
     return redirect(url_for('clubadmin.tournament_manage', event_id=event_id))
 
 @clubadmin_bp.route('/leaderboard')

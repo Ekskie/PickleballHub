@@ -1,16 +1,16 @@
-# Graph Report - PickleballHub  (2026-06-13)
+# Graph Report - PickleballHub  (2026-06-14)
 
 ## Corpus Check
-- 48 files · ~195,635 words
+- 58 files · ~233,190 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 617 nodes · 902 edges · 83 communities (39 shown, 44 thin omitted)
+- 640 nodes · 935 edges · 88 communities (44 shown, 44 thin omitted)
 - Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 22 edges (avg confidence: 0.91)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `a2785835`
+- Built from commit: `f589fbfe`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -85,19 +85,20 @@
 - [[_COMMUNITY_Community 70|Community 70]]
 - [[_COMMUNITY_Community 71|Community 71]]
 - [[_COMMUNITY_Community 75|Community 75]]
+- [[_COMMUNITY_Community 82|Community 82]]
 - [[_COMMUNITY_Community 83|Community 83]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `community()` - 55 edges
 2. `get_db()` - 45 edges
-3. `get_db()` - 31 edges
-4. `tutorials()` - 29 edges
-5. `get_db()` - 27 edges
+3. `get_db()` - 34 edges
+4. `get_db()` - 29 edges
+5. `tutorials()` - 29 edges
 6. `upload_avatar()` - 14 edges
 7. `update_match_ratings()` - 14 edges
 8. `get_db()` - 13 edges
 9. `get_processed_queues()` - 13 edges
-10. `get_db()` - 11 edges
+10. `get_db()` - 12 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `PickleballHub` --references--> `logo.png (PickleballHub Logo)`  [INFERRED]
@@ -111,7 +112,7 @@
 - `Flask Blueprint Pattern` --references--> `auth Blueprint`  [INFERRED]
   README.md → app/auth/routes.py
 
-## Communities (83 total, 44 thin omitted)
+## Communities (88 total, 44 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.06
@@ -126,20 +127,20 @@ Cohesion: 0.08
 Nodes (53): allPosts, bindFeedEvents(), closeBanner, closeShare, closeShareModal(), copiedToast, currentAvatarEl, escapeHTML() (+45 more)
 
 ### Community 3 - "Community 3"
-Cohesion: 0.10
-Nodes (33): add_court(), add_facility(), add_staff(), _advance_bracket(), api_courts_by_facility(), bracket_generate(), change_event_status(), courts() (+25 more)
+Cohesion: 0.09
+Nodes (37): add_court(), add_facility(), add_staff(), _advance_bracket(), api_courts_by_facility(), bracket_generate(), change_event_status(), courts() (+29 more)
 
 ### Community 4 - "Community 4"
 Cohesion: 0.06
-Nodes (53): create_app(), adjust_profile_stats(), elo_to_dupr(), ensure_initial_history(), get_initial_rating(), init_player_rating(), Recalculate ratings for players of a matchmaking lobby (Team 1 vs Team 2)., Recalculate ratings for players of a matchmaking lobby (Team 1 vs Team 2). (+45 more)
+Nodes (54): adjust_profile_stats(), elo_to_dupr(), ensure_initial_history(), get_initial_rating(), init_player_rating(), Recalculate ratings for players of a matchmaking lobby (Team 1 vs Team 2)., Recalculate ratings for players of a matchmaking lobby (Team 1 vs Team 2)., Lazy initialization of a player's profile Elo/DUPR if columns are null. (+46 more)
 
 ### Community 5 - "Community 5"
 Cohesion: 0.14
 Nodes (28): addBtn, addForm, addModal, allTutorials, closeModalBtn, closeWatch, closeWatchModal(), countLabel (+20 more)
 
 ### Community 6 - "Community 6"
-Cohesion: 0.08
-Nodes (27): court_queues Table, court_reservations Table, courts Table (Supabase), event_registrations Table, facilities Table (Supabase), facility_staff Table, Facilitystaff Dashboard (Live Court Status), Walk-in Registration Route (+19 more)
+Cohesion: 0.14
+Nodes (15): court_queues Table, event_registrations Table, Walk-in Registration Route, Walk-in Guest (Non-registered Player), Centralized Collection Multi-Vendor Pattern, PayMongo Checkout Session API, PayMongo Integration Guide, PayMongo Webhook Handler (payment.paid) (+7 more)
 
 ### Community 7 - "Community 7"
 Cohesion: 0.20
@@ -150,8 +151,8 @@ Cohesion: 0.06
 Nodes (41): adminstaff Blueprint, auth Blueprint, login Route, logout Route, _redirect_by_role, Role-Dashboard Routing Map, signup Route, clubadmin Blueprint (+33 more)
 
 ### Community 9 - "Community 9"
-Cohesion: 0.09
-Nodes (30): _get_dashboard_for_role(), Role-based access control decorators for protecting routes., Return the dashboard URL for a given role., Decorator to protect routes by role.     Usage: @require_role('superadmin', 'own, Uploads an avatar file to Supabase storage and returns public URL, or None., require_role(), upload_avatar(), get_staff_processed_queues Helper (+22 more)
+Cohesion: 0.11
+Nodes (25): court_reservations Table, courts Table (Supabase), facilities Table (Supabase), facility_staff Table, Facilitystaff Dashboard (Live Court Status), get_staff_processed_queues Helper, dashboard(), get_db() (+17 more)
 
 ### Community 10 - "Community 10"
 Cohesion: 0.13
@@ -221,6 +222,10 @@ Nodes (8): HTMX Partial Queue Refresh Pattern, get_processed_queues Helper, PH_T
 Cohesion: 0.50
 Nodes (4): check_player_memberships_expiry(), club_detail(), my_clubs(), Check if any of the player's active memberships has expired and update status.
 
+### Community 82 - "Community 82"
+Cohesion: 0.08
+Nodes (26): _get_dashboard_for_role(), Role-based access control decorators for protecting routes., Return the dashboard URL for a given role., Decorator to protect routes by role.     Usage: @require_role('superadmin', 'own, Uploads an avatar file to Supabase storage and returns public URL, or None., require_role(), upload_avatar(), create_app() (+18 more)
+
 ## Knowledge Gaps
 - **124 isolated node(s):** `version`, `builds`, `routes`, `style`, `container` (+119 more)
   These have ≤1 connection - possible missing edges or undocumented components.
@@ -230,13 +235,13 @@ Nodes (4): check_player_memberships_expiry(), club_detail(), my_clubs(), Check i
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `tutorials()` connect `Community 5` to `Community 0`, `Community 1`, `Community 10`?**
-  _High betweenness centrality (0.179) - this node is a cross-community bridge._
+  _High betweenness centrality (0.173) - this node is a cross-community bridge._
 - **Why does `get_processed_queues Helper` connect `Community 70` to `Community 1`, `Community 6`, `Community 9`?**
-  _High betweenness centrality (0.166) - this node is a cross-community bridge._
+  _High betweenness centrality (0.161) - this node is a cross-community bridge._
 - **Why does `court_queues Table` connect `Community 6` to `Community 70`?**
-  _High betweenness centrality (0.152) - this node is a cross-community bridge._
+  _High betweenness centrality (0.148) - this node is a cross-community bridge._
 - **What connects `version`, `builds`, `routes` to the rest of the system?**
-  _195 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _199 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
   _Cohesion score 0.0595959595959596 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**

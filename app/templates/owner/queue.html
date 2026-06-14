@@ -28,12 +28,9 @@
                     
                     {% if fac_queues %}
                         {% for q in fac_queues %}
-                        <tr>
-                            <td class="bold">{{ loop.index }}</td>
-                            <td>
-                                {{ q.profiles.first_name if q.profiles else 'Unknown' }} 
-                                {{ q.profiles.last_name if q.profiles else '' }}
-                            </td>
+                        <tr id="queue-row-{{ q.id }}" style="transition: all 0.3s ease;">
+                            <td class="bold position-cell">{{ loop.index }}</td>
+                            <td>{{ q.profiles.first_name if q.profiles else 'Unknown' }} {{ q.profiles.last_name if q.profiles else '' }}</td>
                             <td>
                                 {% if q.status == 'next' %}
                                     <span class="status-pill" style="background:var(--btn-green-light);color:var(--btn-green);">Next Up</span>
@@ -46,27 +43,15 @@
                                 {{ court.name if court else 'Any Available' }}
                             </td>
                             <td>~{{ q.estimated_wait_mins }} mins</td>
-                            <td>
-                                <div style="display: flex; gap: 8px;">
+                            <td id="actions-cell-{{ q.id }}">
+                                <div style="display: flex; gap: 8px;" class="queue-actions-wrapper">
                                     {% if q.status == 'waiting' %}
-                                        <form method="POST" action="{{ url_for('owner.update_queue') }}" style="margin:0;">
-                                            <input type="hidden" name="queue_id" value="{{ q.id }}">
-                                            <input type="hidden" name="status" value="next">
-                                            <button type="submit" class="action-box green" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto; cursor:pointer; border:none; color:white;">Call Next</button>
-                                        </form>
+                                        <button type="button" class="btn-waitlist-action green" onclick="updateQueueStatus('{{ q.id }}', 'next')" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; font-weight:600; border-radius: 6px; cursor:pointer; border:none; color:white; background:var(--btn-green); transition: background-color 0.2s;">Call Next</button>
                                     {% endif %}
                                     {% if q.status == 'next' %}
-                                        <form method="POST" action="{{ url_for('owner.update_queue') }}" style="margin:0;">
-                                            <input type="hidden" name="queue_id" value="{{ q.id }}">
-                                            <input type="hidden" name="status" value="completed">
-                                            <button type="submit" class="action-box navy" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto; cursor:pointer; border:none; color:white;">Playing</button>
-                                        </form>
+                                        <button type="button" class="btn-waitlist-action navy" onclick="updateQueueStatus('{{ q.id }}', 'completed')" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; font-weight:600; border-radius: 6px; cursor:pointer; border:none; color:white; background:var(--btn-navy); transition: background-color 0.2s;">Playing</button>
                                     {% endif %}
-                                    <form method="POST" action="{{ url_for('owner.update_queue') }}" onsubmit="return confirm('Remove player from queue?');" style="margin:0;">
-                                        <input type="hidden" name="queue_id" value="{{ q.id }}">
-                                        <input type="hidden" name="status" value="cancelled">
-                                        <button type="submit" class="action-box red" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto; background: #fee2e2; color: #ef4444; border:none; cursor:pointer;"><i class="ph ph-trash"></i></button>
-                                    </form>
+                                    <button type="button" class="btn-waitlist-action red" onclick="deleteQueueItem('{{ q.id }}')" style="padding: 0.35rem 0.5rem; font-size: 0.8rem; border-radius: 6px; background: #fee2e2; color: #ef4444; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; transition: background-color 0.2s;"><i class="ph ph-trash" style="font-size:1.1rem;"></i></button>
                                 </div>
                             </td>
                         </tr>
@@ -90,4 +75,138 @@
         <p style="color: var(--text-muted);">You are not assigned to manage any facility queues yet. Please contact your facility owner.</p>
     </div>
 {% endif %}
+
+<script>
+async function updateQueueStatus(queueId, nextStatus) {
+    const row = document.getElementById(`queue-row-${queueId}`);
+    const actionsCell = document.getElementById(`actions-cell-${queueId}`);
+    if (!row || !actionsCell) return;
+
+    // Disable buttons
+    const buttons = actionsCell.querySelectorAll('button');
+    buttons.forEach(btn => btn.disabled = true);
+
+    try {
+        const response = await fetch("{{ url_for('owner.update_queue') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                queue_id: queueId,
+                status: nextStatus
+            })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            showToast('Success', result.message || 'Queue updated!', 'success');
+            
+            if (nextStatus === 'completed') {
+                // Fade out row and remove it from table
+                row.style.opacity = '0';
+                row.style.transform = 'translateX(20px)';
+                setTimeout(() => {
+                    const tbody = row.parentNode;
+                    row.remove();
+                    // Recalculate index numbers
+                    recalculateQueuePositions(tbody);
+                }, 300);
+            } else if (nextStatus === 'next') {
+                // Update status badge inline
+                const statusCell = row.cells[2];
+                if (statusCell) {
+                    statusCell.innerHTML = `<span class="status-pill" style="background:var(--btn-green-light);color:var(--btn-green);">Next Up</span>`;
+                }
+                
+                // Update actions button to "Playing"
+                actionsCell.querySelector('.btn-waitlist-action.green')?.remove();
+                
+                const playBtn = document.createElement('button');
+                playBtn.type = 'button';
+                playBtn.className = 'btn-waitlist-action navy';
+                playBtn.onclick = () => updateQueueStatus(queueId, 'completed');
+                playBtn.style.padding = '0.35rem 0.75rem';
+                playBtn.style.fontSize = '0.8rem';
+                playBtn.style.fontWeight = '600';
+                playBtn.style.borderRadius = '6px';
+                playBtn.style.cursor = 'pointer';
+                playBtn.style.border = 'none';
+                playBtn.style.color = 'white';
+                playBtn.style.backgroundColor = 'var(--btn-navy)';
+                playBtn.style.transition = 'background-color 0.2s';
+                playBtn.textContent = 'Playing';
+                
+                const wrapper = actionsCell.querySelector('.queue-actions-wrapper');
+                if (wrapper) {
+                    wrapper.insertBefore(playBtn, wrapper.firstChild);
+                }
+                buttons.forEach(btn => btn.disabled = false);
+            }
+        } else {
+            showToast('Error', result.message || 'Failed to update queue.', 'error');
+            buttons.forEach(btn => btn.disabled = false);
+        }
+    } catch (err) {
+        console.error('AJAX queue update error:', err);
+        showToast('Error', 'An unexpected error occurred.', 'error');
+        buttons.forEach(btn => btn.disabled = false);
+    }
+}
+
+async function deleteQueueItem(queueId) {
+    if (!confirm('Remove player from queue?')) return;
+    
+    const row = document.getElementById(`queue-row-${queueId}`);
+    if (!row) return;
+
+    try {
+        const response = await fetch("{{ url_for('owner.update_queue') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                queue_id: queueId,
+                status: 'cancelled'
+            })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            showToast('Success', 'Player removed from queue.', 'success');
+            row.style.opacity = '0';
+            row.style.transform = 'translateX(20px)';
+            setTimeout(() => {
+                const tbody = row.parentNode;
+                row.remove();
+                recalculateQueuePositions(tbody);
+            }, 300);
+        } else {
+            showToast('Error', result.message || 'Failed to remove player.', 'error');
+        }
+    } catch (err) {
+        console.error('AJAX queue delete error:', err);
+        showToast('Error', 'An unexpected error occurred.', 'error');
+    }
+}
+
+function recalculateQueuePositions(tbody) {
+    if (!tbody) return;
+    const rows = tbody.querySelectorAll('tr');
+    if (rows.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 20px; color: var(--text-muted);">
+                    No players in queue for this facility.
+                </td>
+            </tr>`;
+    } else {
+        rows.forEach((r, idx) => {
+            const posCell = r.querySelector('.position-cell');
+            if (posCell) posCell.textContent = idx + 1;
+        });
+    }
+}
+</script>
 {% endblock %}

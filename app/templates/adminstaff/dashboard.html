@@ -160,76 +160,118 @@
 </style>
 
 <script>
-const chartDefaults = {
-    color: 'rgba(255,255,255,0.7)',
-    borderColor: 'rgba(255,255,255,0.1)',
-};
-Chart.defaults.color = chartDefaults.color;
-Chart.defaults.borderColor = chartDefaults.borderColor;
+function getThemeColors() {
+    const isDark = document.documentElement.classList.contains('dark-mode');
+    return {
+        text: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(71, 85, 105, 0.8)',
+        border: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)',
+        grid: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)'
+    };
+}
 
-// Ticket Activity Bar Chart
-const tLabels = {{ ticket_chart.labels | tojson }};
-const tOpened = {{ ticket_chart.opened | tojson }};
-const tClosed = {{ ticket_chart.closed | tojson }};
+let ticketChartInstance = null;
+let kycChartInstance = null;
 
-new Chart(document.getElementById('ticketChart'), {
-    type: 'bar',
-    data: {
-        labels: tLabels,
-        datasets: [
-            {
-                label: 'Opened',
-                data: tOpened,
-                backgroundColor: 'rgba(248,113,113,0.6)',
-                borderColor: '#f87171',
-                borderWidth: 1,
-                borderRadius: 4,
-            },
-            {
-                label: 'Resolved',
-                data: tClosed,
-                backgroundColor: 'rgba(74,222,128,0.6)',
-                borderColor: '#4ade80',
-                borderWidth: 1,
-                borderRadius: 4,
-            }
-        ]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { position: 'top' } },
-        scales: {
-            x: { grid: { color: 'rgba(255,255,255,0.05)' } },
-            y: { grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true, ticks: { stepSize: 1 } }
-        }
+function updateChartThemes() {
+    const colors = getThemeColors();
+    
+    Chart.defaults.color = colors.text;
+    Chart.defaults.borderColor = colors.border;
+    
+    if (ticketChartInstance) {
+        ticketChartInstance.options.plugins.legend.labels.color = colors.text;
+        ticketChartInstance.options.scales.x.ticks.color = colors.text;
+        ticketChartInstance.options.scales.x.grid.color = colors.grid;
+        ticketChartInstance.options.scales.y.ticks.color = colors.text;
+        ticketChartInstance.options.scales.y.grid.color = colors.grid;
+        ticketChartInstance.update();
     }
+}
+
+// Observe theme class switch to change chart themes dynamically
+const themeObserver = new MutationObserver(() => {
+    updateChartThemes();
 });
+themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
-// KYC Mini Doughnut (we'll fetch quick counts client-side from the template)
-// These counts come from the verifications page data, so we pass 0s here and note it
-// as a placeholder — actual donut is from superadmin reports
-new Chart(document.getElementById('kycMiniChart'), {
-    type: 'doughnut',
-    data: {
-        labels: ['Verified', 'Pending', 'Unverified', 'Rejected'],
-        datasets: [{
-            data: [
-                {{ stats.total_resolved }},
-                {{ stats.pending_kyc }},
-                {{ [stats.open_tickets - stats.pending_kyc, 0] | max }},
-                0
-            ],
-            backgroundColor: ['#4ade80','#f59e0b','#6366f1','#f87171'],
-            borderWidth: 0,
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '70%',
-        plugins: { legend: { display: false } }
-    }
+// Render Charts
+document.addEventListener('DOMContentLoaded', () => {
+    const colors = getThemeColors();
+    Chart.defaults.color = colors.text;
+    Chart.defaults.borderColor = colors.border;
+
+    const tLabels = {{ ticket_chart.labels | tojson }};
+    const tOpened = {{ ticket_chart.opened | tojson }};
+    const tClosed = {{ ticket_chart.closed | tojson }};
+
+    ticketChartInstance = new Chart(document.getElementById('ticketChart'), {
+        type: 'bar',
+        data: {
+            labels: tLabels,
+            datasets: [
+                {
+                    label: 'Opened',
+                    data: tOpened,
+                    backgroundColor: 'rgba(248,113,113,0.6)',
+                    borderColor: '#f87171',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                },
+                {
+                    label: 'Resolved',
+                    data: tClosed,
+                    backgroundColor: 'rgba(74,222,128,0.6)',
+                    borderColor: '#4ade80',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+                legend: { 
+                    position: 'top',
+                    labels: { color: colors.text }
+                } 
+            },
+            scales: {
+                x: { 
+                    grid: { color: colors.grid },
+                    ticks: { color: colors.text }
+                },
+                y: { 
+                    grid: { color: colors.grid }, 
+                    beginAtZero: true, 
+                    ticks: { color: colors.text, stepSize: 1 } 
+                }
+            }
+        }
+    });
+
+    kycChartInstance = new Chart(document.getElementById('kycMiniChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Verified', 'Pending', 'Unverified', 'Rejected'],
+            datasets: [{
+                data: [
+                    {{ stats.total_resolved }},
+                    {{ stats.pending_kyc }},
+                    {{ [stats.open_tickets - stats.pending_kyc, 0] | max }},
+                    0
+                ],
+                backgroundColor: ['#4ade80','#f59e0b','#6366f1','#f87171'],
+                borderWidth: 0,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: { legend: { display: false } }
+        }
+    });
 });
 </script>
 {% endblock %}

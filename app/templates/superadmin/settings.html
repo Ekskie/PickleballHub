@@ -2,91 +2,279 @@
 {% block title %}Platform Settings{% endblock %}
 
 {% block content %}
-<div class="dashboard-header">
+<div class="dashboard-header" style="margin-bottom: 24px;">
     <h1 class="page-title">Platform Settings</h1>
 </div>
 
 {% with messages = get_flashed_messages(with_categories=true) %}
 {% if messages %}
     {% for category, message in messages %}
-    <div class="alert alert-{{ category }}" style="padding:12px 16px;border-radius:8px;margin-bottom:16px;
-        background:{% if category == 'success' %}rgba(74,222,128,0.15){% else %}rgba(248,113,113,0.15){% endif %};
-        color:{% if category == 'success' %}#4ade80{% else %}#f87171{% endif %};
-        border:1px solid {% if category == 'success' %}rgba(74,222,128,0.3){% else %}rgba(248,113,113,0.3){% endif %};">
-        <i class="ph {% if category == 'success' %}ph-check-circle{% else %}ph-warning-circle{% endif %}" style="margin-right:8px;"></i>{{ message }}
+    <div class="alert alert-{{ category }}" style="padding:14px 18px; border-radius:10px; margin-bottom:20px;
+        background:{% if category == 'success' %}rgba(16,185,129,0.12){% else %}rgba(239,68,68,0.12){% endif %};
+        color:{% if category == 'success' %}#10b981{% else %}#ef4444{% endif %};
+        border:1px solid {% if category == 'success' %}rgba(16,185,129,0.2){% else %}rgba(239,68,68,0.2){% endif %};
+        display:flex; align-items:center; gap:10px; font-weight:500;">
+        <i class="ph {% if category == 'success' %}ph-check-circle{% else %}ph-warning-circle{% endif %}" style="font-size: 1.2rem;"></i>
+        <span>{{ message }}</span>
     </div>
     {% endfor %}
 {% endif %}
 {% endwith %}
 
+<!-- Tab Control Panel -->
+<div class="settings-tabs-container" style="display:flex; gap:8px; margin-bottom:24px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
+    <button type="button" class="tab-trigger active" onclick="switchTab(event, 'general')">
+        <i class="ph ph-globe"></i> General Setup
+    </button>
+    <button type="button" class="tab-trigger" onclick="switchTab(event, 'seo')">
+        <i class="ph ph-magnifying-glass"></i> SEO &amp; Meta
+    </button>
+    <button type="button" class="tab-trigger" onclick="switchTab(event, 'analytics')">
+        <i class="ph ph-chart-line"></i> Tracking &amp; Analytics
+    </button>
+</div>
+
 <form method="POST" action="{{ url_for('superadmin.settings') }}">
 <div class="dashboard-grid">
-    <div class="dashboard-main" style="width:100%;max-width:740px;">
+    <div class="dashboard-main" style="width:100%; max-width:800px;">
 
-        <!-- General Settings -->
-        <div class="glass-card" style="margin-bottom:20px;">
-            <div class="widget-header">
-                <h3><i class="ph ph-globe" style="margin-right:8px;"></i>General Configuration</h3>
+        <!-- ── TAB 1: GENERAL SETTINGS ────────────────────────────────────── -->
+        <div id="tab-general" class="settings-tab-content active">
+            <!-- General Configuration -->
+            <div class="glass-card" style="margin-bottom:20px; padding: 24px;">
+                <div class="widget-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 20px;">
+                    <h3 style="display:flex; align-items:center; gap:8px; margin:0; font-size:1.15rem; color:var(--text-primary);">
+                        <i class="ph ph-buildings" style="color:var(--primary-orange);"></i> General Platform Settings
+                    </h3>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:20px;">
+                    <div>
+                        <label class="setting-label">Platform Name</label>
+                        <input type="text" name="platform_name" value="{{ settings.platform_name }}" class="setting-input" required>
+                        <span class="setting-hint">The title used across headers, base layouts, and default labels.</span>
+                    </div>
+                    <div>
+                        <label class="setting-label">Support Email Address</label>
+                        <input type="email" name="support_email" value="{{ settings.support_email }}" class="setting-input" required>
+                        <span class="setting-hint">All customer support tickets and contact requests will be routed here.</span>
+                    </div>
+                </div>
             </div>
-            <div style="padding-top:16px;display:flex;flex-direction:column;gap:18px;">
-                <div>
-                    <label style="display:block;margin-bottom:6px;color:var(--text-secondary);font-size:0.9rem;font-weight:600;">Platform Name</label>
-                    <input type="text" name="platform_name" value="{{ settings.platform_name }}"
-                           style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);font-size:0.95rem;">
+
+            <!-- Security & Maintenance -->
+            <div class="glass-card" style="margin-bottom:20px; padding: 24px;">
+                <div class="widget-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 20px;">
+                    <h3 style="display:flex; align-items:center; gap:8px; margin:0; font-size:1.15rem; color:var(--text-primary);">
+                        <i class="ph ph-shield-check" style="color:var(--primary-orange);"></i> Security &amp; Access Control
+                    </h3>
                 </div>
                 <div>
-                    <label style="display:block;margin-bottom:6px;color:var(--text-secondary);font-size:0.9rem;font-weight:600;">Support Email</label>
-                    <input type="email" name="support_email" value="{{ settings.support_email }}"
-                           style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);font-size:0.95rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 0; border-bottom:1px solid var(--border-color);">
+                        <div style="max-width: 80%;">
+                            <strong style="display:block; margin-bottom:4px; color:var(--text-primary);">Maintenance Mode</strong>
+                            <span style="font-size:0.85rem; color:var(--text-secondary);">Disables user access to the frontend. Only superadmins can log in and view pages.</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" name="maintenance_mode" {% if settings.maintenance_mode %}checked{% endif %}>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 0;">
+                        <div style="max-width: 80%;">
+                            <strong style="display:block; margin-bottom:4px; color:var(--text-primary);">Enforce Two-Factor Authentication (2FA)</strong>
+                            <span style="font-size:0.85rem; color:var(--text-secondary);">Enforces setup and entry of a 2FA code for all administrative and manager accounts.</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" name="require_2fa" {% if settings.require_2fa %}checked{% endif %}>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Security -->
-        <div class="glass-card" style="margin-bottom:20px;">
-            <div class="widget-header">
-                <h3><i class="ph ph-shield-check" style="margin-right:8px;"></i>Security &amp; Maintenance</h3>
-            </div>
-            <div style="padding-top:16px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--border-color);">
-                    <div>
-                        <strong style="display:block;margin-bottom:3px;">Maintenance Mode</strong>
-                        <span style="font-size:0.85rem;color:var(--text-secondary);">Disables user access to the platform temporarily.</span>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" name="maintenance_mode" {% if settings.maintenance_mode %}checked{% endif %}>
-                        <span class="slider round"></span>
-                    </label>
+        <!-- ── TAB 2: SEO CONFIGURATION ───────────────────────────────────── -->
+        <div id="tab-seo" class="settings-tab-content">
+            <div class="glass-card" style="margin-bottom:20px; padding: 24px;">
+                <div class="widget-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 20px;">
+                    <h3 style="display:flex; align-items:center; gap:8px; margin:0; font-size:1.15rem; color:var(--text-primary);">
+                        <i class="ph ph-browsers" style="color:var(--primary-orange);"></i> Search Engine Optimization (SEO)
+                    </h3>
                 </div>
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;">
+                <div style="display:flex; flex-direction:column; gap:20px;">
                     <div>
-                        <strong style="display:block;margin-bottom:3px;">Require Two-Factor Authentication</strong>
-                        <span style="font-size:0.85rem;color:var(--text-secondary);">Enforce 2FA for all administrative accounts.</span>
+                        <label class="setting-label">SEO Base Meta Title</label>
+                        <input type="text" name="seo_meta_title" value="{{ settings.seo_meta_title }}" class="setting-input">
+                        <span class="setting-hint">Default title tag rendered on public page headers if no specific page title is specified.</span>
                     </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" name="require_2fa" {% if settings.require_2fa %}checked{% endif %}>
-                        <span class="slider round"></span>
-                    </label>
+                    <div>
+                        <label class="setting-label">SEO Meta Description</label>
+                        <textarea name="seo_meta_description" class="setting-input" style="height: 100px; resize: vertical;">{{ settings.seo_meta_description }}</textarea>
+                        <span class="setting-hint">Provide a concise summary of the website (150-160 characters recommended). Shown in search result snippets.</span>
+                    </div>
+                    <div>
+                        <label class="setting-label">SEO Meta Keywords</label>
+                        <input type="text" name="seo_meta_keywords" value="{{ settings.seo_meta_keywords }}" class="setting-input">
+                        <span class="setting-hint">Comma-separated keywords representing terms users might search for to find your court hub.</span>
+                    </div>
+                    <div>
+                        <label class="setting-label">Open Graph / Social Preview Image URL</label>
+                        <input type="url" name="seo_og_image" value="{{ settings.seo_og_image }}" class="setting-input" placeholder="https://yourdomain.com/static/images/social-preview.jpg">
+                        <span class="setting-hint">URL to an image that will be shown when links are shared on Facebook, Twitter, Discord, etc. (recommended: 1200x630px).</span>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Save -->
-        <div style="display:flex;justify-content:flex-end;">
-            <button type="submit" class="action-box green display-row" style="padding:12px 30px;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;">
+        <!-- ── TAB 3: TRACKING & SCRIPTS ─────────────────────────────────── -->
+        <div id="tab-analytics" class="settings-tab-content">
+            <div class="glass-card" style="margin-bottom:20px; padding: 24px;">
+                <div class="widget-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 20px;">
+                    <h3 style="display:flex; align-items:center; gap:8px; margin:0; font-size:1.15rem; color:var(--text-primary);">
+                        <i class="ph ph-chart-line-up" style="color:var(--primary-orange);"></i> Analytics &amp; Marketing Tracking
+                    </h3>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:20px;">
+                    <div>
+                        <label class="setting-label">Google Analytics 4 Measurement ID</label>
+                        <input type="text" name="google_analytics_id" value="{{ settings.google_analytics_id }}" class="setting-input" placeholder="G-XXXXXXXXXX">
+                        <span class="setting-hint">Enter your GA4 tag identifier to capture traffic, view counts, and user sessions dynamically.</span>
+                    </div>
+                    <div>
+                        <label class="setting-label">Facebook Pixel ID</label>
+                        <input type="text" name="facebook_pixel_id" value="{{ settings.facebook_pixel_id }}" class="setting-input" placeholder="123456789012345">
+                        <span class="setting-hint">Enter your Meta/Facebook Pixel ID to track landing page conversions and optimize social media ads.</span>
+                    </div>
+                    <div>
+                        <label class="setting-label">Custom Head Scripts (HTML allowed)</label>
+                        <textarea name="custom_head_scripts" class="setting-input" style="height: 140px; font-family: monospace; font-size: 0.85rem; resize: vertical;" placeholder="<!-- Put verification tags, Hotjar codes, etc here -->">{{ settings.custom_head_scripts }}</textarea>
+                        <span class="setting-hint">This code snippet will be injected directly into the <code>&lt;head&gt;</code> section of all public pages and dashboard base screens. Useful for domain verification tags or custom widgets.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Save button wrapper -->
+        <div style="display:flex; justify-content:flex-end;">
+            <button type="submit" class="action-box green display-row" style="padding:12px 30px; border:none; border-radius:10px; font-size:1rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px;">
                 <i class="ph ph-floppy-disk"></i> Save Settings
             </button>
         </div>
+
     </div>
 </div>
 </form>
 
 <style>
-.toggle-switch { position:relative;display:inline-block;width:50px;height:26px; }
-.toggle-switch input { opacity:0;width:0;height:0; }
-.slider { position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background-color:rgba(255,255,255,0.1);transition:.4s;border-radius:34px; }
-.slider:before { position:absolute;content:"";height:20px;width:20px;left:3px;bottom:3px;background-color:white;transition:.4s;border-radius:50%; }
-input:checked + .slider { background-color:#4ade80; }
+/* CSS Variable fallbacks */
+:root {
+    --primary-orange: #ff5722;
+}
+
+/* Tab triggers styling */
+.tab-trigger {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 10px 18px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.tab-trigger:hover {
+    color: var(--text-primary);
+    background: var(--hover-bg);
+}
+
+.tab-trigger.active {
+    color: #fff;
+    background: var(--primary-orange);
+    box-shadow: 0 4px 10px rgba(255, 87, 34, 0.25);
+}
+
+/* Hidden by default tab content panels */
+.settings-tab-content {
+    display: none;
+    animation: fadeInTab 0.3s ease-out forwards;
+}
+
+.settings-tab-content.active {
+    display: block;
+}
+
+@keyframes fadeInTab {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Settings fields aesthetics */
+.setting-label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.setting-input {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.setting-input:focus {
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.15);
+}
+
+.setting-hint {
+    display: block;
+    margin-top: 6px;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    line-height: 1.3;
+}
+
+/* Toggle Switches */
+.toggle-switch { position:relative; display:inline-block; width:50px; height:26px; flex-shrink: 0; }
+.toggle-switch input { opacity:0; width:0; height:0; }
+.slider { position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:rgba(255,255,255,0.1); transition:.4s; border-radius:34px; }
+.slider:before { position:absolute; content:""; height:20px; width:20px; left:3px; bottom:3px; background-color:white; transition:.4s; border-radius:50%; }
+input:checked + .slider { background-color:#10b981; }
 input:checked + .slider:before { transform:translateX(24px); }
 </style>
+
+<script>
+function switchTab(event, tabId) {
+    // Hide all tab content
+    document.querySelectorAll('.settings-tab-content').forEach(function(content) {
+        content.classList.remove('active');
+    });
+    
+    // Deactivate all tab trigger buttons
+    document.querySelectorAll('.tab-trigger').forEach(function(btn) {
+        btn.classList.remove('active');
+    });
+    
+    // Show clicked tab content
+    document.getElementById('tab-' + tabId).classList.add('active');
+    
+    // Set clicked button to active
+    event.currentTarget.classList.add('active');
+}
+</script>
 {% endblock %}

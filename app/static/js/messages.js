@@ -72,8 +72,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return d.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' });
     }
 
-    function initials(first = '', last = '') {
-        return ((first[0] || '') + (last[0] || '')).toUpperCase() || '?';
+    function initials(first, last) {
+        const f = first || '';
+        const l = last || '';
+        return ((f[0] || '') + (l[0] || '')).toUpperCase() || '?';
     }
 
     function capitalise(str = '') {
@@ -293,9 +295,26 @@ document.addEventListener('DOMContentLoaded', () => {
         showChat(user);
         showLoader();
 
-        await markAsRead(convoId);
-        await loadMessages(convoId);
-        loadConversations(); // refresh sidebar (clear unread badge)
+        try {
+            await markAsRead(convoId);
+        } catch (err) {
+            console.error('[Messages] markAsRead failed:', err);
+        }
+
+        try {
+            await loadMessages(convoId);
+        } catch (err) {
+            console.error('[Messages] loadMessages failed:', err);
+            chatMessages.innerHTML = `<div style="text-align:center;color:red;font-size:0.85rem;margin:auto;padding:20px;">
+                Error loading conversation history.
+            </div>`;
+        }
+
+        try {
+            await loadConversations(); // refresh sidebar (clear unread badge)
+        } catch (err) {
+            console.error('[Messages] loadConversations failed after open:', err);
+        }
     }
 
     /* ══════════════════════════════════════════════════
@@ -327,7 +346,15 @@ document.addEventListener('DOMContentLoaded', () => {
             .eq('conversation_id', convoId)
             .order('created_at', { ascending: true });
 
-        if (error) { console.error('[Messages] loadMessages:', error); return; }
+        if (error) {
+            console.error('[Messages] loadMessages:', error);
+            if (activeConversationId === convoId) {
+                chatMessages.innerHTML = `<div style="text-align:center;color:red;font-size:0.85rem;margin:auto;padding:20px;">
+                    Failed to load messages. Please try again.
+                </div>`;
+            }
+            return;
+        }
         
         if (activeConversationId === convoId) {
             renderMessages(msgs || []);

@@ -22,7 +22,40 @@
     </div>
 </div>
 
-<div class="glass-card" style="margin-top: 20px;">
+{% set ns = namespace(checked_in=0, no_show=0, pending=0) %}
+{% for p in participants %}
+    {% if p.status == 'registered' %}
+        {% if p.check_in_status == 'checked_in' %}
+            {% set ns.checked_in = ns.checked_in + 1 %}
+        {% elif p.check_in_status == 'no_show' %}
+            {% set ns.no_show = ns.no_show + 1 %}
+        {% else %}
+            {% set ns.pending = ns.pending + 1 %}
+        {% endif %}
+    {% endif %}
+{% endfor %}
+
+<!-- Stats Row -->
+<div class="stats-row" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; margin-bottom: 20px;">
+    <div class="stat-card" style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 16px; border-radius: 10px; text-align: center;">
+        <span style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 4px;">{{ participants | length }}</span>
+        <span style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Registered</span>
+    </div>
+    <div class="stat-card" style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 16px; border-radius: 10px; text-align: center;">
+        <span style="font-size: 1.5rem; font-weight: 700; color: #22c55e; display: block; margin-bottom: 4px;">{{ ns.checked_in }}</span>
+        <span style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Checked In</span>
+    </div>
+    <div class="stat-card" style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 16px; border-radius: 10px; text-align: center;">
+        <span style="font-size: 1.5rem; font-weight: 700; color: #ef4444; display: block; margin-bottom: 4px;">{{ ns.no_show }}</span>
+        <span style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">No-Show</span>
+    </div>
+    <div class="stat-card" style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 16px; border-radius: 10px; text-align: center;">
+        <span style="font-size: 1.5rem; font-weight: 700; color: #f59e0b; display: block; margin-bottom: 4px;">{{ ns.pending }}</span>
+        <span style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Pending</span>
+    </div>
+</div>
+
+<div class="glass-card">
     <h3 class="widget-title">Registered Participants</h3>
     <div class="table-container">
         <table class="data-grid">
@@ -32,6 +65,7 @@
                     <th>EMAIL</th>
                     <th>PHONE</th>
                     <th>STATUS</th>
+                    <th>ATTENDANCE</th>
                     <th>REGISTERED ON</th>
                 </tr>
             </thead>
@@ -68,6 +102,48 @@
                                 <span class="status-pill warning">Waitlisted</span>
                             {% else %}
                                 <span class="status-pill" style="background:var(--input-bg);color:var(--text-muted);">{{ p.status|capitalize }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if p.status == 'registered' %}
+                                <div style="display: flex; gap: 6px; align-items: center;">
+                                    {% if p.check_in_status == 'checked_in' %}
+                                        <span class="status-pill success" style="display: inline-flex; align-items: center; gap: 4px;" title="Checked in at {{ p.checked_in_at[:16]|replace('T', ' ') if p.checked_in_at else '' }}">
+                                            <i class="ph ph-check-circle"></i> Checked In
+                                        </span>
+                                        <form action="{{ url_for('clubadmin.event_check_in', event_id=event.id, reg_id=p.id) }}" method="POST" style="margin: 0; display: inline;">
+                                            <input type="hidden" name="status" value="pending">
+                                            <button type="submit" class="btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; min-height: auto; width: auto; background: transparent; border-color: var(--border-color); color: var(--text-muted);" title="Undo Check-in">
+                                                <i class="ph ph-arrow-counter-clockwise"></i>
+                                            </button>
+                                        </form>
+                                    {% elif p.check_in_status == 'no_show' %}
+                                        <span class="status-pill expired" style="display: inline-flex; align-items: center; gap: 4px;">
+                                            <i class="ph ph-x-circle"></i> No-Show
+                                        </span>
+                                        <form action="{{ url_for('clubadmin.event_check_in', event_id=event.id, reg_id=p.id) }}" method="POST" style="margin: 0; display: inline;">
+                                            <input type="hidden" name="status" value="pending">
+                                            <button type="submit" class="btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; min-height: auto; width: auto; background: transparent; border-color: var(--border-color); color: var(--text-muted);" title="Undo No-Show">
+                                                <i class="ph ph-arrow-counter-clockwise"></i>
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        <form action="{{ url_for('clubadmin.event_check_in', event_id=event.id, reg_id=p.id) }}" method="POST" style="margin: 0; display: inline;">
+                                            <input type="hidden" name="status" value="checked_in">
+                                            <button type="submit" class="btn-primary" style="padding: 4px 8px; font-size: 0.75rem; background: #22c55e; border-color: #22c55e; color: #fff; min-height: auto; width: auto;">
+                                                <i class="ph ph-check"></i> Check In
+                                            </button>
+                                        </form>
+                                        <form action="{{ url_for('clubadmin.event_check_in', event_id=event.id, reg_id=p.id) }}" method="POST" style="margin: 0; display: inline;">
+                                            <input type="hidden" name="status" value="no_show">
+                                            <button type="submit" class="btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; border-color: #ef4444; color: #ef4444; background: transparent; min-height: auto; width: auto;">
+                                                <i class="ph ph-x"></i> No-Show
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <span style="color: var(--text-muted); font-size: 0.85rem;">—</span>
                             {% endif %}
                         </td>
                         <td>{{ p.registered_at[:10] }}</td>
