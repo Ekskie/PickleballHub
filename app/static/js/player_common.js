@@ -148,6 +148,18 @@ document.addEventListener('DOMContentLoaded', () => {
         html.dark-mode .text-danger {
             color: #f87171;
         }
+
+        /* Mobile Responsive Drawer override */
+        @media (max-width: 576px) {
+            .details-drawer {
+                width: 100% !important;
+                right: -100% !important;
+                padding: 20px 16px !important;
+            }
+            .details-drawer.active {
+                right: 0 !important;
+            }
+        }
     `;
     document.head.appendChild(style);
 

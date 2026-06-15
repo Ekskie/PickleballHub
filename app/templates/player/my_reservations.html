@@ -79,7 +79,7 @@
         <button class="res-tab" onclick="filterRes('completed',this)"><i class="ph ph-tennis-ball"></i> Completed</button>
         <button class="res-tab" onclick="filterRes('cancelled',this)"><i class="ph ph-x-circle"></i> Cancelled</button>
     </div>
-    <div class="header-search" style="flex:1; max-width:300px; min-width:200px; position:relative;">
+    <div class="local-search-bar" style="flex:1; max-width:300px; min-width:200px; position:relative;">
         <i class="ph ph-magnifying-glass" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted);"></i>
         <input type="text" id="resSearch" placeholder="Search court, facility, ref..." oninput="filterRes(currentFilterStatus, document.querySelector('.res-tab.active'))" style="width:100%; padding:8px 12px 8px 36px; border-radius:20px; border:1px solid var(--border-color); background:var(--input-bg); color:var(--text-primary); font-size:0.85rem; outline:none;">
     </div>

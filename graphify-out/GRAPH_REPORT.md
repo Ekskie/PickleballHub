@@ -1,16 +1,16 @@
 # Graph Report - PickleballHub  (2026-06-15)
 
 ## Corpus Check
-- 53 files · ~234,842 words
+- 52 files · ~234,830 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 670 nodes · 994 edges · 95 communities (51 shown, 44 thin omitted)
+- 673 nodes · 997 edges · 95 communities (51 shown, 44 thin omitted)
 - Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 22 edges (avg confidence: 0.91)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `e61e2a27`
+- Built from commit: `ccff6553`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -121,8 +121,8 @@
 ## Communities (95 total, 44 thin omitted)
 
 ### Community 0 - "Community 0"
-Cohesion: 0.06
-Nodes (38): allConversations, capitalise(), chatHeader, chatHeaderAvatar, chatHeaderName, chatHeaderRole, chatInputWrap, chatMessages (+30 more)
+Cohesion: 0.05
+Nodes (41): allConversations, capitalise(), chatBackBtn, chatHeader, chatHeaderAvatar, chatHeaderName, chatHeaderRole, chatInputWrap (+33 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.10
@@ -166,7 +166,7 @@ Nodes (6): Adminstaff Dashboard (Support KPIs), Disputes Management, Support Tic
 
 ### Community 11 - "Community 11"
 Cohesion: 0.07
-Nodes (32): get_admin_db(), Thread-safe, request-scoped database helper for Supabase. Provides separation be, Get an admin/service-role scoped Supabase client that bypasses Row Level Securit, create_app(), clear_settings_cache(), get_db_client(), load_platform_settings(), Returns a client bypassing RLS if service role key is available. (+24 more)
+Nodes (34): get_admin_db(), get_db(), Thread-safe, request-scoped database helper for Supabase. Provides separation be, Get a thread-safe, request-scoped Supabase client.     Authenticated with user a, Get an admin/service-role scoped Supabase client that bypasses Row Level Securit, create_app(), clear_settings_cache(), get_db_client() (+26 more)
 
 ### Community 13 - "Community 13"
 Cohesion: 0.20
@@ -230,7 +230,7 @@ Nodes (5): check_player_memberships_expiry(), club_detail(), my_clubs(), Check i
 
 ### Community 82 - "Community 82"
 Cohesion: 0.07
-Nodes (42): resolve_ticket Route, dashboard(), disputes(), get_db(), mark_notifications_read(), notifications(), profile(), resolve_ticket() (+34 more)
+Nodes (40): resolve_ticket Route, dashboard(), disputes(), get_db(), mark_notifications_read(), notifications(), profile(), resolve_ticket() (+32 more)
 
 ### Community 88 - "Community 88"
 Cohesion: 0.36
@@ -257,7 +257,7 @@ Cohesion: 0.67
 Nodes (3): get_lobby_display_status(), matchmaker(), matchmaker_detail()
 
 ## Knowledge Gaps
-- **124 isolated node(s):** `version`, `builds`, `routes`, `style`, `container` (+119 more)
+- **127 isolated node(s):** `version`, `builds`, `routes`, `style`, `container` (+122 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **44 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -265,15 +265,15 @@ Nodes (3): get_lobby_display_status(), matchmaker(), matchmaker_detail()
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `tutorials()` connect `Community 5` to `Community 0`, `Community 1`, `Community 82`?**
-  _High betweenness centrality (0.164) - this node is a cross-community bridge._
+  _High betweenness centrality (0.169) - this node is a cross-community bridge._
 - **Why does `get_processed_queues Helper` connect `Community 70` to `Community 1`, `Community 6`, `Community 9`?**
   _High betweenness centrality (0.157) - this node is a cross-community bridge._
 - **Why does `court_queues Table` connect `Community 6` to `Community 70`?**
   _High betweenness centrality (0.144) - this node is a cross-community bridge._
 - **What connects `version`, `builds`, `routes` to the rest of the system?**
-  _221 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _224 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.0595959595959596 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.0549645390070922 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
   _Cohesion score 0.1006006006006006 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**

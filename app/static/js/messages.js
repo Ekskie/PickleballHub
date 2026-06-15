@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalCloseBtn     = document.getElementById('modalCloseBtn');
     const userSearchInput   = document.getElementById('userSearchInput');
     const userSearchResults = document.getElementById('userSearchResults');
+    const chatBackBtn       = document.getElementById('chatBackBtn');
 
     /* ── State ────────────────────────────────────────── */
     let activeConversationId  = null;
@@ -294,6 +295,9 @@ document.addEventListener('DOMContentLoaded', () => {
         highlightActiveContact(convoId);
         showChat(user);
         showLoader();
+
+        const layout = document.querySelector('.messages-layout');
+        layout?.classList.add('chat-active');
 
         try {
             await markAsRead(convoId);
@@ -575,6 +579,15 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ══════════════════════════════════════════════════
        EVENT LISTENERS
     ══════════════════════════════════════════════════ */
+    chatBackBtn?.addEventListener('click', () => {
+        const layout = document.querySelector('.messages-layout');
+        layout?.classList.remove('chat-active');
+        activeConversationId = null;
+        activeOtherUser       = null;
+        const items = contactsList.querySelectorAll('.contact-item');
+        items.forEach(item => item.classList.remove('active'));
+    });
+
     newChatBtn?.addEventListener('click', openModal);
     modalCloseBtn?.addEventListener('click', closeModal);
     newChatModal?.addEventListener('click', e => { if (e.target === newChatModal) closeModal(); });

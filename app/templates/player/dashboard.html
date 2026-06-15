@@ -69,8 +69,7 @@
         <!-- Player Performance Widget -->
         <div class="glass-card full-width"
             style="padding: 24px; position: relative; overflow: hidden; background: linear-gradient(135deg, var(--card-bg), var(--primary-orange-light)); border-left: 5px solid var(--primary-orange);">
-            <div
-                style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <div class="profile-header-flex">
                 <div>
                     <span class="small-caps"
                         style="color: var(--primary-orange); font-weight: 700; letter-spacing: 1px;"><i
@@ -99,38 +98,22 @@
                 </div>
 
                 <!-- Stats grid -->
-                <div style="display: flex; gap: 24px; flex-wrap: wrap;">
-                    <div
-                        style="text-align: center; background: var(--card-bg); padding: 12px 18px; border-radius: 10px; border: 1px solid var(--border-color); min-width: 100px; box-shadow: var(--shadow-sm);">
-                        <span
-                            style="font-size: 1.6rem; font-weight: 800; color: var(--primary-orange); display: block;">{{
-                            "%.2f"|format(current_user.dupr|float) }}</span>
-                        <span
-                            style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">DUPR
-                            Rating</span>
+                <div class="stats-summary-grid">
+                    <div class="stats-summary-card">
+                        <span class="value" style="color: var(--primary-orange);">{{ "%.2f"|format(current_user.dupr|float) }}</span>
+                        <span class="label">DUPR Rating</span>
                     </div>
-                    <div
-                        style="text-align: center; background: var(--card-bg); padding: 12px 18px; border-radius: 10px; border: 1px solid var(--border-color); min-width: 100px; box-shadow: var(--shadow-sm);">
-                        <span style="font-size: 1.6rem; font-weight: 800; color: var(--btn-navy); display: block;">{{
-                            current_user.elo }}</span>
-                        <span
-                            style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Elo
-                            Points</span>
+                    <div class="stats-summary-card">
+                        <span class="value" style="color: var(--btn-navy);">{{ current_user.elo }}</span>
+                        <span class="label">Elo Points</span>
                     </div>
-                    <div
-                        style="text-align: center; background: var(--card-bg); padding: 12px 18px; border-radius: 10px; border: 1px solid var(--border-color); min-width: 90px; box-shadow: var(--shadow-sm);">
-                        <span style="font-size: 1.6rem; font-weight: 800; color: var(--btn-green); display: block;">{{
-                            player_stats.total_played|default(0) }}</span>
-                        <span
-                            style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Matches</span>
+                    <div class="stats-summary-card">
+                        <span class="value" style="color: var(--btn-green);">{{ player_stats.total_played|default(0) }}</span>
+                        <span class="label">Matches</span>
                     </div>
-                    <div
-                        style="text-align: center; background: var(--card-bg); padding: 12px 18px; border-radius: 10px; border: 1px solid var(--border-color); min-width: 90px; box-shadow: var(--shadow-sm);">
-                        <span style="font-size: 1.6rem; font-weight: 800; color: #10b981; display: block;">{{
-                            player_stats.win_rate|default(0) }}%</span>
-                        <span
-                            style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Win
-                            Rate</span>
+                    <div class="stats-summary-card">
+                        <span class="value" style="color: #10b981;">{{ player_stats.win_rate|default(0) }}%</span>
+                        <span class="label">Win Rate</span>
                     </div>
                 </div>
             </div>

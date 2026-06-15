@@ -92,6 +92,8 @@ th {
     display: flex;
     flex-direction: row;
     height: 100vh;
+    width: 100vw;
+    max-width: 100vw;
     overflow: hidden;
     position: relative;
 }
@@ -2732,4 +2734,490 @@ html.dark-mode .contact-item.unread {
     font-size: 0.9rem;
     margin: 0;
     font-weight: 500;
+}
+
+/* ==========================================================================
+   MOBILE & TABLET RESPONSIVE SYSTEM
+   ========================================================================== */
+
+/* Hamburger and Sidebar close buttons default state (Desktop) */
+.hamburger-menu {
+    display: none;
+}
+.sidebar-close {
+    display: none;
+}
+.sidebar-overlay {
+    display: none;
+}
+.chat-back-btn {
+    display: none;
+}
+
+/* Base structural min-width constraints to prevent child elements from stretching the layout */
+.main-wrapper,
+.content-area,
+.dashboard-main,
+.dashboard-side {
+    min-width: 0 !important;
+}
+
+/* Stats summary cards in player performance widget default styles */
+.profile-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    width: 100%;
+}
+
+.stats-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    width: 100%;
+}
+.stats-summary-card {
+    text-align: center;
+    background: var(--card-bg);
+    padding: 12px 18px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.stats-summary-card .value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    display: block;
+}
+.stats-summary-card .label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-top: 4px;
+}
+
+@media (max-width: 1200px) {
+    /* Handle stats grid with 3 or 4 columns wrapping on intermediate screens */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 16px !important;
+    }
+}
+
+@media (max-width: 992px) {
+    /* ── Sidebar Off-canvas Drawer ── */
+    .dashboard-body {
+        position: relative;
+        overflow: hidden !important; /* Ensure viewport does not scroll horizontally */
+    }
+    
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 280px;
+        z-index: 1050;
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: none;
+    }
+    
+    .sidebar.active {
+        transform: translateX(0);
+        box-shadow: 8px 0 32px rgba(16, 24, 40, 0.15);
+    }
+    
+    html.dark-mode .sidebar.active {
+        box-shadow: 8px 0 32px rgba(0, 0, 0, 0.4);
+    }
+    
+    /* Close Drawer Button */
+    .sidebar-close {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.04);
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        color: var(--text-secondary);
+        font-size: 1.25rem;
+        cursor: pointer;
+        z-index: 1060;
+        transition: var(--transition);
+    }
+    
+    html.dark-mode .sidebar-close {
+        background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .sidebar-close:hover {
+        background: var(--primary-orange-light);
+        color: var(--primary-orange);
+    }
+    
+    /* Overlay Backdrop */
+    .sidebar-overlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(11, 14, 20, 0.4);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        z-index: 1040;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+    
+    .sidebar-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    /* Hamburger Trigger Button */
+    .hamburger-menu {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 1.55rem;
+        cursor: pointer;
+        padding: 6px;
+        border-radius: 8px;
+        transition: var(--transition);
+        margin-right: 12px;
+    }
+    
+    .hamburger-menu:hover {
+        background: var(--primary-orange-light);
+        color: var(--primary-orange);
+    }
+    
+    /* ── Content Layout Adjustments ── */
+    .main-wrapper {
+        width: 100%;
+        min-width: 0 !important;
+        max-width: 100% !important;
+    }
+    
+    .top-header {
+        padding: 0 16px;
+    }
+    
+    .content-area {
+        padding: 24px 16px;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+    }
+    
+    /* Grids Collapse to single column - force minmax track sizes to contain widths */
+    .dashboard-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+        gap: 20px !important;
+        width: 100% !important;
+    }
+    
+    .events-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 16px !important;
+    }
+    
+    .stats-summary-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+    }
+    
+    .profile-header-flex {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+    
+    .glass-card {
+        padding: 16px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    /* ── Top Header Items Restructuring ── */
+    .user-profile .avatar-info {
+        display: none; /* Hide name/role text to save massive horizontal space */
+    }
+    
+    .user-profile {
+        padding: 4px;
+    }
+    
+    .header-actions {
+        gap: 12px;
+    }
+    
+    .header-search {
+        flex: 1;
+        min-width: 0;
+        width: auto;
+        max-width: 260px;
+    }
+    
+    /* ── Messages Chat Switcher ── */
+    .messages-layout {
+        grid-template-columns: 1fr !important;
+        margin: 0 16px 20px !important;
+        height: calc(100vh - 72px - 60px) !important;
+    }
+    
+    .messages-outer {
+        padding: 24px 16px 0 !important;
+    }
+    
+    .contacts-panel {
+        display: flex;
+        width: 100% !important;
+        border-right: none !important;
+    }
+    
+    .chat-window {
+        display: none !important;
+        width: 100% !important;
+    }
+    
+    /* Active chat state toggle */
+    .messages-layout.chat-active .contacts-panel {
+        display: none !important;
+    }
+    
+    .messages-layout.chat-active .chat-window {
+        display: flex !important;
+    }
+    
+    /* Back Button in Chat Window Header */
+    .chat-back-btn {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 4px;
+        margin-right: 12px;
+        border-radius: 6px;
+        transition: var(--transition);
+    }
+    
+    .chat-back-btn:hover {
+        background: var(--primary-orange-light);
+        color: var(--primary-orange);
+    }
+    
+    /* Events Card Grid */
+    .events-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (max-width: 576px) {
+    /* Hide search input box to avoid any element wrapping */
+    .header-search {
+        display: none;
+    }
+    
+    /* Table Container scroll-overflow setup */
+    .table-container {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        width: 100% !important;
+    }
+    
+    .data-grid {
+        min-width: 600px !important; /* Force minimum width to allow horizontal scroll */
+    }
+    
+    /* Quick Actions Button Grid */
+    .action-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+    
+    /* Court Reservation Widget stacked */
+    .reservation-grid {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 16px !important;
+    }
+    
+    .court-image {
+        width: 100% !important;
+        max-height: 180px !important;
+    }
+    
+    .reservation-info {
+        width: 100% !important;
+    }
+    
+    /* Social Share Buttons */
+    .share-options {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+    
+    .stats-summary-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ==========================================================================
+   ADDITIONAL PLAYER DASHBOARD & TEMPLATE RESPONSIVENESS
+   ========================================================================== */
+
+/* Local Search Bar style - so it stays visible on mobile */
+.local-search-bar {
+    display: flex;
+    align-items: center;
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    padding: 8px 16px;
+    border-radius: 8px;
+}
+.local-search-bar i {
+    color: var(--text-muted);
+    margin-right: 8px;
+    font-size: 1.1rem;
+}
+.local-search-bar input {
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    outline: none;
+    width: 100%;
+    font-size: 0.85rem;
+}
+
+@media (max-width: 992px) {
+    /* Profile Layout Collapse */
+    .profile-layout {
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Header & Panel Actions Alignment */
+    .dashboard-header, 
+    .res-header, 
+    .matchmaker-header, 
+    .res-tabs-container,
+    .profile-header-flex {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 16px !important;
+    }
+    
+    .dashboard-header .action-box,
+    .res-header .btn-pay,
+    .matchmaker-header .action-box,
+    .res-tabs-container .local-search-bar {
+        width: 100% !important;
+        max-width: 100% !important;
+        text-align: center;
+        justify-content: center;
+    }
+
+    /* Grids & Forms Stacking */
+    .filter-bar {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    .teams-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+    }
+
+    /* Reservations list card sizes */
+    .res-grid {
+        grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)) !important;
+    }
+
+    /* Modals width protection */
+    .modal-card,
+    .modal-content {
+        width: calc(100% - 32px) !important;
+        margin: 16px !important;
+        padding: 20px !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* DUPR match simulator input wrapping */
+    .sim-input-row {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+    }
+    .sim-input-row #sim-opp-dupr-num {
+        width: 100% !important;
+    }
+}
+
+@media (max-width: 576px) {
+    /* Wizard step compacting - show only step numbers on mobile to prevent overflow */
+    .wizard-steps {
+        gap: 4px !important;
+    }
+    .wizard-steps .step-label {
+        display: none !important;
+    }
+    .wizard-steps .step-line {
+        min-width: 15px !important;
+        margin: 0 4px !important;
+    }
+
+    /* Table horizontal scrolling containers */
+    .fac-panel,
+    .leaderboard-table-wrap,
+    .table-container {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        width: 100% !important;
+    }
+    .queue-table,
+    .leaderboard-table,
+    .data-grid {
+        min-width: 600px !important; /* Forces scroll bar and prevents text overlap */
+    }
+
+    /* Stat boxes wrapping */
+    .stat-boxes,
+    .stat-boxes.four-cols {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+    
+    /* Queue Position banner */
+    .queue-position-card {
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        padding: 20px !important;
+        gap: 16px !important;
+    }
 }

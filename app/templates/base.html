@@ -182,9 +182,16 @@
 </head>
 
 <body class="dashboard-body">
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" onclick="toggleSidebar(false)"></div>
+
     <!-- Reusable Sidebar -->
     <aside class="sidebar">
-        <a href="{{ url_for('player.dashboard') }}" style="text-decoration: none;">
+        <!-- Close Button for Mobile Sidebar -->
+        <button class="sidebar-close" onclick="toggleSidebar(false)" aria-label="Close sidebar">
+            <i class="ph ph-x"></i>
+        </button>
+        <a href="{{ url_for(current_user.role_raw ~ '.dashboard') }}" style="text-decoration: none;">
             <div class="sidebar-header">
                 <img class="sidebar-logo" src="{{ url_for('static', filename='images/logo.png') }}"
                     alt="{{ platform_settings.platform_name }} Logo">
@@ -230,6 +237,9 @@
         <div id="toast-container"></div>
         <!-- Reusable Header -->
         <header class="top-header">
+            <button class="hamburger-menu" onclick="toggleSidebar(true)" aria-label="Open sidebar">
+                <i class="ph ph-list"></i>
+            </button>
             <div class="header-search">
                 <i class="ph ph-magnifying-glass"></i>
                 <input type="text" placeholder="Search courts, events, players...">
@@ -336,7 +346,7 @@
         </div>
     </div>
 
-    <!-- Theme Toggle Script -->
+    <!-- Theme Toggle & Sidebar Control Script -->
     <script>
         function toggleTheme() {
             const body = document.documentElement;
@@ -360,6 +370,24 @@
         // Ensure icon is correct on initial load
         if (document.documentElement.classList.contains('dark-mode')) {
             document.getElementById('theme-icon').classList.replace('ph-moon', 'ph-sun');
+        }
+
+        // Toggle Sidebar for Mobile Responsive View
+        function toggleSidebar(show) {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            if (!sidebar || !overlay) return;
+            
+            if (show === undefined) {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+            } else if (show) {
+                sidebar.classList.add('active');
+                overlay.classList.add('active');
+            } else {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            }
         }
     </script>
 
@@ -544,6 +572,11 @@
                     if (clickedLi && sidebar.contains(clickedLi)) {
                         clickedLi.classList.add('active');
                     }
+                }
+
+                // Close mobile sidebar if open
+                if (typeof toggleSidebar === 'function') {
+                    toggleSidebar(false);
                 }
             });
 
