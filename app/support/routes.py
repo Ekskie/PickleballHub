@@ -1,25 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 from app import supabase_admin, supabase
 
-from flask import g
-import os
-from supabase import create_client
+from app.db import get_db
 
-_cached_db = None
-
-def get_db():
-    global _cached_db
-    if _cached_db is None:
-        import os
-        import httpx
-        from supabase import create_client, ClientOptions
-        url = os.environ.get('SUPABASE_URL')
-        key = os.environ.get('SERVICE_ROLE_KEY') or os.environ.get('SUPABASE_KEY')
-        if url and key:
-            http_client = httpx.Client(http2=False, limits=httpx.Limits(keepalive_expiry=10.0), timeout=30.0)
-            options = ClientOptions(httpx_client=http_client)
-            _cached_db = create_client(url, key, options=options)
-    return _cached_db
 
 support_bp = Blueprint('support', __name__, url_prefix='/support')
 

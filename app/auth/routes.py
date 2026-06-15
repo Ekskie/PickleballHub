@@ -1,22 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-import os
 from flask import g
-from supabase import create_client
-
-_cached_db = None
-
-def get_db():
-    global _cached_db
-    if _cached_db is None:
-        import os
-        import httpx
-        from supabase import create_client, ClientOptions
-        url = os.environ.get('SUPABASE_URL')
-        key = os.environ.get('SERVICE_ROLE_KEY') or os.environ.get('SUPABASE_KEY')
-        http_client = httpx.Client(http2=False, limits=httpx.Limits(keepalive_expiry=10.0), timeout=30.0)
-        options = ClientOptions(httpx_client=http_client)
-        _cached_db = create_client(url, key, options=options)
-    return _cached_db
+from app.db import get_db, get_admin_db
 
 auth_bp = Blueprint('auth', __name__, url_prefix='')
 
@@ -167,7 +151,7 @@ def signup():
                 # we overwrite it here to ensure the chosen role is persisted.
                 if sign_up_resp and sign_up_resp.user:
                     try:
-                        admin_client = get_db()
+                        admin_client = get_admin_db()
                         admin_client.table('profiles').upsert({
                             'id':         sign_up_resp.user.id,
                             'first_name': first_name,

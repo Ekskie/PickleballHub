@@ -5,24 +5,8 @@ from datetime import datetime, timedelta, timezone, date
 
 PH_TZ = timezone(timedelta(hours=8))
 
-from flask import g
-import os
-from supabase import create_client
+from app.db import get_db, get_admin_db, log_audit_action
 
-_cached_db = None
-
-def get_db():
-    global _cached_db
-    if _cached_db is None:
-        import os
-        import httpx
-        from supabase import create_client, ClientOptions
-        url = os.environ.get('SUPABASE_URL')
-        key = os.environ.get('SERVICE_ROLE_KEY') or os.environ.get('SUPABASE_KEY')
-        http_client = httpx.Client(http2=False, limits=httpx.Limits(keepalive_expiry=10.0), timeout=30.0)
-        options = ClientOptions(httpx_client=http_client)
-        _cached_db = create_client(url, key, options=options)
-    return _cached_db
 
 
 adminstaff_bp = Blueprint('adminstaff', __name__, url_prefix='/adminstaff')
@@ -102,6 +86,7 @@ def resolve_ticket(ticket_id):
     db = get_db()
     try:
         db.table('tickets').update({'status': 'closed', 'response': response}).eq('id', ticket_id).execute()
+        log_audit_action('resolve_ticket', ticket_id, {'response': response})
         flash('Ticket resolved successfully.', 'success')
     except Exception as e:
         flash(f'Error resolving ticket: {e}', 'error')
@@ -129,6 +114,7 @@ def update_kyc_status(facility_id):
     db = get_db()
     try:
         db.table('facilities').update({'kyc_status': status}).eq('id', facility_id).execute()
+        log_audit_action('update_facility_kyc', facility_id, {'status': status})
         flash(f'Facility KYC status updated to {status}.', 'success')
     except Exception as e:
         flash(f'Error updating status: {e}', 'error')
@@ -166,6 +152,7 @@ def update_dispute(dispute_id):
             'resolution': resolution,
             'updated_at': datetime.now(PH_TZ).isoformat()
         }).eq('id', dispute_id).execute()
+        log_audit_action('update_dispute', dispute_id, {'status': new_status, 'resolution': resolution})
         flash(f'Dispute marked as {new_status}.', 'success')
     except Exception as e:
         flash(f'Error updating dispute: {e}', 'error')

@@ -1,0 +1,272 @@
+{% extends "superadmin/base_superadmin.html" %}
+
+{% block title %}System Audit Logs{% endblock %}
+
+{% block superadmin_extra_head %}
+<style>
+    .log-main-row {
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+    
+    .log-main-row:hover {
+        background-color: var(--table-row-hover) !important;
+    }
+
+    .log-details-row {
+        background: var(--action-box-bg);
+        border-left: 3px solid var(--primary-orange);
+    }
+
+    .log-details-row td {
+        border-bottom: 1px solid var(--table-border-color) !important;
+    }
+
+    .meta-code {
+        margin: 0;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.82rem;
+        color: var(--text-primary);
+        background: rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--border-color-soft);
+        padding: 10px 14px;
+        border-radius: 8px;
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    html.dark-mode .meta-code {
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    /* Action Badge Colors */
+    .action-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-transform: capitalize;
+        border: 1px solid transparent;
+    }
+
+    .action-badge.suspend {
+        background: rgba(239, 68, 68, 0.08);
+        border-color: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+    }
+
+    .action-badge.unsuspend {
+        background: rgba(16, 185, 129, 0.08);
+        border-color: rgba(16, 185, 129, 0.2);
+        color: #10b981;
+    }
+
+    .action-badge.kyc {
+        background: rgba(245, 158, 11, 0.08);
+        border-color: rgba(245, 158, 11, 0.2);
+        color: #f59e0b;
+    }
+
+    .action-badge.create {
+        background: rgba(99, 102, 241, 0.08);
+        border-color: rgba(99, 102, 241, 0.2);
+        color: #818cf8;
+    }
+
+    .action-badge.generic {
+        background: rgba(107, 114, 128, 0.08);
+        border-color: rgba(107, 114, 128, 0.2);
+        color: var(--text-secondary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h1 class="page-title" style="margin: 0 0 4px 0;">System Audit Logs</h1>
+        <small style="color:var(--text-secondary); font-size: 0.85rem; font-weight: 500;">Trace platform activities, configuration updates, and administration overrides</small>
+    </div>
+</div>
+
+<div class="glass-card" style="padding: 24px;">
+    <!-- Filter and Search Header -->
+    <div class="widget-header" style="display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color-soft); padding-bottom: 16px;">
+        <div style="flex: 1; max-width: 400px; position: relative; display: flex; align-items: center;">
+            <i class="ph ph-magnifying-glass" style="position: absolute; left: 14px; color: var(--text-muted); font-size: 1.1rem; z-index: 10;"></i>
+            <input type="text" id="logSearchInput" placeholder="Search by actor, action, target..."
+                   style="width: 100%; padding: 10px 14px 10px 42px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-primary); font-size: 0.9rem; outline: none; transition: all 0.2s;">
+        </div>
+        <div style="color: var(--text-muted); font-size: 0.82rem;">
+            Showing last 150 events • <span style="color: var(--primary-orange); font-weight: 600;">Click rows to view details</span>
+        </div>
+    </div>
+
+    <!-- Logs Table -->
+    <div class="table-container">
+        <table class="data-grid" id="logsTable">
+            <thead>
+                <tr>
+                    <th style="width: 50px;"></th>
+                    <th>Timestamp</th>
+                    <th>Actor</th>
+                    <th>Action Event</th>
+                    <th>Target Resource</th>
+                    <th>IP Address</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                {% set display_action = log.action | replace('_', ' ') %}
+                <tr class="log-row log-main-row" id="row-{{ log.id }}" onclick="toggleLogDetails('{{ log.id }}')"
+                    data-search="{{ (log.action ~ ' ' ~ log.target_resource ~ ' ' ~ log.ip_address ~ ' ' ~ (log.actor.first_name if log.actor else 'system') ~ ' ' ~ (log.actor.last_name if log.actor else '')) | lower }}">
+                    <td style="text-align: center; color: var(--text-muted); font-size: 1rem;">
+                        <i class="ph ph-caret-right" id="icon-{{ log.id }}" style="transition: transform 0.2s ease;"></i>
+                    </td>
+                    <td>{{ log.created_at | community_timeago }}</td>
+                    <td class="bold">
+                        {% if log.actor %}
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-weight: 600; color: var(--text-primary);">{{ log.actor.first_name }} {{ log.actor.last_name }}</span>
+                                <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px;">{{ log.actor.role }}</span>
+                            </div>
+                        {% else %}
+                            <span style="color: var(--text-muted); font-style: italic;">System / Automated</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if 'suspend' in log.action %}
+                            <span class="action-badge suspend">
+                                <i class="ph ph-prohibit-line"></i> {{ display_action }}
+                            </span>
+                        {% elif 'unsuspend' in log.action %}
+                            <span class="action-badge unsuspend">
+                                <i class="ph ph-user-check"></i> {{ display_action }}
+                            </span>
+                        {% elif 'kyc' in log.action or 'platform_status' in log.action %}
+                            <span class="action-badge kyc">
+                                <i class="ph ph-buildings"></i> {{ display_action }}
+                            </span>
+                        {% elif 'create' in log.action %}
+                            <span class="action-badge create">
+                                <i class="ph ph-user-plus"></i> {{ display_action }}
+                            </span>
+                        {% else %}
+                            <span class="action-badge generic">
+                                <i class="ph ph-activity"></i> {{ display_action }}
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span style="font-family: monospace; font-size: 0.82rem;">{{ log.target_resource }}</span>
+                    </td>
+                    <td style="font-family: monospace; font-size: 0.85rem; color: var(--text-muted);">{{ log.ip_address or '0.0.0.0' }}</td>
+                </tr>
+                <!-- Expandable Details Section -->
+                <tr id="details-{{ log.id }}" class="log-details-row" style="display: none;">
+                    <td></td>
+                    <td colspan="5" style="padding: 16px 20px !important;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
+                            <div>
+                                <span style="display: block; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 6px;">Event Specifications</span>
+                                <table style="width: 100%; font-size: 0.85rem; border-collapse: collapse;">
+                                    <tr style="border-bottom: 1px solid var(--border-color-soft);">
+                                        <td style="padding: 6px 0; color: var(--text-muted); width: 120px;">Log Record ID</td>
+                                        <td style="padding: 6px 0; font-family: monospace;">{{ log.id }}</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid var(--border-color-soft);">
+                                        <td style="padding: 6px 0; color: var(--text-muted);">Timestamp</td>
+                                        <td style="padding: 6px 0;">{{ log.created_at }}</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid var(--border-color-soft);">
+                                        <td style="padding: 6px 0; color: var(--text-muted);">Target Resource</td>
+                                        <td style="padding: 6px 0; font-family: monospace;">{{ log.target_resource }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 6px 0; color: var(--text-muted);">Client IP</td>
+                                        <td style="padding: 6px 0; font-family: monospace;">{{ log.ip_address or 'N/A' }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div>
+                                <span style="display: block; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 6px;">Metadata Details (JSON)</span>
+                                {% if log.details %}
+                                    <pre class="meta-code">{{ log.details | tojson(indent=2) }}</pre>
+                                {% else %}
+                                    <div style="font-size: 0.85rem; color: var(--text-muted); font-style: italic; padding: 10px; border: 1px dashed var(--border-color-soft); border-radius: 8px;">No metadata attached to this audit event.</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                        <i class="ph ph-scroll" style="font-size: 2.5rem; display: block; margin-bottom: 10px;"></i>
+                        No audit events recorded in the database.
+                    </td>
+                </tr>
+                {% endfor %}
+                <tr id="searchNoMatchRow" style="display: none;">
+                    <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                        <i class="ph ph-magnifying-glass" style="font-size: 2.5rem; display: block; margin-bottom: 10px;"></i>
+                        No audit logs match your search query.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+// Expand/Collapse Details Row
+function toggleLogDetails(logId) {
+    const detailsRow = document.getElementById('details-' + logId);
+    const icon = document.getElementById('icon-' + logId);
+    
+    if (detailsRow.style.display === 'none') {
+        detailsRow.style.display = 'table-row';
+        icon.style.transform = 'rotate(90deg)';
+    } else {
+        detailsRow.style.display = 'none';
+        icon.style.transform = 'rotate(0deg)';
+    }
+}
+
+// Client-side search filtering
+const searchInput = document.getElementById('logSearchInput');
+const rows = document.querySelectorAll('.log-row');
+const searchNoMatchRow = document.getElementById('searchNoMatchRow');
+
+searchInput.addEventListener('input', function() {
+    const query = this.value.toLowerCase().trim();
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        const searchText = row.dataset.search;
+        const logId = row.id.replace('row-', '');
+        const detailsRow = document.getElementById('details-' + logId);
+        const icon = document.getElementById('icon-' + logId);
+        
+        if (!query || searchText.includes(query)) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+            // Also collapse details when row is hidden
+            detailsRow.style.display = 'none';
+            icon.style.transform = 'rotate(0deg)';
+        }
+    });
+    
+    if (visibleCount === 0 && query) {
+        searchNoMatchRow.style.display = '';
+    } else {
+        searchNoMatchRow.style.display = 'none';
+    }
+});
+</script>
+{% endblock %}

@@ -3,7 +3,39 @@ Role-based access control decorators for protecting routes.
 """
 
 from functools import wraps
-from flask import session, redirect, url_for, flash
+from flask import session, redirect, url_for, flash, current_app
+from app.db import get_db
+
+ROLE_HIERARCHY = {
+    'player': 1,
+    'facilitystaff': 2,
+    'owner': 3,
+    'clubadmin': 4,
+    'adminstaff': 5,
+    'superadmin': 6
+}
+
+def has_role_permission(user_role, allowed_roles):
+    """
+    Returns True if user_role is in allowed_roles, or if the user's role
+    has a higher priority in the hierarchy than any of the allowed_roles.
+    """
+    user_role = (user_role or 'player').strip().lower()
+    allowed_roles_lower = [r.strip().lower() for r in allowed_roles]
+    
+    # Direct match is always allowed
+    if user_role in allowed_roles_lower:
+        return True
+        
+    user_priority = ROLE_HIERARCHY.get(user_role, 1)
+    
+    # If the user has a higher priority than at least one of the allowed roles, permit them.
+    for allowed in allowed_roles_lower:
+        allowed_priority = ROLE_HIERARCHY.get(allowed, 1)
+        if user_priority >= allowed_priority:
+            return True
+            
+    return False
 
 
 def _get_dashboard_for_role(role):
@@ -24,14 +56,13 @@ def _get_dashboard_for_role(role):
     return url_for('auth.login')
 
 
-
 def require_role(*allowed_roles):
     """
-    Decorator to protect routes by role.
+    Decorator to protect routes by role, supporting role hierarchies.
     Usage: @require_role('superadmin', 'owner')
 
     Redirects unauthorized users to their respective dashboard with a warning.
-    Legacy role strings (e.g. 'administrator') are normalised before the check.
+    Stale roles or suspended accounts are checked dynamically against the DB.
     """
     def decorator(f):
         @wraps(f)
@@ -42,13 +73,30 @@ def require_role(*allowed_roles):
                 flash('Please login first.', 'error')
                 return redirect(url_for('auth.login'))
 
-            # Get user's role from session, normalise legacy aliases
+            # Get fresh user record from the database to check role and suspension
+            db = get_db()
             user_role = session.get('role', 'player')
+            try:
+                resp = db.table('profiles').select('role, is_suspended').eq('id', user_id).single().execute()
+                if resp.data:
+                    profile = resp.data
+                    
+                    # 1. Force logout if suspended
+                    if profile.get('is_suspended'):
+                        session.clear()
+                        flash('Your account has been suspended. Please contact support.', 'error')
+                        return redirect(url_for('auth.login'))
+                        
+                    # 2. Sync role dynamically to session
+                    user_role = (profile.get('role') or 'player').strip().lower()
+                    session['role'] = user_role
+            except Exception as e:
+                # Log the issue but fall back to cached session key to fail-safe if DB is temporarily down
+                current_app.logger.error(f"[require_role] Integrity check failed: {e}")
 
-            # Check if role is allowed
-            if user_role not in allowed_roles:
-                flash(f'Access denied. Only {", ".join(allowed_roles)} can access this page.', 'error')
-                # Redirect to the user's own dashboard based on their role
+            # Check if role is allowed (direct match or hierarchy match)
+            if not has_role_permission(user_role, allowed_roles):
+                flash(f'Access denied. Only {", ".join(allowed_roles)} (or higher) can access this page.', 'error')
                 return redirect(_get_dashboard_for_role(user_role))
 
             # Role is authorized, proceed
@@ -56,6 +104,7 @@ def require_role(*allowed_roles):
 
         return decorated_function
     return decorator
+
 
 
 def upload_avatar(db, user_id, avatar_file):

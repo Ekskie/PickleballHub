@@ -1,8 +1,9 @@
 import os
 import sys
-from flask import Flask, session, render_template
+from flask import Flask, session, render_template, request, redirect, url_for, flash
 from dotenv import load_dotenv
 from supabase import create_client, Client
+from flask_wtf.csrf import CSRFProtect
 
 load_dotenv()
 
@@ -19,12 +20,22 @@ supabase_admin: Client | None = None
 if supabase_url and service_role_key:
     supabase_admin = create_client(supabase_url, service_role_key)
 
-_cached_admin_db: Client | None = None
+csrf = CSRFProtect()
+
 
 
 def create_app():
     app = Flask(__name__)
-    app.secret_key = os.environ.get("SECRET_KEY", "super_secret_fallback")
+    
+    secret_key = os.environ.get("SECRET_KEY")
+    if not secret_key:
+        if os.environ.get("FLASK_ENV") == "production" or os.environ.get("VERCEL") == "1":
+            raise RuntimeError("CRITICAL CONFIGURATION ERROR: SECRET_KEY environment variable is required in production.")
+        app.secret_key = "super_secret_fallback_development_only"
+    else:
+        app.secret_key = secret_key
+        
+    csrf.init_app(app)
    
     from app.main.routes import main_bp
     from app.auth.routes import auth_bp
@@ -45,6 +56,60 @@ def create_app():
     app.register_blueprint(facilitystaff_bp)
     app.register_blueprint(clubadmin_bp)
     app.register_blueprint(support_bp)
+
+    @app.before_request
+    def verify_session_integrity():
+        """Verify session integrity, sync roles dynamically, and check suspension."""
+        if request.endpoint and (request.endpoint.startswith('static') or request.endpoint == 'auth.logout'):
+            return
+            
+        user_id = session.get('user_id')
+        if not user_id:
+            return
+            
+        from app.db import get_admin_db
+        try:
+            db = get_admin_db()
+            resp = db.table('profiles').select('role, is_suspended').eq('id', user_id).single().execute()
+            if resp.data:
+                profile = resp.data
+                
+                # 1. Force logout if suspended
+                if profile.get('is_suspended'):
+                    session.clear()
+                    flash('Your account has been suspended. Please contact support.', 'error')
+                    return redirect(url_for('auth.login'))
+                    
+                # 2. Sync role dynamically
+                db_role = (profile.get('role') or 'player').strip().lower()
+                if session.get('role') != db_role:
+                    session['role'] = db_role
+        except Exception as e:
+            app.logger.error(f"[before_request] Integrity check failed: {e}")
+
+    @app.after_request
+    def inject_csrf_token(response):
+        """Automatically inject CSRF token hidden fields into HTML POST forms."""
+        if response.status_code == 200 and response.content_type and "text/html" in response.content_type:
+            try:
+                html = response.get_data(as_text=True)
+                import re
+                from flask_wtf.csrf import generate_csrf
+                pattern = re.compile(r'<form\b[^>]*method=\s*["\']post["\'][^>]*>', re.IGNORECASE)
+                
+                def add_csrf_field(match):
+                    form_tag = match.group(0)
+                    if 'name="csrf_token"' in form_tag or 'name="csrf_token"' in html[match.end():match.end()+150]:
+                        return form_tag
+                    csrf_token = generate_csrf()
+                    csrf_input = f'<input type="hidden" name="csrf_token" value="{csrf_token}"/>'
+                    return f'{form_tag}\n{csrf_input}'
+                    
+                html_with_csrf = pattern.sub(add_csrf_field, html)
+                response.set_data(html_with_csrf)
+            except Exception:
+                pass
+        return response
 
     @app.context_processor
     def inject_current_user():
@@ -71,19 +136,9 @@ def create_app():
                 supabase_anon_key=supabase_key
             )
 
-        # --- 1. Try Supabase (cached admin client, bypasses RLS) ---
-        global _cached_admin_db
-        if _cached_admin_db is None:
-            import os
-            import httpx
-            from supabase import create_client, ClientOptions
-            url = os.environ.get('SUPABASE_URL')
-            key = os.environ.get('SERVICE_ROLE_KEY') or os.environ.get('SUPABASE_KEY')
-            if url and key:
-                http_client = httpx.Client(http2=False, limits=httpx.Limits(keepalive_expiry=10.0), timeout=30.0)
-                _cached_admin_db = create_client(url, key, options=ClientOptions(httpx_client=http_client))
-                
-        client = _cached_admin_db
+        # --- 1. Try Supabase request-scoped admin client ---
+        from app.db import get_admin_db
+        client = get_admin_db()
         if client:
             try:
                 resp = client.table('profiles').select(
@@ -159,21 +214,9 @@ def create_app():
     def inject_platform_settings():
         """Inject platform settings (SEO, tracking, name, email) into all templates."""
         from app.settings_helper import load_platform_settings
-        global _cached_admin_db
-        if _cached_admin_db is None:
-            import os
-            import httpx
-            from supabase import create_client, ClientOptions
-            url = os.environ.get('SUPABASE_URL')
-            key = os.environ.get('SERVICE_ROLE_KEY') or os.environ.get('SUPABASE_KEY')
-            if url and key:
-                try:
-                    http_client = httpx.Client(http2=False, limits=httpx.Limits(keepalive_expiry=10.0), timeout=30.0)
-                    _cached_admin_db = create_client(url, key, options=ClientOptions(httpx_client=http_client))
-                except Exception:
-                    pass
         settings = load_platform_settings()
         return dict(platform_settings=settings)
+
 
     # ── Template Filters ──────────────────────────────────────────────────────
     @app.template_filter('community_timeago')

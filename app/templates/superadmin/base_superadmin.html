@@ -251,6 +251,8 @@
         href="{{ url_for('superadmin.tutorials') }}"><i class="ph ph-video"></i> Tutorials</a></li>
 <li class="{% if request.endpoint == 'superadmin.messages' %}active{% endif %}"><a
         href="{{ url_for('superadmin.messages') }}"><i class="ph ph-chat-circle-dots"></i> Messages</a></li>
+<li class="{% if request.endpoint == 'superadmin.audit_logs' %}active{% endif %}"><a
+        href="{{ url_for('superadmin.audit_logs') }}"><i class="ph ph-scroll"></i> System Logs</a></li>
 <li class="{% if request.endpoint == 'superadmin.settings' %}active{% endif %}"><a
         href="{{ url_for('superadmin.settings') }}"><i class="ph ph-gear"></i> Settings</a></li>
 {% endblock %}

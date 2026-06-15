@@ -48,3 +48,31 @@
 {% if platform_settings.custom_head_scripts %}
 {{ platform_settings.custom_head_scripts | safe }}
 {% endif %}
+
+<!-- Global CSRF Protection Configuration -->
+{% if csrf_token %}
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<script>
+  (function() {
+    // Override window.fetch to automatically include CSRF token for non-GET requests
+    const originalFetch = window.fetch;
+    window.fetch = function(input, init) {
+      init = init || {};
+      const method = (init.method || 'GET').toUpperCase();
+      if (method !== 'GET' && method !== 'HEAD') {
+        init.headers = init.headers || {};
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        if (csrfToken) {
+          // Handle both Headers object and plain object
+          if (init.headers instanceof Headers) {
+            init.headers.set('X-CSRF-Token', csrfToken);
+          } else {
+            init.headers['X-CSRF-Token'] = csrfToken;
+          }
+        }
+      }
+      return originalFetch(input, init);
+    };
+  })();
+</script>
+{% endif %}

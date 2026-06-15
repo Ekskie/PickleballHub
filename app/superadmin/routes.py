@@ -5,25 +5,8 @@ from datetime import datetime, timedelta, timezone
 
 PH_TZ = timezone(timedelta(hours=8))
 
-from flask import g
-import os
-from supabase import create_client
+from app.db import get_db, get_admin_db, log_audit_action
 
-_cached_db = None
-
-def get_db():
-    global _cached_db
-    if _cached_db is None:
-        import os
-        import httpx
-        from supabase import create_client, ClientOptions
-        url = os.environ.get('SUPABASE_URL')
-        key = os.environ.get('SERVICE_ROLE_KEY') or os.environ.get('SUPABASE_KEY')
-        if url and key:
-            http_client = httpx.Client(http2=False, limits=httpx.Limits(keepalive_expiry=10.0), timeout=30.0)
-            options = ClientOptions(httpx_client=http_client)
-            _cached_db = create_client(url, key, options=options)
-    return _cached_db
 
 
 superadmin_bp = Blueprint('superadmin', __name__, url_prefix='/superadmin')
@@ -97,6 +80,7 @@ def update_kyc_status(facility_id):
     db = get_db()
     try:
         db.table('facilities').update({'kyc_status': status}).eq('id', facility_id).execute()
+        log_audit_action('update_facility_kyc', facility_id, {'status': status})
         flash(f'Facility KYC status updated to {status}.', 'success')
     except Exception as e:
         flash(f'Error updating status: {e}', 'error')
@@ -112,6 +96,7 @@ def update_platform_status(facility_id):
     db = get_db()
     try:
         db.table('facilities').update({'status': status}).eq('id', facility_id).execute()
+        log_audit_action('update_facility_platform_status', facility_id, {'status': status})
         flash(f'Facility platform status updated to {status}.', 'success')
     except Exception as e:
         flash(f'Error updating platform status: {e}', 'error')
@@ -122,13 +107,23 @@ def update_platform_status(facility_id):
 @require_role('superadmin')
 def users():
     db = get_db()
-    adminstaff_list = []
+    profiles_list = []
     try:
-        resp = db.table('profiles').select('*').eq('role', 'adminstaff').order('created_at', desc=True).execute()
-        adminstaff_list = resp.data or []
+        resp = db.table('profiles').select('*').order('created_at', desc=True).execute()
+        profiles_list = resp.data or []
+        
+        # Hydrate emails from Supabase auth
+        try:
+            auth_users = supabase_admin.auth.admin.list_users()
+            email_map = {u.id: u.email for u in auth_users}
+            for p in profiles_list:
+                p['email'] = email_map.get(p['id'], 'N/A')
+        except Exception as ae:
+            print("Failed to map auth emails for superadmin:", ae)
+            
     except Exception as e:
         flash(f'Error loading users: {e}', 'error')
-    return render_template('superadmin/users.html', adminstaff=adminstaff_list)
+    return render_template('superadmin/users.html', profiles=profiles_list)
 
 @superadmin_bp.route('/users/add_adminstaff', methods=['POST'])
 @require_role('superadmin')
@@ -154,6 +149,7 @@ def add_adminstaff():
         supabase_admin.table('profiles').upsert({
             'id': staff_id, 'first_name': first_name, 'last_name': last_name, 'role': 'adminstaff'
         }, on_conflict='id').execute()
+        log_audit_action('create_adminstaff', staff_id, {'email': email, 'first_name': first_name, 'last_name': last_name})
         flash(f'Admin Staff account for {first_name} created successfully!', 'success')
     except Exception as e:
         flash(f'Error creating admin staff: {e}', 'error')
@@ -374,4 +370,46 @@ def community():
 @require_role('superadmin')
 def tutorials():
     return render_template('superadmin/tutorials.html')
+
+@superadmin_bp.route('/users/<user_id>/toggle_suspend', methods=['POST'])
+@require_role('superadmin')
+def toggle_suspend_user(user_id):
+    db = get_db()
+    try:
+        # Fetch current suspension status
+        p_resp = db.table('profiles').select('first_name, role, is_suspended').eq('id', user_id).single().execute()
+        if not p_resp.data:
+            flash('User not found.', 'error')
+            return redirect(url_for('superadmin.users'))
+            
+        current_status = p_resp.data.get('is_suspended', False)
+        new_status = not current_status
+        
+        # Update in database
+        db.table('profiles').update({'is_suspended': new_status}).eq('id', user_id).execute()
+        
+        action = 'suspend_user' if new_status else 'unsuspend_user'
+        log_audit_action(action, user_id, {'role': p_resp.data.get('role'), 'name': p_resp.data.get('first_name')})
+        
+        msg = f"User has been {'suspended' if new_status else 'unsuspended'} successfully."
+        flash(msg, 'success')
+    except Exception as e:
+        flash(f"Error toggling suspension: {e}", 'error')
+    return redirect(url_for('superadmin.users'))
+
+@superadmin_bp.route('/logs')
+@require_role('superadmin')
+def audit_logs():
+    db = get_db()
+    logs_list = []
+    try:
+        # Fetch audit logs with actor name joined from profiles
+        resp = db.table('audit_logs').select(
+            'id, action, target_resource, details, ip_address, created_at, actor:profiles!actor_id(first_name, last_name, role)'
+        ).order('created_at', desc=True).limit(150).execute()
+        logs_list = resp.data or []
+    except Exception as e:
+        flash(f'Error loading audit logs: {e}', 'error')
+    return render_template('superadmin/logs.html', logs=logs_list)
+
 
