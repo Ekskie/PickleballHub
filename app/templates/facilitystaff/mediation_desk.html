@@ -1,0 +1,99 @@
+{% extends "facilitystaff/base_facilitystaff.html" %}
+
+{% block extra_head %}
+<style>
+.btn-sm { 
+    padding: 8px 16px; 
+    border-radius: 8px; 
+    font-size: 0.825rem; 
+    font-weight: 600; 
+    cursor: pointer; 
+    border: none; 
+    transition: all 0.2s ease-in-out; 
+    display: inline-flex; 
+    align-items: center; 
+    gap: 6px; 
+}
+.btn-sm-primary { 
+    background: var(--primary-orange); 
+    color: white; 
+}
+.btn-sm-primary:hover { 
+    background: var(--primary-orange-hover); 
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(225, 86, 35, 0.2);
+}
+.btn-sm-primary:active {
+    transform: translateY(0);
+}
+
+.status-pill.warning {
+    background: rgba(245, 158, 11, 0.12);
+    color: var(--primary-orange);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+}
+</style>
+{% endblock %}
+
+{% block title %}Mediation Desk{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="page-title">Mediation Desk</h1>
+</div>
+
+<p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 0.95rem;">
+    Review and resolve disputed match outcomes for your assigned facilities. As a mediator, your submitted score will be final.
+</p>
+
+<div class="glass-card full-width">
+    <div class="widget-header">
+        <h3><i class="ph ph-warning-octagon" style="color: #ef4444; margin-right: 6px; font-size: 1.25rem; vertical-align: middle;"></i> Disputed Matches (Mediation Required)</h3>
+    </div>
+    <div class="table-container">
+        <table class="data-grid">
+            <thead>
+                <tr>
+                    <th>MATCH LOBBY</th>
+                    <th>COURT</th>
+                    <th>HOST</th>
+                    <th>REPORTED SCORE</th>
+                    <th>SCHEDULE</th>
+                    <th>ACTION</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lobby in disputed_lobbies %}
+                <tr>
+                    <td class="bold">
+                        <span style="display: flex; align-items: center; gap: 6px;">
+                            <span class="status-pill warning" style="font-size: 0.7rem; padding: 2px 6px;">Disputed</span>
+                            {{ lobby.title }}
+                        </span>
+                    </td>
+                    <td>{{ lobby.facility_name }} - {{ lobby.court_name }}</td>
+                    <td>{{ lobby.creator_name }}</td>
+                    <td class="monospace bold" style="color: var(--primary-orange);">{{ lobby.reported_score }}</td>
+                    <td>
+                        <span style="font-size: 0.8rem; color: var(--text-secondary); display: block;">{{ lobby.date }}</span>
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">{{ lobby.time }}</span>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('facilitystaff.matchmaker_detail', lobby_id=lobby.id) }}" class="btn-sm btn-sm-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                            <i class="ph ph-gavel"></i> Mediate
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 32px 16px; color: var(--text-muted);">
+                        <i class="ph ph-check-circle" style="font-size: 2rem; color: var(--btn-green); opacity: 0.6; display: block; margin-bottom: 8px; margin-left: auto; margin-right: auto;"></i>
+                        No matches currently require mediation. All clear!
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

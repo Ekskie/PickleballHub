@@ -2,6 +2,7 @@
 
 {% block sidebar_menu %}
 <li class="{% if request.endpoint == 'facilitystaff.dashboard' %}active{% endif %}"><a href="{{ url_for('facilitystaff.dashboard') }}"><i class="ph ph-squares-four"></i> Operations Desk</a></li>
+<li class="{% if request.endpoint == 'facilitystaff.mediation_desk' %}active{% endif %}"><a href="{{ url_for('facilitystaff.mediation_desk') }}"><i class="ph ph-gavel"></i> Mediation Desk</a></li>
 <li class="{% if request.endpoint == 'facilitystaff.queue' %}active{% endif %}"><a href="{{ url_for('facilitystaff.queue') }}"><i class="ph ph-users-four"></i> Queue Management</a></li>
 <li class="{% if request.endpoint == 'facilitystaff.schedule' %}active{% endif %}"><a href="{{ url_for('facilitystaff.schedule') }}"><i class="ph ph-calendar-blank"></i> Court Schedule</a></li>
 <li class="{% if request.endpoint == 'facilitystaff.walkin' %}active{% endif %}"><a href="{{ url_for('facilitystaff.walkin') }}"><i class="ph ph-user-plus"></i> Walk-In Registration</a></li>

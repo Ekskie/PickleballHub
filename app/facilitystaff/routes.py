@@ -22,6 +22,7 @@ def dashboard():
     courts = []
     queues = []
     court_status_list = []
+    disputed_lobbies = []
     
     try:
         # Get facilities assigned to this staff
@@ -36,6 +37,35 @@ def dashboard():
             
             # Get active queues
             queues = get_staff_processed_queues(db, fac_ids)
+            
+            # Get matchmaker lobbies in staff mediation for these facilities
+            try:
+                admin_db = get_admin_db()
+                lob_resp = admin_db.table('matchmaker_lobbies').select(
+                    'id, title, status, reported_score, creator_id, created_at, reservation_id, '
+                    'creator:profiles!creator_id(first_name, last_name), '
+                    'court_reservations!reservation_id(facility_id, date, start_time, end_time, courts(name), facilities(name))'
+                ).eq('status', 'staff_mediation').execute()
+                
+                raw_disputed = lob_resp.data or []
+                for lob in raw_disputed:
+                    res = lob.get('court_reservations') or {}
+                    if res.get('facility_id') in fac_ids:
+                        creator = lob.get('creator') or {}
+                        court = res.get('courts') or {}
+                        fac = res.get('facilities') or {}
+                        disputed_lobbies.append({
+                            'id': lob['id'],
+                            'title': lob['title'],
+                            'reported_score': lob.get('reported_score') or '—',
+                            'creator_name': f"{creator.get('first_name','')} {creator.get('last_name','')}".strip() or "Host",
+                            'facility_name': fac.get('name', 'Facility'),
+                            'court_name': court.get('name', 'Court'),
+                            'date': res.get('date') or '',
+                            'time': f"{res.get('start_time')[:5]} - {res.get('end_time')[:5]}" if res.get('start_time') else ''
+                        })
+            except Exception as lob_err:
+                print(f"Error fetching disputed lobbies: {lob_err}")
             
             # Calculate live court status
             now = datetime.now(PH_TZ)
@@ -90,7 +120,7 @@ def dashboard():
     except Exception as e:
         flash(f'Error loading dashboard: {e}', 'error')
         
-    return render_template('facilitystaff/dashboard.html', court_status_list=court_status_list, queues=queues)
+    return render_template('facilitystaff/dashboard.html', court_status_list=court_status_list, queues=queues, disputed_lobbies=disputed_lobbies)
 
 def get_staff_processed_queues(db, fac_ids):
     if not fac_ids:
@@ -340,6 +370,19 @@ def walkin():
             start_time = now.strftime('%H:%M:%S')
             end_time = (now + timedelta(hours=duration)).strftime('%H:%M:%S')
 
+            # Check for overlapping reservation
+            overlap_resp = db.table('court_reservations').select('id')\
+                .eq('court_id', court_id)\
+                .eq('date', today_str)\
+                .in_('status', ['confirmed', 'pending_payment'])\
+                .lt('start_time', end_time)\
+                .gt('end_time', start_time)\
+                .execute()
+                
+            if overlap_resp.data:
+                flash('This court is already reserved during the selected walk-in slot.', 'error')
+                return redirect(url_for('facilitystaff.walkin'))
+
             # 2. Create Reservation (include gcash_ref for payment reference)
             res_data = {
                 'court_id': court_id,
@@ -497,4 +540,290 @@ def messages():
 @require_role('facilitystaff')
 def community():
     return render_template('facilitystaff/community.html')
+
+
+@facilitystaff_bp.route('/matchmaker/<lobby_id>')
+@require_role('facilitystaff')
+def matchmaker_detail(lobby_id):
+    player_id = session.get('user_id')
+    db = get_db()
+    lobby = None
+    participants = []
+    is_joined = False
+    winner_name = ""
+    lobby_messages = []
+
+    try:
+        admin_db = get_admin_db()
+        lob_resp = admin_db.table('matchmaker_lobbies').select(
+            'id, creator_id, reservation_id, title, description, min_dupr, max_dupr, slots_total, slots_filled, status, score, winner_id, match_type, '
+            'reported_score, reported_winner_id, reporter_id, verification_status, dispute_count, '
+            'creator:profiles!creator_id(first_name, last_name, elo, dupr, proficiency, avatar_url), '
+            'reservation:court_reservations!reservation_id(date, start_time, end_time, courts(name), facilities(name))'
+        ).eq('id', lobby_id).single().execute()
+
+        if not lob_resp.data:
+            flash("Lobby not found.", "error")
+            return redirect(url_for('facilitystaff.dashboard'))
+
+        raw_lob = lob_resp.data
+        creator = raw_lob.get('creator') or {}
+        res = raw_lob.get('reservation') or {}
+        court = res.get('courts') or {}
+        facility = res.get('facilities') or {}
+
+        from app.player.routes import get_lobby_display_status
+        lobby = {
+            'id': raw_lob['id'],
+            'creator_id': raw_lob['creator_id'],
+            'reservation_id': raw_lob['reservation_id'],
+            'title': raw_lob['title'],
+            'description': raw_lob['description'],
+            'min_dupr': float(raw_lob['min_dupr']),
+            'max_dupr': float(raw_lob['max_dupr']),
+            'slots_total': raw_lob['slots_total'],
+            'slots_filled': raw_lob['slots_filled'],
+            'status': raw_lob['status'],
+            'score': raw_lob.get('score'),
+            'winner_id': raw_lob.get('winner_id'),
+            'reported_score': raw_lob.get('reported_score'),
+            'reported_winner_id': raw_lob.get('reported_winner_id'),
+            'reporter_id': raw_lob.get('reporter_id'),
+            'verification_status': raw_lob.get('verification_status') or 'pending',
+            'dispute_count': raw_lob.get('dispute_count') or 0,
+            'match_type': raw_lob.get('match_type') or 'ranked',
+            'creator_name': f"{creator.get('first_name', '')} {creator.get('last_name', '')}".strip() or "Anonymous Player",
+            'creator_dupr': creator.get('dupr') if creator.get('dupr') is not None else 3.00,
+            'creator_avatar_url': creator.get('avatar_url') or None,
+            'facility_name': facility.get('name', 'Unknown Facility'),
+            'court_name': court.get('name', 'Court'),
+            'date': res.get('date') or datetime.now(PH_TZ).strftime('%Y-%m-%d'),
+            'start_time': res.get('start_time') or '00:00',
+            'end_time': res.get('end_time') or '00:00',
+        }
+        lobby['display_status'] = get_lobby_display_status(
+            lobby['status'], lobby['date'], lobby['start_time'], lobby['end_time']
+        )
+
+        creator_first = creator.get('first_name') or 'H'
+        creator_last = creator.get('last_name') or ''
+        creator_initials = (creator_first[0] + (creator_last[0] if creator_last else '')).upper()
+
+        # Fetch participants (including team and slot)
+        part_resp = admin_db.table('lobby_participants').select(
+            'id, player_id, status, team, slot, profiles!player_id(first_name, last_name, elo, dupr, avatar_url)'
+        ).eq('lobby_id', lobby_id).eq('status', 'joined').execute()
+        
+        raw_participants = part_resp.data or []
+        
+        # Build Team slots grid
+        slots_grid = {
+            'team1': [
+                {'slot': 1, 'player': {
+                    'id': lobby['creator_id'],
+                    'name': lobby['creator_name'],
+                    'dupr': lobby['creator_dupr'],
+                    'initials': creator_initials,
+                    'avatar_url': lobby.get('creator_avatar_url'),
+                    'is_host': True
+                }}
+            ],
+            'team2': []
+        }
+        
+        if lobby['slots_total'] == 3: # Doubles
+            slots_grid['team1'].append({'slot': 2, 'player': None})
+            slots_grid['team2'].append({'slot': 1, 'player': None})
+            slots_grid['team2'].append({'slot': 2, 'player': None})
+        elif lobby['slots_total'] == 1: # Singles
+            slots_grid['team2'].append({'slot': 1, 'player': None})
+        else:
+            for s in range(1, lobby['slots_total'] + 1):
+                slots_grid['team2'].append({'slot': s, 'player': None})
+
+        participants = []
+        occupied_slots = {(1, 1): True}
+        unmapped_participants = []
+
+        for p in raw_participants:
+            p_profile = p.get('profiles') or {}
+            first = p_profile.get('first_name') or 'P'
+            last = p_profile.get('last_name') or ''
+            p['initials'] = (first[0] + (last[0] if last else '')).upper()
+            p['name'] = f"{first} {last}".strip() or "Anonymous Player"
+            p['avatar_url'] = p_profile.get('avatar_url') or None
+            participants.append(p)
+            
+            if p['player_id'] == player_id:
+                is_joined = True
+                
+            player_info = {
+                'id': p['player_id'],
+                'name': p['name'],
+                'dupr': p_profile.get('dupr') if p_profile.get('dupr') is not None else 3.00,
+                'initials': p['initials'],
+                'avatar_url': p_profile.get('avatar_url') or None,
+                'is_host': False,
+                'participant_id': p['id']
+            }
+            
+            t = p.get('team')
+            s = p.get('slot')
+            if t in [1, 2] and s is not None:
+                if (t, s) not in occupied_slots:
+                    team_key = f"team{t}"
+                    slot_idx = s - 1
+                    if team_key in slots_grid and 0 <= slot_idx < len(slots_grid[team_key]):
+                        slots_grid[team_key][slot_idx]['player'] = player_info
+                        occupied_slots[(t, s)] = True
+                        continue
+            unmapped_participants.append((p['id'], player_info))
+
+        for part_id, player_info in unmapped_participants:
+            found = False
+            for team_key in ['team2', 'team1']:
+                if found:
+                    break
+                for cell in slots_grid[team_key]:
+                    if cell['player'] is None:
+                        cell['player'] = player_info
+                        found = True
+                        t_val = 1 if team_key == 'team1' else 2
+                        s_val = cell['slot']
+                        occupied_slots[(t_val, s_val)] = True
+                        try:
+                            admin_db.table('lobby_participants').update({
+                                'team': t_val,
+                                'slot': s_val
+                            }).eq('id', part_id).execute()
+                            p_in_list = next((x for x in participants if x['id'] == part_id), None)
+                            if p_in_list:
+                                p_in_list['team'] = t_val
+                                p_in_list['slot'] = s_val
+                        except Exception as auto_heal_err:
+                            print(f"[auto_heal] Failed to update slot: {auto_heal_err}")
+                        break
+
+        winner_name = None
+        target_winner_id = lobby.get('winner_id') or lobby.get('reported_winner_id')
+        if target_winner_id:
+            is_winner_team1 = False
+            if target_winner_id == lobby['creator_id']:
+                is_winner_team1 = True
+            else:
+                for p in participants:
+                    if p['player_id'] == target_winner_id and p.get('team') == 1:
+                        is_winner_team1 = True
+                        break
+            winner_name = "Team 1" if is_winner_team1 else "Team 2"
+
+        # Fetch lobby chat messages
+        try:
+            msg_resp = admin_db.table('messages').select(
+                'id, sender_id, content, created_at, profiles!sender_id(first_name, last_name)'
+            ).eq('conversation_id', lobby_id).order('created_at', desc=False).execute()
+            
+            for m in (msg_resp.data or []):
+                if m.get('sender_id') is None:
+                    m['sender_name'] = 'System'
+                    m['sender_initials'] = 'SYS'
+                else:
+                    m_prof = m.get('profiles') or {}
+                    m_first = m_prof.get('first_name') or 'Player'
+                    m_last = m_prof.get('last_name') or ''
+                    m['sender_name'] = f"{m_first} {m_last}".strip()
+                    m['sender_initials'] = (m_first[0] + (m_last[0] if m_last else '')).upper()
+                
+                try:
+                    dt = datetime.fromisoformat(m['created_at'].replace('Z', '+00:00'))
+                    m['formatted_time'] = dt.astimezone(PH_TZ).strftime('%I:%M %p')
+                except Exception:
+                    m['formatted_time'] = ''
+                lobby_messages.append(m)
+        except Exception as msg_err:
+            print(f"Error fetching lobby messages: {msg_err}")
+
+    except Exception as e:
+        flash(f"Error loading lobby: {e}", "error")
+        return redirect(url_for('facilitystaff.dashboard'))
+
+    # Staff check logic
+    current_user_team = None
+    reporter_team = None
+    is_assigned_staff = False
+    if lobby and lobby.get('reservation_id'):
+        try:
+            res_resp = admin_db.table('court_reservations').select('facility_id').eq('id', lobby['reservation_id']).single().execute()
+            if res_resp.data:
+                fac_id = res_resp.data['facility_id']
+                staff_check = admin_db.table('facility_staff').select('id').eq('facility_id', fac_id).eq('staff_id', player_id).execute()
+                if staff_check.data:
+                    is_assigned_staff = True
+        except Exception as staff_err:
+            print(f"Error checking assigned staff: {staff_err}")
+
+    return render_template(
+        'player/matchmaker_detail.html',
+        lobby=lobby,
+        participants=participants,
+        slots_grid=slots_grid,
+        creator_initials=creator_initials,
+        is_joined=is_joined,
+        winner_name=winner_name,
+        messages=lobby_messages,
+        current_user_team=current_user_team,
+        reporter_team=reporter_team,
+        is_assigned_staff=is_assigned_staff,
+        base_template="facilitystaff/base_facilitystaff.html"
+    )
+
+
+@facilitystaff_bp.route('/mediation')
+@require_role('facilitystaff')
+def mediation_desk():
+    staff_id = session.get('user_id')
+    db = get_db()
+    
+    assigned_facilities = []
+    disputed_lobbies = []
+    
+    try:
+        # Get facilities assigned to this staff
+        fs_resp = db.table('facility_staff').select('facility_id, facilities(name)').eq('staff_id', staff_id).execute()
+        assigned_facilities = fs_resp.data or []
+        fac_ids = [f['facility_id'] for f in assigned_facilities]
+        
+        if fac_ids:
+            # Get matchmaker lobbies in staff mediation for these facilities
+            try:
+                admin_db = get_admin_db()
+                lob_resp = admin_db.table('matchmaker_lobbies').select(
+                    'id, title, status, reported_score, creator_id, created_at, reservation_id, '
+                    'creator:profiles!creator_id(first_name, last_name), '
+                    'court_reservations!reservation_id(facility_id, date, start_time, end_time, courts(name), facilities(name))'
+                ).eq('status', 'staff_mediation').execute()
+                
+                raw_disputed = lob_resp.data or []
+                for lob in raw_disputed:
+                    res = lob.get('court_reservations') or {}
+                    if res.get('facility_id') in fac_ids:
+                        creator = lob.get('creator') or {}
+                        court = res.get('courts') or {}
+                        fac = res.get('facilities') or {}
+                        disputed_lobbies.append({
+                            'id': lob['id'],
+                            'title': lob['title'],
+                            'reported_score': lob.get('reported_score') or '—',
+                            'creator_name': f"{creator.get('first_name','')} {creator.get('last_name','')}".strip() or "Host",
+                            'facility_name': fac.get('name', 'Facility'),
+                            'court_name': court.get('name', 'Court'),
+                            'date': res.get('date') or '',
+                            'time': f"{res.get('start_time')[:5]} - {res.get('end_time')[:5]}" if res.get('start_time') else ''
+                        })
+            except Exception as lob_err:
+                print(f"Error fetching disputed lobbies: {lob_err}")
+    except Exception as e:
+        flash(f'Error loading Mediation Desk: {e}', 'error')
+        
+    return render_template('facilitystaff/mediation_desk.html', disputed_lobbies=disputed_lobbies)
 

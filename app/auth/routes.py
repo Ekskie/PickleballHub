@@ -152,13 +152,28 @@ def signup():
                 if sign_up_resp and sign_up_resp.user:
                     try:
                         admin_client = get_admin_db()
-                        admin_client.table('profiles').upsert({
+                        profile_data = {
                             'id':         sign_up_resp.user.id,
                             'first_name': first_name,
                             'last_name':  last_name,
                             'role':       role,
                             'phone':      phone,
-                        }, on_conflict='id').execute()
+                        }
+                        if role == 'player':
+                            from app.ratings import get_initial_rating, ensure_initial_history
+                            from datetime import datetime, timezone
+                            elo, dupr = get_initial_rating(proficiency)
+                            profile_data['proficiency'] = proficiency
+                            profile_data['elo'] = elo
+                            profile_data['dupr'] = dupr
+                            
+                            admin_client.table('profiles').upsert(profile_data, on_conflict='id').execute()
+                            
+                            # Ensure baseline history record is populated
+                            now_str = datetime.now(timezone.utc).isoformat()
+                            ensure_initial_history(admin_client, sign_up_resp.user.id, elo, dupr, now_str)
+                        else:
+                            admin_client.table('profiles').upsert(profile_data, on_conflict='id').execute()
                     except Exception as upsert_err:
                         print(f'[signup] profile upsert error: {upsert_err}')
 

@@ -9,7 +9,7 @@
       "source_file": "run.py",
       "source_location": "L1",
       "id": "run_py",
-      "community": 11,
+      "community": 9,
       "norm_label": "run.py"
     },
     {
@@ -99,7 +99,7 @@
       "source_file": "app/db.py",
       "source_location": "L1",
       "id": "app_db_py",
-      "community": 11,
+      "community": 82,
       "norm_label": "db.py"
     },
     {
@@ -108,7 +108,7 @@
       "source_file": "app/db.py",
       "source_location": "L11",
       "id": "app_db_get_db",
-      "community": 11,
+      "community": 82,
       "norm_label": "get_db()"
     },
     {
@@ -117,7 +117,7 @@
       "source_file": "app/db.py",
       "source_location": "L41",
       "id": "app_db_get_admin_db",
-      "community": 11,
+      "community": 9,
       "norm_label": "get_admin_db()"
     },
     {
@@ -135,7 +135,7 @@
       "source_file": "app/db.py",
       "source_location": "L1",
       "id": "app_db_rationale_1",
-      "community": 11,
+      "community": 82,
       "norm_label": "thread-safe, request-scoped database helper for supabase. provides separation be"
     },
     {
@@ -144,7 +144,7 @@
       "source_file": "app/db.py",
       "source_location": "L12",
       "id": "app_db_rationale_12",
-      "community": 11,
+      "community": 82,
       "norm_label": "get a thread-safe, request-scoped supabase client.     authenticated with user a"
     },
     {
@@ -153,7 +153,7 @@
       "source_file": "app/db.py",
       "source_location": "L42",
       "id": "app_db_rationale_42",
-      "community": 11,
+      "community": 9,
       "norm_label": "get an admin/service-role scoped supabase client that bypasses row level securit"
     },
     {
@@ -396,7 +396,7 @@
       "source_file": "app/settings_helper.py",
       "source_location": "L1",
       "id": "app_settings_helper_py",
-      "community": 11,
+      "community": 9,
       "norm_label": "settings_helper.py"
     },
     {
@@ -405,7 +405,7 @@
       "source_file": "app/settings_helper.py",
       "source_location": "L11",
       "id": "app_settings_helper_get_db_client",
-      "community": 11,
+      "community": 9,
       "norm_label": "get_db_client()"
     },
     {
@@ -414,7 +414,7 @@
       "source_file": "app/settings_helper.py",
       "source_location": "L25",
       "id": "app_settings_helper_load_platform_settings",
-      "community": 11,
+      "community": 9,
       "norm_label": "load_platform_settings()"
     },
     {
@@ -423,7 +423,7 @@
       "source_file": "app/settings_helper.py",
       "source_location": "L59",
       "id": "app_settings_helper_clear_settings_cache",
-      "community": 11,
+      "community": 9,
       "norm_label": "clear_settings_cache()"
     },
     {
@@ -432,7 +432,7 @@
       "source_file": "app/settings_helper.py",
       "source_location": "L12",
       "id": "app_settings_helper_rationale_12",
-      "community": 11,
+      "community": 9,
       "norm_label": "returns a client bypassing rls if service role key is available."
     },
     {
@@ -441,7 +441,7 @@
       "source_file": "app/__init__.py",
       "source_location": "L1",
       "id": "app_init_py",
-      "community": 11,
+      "community": 9,
       "norm_label": "__init__.py"
     },
     {
@@ -450,7 +450,7 @@
       "source_file": "app/__init__.py",
       "source_location": "L27",
       "id": "app_init_create_app",
-      "community": 11,
+      "community": 9,
       "norm_label": "create_app()"
     },
     {
@@ -619,7 +619,7 @@
       "label": "resend_verification()",
       "file_type": "code",
       "source_file": "app/auth/routes.py",
-      "source_location": "L180",
+      "source_location": "L195",
       "id": "auth_routes_resend_verification",
       "community": 11,
       "norm_label": "resend_verification()"
@@ -628,7 +628,7 @@
       "label": "forgot_password()",
       "file_type": "code",
       "source_file": "app/auth/routes.py",
-      "source_location": "L209",
+      "source_location": "L224",
       "id": "auth_routes_forgot_password",
       "community": 11,
       "norm_label": "forgot_password()"
@@ -637,7 +637,7 @@
       "label": "reset_password()",
       "file_type": "code",
       "source_file": "app/auth/routes.py",
-      "source_location": "L235",
+      "source_location": "L250",
       "id": "auth_routes_reset_password",
       "community": 11,
       "norm_label": "reset_password()"
@@ -646,7 +646,7 @@
       "label": "logout()",
       "file_type": "code",
       "source_file": "app/auth/routes.py",
-      "source_location": "L339",
+      "source_location": "L354",
       "id": "auth_routes_logout",
       "community": 11,
       "norm_label": "logout()"
@@ -664,8 +664,8 @@
       "label": "Resend the email verification link to the given address.",
       "file_type": "rationale",
       "source_file": "app/auth/routes.py",
-      "source_location": "L181",
-      "id": "auth_routes_rationale_181",
+      "source_location": "L196",
+      "id": "auth_routes_rationale_196",
       "community": 11,
       "norm_label": "resend the email verification link to the given address."
     },
@@ -673,8 +673,8 @@
       "label": "Step 1: user enters email \u2192 Supabase sends reset link.",
       "file_type": "rationale",
       "source_file": "app/auth/routes.py",
-      "source_location": "L210",
-      "id": "auth_routes_rationale_210",
+      "source_location": "L225",
+      "id": "auth_routes_rationale_225",
       "community": 11,
       "norm_label": "step 1: user enters email \u2192 supabase sends reset link."
     },
@@ -682,8 +682,8 @@
       "label": "Step 2: user lands here from the email link, sets a new password.",
       "file_type": "rationale",
       "source_file": "app/auth/routes.py",
-      "source_location": "L236",
-      "id": "auth_routes_rationale_236",
+      "source_location": "L251",
+      "id": "auth_routes_rationale_251",
       "community": 11,
       "norm_label": "step 2: user lands here from the email link, sets a new password."
     },
@@ -837,7 +837,7 @@
       "source_file": "app/clubadmin/routes.py",
       "source_location": "L785",
       "id": "clubadmin_routes_advance_bracket",
-      "community": 89,
+      "community": 10,
       "norm_label": "_advance_bracket()"
     },
     {
@@ -990,7 +990,7 @@
       "source_file": "app/clubadmin/routes.py",
       "source_location": "L786",
       "id": "clubadmin_routes_rationale_786",
-      "community": 89,
+      "community": 10,
       "norm_label": "check current round completion and auto-generate next round or declare champion."
     },
     {
@@ -1015,7 +1015,7 @@
       "label": "get_staff_processed_queues()",
       "file_type": "code",
       "source_file": "app/facilitystaff/routes.py",
-      "source_location": "L95",
+      "source_location": "L125",
       "id": "facilitystaff_routes_get_staff_processed_queues",
       "community": 9,
       "norm_label": "get_staff_processed_queues()"
@@ -1024,7 +1024,7 @@
       "label": "queue()",
       "file_type": "code",
       "source_file": "app/facilitystaff/routes.py",
-      "source_location": "L152",
+      "source_location": "L182",
       "id": "facilitystaff_routes_queue",
       "community": 9,
       "norm_label": "queue()"
@@ -1033,7 +1033,7 @@
       "label": "queue_partial()",
       "file_type": "code",
       "source_file": "app/facilitystaff/routes.py",
-      "source_location": "L181",
+      "source_location": "L211",
       "id": "facilitystaff_routes_queue_partial",
       "community": 9,
       "norm_label": "queue_partial()"
@@ -1042,7 +1042,7 @@
       "label": "update_queue()",
       "file_type": "code",
       "source_file": "app/facilitystaff/routes.py",
-      "source_location": "L207",
+      "source_location": "L237",
       "id": "facilitystaff_routes_update_queue",
       "community": 9,
       "norm_label": "update_queue()"
@@ -1051,7 +1051,7 @@
       "label": "nudge_player()",
       "file_type": "code",
       "source_file": "app/facilitystaff/routes.py",
-      "source_location": "L255",
+      "source_location": "L285",
       "id": "facilitystaff_routes_nudge_player",
       "community": 9,
       "norm_label": "nudge_player()"
@@ -1060,7 +1060,7 @@
       "label": "schedule()",
       "file_type": "code",
       "source_file": "app/facilitystaff/routes.py",
-      "source_location": "L275",
+      "source_location": "L305",
       "id": "facilitystaff_routes_schedule",
       "community": 9,
       "norm_label": "schedule()"
@@ -1069,7 +1069,7 @@
       "label": "walkin()",
       "file_type": "code",
       "source_file": "app/facilitystaff/routes.py",
-      "source_location": "L315",
+      "source_location": "L345",
       "id": "facilitystaff_routes_walkin",
       "community": 9,
       "norm_label": "walkin()"
@@ -1078,7 +1078,7 @@
       "label": "walkin_receipt()",
       "file_type": "code",
       "source_file": "app/facilitystaff/routes.py",
-      "source_location": "L418",
+      "source_location": "L461",
       "id": "facilitystaff_routes_walkin_receipt",
       "community": 9,
       "norm_label": "walkin_receipt()"
@@ -1087,16 +1087,16 @@
       "label": "profile()",
       "file_type": "code",
       "source_file": "app/facilitystaff/routes.py",
-      "source_location": "L427",
+      "source_location": "L470",
       "id": "facilitystaff_routes_profile",
-      "community": 9,
+      "community": 82,
       "norm_label": "profile()"
     },
     {
       "label": "notifications()",
       "file_type": "code",
       "source_file": "app/facilitystaff/routes.py",
-      "source_location": "L469",
+      "source_location": "L512",
       "id": "facilitystaff_routes_notifications",
       "community": 9,
       "norm_label": "notifications()"
@@ -1105,7 +1105,7 @@
       "label": "mark_notifications_read()",
       "file_type": "code",
       "source_file": "app/facilitystaff/routes.py",
-      "source_location": "L482",
+      "source_location": "L525",
       "id": "facilitystaff_routes_mark_notifications_read",
       "community": 9,
       "norm_label": "mark_notifications_read()"
@@ -1114,7 +1114,7 @@
       "label": "messages()",
       "file_type": "code",
       "source_file": "app/facilitystaff/routes.py",
-      "source_location": "L493",
+      "source_location": "L536",
       "id": "facilitystaff_routes_messages",
       "community": 9,
       "norm_label": "messages()"
@@ -1123,10 +1123,28 @@
       "label": "community()",
       "file_type": "code",
       "source_file": "app/facilitystaff/routes.py",
-      "source_location": "L498",
+      "source_location": "L541",
       "id": "facilitystaff_routes_community",
       "community": 9,
       "norm_label": "community()"
+    },
+    {
+      "label": "matchmaker_detail()",
+      "file_type": "code",
+      "source_file": "app/facilitystaff/routes.py",
+      "source_location": "L547",
+      "id": "facilitystaff_routes_matchmaker_detail",
+      "community": 9,
+      "norm_label": "matchmaker_detail()"
+    },
+    {
+      "label": "mediation_desk()",
+      "file_type": "code",
+      "source_file": "app/facilitystaff/routes.py",
+      "source_location": "L783",
+      "id": "facilitystaff_routes_mediation_desk",
+      "community": 9,
+      "norm_label": "mediation_desk()"
     },
     {
       "label": "routes.py",
@@ -1654,7 +1672,7 @@
       "label": "support()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L148",
+      "source_location": "L116",
       "id": "player_routes_support",
       "community": 1,
       "norm_label": "support()"
@@ -1663,7 +1681,7 @@
       "label": "change_password()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L154",
+      "source_location": "L122",
       "id": "player_routes_change_password",
       "community": 1,
       "norm_label": "change_password()"
@@ -1672,7 +1690,7 @@
       "label": "profile()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L174",
+      "source_location": "L142",
       "id": "player_routes_profile",
       "community": 4,
       "norm_label": "profile()"
@@ -1681,7 +1699,7 @@
       "label": "reservation()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L382",
+      "source_location": "L350",
       "id": "player_routes_reservation",
       "community": 1,
       "norm_label": "reservation()"
@@ -1690,7 +1708,7 @@
       "label": "api_reservation_courts()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L397",
+      "source_location": "L365",
       "id": "player_routes_api_reservation_courts",
       "community": 1,
       "norm_label": "api_reservation_courts()"
@@ -1699,7 +1717,7 @@
       "label": "api_reservation_slots()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L413",
+      "source_location": "L381",
       "id": "player_routes_api_reservation_slots",
       "community": 67,
       "norm_label": "api_reservation_slots()"
@@ -1708,7 +1726,7 @@
       "label": "api_facility_occupancy()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L433",
+      "source_location": "L401",
       "id": "player_routes_api_facility_occupancy",
       "community": 69,
       "norm_label": "api_facility_occupancy()"
@@ -1717,7 +1735,7 @@
       "label": "book_reservation()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L468",
+      "source_location": "L436",
       "id": "player_routes_book_reservation",
       "community": 1,
       "norm_label": "book_reservation()"
@@ -1726,7 +1744,7 @@
       "label": "my_reservations()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L512",
+      "source_location": "L493",
       "id": "player_routes_my_reservations",
       "community": 1,
       "norm_label": "my_reservations()"
@@ -1735,7 +1753,7 @@
       "label": "cancel_reservation()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L558",
+      "source_location": "L539",
       "id": "player_routes_cancel_reservation",
       "community": 1,
       "norm_label": "cancel_reservation()"
@@ -1744,7 +1762,7 @@
       "label": "payment()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L578",
+      "source_location": "L559",
       "id": "player_routes_payment",
       "community": 1,
       "norm_label": "payment()"
@@ -1753,7 +1771,7 @@
       "label": "confirm_payment()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L601",
+      "source_location": "L582",
       "id": "player_routes_confirm_payment",
       "community": 66,
       "norm_label": "confirm_payment()"
@@ -1762,7 +1780,7 @@
       "label": "get_processed_queues()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L642",
+      "source_location": "L635",
       "id": "player_routes_get_processed_queues",
       "community": 65,
       "norm_label": "get_processed_queues()"
@@ -1771,7 +1789,7 @@
       "label": "queue()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L747",
+      "source_location": "L740",
       "id": "player_routes_queue",
       "community": 70,
       "norm_label": "queue()"
@@ -1780,7 +1798,7 @@
       "label": "queue_partial()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L756",
+      "source_location": "L749",
       "id": "player_routes_queue_partial",
       "community": 70,
       "norm_label": "queue_partial()"
@@ -1789,7 +1807,7 @@
       "label": "events()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L765",
+      "source_location": "L758",
       "id": "player_routes_events",
       "community": 1,
       "norm_label": "events()"
@@ -1798,7 +1816,7 @@
       "label": "register_event()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L803",
+      "source_location": "L796",
       "id": "player_routes_register_event",
       "community": 1,
       "norm_label": "register_event()"
@@ -1807,7 +1825,7 @@
       "label": "tournament_payment()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L853",
+      "source_location": "L846",
       "id": "player_routes_tournament_payment",
       "community": 1,
       "norm_label": "tournament_payment()"
@@ -1816,7 +1834,7 @@
       "label": "unregister_event()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L912",
+      "source_location": "L918",
       "id": "player_routes_unregister_event",
       "community": 1,
       "norm_label": "unregister_event()"
@@ -1825,7 +1843,7 @@
       "label": "event_detail()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L958",
+      "source_location": "L964",
       "id": "player_routes_event_detail",
       "community": 1,
       "norm_label": "event_detail()"
@@ -1834,7 +1852,7 @@
       "label": "community()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L994",
+      "source_location": "L1000",
       "id": "player_routes_community",
       "community": 1,
       "norm_label": "community()"
@@ -1843,7 +1861,7 @@
       "label": "messages()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L1000",
+      "source_location": "L1006",
       "id": "player_routes_messages",
       "community": 1,
       "norm_label": "messages()"
@@ -1852,7 +1870,7 @@
       "label": "notifications()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L1006",
+      "source_location": "L1012",
       "id": "player_routes_notifications",
       "community": 1,
       "norm_label": "notifications()"
@@ -1861,7 +1879,7 @@
       "label": "mark_notifications_read()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L1021",
+      "source_location": "L1027",
       "id": "player_routes_mark_notifications_read",
       "community": 1,
       "norm_label": "mark_notifications_read()"
@@ -1870,7 +1888,7 @@
       "label": "delete_notification()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L1033",
+      "source_location": "L1039",
       "id": "player_routes_delete_notification",
       "community": 1,
       "norm_label": "delete_notification()"
@@ -1879,7 +1897,7 @@
       "label": "tutorials()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L1045",
+      "source_location": "L1051",
       "id": "player_routes_tutorials",
       "community": 5,
       "norm_label": "tutorials()"
@@ -1888,7 +1906,7 @@
       "label": "clubs()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L1051",
+      "source_location": "L1057",
       "id": "player_routes_clubs",
       "community": 1,
       "norm_label": "clubs()"
@@ -1897,7 +1915,7 @@
       "label": "club_detail()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L1080",
+      "source_location": "L1086",
       "id": "player_routes_club_detail",
       "community": 71,
       "norm_label": "club_detail()"
@@ -1906,7 +1924,7 @@
       "label": "my_clubs()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L1143",
+      "source_location": "L1149",
       "id": "player_routes_my_clubs",
       "community": 71,
       "norm_label": "my_clubs()"
@@ -1915,7 +1933,7 @@
       "label": "join_club()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L1160",
+      "source_location": "L1166",
       "id": "player_routes_join_club",
       "community": 1,
       "norm_label": "join_club()"
@@ -1924,7 +1942,7 @@
       "label": "club_payment()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L1192",
+      "source_location": "L1198",
       "id": "player_routes_club_payment",
       "community": 1,
       "norm_label": "club_payment()"
@@ -1933,7 +1951,7 @@
       "label": "leave_club()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L1249",
+      "source_location": "L1272",
       "id": "player_routes_leave_club",
       "community": 1,
       "norm_label": "leave_club()"
@@ -1942,7 +1960,7 @@
       "label": "my_tournaments()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L1263",
+      "source_location": "L1286",
       "id": "player_routes_my_tournaments",
       "community": 1,
       "norm_label": "my_tournaments()"
@@ -1951,7 +1969,7 @@
       "label": "tournament_bracket()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L1284",
+      "source_location": "L1307",
       "id": "player_routes_tournament_bracket",
       "community": 1,
       "norm_label": "tournament_bracket()"
@@ -1960,25 +1978,25 @@
       "label": "get_lobby_display_status()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L1332",
+      "source_location": "L1355",
       "id": "player_routes_get_lobby_display_status",
-      "community": 93,
+      "community": 97,
       "norm_label": "get_lobby_display_status()"
     },
     {
       "label": "matchmaker()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L1366",
+      "source_location": "L1389",
       "id": "player_routes_matchmaker",
-      "community": 93,
+      "community": 97,
       "norm_label": "matchmaker()"
     },
     {
       "label": "matchmaker_create()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L1473",
+      "source_location": "L1496",
       "id": "player_routes_matchmaker_create",
       "community": 1,
       "norm_label": "matchmaker_create()"
@@ -1987,16 +2005,16 @@
       "label": "matchmaker_detail()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L1530",
+      "source_location": "L1553",
       "id": "player_routes_matchmaker_detail",
-      "community": 93,
+      "community": 97,
       "norm_label": "matchmaker_detail()"
     },
     {
       "label": "matchmaker_join()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L1771",
+      "source_location": "L1845",
       "id": "player_routes_matchmaker_join",
       "community": 1,
       "norm_label": "matchmaker_join()"
@@ -2005,7 +2023,7 @@
       "label": "matchmaker_switch()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L1880",
+      "source_location": "L1955",
       "id": "player_routes_matchmaker_switch",
       "community": 1,
       "norm_label": "matchmaker_switch()"
@@ -2014,7 +2032,7 @@
       "label": "matchmaker_leave()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L1928",
+      "source_location": "L2003",
       "id": "player_routes_matchmaker_leave",
       "community": 1,
       "norm_label": "matchmaker_leave()"
@@ -2023,7 +2041,7 @@
       "label": "matchmaker_message()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L1961",
+      "source_location": "L2037",
       "id": "player_routes_matchmaker_message",
       "community": 1,
       "norm_label": "matchmaker_message()"
@@ -2032,7 +2050,7 @@
       "label": "matchmaker_edit()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L1996",
+      "source_location": "L2093",
       "id": "player_routes_matchmaker_edit",
       "community": 1,
       "norm_label": "matchmaker_edit()"
@@ -2041,7 +2059,7 @@
       "label": "matchmaker_delete()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L2048",
+      "source_location": "L2145",
       "id": "player_routes_matchmaker_delete",
       "community": 1,
       "norm_label": "matchmaker_delete()"
@@ -2050,16 +2068,25 @@
       "label": "matchmaker_report()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L2083",
+      "source_location": "L2180",
       "id": "player_routes_matchmaker_report",
       "community": 4,
       "norm_label": "matchmaker_report()"
     },
     {
+      "label": "matchmaker_verify()",
+      "file_type": "code",
+      "source_file": "app/player/routes.py",
+      "source_location": "L2297",
+      "id": "player_routes_matchmaker_verify",
+      "community": 9,
+      "norm_label": "matchmaker_verify()"
+    },
+    {
       "label": "leaderboard()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L2140",
+      "source_location": "L2443",
       "id": "player_routes_leaderboard",
       "community": 1,
       "norm_label": "leaderboard()"
@@ -2068,7 +2095,7 @@
       "label": "leaderboard_challenge()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L2249",
+      "source_location": "L2552",
       "id": "player_routes_leaderboard_challenge",
       "community": 1,
       "norm_label": "leaderboard_challenge()"
@@ -2077,7 +2104,7 @@
       "label": "player_chat()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L2293",
+      "source_location": "L2596",
       "id": "player_routes_player_chat",
       "community": 1,
       "norm_label": "player_chat()"
@@ -2086,7 +2113,7 @@
       "label": "player_details()",
       "file_type": "code",
       "source_file": "app/player/routes.py",
-      "source_location": "L2329",
+      "source_location": "L2632",
       "id": "player_routes_player_details",
       "community": 1,
       "norm_label": "player_details()"
@@ -2104,8 +2131,8 @@
       "label": "Return booked start_time values for a court on a given date.",
       "file_type": "rationale",
       "source_file": "app/player/routes.py",
-      "source_location": "L414",
-      "id": "player_routes_rationale_414",
+      "source_location": "L382",
+      "id": "player_routes_rationale_382",
       "community": 67,
       "norm_label": "return booked start_time values for a court on a given date."
     },
@@ -2113,8 +2140,8 @@
       "label": "Return all active courts and their bookings for a facility on a given date.",
       "file_type": "rationale",
       "source_file": "app/player/routes.py",
-      "source_location": "L434",
-      "id": "player_routes_rationale_434",
+      "source_location": "L402",
+      "id": "player_routes_rationale_402",
       "community": 69,
       "norm_label": "return all active courts and their bookings for a facility on a given date."
     },
@@ -2122,8 +2149,8 @@
       "label": "Fetch queues for today, process wait times, and auto-complete games 15 mins past",
       "file_type": "rationale",
       "source_file": "app/player/routes.py",
-      "source_location": "L643",
-      "id": "player_routes_rationale_643",
+      "source_location": "L636",
+      "id": "player_routes_rationale_636",
       "community": 65,
       "norm_label": "fetch queues for today, process wait times, and auto-complete games 15 mins past"
     },
@@ -3609,7 +3636,7 @@
       "source_file": "app/support/routes.py",
       "source_location": "L1",
       "id": "app_support_routes_py",
-      "community": 11,
+      "community": 82,
       "norm_label": "routes.py"
     },
     {
@@ -3618,7 +3645,7 @@
       "source_file": "app/support/routes.py",
       "source_location": "L10",
       "id": "support_routes_submit_ticket",
-      "community": 11,
+      "community": 82,
       "norm_label": "submit_ticket()"
     },
     {
@@ -3928,6 +3955,69 @@
       "norm_label": "next steps for development"
     },
     {
+      "label": "resetpass.py",
+      "file_type": "code",
+      "source_file": "resetpass.py",
+      "source_location": "L1",
+      "community": 95,
+      "norm_label": "resetpass.py",
+      "id": "resetpass_py"
+    },
+    {
+      "label": "Return booked start_time values for a court on a given date.",
+      "file_type": "rationale",
+      "source_file": "app/player/routes.py",
+      "source_location": "L414",
+      "community": 67,
+      "norm_label": "return booked start_time values for a court on a given date.",
+      "id": "player_routes_rationale_414"
+    },
+    {
+      "label": "Return all active courts and their bookings for a facility on a given date.",
+      "file_type": "rationale",
+      "source_file": "app/player/routes.py",
+      "source_location": "L434",
+      "community": 69,
+      "norm_label": "return all active courts and their bookings for a facility on a given date.",
+      "id": "player_routes_rationale_434"
+    },
+    {
+      "label": "Fetch queues for today, process wait times, and auto-complete games 15 mins past",
+      "file_type": "rationale",
+      "source_file": "app/player/routes.py",
+      "source_location": "L643",
+      "community": 65,
+      "norm_label": "fetch queues for today, process wait times, and auto-complete games 15 mins past",
+      "id": "player_routes_rationale_643"
+    },
+    {
+      "label": "Resend the email verification link to the given address.",
+      "file_type": "rationale",
+      "source_file": "app/auth/routes.py",
+      "source_location": "L181",
+      "community": 11,
+      "norm_label": "resend the email verification link to the given address.",
+      "id": "auth_routes_rationale_181"
+    },
+    {
+      "label": "Step 1: user enters email \u2192 Supabase sends reset link.",
+      "file_type": "rationale",
+      "source_file": "app/auth/routes.py",
+      "source_location": "L210",
+      "community": 11,
+      "norm_label": "step 1: user enters email \u2192 supabase sends reset link.",
+      "id": "auth_routes_rationale_210"
+    },
+    {
+      "label": "Step 2: user lands here from the email link, sets a new password.",
+      "file_type": "rationale",
+      "source_file": "app/auth/routes.py",
+      "source_location": "L236",
+      "community": 11,
+      "norm_label": "step 2: user lands here from the email link, sets a new password.",
+      "id": "auth_routes_rationale_236"
+    },
+    {
       "label": "inspect_profiles.py",
       "file_type": "code",
       "source_file": "scratch/inspect_profiles.py",
@@ -4067,7 +4157,7 @@
       "file_type": "rationale",
       "source_file": "app/clubadmin/routes.py",
       "source_location": "L803",
-      "community": 89,
+      "community": 10,
       "norm_label": "check current round completion and auto-generate next round or declare champion.",
       "id": "clubadmin_routes_rationale_803"
     },
@@ -4157,7 +4247,7 @@
       "file_type": "code",
       "source_file": "app/support/routes.py",
       "source_location": "L10",
-      "community": 11,
+      "community": 82,
       "norm_label": "get_db()",
       "id": "support_routes_get_db"
     },
@@ -4175,7 +4265,7 @@
       "file_type": "code",
       "source_file": "scratch/test_adminstaff_pages.py",
       "source_location": "L1",
-      "community": 11,
+      "community": 9,
       "norm_label": "test_adminstaff_pages.py",
       "id": "scratch_test_adminstaff_pages_py"
     },
@@ -4193,7 +4283,7 @@
       "file_type": "code",
       "source_file": "scratch/test_dashboard.py",
       "source_location": "L1",
-      "community": 11,
+      "community": 9,
       "norm_label": "test_dashboard.py",
       "id": "scratch_test_dashboard_py"
     },
@@ -4220,7 +4310,7 @@
       "file_type": "code",
       "source_file": "scratch/test_settings_caching.py",
       "source_location": "L1",
-      "community": 11,
+      "community": 9,
       "norm_label": "test_settings_caching.py",
       "id": "scratch_test_settings_caching_py"
     },
@@ -4229,7 +4319,7 @@
       "file_type": "code",
       "source_file": "scratch/test_superadmin_pages.py",
       "source_location": "L1",
-      "community": 11,
+      "community": 9,
       "norm_label": "test_superadmin_pages.py",
       "id": "scratch_test_superadmin_pages_py"
     },
@@ -4247,7 +4337,7 @@
       "file_type": "rationale",
       "source_file": "app/clubadmin/routes.py",
       "source_location": "L766",
-      "community": 89,
+      "community": 10,
       "norm_label": "check current round completion and auto-generate next round or declare champion.",
       "id": "clubadmin_routes_rationale_766"
     },
@@ -4265,7 +4355,7 @@
       "file_type": "rationale",
       "source_file": "app/clubadmin/routes.py",
       "source_location": "L755",
-      "community": 89,
+      "community": 10,
       "norm_label": "check current round completion and auto-generate next round or declare champion.",
       "id": "clubadmin_routes_rationale_755"
     },
@@ -4274,7 +4364,7 @@
       "file_type": "rationale",
       "source_file": "app/clubadmin/routes.py",
       "source_location": "L731",
-      "community": 89,
+      "community": 10,
       "norm_label": "check current round completion and auto-generate next round or declare champion.",
       "id": "clubadmin_routes_rationale_731"
     },
@@ -4283,7 +4373,7 @@
       "file_type": "rationale",
       "source_file": "app/clubadmin/routes.py",
       "source_location": "L520",
-      "community": 89,
+      "community": 10,
       "norm_label": "check current round completion and auto-generate next round or declare champion.",
       "id": "clubadmin_routes_rationale_520"
     },
@@ -4319,7 +4409,7 @@
       "file_type": "rationale",
       "source_file": "app/clubadmin/routes.py",
       "source_location": "L368",
-      "community": 89,
+      "community": 10,
       "norm_label": "check current round completion and auto-generate next round or declare champion.",
       "id": "clubadmin_routes_rationale_368"
     },
@@ -4328,7 +4418,7 @@
       "file_type": "rationale",
       "source_file": "app/clubadmin/routes.py",
       "source_location": "L352",
-      "community": 89,
+      "community": 10,
       "norm_label": "check current round completion and auto-generate next round or declare champion.",
       "id": "clubadmin_routes_rationale_352"
     },
@@ -5010,7 +5100,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 6,
       "norm_label": "courts_listing route",
       "id": "main_courts_listing"
     },
@@ -5023,7 +5113,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 6,
       "norm_label": "api_courts_search (autocomplete api)",
       "id": "main_api_courts_search"
     },
@@ -5088,7 +5178,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 6,
       "norm_label": "courts table (supabase)",
       "id": "db_courts_table"
     },
@@ -5101,7 +5191,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 6,
       "norm_label": "facilities table (supabase)",
       "id": "db_facilities_table"
     },
@@ -5244,7 +5334,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 6,
       "norm_label": "book_reservation route",
       "id": "player_book_reservation"
     },
@@ -5400,7 +5490,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 6,
       "norm_label": "court_reservations table",
       "id": "db_court_reservations_table"
     },
@@ -5517,7 +5607,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 6,
       "norm_label": "superadmin dashboard (platform kpis)",
       "id": "superadmin_dashboard"
     },
@@ -5582,7 +5672,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 6,
       "norm_label": "platform reports route",
       "id": "superadmin_reports"
     },
@@ -5647,7 +5737,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 10,
+      "community": 82,
       "norm_label": "adminstaff dashboard (support kpis)",
       "id": "adminstaff_dashboard"
     },
@@ -5660,7 +5750,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 10,
+      "community": 82,
       "norm_label": "support tickets management",
       "id": "adminstaff_support"
     },
@@ -5699,7 +5789,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 10,
+      "community": 82,
       "norm_label": "disputes management",
       "id": "adminstaff_disputes"
     },
@@ -5725,7 +5815,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 10,
+      "community": 82,
       "norm_label": "tickets table (support)",
       "id": "db_tickets_table"
     },
@@ -5738,7 +5828,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 10,
+      "community": 82,
       "norm_label": "disputes table",
       "id": "db_disputes_table"
     },
@@ -5764,7 +5854,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 6,
       "norm_label": "owner dashboard (revenue & bookings)",
       "id": "owner_dashboard"
     },
@@ -5920,7 +6010,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 6,
       "norm_label": "facility_staff table",
       "id": "db_facility_staff_table"
     },
@@ -5972,7 +6062,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 6,
       "norm_label": "facilitystaff dashboard (live court status)",
       "id": "facilitystaff_dashboard"
     },
@@ -6323,7 +6413,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 10,
+      "community": 82,
       "norm_label": "submit_ticket route",
       "id": "support_submit_ticket"
     },
@@ -6661,7 +6751,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 6,
       "norm_label": "court-hero.jpg (court hero image)",
       "id": "image_court_hero"
     },
@@ -7120,6 +7210,105 @@
       "source_location": "L152",
       "weight": 1.0,
       "source": "auth_routes_signup",
+      "target": "app_db_get_admin_db"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/facilitystaff/routes.py",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "facilitystaff_routes_dashboard",
+      "target": "app_db_get_admin_db"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/facilitystaff/routes.py",
+      "source_location": "L557",
+      "weight": 1.0,
+      "source": "facilitystaff_routes_matchmaker_detail",
+      "target": "app_db_get_admin_db"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/facilitystaff/routes.py",
+      "source_location": "L799",
+      "weight": 1.0,
+      "source": "facilitystaff_routes_mediation_desk",
+      "target": "app_db_get_admin_db"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/player/routes.py",
+      "source_location": "L1799",
+      "weight": 1.0,
+      "source": "player_routes_matchmaker_detail",
+      "target": "app_db_get_admin_db"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/player/routes.py",
+      "source_location": "L1914",
+      "weight": 1.0,
+      "source": "player_routes_matchmaker_join",
+      "target": "app_db_get_admin_db"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/player/routes.py",
+      "source_location": "L2009",
+      "weight": 1.0,
+      "source": "player_routes_matchmaker_leave",
+      "target": "app_db_get_admin_db"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/player/routes.py",
+      "source_location": "L2052",
+      "weight": 1.0,
+      "source": "player_routes_matchmaker_message",
+      "target": "app_db_get_admin_db"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/player/routes.py",
+      "source_location": "L2194",
+      "weight": 1.0,
+      "source": "player_routes_matchmaker_report",
+      "target": "app_db_get_admin_db"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/player/routes.py",
+      "source_location": "L2319",
+      "weight": 1.0,
+      "source": "player_routes_matchmaker_verify",
       "target": "app_db_get_admin_db"
     },
     {
@@ -7720,6 +7909,17 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "app/auth/routes.py",
+      "source_location": "L163",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_auth_routes_py",
+      "target": "app_ratings_get_initial_rating"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "app/clubadmin/routes.py",
       "source_location": "L485",
       "weight": 1.0,
@@ -7736,6 +7936,17 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "app_init_create_app",
+      "target": "app_ratings_get_initial_rating"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/auth/routes.py",
+      "source_location": "L165",
+      "weight": 1.0,
+      "source": "auth_routes_signup",
       "target": "app_ratings_get_initial_rating"
     },
     {
@@ -7883,6 +8094,17 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "app/auth/routes.py",
+      "source_location": "L163",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_auth_routes_py",
+      "target": "app_ratings_ensure_initial_history"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "app/clubadmin/routes.py",
       "source_location": "L222",
       "weight": 1.0,
@@ -7899,6 +8121,17 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "app_player_routes_py",
+      "target": "app_ratings_ensure_initial_history"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/auth/routes.py",
+      "source_location": "L174",
+      "weight": 1.0,
+      "source": "auth_routes_signup",
       "target": "app_ratings_ensure_initial_history"
     },
     {
@@ -8104,6 +8337,17 @@
       "source_location": "L1450",
       "weight": 1.0,
       "source": "player_routes_matchmaker_report",
+      "target": "app_ratings_update_matchmaker_ratings"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/player/routes.py",
+      "source_location": "L2243",
+      "weight": 1.0,
+      "source": "player_routes_matchmaker_verify",
       "target": "app_ratings_update_matchmaker_ratings"
     },
     {
@@ -8865,6 +9109,16 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "app/auth/routes.py",
+      "source_location": "L196",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "auth_routes_rationale_196",
+      "target": "auth_routes_resend_verification"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "app/auth/routes.py",
       "source_location": "L181",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -8906,6 +9160,16 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "app/auth/routes.py",
+      "source_location": "L225",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "auth_routes_rationale_225",
+      "target": "auth_routes_forgot_password"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "app/auth/routes.py",
       "source_location": "L210",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -8942,6 +9206,16 @@
       "confidence_score": 1.0,
       "source": "auth_routes_rationale_226",
       "target": "auth_routes_forgot_password"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "app/auth/routes.py",
+      "source_location": "L251",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "auth_routes_rationale_251",
+      "target": "auth_routes_reset_password"
     },
     {
       "relation": "rationale_for",
@@ -9867,6 +10141,37 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "app/facilitystaff/routes.py",
+      "source_location": "L547",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_facilitystaff_routes_py",
+      "target": "facilitystaff_routes_matchmaker_detail"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/facilitystaff/routes.py",
+      "source_location": "L783",
+      "weight": 1.0,
+      "source": "app_facilitystaff_routes_py",
+      "target": "facilitystaff_routes_mediation_desk",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/facilitystaff/routes.py",
+      "source_location": "L575",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_facilitystaff_routes_py",
+      "target": "player_routes_get_lobby_display_status"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/facilitystaff/routes.py",
       "source_location": "L15",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -10058,6 +10363,17 @@
       "confidence_score": 1.0,
       "source": "facilitystaff_routes_get_db",
       "target": "facilitystaff_routes_mark_notifications_read"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/facilitystaff/routes.py",
+      "source_location": "L604",
+      "weight": 1.0,
+      "source": "facilitystaff_routes_matchmaker_detail",
+      "target": "player_routes_get_lobby_display_status"
     },
     {
       "relation": "contains",
@@ -12064,6 +12380,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "app/player/routes.py",
+      "source_location": "L2179",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_player_routes_py",
+      "target": "player_routes_matchmaker_verify"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/player/routes.py",
       "source_location": "L1402",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -12231,6 +12557,16 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "app/player/routes.py",
+      "source_location": "L382",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_routes_rationale_382",
+      "target": "player_routes_api_reservation_slots"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "app/player/routes.py",
       "source_location": "L414",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -12327,6 +12663,16 @@
       "confidence_score": 1.0,
       "source": "player_routes_api_reservation_slots",
       "target": "player_routes_rationale_181"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "app/player/routes.py",
+      "source_location": "L402",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_routes_rationale_402",
+      "target": "player_routes_api_facility_occupancy"
     },
     {
       "relation": "rationale_for",
@@ -12474,6 +12820,16 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "player_routes_queue_partial",
+      "target": "player_routes_get_processed_queues"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "app/player/routes.py",
+      "source_location": "L636",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_routes_rationale_636",
       "target": "player_routes_get_processed_queues"
     },
     {
@@ -16995,5 +17351,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "ccff65530f30fbb322bab90774bf4afdec0c3c98"
+  "built_at_commit": "168ff6df68c8d3b85bc5be88eafdb27b9ebf6bed"
 }

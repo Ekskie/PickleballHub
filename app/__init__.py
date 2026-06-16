@@ -67,6 +67,12 @@ def create_app():
         if not user_id:
             return
             
+        import time
+        now = time.time()
+        last_check = session.get('last_integrity_check')
+        if last_check and (now - last_check < 60):
+            return
+            
         from app.db import get_admin_db
         try:
             db = get_admin_db()
@@ -84,6 +90,8 @@ def create_app():
                 db_role = (profile.get('role') or 'player').strip().lower()
                 if session.get('role') != db_role:
                     session['role'] = db_role
+                
+                session['last_integrity_check'] = now
         except Exception as e:
             app.logger.error(f"[before_request] Integrity check failed: {e}")
 

@@ -1,16 +1,16 @@
-# Graph Report - PickleballHub  (2026-06-15)
+# Graph Report - PickleballHub  (2026-06-16)
 
 ## Corpus Check
-- 52 files · ~234,830 words
+- 55 files · ~238,733 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 673 nodes · 997 edges · 95 communities (51 shown, 44 thin omitted)
+- 683 nodes · 1022 edges · 95 communities (51 shown, 44 thin omitted)
 - Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 22 edges (avg confidence: 0.91)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `ccff6553`
+- Built from commit: `168ff6df`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -88,11 +88,10 @@
 - [[_COMMUNITY_Community 82|Community 82]]
 - [[_COMMUNITY_Community 83|Community 83]]
 - [[_COMMUNITY_Community 88|Community 88]]
-- [[_COMMUNITY_Community 89|Community 89]]
 - [[_COMMUNITY_Community 90|Community 90]]
 - [[_COMMUNITY_Community 91|Community 91]]
 - [[_COMMUNITY_Community 92|Community 92]]
-- [[_COMMUNITY_Community 93|Community 93]]
+- [[_COMMUNITY_Community 97|Community 97]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `community()` - 55 edges
@@ -100,10 +99,10 @@
 3. `get_db()` - 34 edges
 4. `tutorials()` - 29 edges
 5. `get_db()` - 29 edges
-6. `upload_avatar()` - 15 edges
-7. `update_match_ratings()` - 14 edges
-8. `get_processed_queues()` - 14 edges
-9. `get_admin_db()` - 13 edges
+6. `get_admin_db()` - 22 edges
+7. `upload_avatar()` - 15 edges
+8. `get_processed_queues()` - 15 edges
+9. `update_match_ratings()` - 14 edges
 10. `get_db()` - 13 edges
 
 ## Surprising Connections (you probably didn't know these)
@@ -145,8 +144,8 @@ Cohesion: 0.14
 Nodes (28): addBtn, addForm, addModal, allTutorials, closeModalBtn, closeWatch, closeWatchModal(), countLabel (+20 more)
 
 ### Community 6 - "Community 6"
-Cohesion: 0.14
-Nodes (15): court_queues Table, event_registrations Table, Walk-in Registration Route, Walk-in Guest (Non-registered Player), Centralized Collection Multi-Vendor Pattern, PayMongo Checkout Session API, PayMongo Integration Guide, PayMongo Webhook Handler (payment.paid) (+7 more)
+Cohesion: 0.08
+Nodes (27): court_queues Table, court_reservations Table, courts Table (Supabase), event_registrations Table, facilities Table (Supabase), facility_staff Table, Facilitystaff Dashboard (Live Court Status), Walk-in Registration Route (+19 more)
 
 ### Community 7 - "Community 7"
 Cohesion: 0.20
@@ -158,15 +157,15 @@ Nodes (11): auth Blueprint, logo.png (PickleballHub Logo), create_app Factory, m
 
 ### Community 9 - "Community 9"
 Cohesion: 0.11
-Nodes (25): court_reservations Table, courts Table (Supabase), facilities Table (Supabase), facility_staff Table, Facilitystaff Dashboard (Live Court Status), get_staff_processed_queues Helper, dashboard(), get_db() (+17 more)
+Nodes (22): get_admin_db(), Get an admin/service-role scoped Supabase client that bypasses Row Level Securit, create_app(), clear_settings_cache(), get_db_client(), load_platform_settings(), Returns a client bypassing RLS if service role key is available., get_staff_processed_queues Helper (+14 more)
 
 ### Community 10 - "Community 10"
-Cohesion: 0.33
-Nodes (6): Adminstaff Dashboard (Support KPIs), Disputes Management, Support Tickets Management, disputes Table, tickets Table (Support), submit_ticket Route
+Cohesion: 0.22
+Nodes (9): _advance_bracket(), Check current round completion and auto-generate next round or declare champion., Check current round completion and auto-generate next round or declare champion., Check current round completion and auto-generate next round or declare champion., Check current round completion and auto-generate next round or declare champion., Check current round completion and auto-generate next round or declare champion., Check current round completion and auto-generate next round or declare champion., Check current round completion and auto-generate next round or declare champion. (+1 more)
 
 ### Community 11 - "Community 11"
-Cohesion: 0.07
-Nodes (34): get_admin_db(), get_db(), Thread-safe, request-scoped database helper for Supabase. Provides separation be, Get a thread-safe, request-scoped Supabase client.     Authenticated with user a, Get an admin/service-role scoped Supabase client that bypasses Row Level Securit, create_app(), clear_settings_cache(), get_db_client() (+26 more)
+Cohesion: 0.11
+Nodes (25): forgot_password Route, resend_verification Route, forgot_password(), get_db(), login(), logout(), Return the correct dashboard redirect for a given role string.     Unknown/lega, Resend the email verification link to the given address. (+17 more)
 
 ### Community 13 - "Community 13"
 Cohesion: 0.20
@@ -205,20 +204,20 @@ Cohesion: 0.67
 Nodes (3): tutorials Table (Supabase), clinics Route, _extract_yt_id (YouTube URL Parser)
 
 ### Community 65 - "Community 65"
-Cohesion: 0.17
-Nodes (12): dashboard(), get_processed_queues(), Fetch queues for today, process wait times, and auto-complete games 15 mins past, Fetch queues for today, process wait times, and auto-complete games 15 mins past, Fetch queues for today, process wait times, and auto-complete games 15 mins past, Fetch queues for today, process wait times, and auto-complete games 15 mins past, Fetch queues for today, process wait times, and auto-complete games 15 mins past, Fetch queues for today, process wait times, and auto-complete games 15 mins past (+4 more)
+Cohesion: 0.15
+Nodes (13): dashboard(), get_processed_queues(), Fetch queues for today, process wait times, and auto-complete games 15 mins past, Fetch queues for today, process wait times, and auto-complete games 15 mins past, Fetch queues for today, process wait times, and auto-complete games 15 mins past, Fetch queues for today, process wait times, and auto-complete games 15 mins past, Fetch queues for today, process wait times, and auto-complete games 15 mins past, Fetch queues for today, process wait times, and auto-complete games 15 mins past (+5 more)
 
 ### Community 66 - "Community 66"
 Cohesion: 0.40
 Nodes (5): Sends an automated message from sender_id to recipient_id.     If a 1-to-1 conve, Triggers automated chats from the facility owner and assigned staff to the playe, send_auto_message(), trigger_booking_autochat(), confirm_payment()
 
 ### Community 67 - "Community 67"
-Cohesion: 0.20
-Nodes (10): api_reservation_slots(), Return booked start_time values for a court on a given date., Return booked start_time values for a court on a given date., Return booked start_time values for a court on a given date., Return booked start_time values for a court on a given date., Return booked start_time values for a court on a given date., Return booked start_time values for a court on a given date., Return booked start_time values for a court on a given date. (+2 more)
+Cohesion: 0.18
+Nodes (11): api_reservation_slots(), Return booked start_time values for a court on a given date., Return booked start_time values for a court on a given date., Return booked start_time values for a court on a given date., Return booked start_time values for a court on a given date., Return booked start_time values for a court on a given date., Return booked start_time values for a court on a given date., Return booked start_time values for a court on a given date. (+3 more)
 
 ### Community 69 - "Community 69"
-Cohesion: 0.29
-Nodes (7): api_facility_occupancy(), Return all active courts and their bookings for a facility on a given date., Return all active courts and their bookings for a facility on a given date., Return all active courts and their bookings for a facility on a given date., Return all active courts and their bookings for a facility on a given date., Return all active courts and their bookings for a facility on a given date., Return all active courts and their bookings for a facility on a given date.
+Cohesion: 0.25
+Nodes (8): api_facility_occupancy(), Return all active courts and their bookings for a facility on a given date., Return all active courts and their bookings for a facility on a given date., Return all active courts and their bookings for a facility on a given date., Return all active courts and their bookings for a facility on a given date., Return all active courts and their bookings for a facility on a given date., Return all active courts and their bookings for a facility on a given date., Return all active courts and their bookings for a facility on a given date.
 
 ### Community 70 - "Community 70"
 Cohesion: 0.25
@@ -229,16 +228,12 @@ Cohesion: 0.40
 Nodes (5): check_player_memberships_expiry(), club_detail(), my_clubs(), Check if any of the player's active memberships has expired and update status., Check if any of the player's active memberships has expired and update status.
 
 ### Community 82 - "Community 82"
-Cohesion: 0.07
-Nodes (40): resolve_ticket Route, dashboard(), disputes(), get_db(), mark_notifications_read(), notifications(), profile(), resolve_ticket() (+32 more)
+Cohesion: 0.05
+Nodes (52): Adminstaff Dashboard (Support KPIs), Disputes Management, resolve_ticket Route, dashboard(), disputes(), get_db(), mark_notifications_read(), notifications() (+44 more)
 
 ### Community 88 - "Community 88"
 Cohesion: 0.36
 Nodes (9): adminstaff Blueprint, clubadmin Blueprint, _get_dashboard_for_role, require_role Decorator, facilitystaff Blueprint, Multi-Role Dashboard Pattern (6 Roles), owner Blueprint, player Blueprint (+1 more)
-
-### Community 89 - "Community 89"
-Cohesion: 0.22
-Nodes (9): _advance_bracket(), Check current round completion and auto-generate next round or declare champion., Check current round completion and auto-generate next round or declare champion., Check current round completion and auto-generate next round or declare champion., Check current round completion and auto-generate next round or declare champion., Check current round completion and auto-generate next round or declare champion., Check current round completion and auto-generate next round or declare champion., Check current round completion and auto-generate next round or declare champion. (+1 more)
 
 ### Community 90 - "Community 90"
 Cohesion: 0.25
@@ -252,7 +247,7 @@ Nodes (7): notifications Table, Queue 'You are up next!' Notification, update_qu
 Cohesion: 0.47
 Nodes (6): inject_current_user Context Processor, profiles Table (Supabase), Supabase Admin Client (bypasses RLS), Supabase Global Client, Supabase Auth & Database, add_adminstaff Route
 
-### Community 93 - "Community 93"
+### Community 97 - "Community 97"
 Cohesion: 0.67
 Nodes (3): get_lobby_display_status(), matchmaker(), matchmaker_detail()
 
@@ -265,13 +260,13 @@ Nodes (3): get_lobby_display_status(), matchmaker(), matchmaker_detail()
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `tutorials()` connect `Community 5` to `Community 0`, `Community 1`, `Community 82`?**
-  _High betweenness centrality (0.169) - this node is a cross-community bridge._
+  _High betweenness centrality (0.167) - this node is a cross-community bridge._
 - **Why does `get_processed_queues Helper` connect `Community 70` to `Community 1`, `Community 6`, `Community 9`?**
-  _High betweenness centrality (0.157) - this node is a cross-community bridge._
+  _High betweenness centrality (0.155) - this node is a cross-community bridge._
 - **Why does `court_queues Table` connect `Community 6` to `Community 70`?**
-  _High betweenness centrality (0.144) - this node is a cross-community bridge._
+  _High betweenness centrality (0.142) - this node is a cross-community bridge._
 - **What connects `version`, `builds`, `routes` to the rest of the system?**
-  _224 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _230 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
   _Cohesion score 0.0549645390070922 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**

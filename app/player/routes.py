@@ -53,50 +53,18 @@ def dashboard():
     upcoming_events = []
     recent_activities = []
 
-    # Calculate player stats (Wins, Played, Win Rate)
+    # Calculate player stats (Wins, Played, Win Rate) from profile table
     player_stats = {'total_played': 0, 'wins': 0, 'win_rate': 0}
     try:
-        # Check if wins and losses columns exist in profiles
         prof_resp = db.table('profiles').select('wins, losses').eq('id', player_id).single().execute()
-        if prof_resp.data and 'wins' in prof_resp.data and 'losses' in prof_resp.data:
+        if prof_resp.data:
             player_stats['wins'] = prof_resp.data.get('wins') or 0
             losses = prof_resp.data.get('losses') or 0
             player_stats['total_played'] = player_stats['wins'] + losses
             if player_stats['total_played'] > 0:
                 player_stats['win_rate'] = round((player_stats['wins'] / player_stats['total_played']) * 100)
-        else:
-            raise KeyError("wins/losses columns not found in profiles")
-    except Exception:
-        # Fallback to dynamic calculation if wins/losses columns don't exist yet
-        try:
-            # 1. Tournament matches
-            t_matches = db.table('tournament_matches').select('winner_id').or_(f"player1_id.eq.{player_id},player2_id.eq.{player_id}").eq('status', 'completed').execute()
-            t_data = t_matches.data or []
-            player_stats['total_played'] += len(t_data)
-            player_stats['wins'] += sum(1 for m in t_data if m.get('winner_id') == player_id)
-
-            # 2. Matchmaker lobbies (creator)
-            c_lobbies = db.table('matchmaker_lobbies').select('winner_id').eq('creator_id', player_id).eq('status', 'completed').execute()
-            c_data = c_lobbies.data or []
-            player_stats['total_played'] += len(c_data)
-            player_stats['wins'] += sum(1 for m in c_data if m.get('winner_id') == player_id)
-
-            # 3. Matchmaker lobbies (joined) - Only count completed lobbies
-            g_lobbies = db.table('lobby_participants').select(
-                'lobby:matchmaker_lobbies!lobby_id(winner_id, status)'
-            ).eq('player_id', player_id).eq('status', 'joined').execute()
-
-            for item in (g_lobbies.data or []):
-                lobby_data = item.get('lobby')
-                if lobby_data and lobby_data.get('status') == 'completed':
-                    player_stats['total_played'] += 1
-                    if lobby_data.get('winner_id') == player_id:
-                        player_stats['wins'] += 1
-
-            if player_stats['total_played'] > 0:
-                player_stats['win_rate'] = round((player_stats['wins'] / player_stats['total_played']) * 100)
-        except Exception as stat_err:
-            print(f"Error loading player stats for dashboard fallback: {stat_err}")
+    except Exception as e:
+        print(f"Error loading player stats from profile: {e}")
 
     try:
         # Fetch next confirmed reservation
@@ -483,6 +451,19 @@ def book_reservation():
 
     db = get_db()
     try:
+        # Check for overlapping reservation
+        overlap_resp = db.table('court_reservations').select('id')\
+            .eq('court_id', court_id)\
+            .eq('date', date)\
+            .in_('status', ['confirmed', 'pending_payment'])\
+            .lt('start_time', end_time)\
+            .gt('end_time', start_time)\
+            .execute()
+            
+        if overlap_resp.data:
+            flash('This court is already reserved during the selected time slot. Please choose another time or court.', 'error')
+            return redirect(url_for('player.reservation'))
+
         resp = db.table('court_reservations').insert({
             'player_id':    player_id,
             'court_id':     court_id,
@@ -604,8 +585,20 @@ def confirm_payment(reservation_id):
     if not gcash_ref:
         flash('Please enter your GCash reference number.', 'error')
         return redirect(url_for('player.payment', reservation_id=reservation_id))
+        
+    import re
+    if not re.match(r'^\d{13}$', gcash_ref):
+        flash('Invalid GCash reference number format. Must be a 13-digit number.', 'error')
+        return redirect(url_for('player.payment', reservation_id=reservation_id))
+
     db = get_db()
     try:
+        # Check duplicate reference number
+        dup_resp = db.table('court_reservations').select('id').eq('gcash_ref', gcash_ref).neq('id', reservation_id).execute()
+        if dup_resp.data:
+            flash('This GCash reference number has already been used for another booking.', 'error')
+            return redirect(url_for('player.payment', reservation_id=reservation_id))
+
         # Get reservation details for queue insertion
         res_resp = db.table('court_reservations').select('facility_id, court_id').eq('id', reservation_id).single().execute()
         res_data = res_resp.data
@@ -860,7 +853,18 @@ def tournament_payment(event_id):
             flash('Please enter your GCash reference number.', 'error')
             return redirect(url_for('player.tournament_payment', event_id=event_id))
             
+        import re
+        if not re.match(r'^\d{13}$', gcash_ref):
+            flash('Invalid GCash reference number format. Must be a 13-digit number.', 'error')
+            return redirect(url_for('player.tournament_payment', event_id=event_id))
+
         try:
+            # Check duplicate reference number
+            dup_resp = db.table('event_registrations').select('id').eq('gcash_ref', gcash_ref).execute()
+            if dup_resp.data:
+                flash('This GCash reference number has already been used for another event registration.', 'error')
+                return redirect(url_for('player.tournament_payment', event_id=event_id))
+
             # Check capacity again before confirming payment
             ev_resp = db.table('events').select('max_players, title, status').eq('id', event_id).single().execute()
             ev = ev_resp.data
@@ -871,13 +875,15 @@ def tournament_payment(event_id):
             if count >= ev['max_players']:
                 # Full! Put them on waitlist
                 db.table('event_registrations').update({
-                    'status': 'waitlisted'
+                    'status': 'waitlisted',
+                    'gcash_ref': gcash_ref
                 }).eq('event_id', event_id).eq('player_id', player_id).execute()
                 flash('We received your payment, but the event just filled up! You are now on the waitlist and will be contacted.', 'warning')
             else:
                 # Secure their spot
                 db.table('event_registrations').update({
-                    'status': 'registered'
+                    'status': 'registered',
+                    'gcash_ref': gcash_ref
                 }).eq('event_id', event_id).eq('player_id', player_id).execute()
                 flash('Payment confirmed! You are now officially registered.', 'success')
                 
@@ -1206,6 +1212,23 @@ def club_payment(club_id):
                 flash("GCash Reference Number is required.", "error")
                 return redirect(url_for('player.club_payment', club_id=club_id))
                 
+            import re
+            if not re.match(r'^\d{13}$', gcash_ref):
+                flash("Invalid GCash Reference Number format. Must be a 13-digit number.", "error")
+                return redirect(url_for('player.club_payment', club_id=club_id))
+                
+            # Check duplicate reference number in club_memberships
+            dup_resp = db.table('club_memberships').select('club_id, player_id').eq('gcash_ref', gcash_ref).execute()
+            if dup_resp.data:
+                is_dup = False
+                for row in dup_resp.data:
+                    if str(row.get('club_id')) != str(club_id) or str(row.get('player_id')) != str(player_id):
+                        is_dup = True
+                        break
+                if is_dup:
+                    flash("This GCash reference number has already been used for another membership.", "error")
+                    return redirect(url_for('player.club_payment', club_id=club_id))
+                
             receipt_file = request.files.get('receipt')
             receipt_url = None
             if receipt_file and receipt_file.filename:
@@ -1330,8 +1353,8 @@ def tournament_bracket(event_id):
 # ── Open Play Matchmaker Routes ───────────────────────────────────────────────
 
 def get_lobby_display_status(lobby_status, res_date, res_start, res_end):
-    if lobby_status == 'completed':
-        return 'completed'
+    if lobby_status in ['completed', 'pending_verification', 'staff_mediation', 'cancelled']:
+        return lobby_status
     
     try:
         start_str = f"{res_date} {res_start}"
@@ -1526,8 +1549,10 @@ def matchmaker_create():
 
 
 @player_bp.route('/matchmaker/<lobby_id>')
-@require_role('player')
+@require_role('player', 'facilitystaff')
 def matchmaker_detail(lobby_id):
+    if session.get('role') == 'facilitystaff':
+        return redirect(url_for('facilitystaff.matchmaker_detail', lobby_id=lobby_id))
     player_id = session.get('user_id')
     db = get_db()
     lobby = None
@@ -1539,6 +1564,7 @@ def matchmaker_detail(lobby_id):
     try:
         lob_resp = db.table('matchmaker_lobbies').select(
             'id, creator_id, reservation_id, title, description, min_dupr, max_dupr, slots_total, slots_filled, status, score, winner_id, match_type, '
+            'reported_score, reported_winner_id, reporter_id, verification_status, dispute_count, '
             'creator:profiles!creator_id(first_name, last_name, elo, dupr, proficiency, avatar_url), '
             'reservation:court_reservations!reservation_id(date, start_time, end_time, courts(name), facilities(name))'
         ).eq('id', lobby_id).single().execute()
@@ -1556,6 +1582,7 @@ def matchmaker_detail(lobby_id):
         lobby = {
             'id': raw_lob['id'],
             'creator_id': raw_lob['creator_id'],
+            'reservation_id': raw_lob['reservation_id'],
             'title': raw_lob['title'],
             'description': raw_lob['description'],
             'min_dupr': float(raw_lob['min_dupr']),
@@ -1565,6 +1592,11 @@ def matchmaker_detail(lobby_id):
             'status': raw_lob['status'],
             'score': raw_lob.get('score'),
             'winner_id': raw_lob.get('winner_id'),
+            'reported_score': raw_lob.get('reported_score'),
+            'reported_winner_id': raw_lob.get('reported_winner_id'),
+            'reporter_id': raw_lob.get('reporter_id'),
+            'verification_status': raw_lob.get('verification_status') or 'pending',
+            'dispute_count': raw_lob.get('dispute_count') or 0,
             'match_type': raw_lob.get('match_type') or 'ranked',
             'creator_name': f"{creator.get('first_name', '')} {creator.get('last_name', '')}".strip() or "Anonymous Player",
             'creator_dupr': creator.get('dupr') if creator.get('dupr') is not None else 3.00,
@@ -1690,15 +1722,17 @@ def matchmaker_detail(lobby_id):
                             print(f"[auto_heal] Failed to update slot for participant {part_id}: {auto_heal_err}")
                         break
 
-        if lobby['status'] == 'completed' and lobby['winner_id']:
+        winner_name = None
+        target_winner_id = lobby.get('winner_id') or lobby.get('reported_winner_id')
+        if target_winner_id:
             # Find winner team name
             # Check if winner is Host or on Team 1
             is_winner_team1 = False
-            if lobby['winner_id'] == lobby['creator_id']:
+            if target_winner_id == lobby['creator_id']:
                 is_winner_team1 = True
             else:
                 for p in participants:
-                    if p['player_id'] == lobby['winner_id'] and p.get('team') == 1:
+                    if p['player_id'] == target_winner_id and p.get('team') == 1:
                         is_winner_team1 = True
                         break
             
@@ -1733,11 +1767,15 @@ def matchmaker_detail(lobby_id):
             ).eq('conversation_id', lobby_id).order('created_at', desc=False).execute()
             
             for m in (msg_resp.data or []):
-                m_prof = m.get('profiles') or {}
-                m_first = m_prof.get('first_name') or 'Player'
-                m_last = m_prof.get('last_name') or ''
-                m['sender_name'] = f"{m_first} {m_last}".strip()
-                m['sender_initials'] = (m_first[0] + (m_last[0] if m_last else '')).upper()
+                if m.get('sender_id') is None:
+                    m['sender_name'] = 'System'
+                    m['sender_initials'] = 'SYS'
+                else:
+                    m_prof = m.get('profiles') or {}
+                    m_first = m_prof.get('first_name') or 'Player'
+                    m_last = m_prof.get('last_name') or ''
+                    m['sender_name'] = f"{m_first} {m_last}".strip()
+                    m['sender_initials'] = (m_first[0] + (m_last[0] if m_last else '')).upper()
                 
                 # Format time nicely (e.g. 02:30 PM)
                 try:
@@ -1754,6 +1792,39 @@ def matchmaker_detail(lobby_id):
         flash(f"Error loading lobby: {e}", "error")
         return redirect(url_for('player.matchmaker'))
 
+    # Calculate teams for current user and reporter, and check if user is assigned staff
+    current_user_team = None
+    reporter_team = None
+    is_assigned_staff = False
+    if lobby:
+        if session.get('role') == 'facilitystaff' and lobby.get('reservation_id'):
+            try:
+                admin_db = get_admin_db()
+                res_resp = admin_db.table('court_reservations').select('facility_id').eq('id', lobby['reservation_id']).single().execute()
+                if res_resp.data:
+                    fac_id = res_resp.data['facility_id']
+                    staff_check = admin_db.table('facility_staff').select('id').eq('facility_id', fac_id).eq('staff_id', player_id).execute()
+                    if staff_check.data:
+                        is_assigned_staff = True
+            except Exception as staff_err:
+                print(f"Error checking assigned staff: {staff_err}")
+
+        if player_id == lobby['creator_id']:
+            current_user_team = 1
+        else:
+            for p in participants:
+                if p['player_id'] == player_id:
+                    current_user_team = p.get('team')
+                    break
+
+        if lobby.get('reporter_id') == lobby['creator_id']:
+            reporter_team = 1
+        else:
+            for p in participants:
+                if p['player_id'] == lobby.get('reporter_id'):
+                    reporter_team = p.get('team')
+                    break
+
     return render_template(
         'player/matchmaker_detail.html',
         lobby=lobby,
@@ -1762,7 +1833,10 @@ def matchmaker_detail(lobby_id):
         creator_initials=creator_initials,
         is_joined=is_joined,
         winner_name=winner_name,
-        messages=lobby_messages
+        messages=lobby_messages,
+        current_user_team=current_user_team,
+        reporter_team=reporter_team,
+        is_assigned_staff=is_assigned_staff
     )
 
 
@@ -1845,7 +1919,8 @@ def matchmaker_join(lobby_id):
         # Update slots count & status
         new_filled = lobby['slots_filled'] + 1
         status = 'full' if new_filled >= lobby['slots_total'] else 'open'
-        db.table('matchmaker_lobbies').update({
+        admin_db = get_admin_db()
+        admin_db.table('matchmaker_lobbies').update({
             'slots_filled': new_filled,
             'status': status
         }).eq('id', lobby_id).execute()
@@ -1939,7 +2014,8 @@ def matchmaker_leave(lobby_id):
 
         # Update slots count & status
         new_filled = max(0, lobby['slots_filled'] - 1)
-        db.table('matchmaker_lobbies').update({
+        admin_db = get_admin_db()
+        admin_db.table('matchmaker_lobbies').update({
             'slots_filled': new_filled,
             'status': 'open'
         }).eq('id', lobby_id).execute()
@@ -1957,7 +2033,7 @@ def matchmaker_leave(lobby_id):
 
 
 @player_bp.route('/matchmaker/<lobby_id>/message', methods=['POST'])
-@require_role('player')
+@require_role('player', 'facilitystaff')
 def matchmaker_message(lobby_id):
     player_id = session.get('user_id')
     content = request.form.get('content', '').strip()
@@ -1972,11 +2048,32 @@ def matchmaker_message(lobby_id):
             flash("Lobby chat is not initialized.", "error")
             return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
             
-        # Verify user is a participant of the conversation
-        part_check = db.table('conversation_participants').select('profile_id').eq('conversation_id', lobby_id).eq('profile_id', player_id).execute()
-        if not part_check.data:
-            flash("You must join the lobby first to send messages.", "error")
-            return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+        # Verify user is a participant of the conversation (or assigned facility staff mediating the match)
+        is_assigned_staff = False
+        if session.get('role') == 'facilitystaff':
+            try:
+                admin_db = get_admin_db()
+                lob_resp = admin_db.table('matchmaker_lobbies').select('reservation_id').eq('id', lobby_id).single().execute()
+                if lob_resp.data and lob_resp.data.get('reservation_id'):
+                    res_resp = admin_db.table('court_reservations').select('facility_id').eq('id', lob_resp.data['reservation_id']).single().execute()
+                    if res_resp.data:
+                        fac_id = res_resp.data['facility_id']
+                        staff_check = admin_db.table('facility_staff').select('id').eq('facility_id', fac_id).eq('staff_id', player_id).execute()
+                        if staff_check.data:
+                            is_assigned_staff = True
+                            # Auto-upsert staff into conversation participants to grant select/insert permissions
+                            admin_db.table('conversation_participants').upsert({
+                                'conversation_id': lobby_id,
+                                'profile_id': player_id
+                            }, on_conflict='conversation_id,profile_id').execute()
+            except Exception as staff_convo_err:
+                print(f"Error checking and adding staff to conversation: {staff_convo_err}")
+
+        if not is_assigned_staff:
+            part_check = db.table('conversation_participants').select('profile_id').eq('conversation_id', lobby_id).eq('profile_id', player_id).execute()
+            if not part_check.data:
+                flash("You must join the lobby first to send messages.", "error")
+                return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
             
         # Send message
         db.table('messages').insert({
@@ -2079,7 +2176,7 @@ def matchmaker_delete(lobby_id):
 
 
 @player_bp.route('/matchmaker/<lobby_id>/report', methods=['POST'])
-@require_role('player')
+@require_role('player', 'facilitystaff')
 def matchmaker_report(lobby_id):
     player_id = session.get('user_id')
     winner_team = request.form.get('winner_team', 'team1') # 'team1' or 'team2'
@@ -2087,49 +2184,255 @@ def matchmaker_report(lobby_id):
     host_score = request.form.get('host_score', type=int)
     opp_score = request.form.get('opp_score', type=int)
 
-    db = get_db()
+    admin_db = get_admin_db()
     try:
         # Fetch lobby details
-        lob_resp = db.table('matchmaker_lobbies').select('creator_id, status').eq('id', lobby_id).single().execute()
+        lob_resp = admin_db.table('matchmaker_lobbies').select('creator_id, status, reservation_id, dispute_count, reported_score, reported_winner_id, reporter_id, verification_status').eq('id', lobby_id).single().execute()
         lobby = lob_resp.data
-        if not lobby or lobby['creator_id'] != player_id or lobby['status'] == 'completed':
-            flash("Unauthorized or match already reported.", "error")
-            return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+        if not lobby:
+            flash("Lobby not found.", "error")
+            return redirect(url_for('player.matchmaker'))
 
         # Fetch guests
-        part_resp = db.table('lobby_participants').select('player_id, team').eq('lobby_id', lobby_id).eq('status', 'joined').execute()
+        part_resp = admin_db.table('lobby_participants').select('player_id, team').eq('lobby_id', lobby_id).eq('status', 'joined').execute()
         joined = part_resp.data or []
         
-        if not joined:
-            flash("Lobby needs at least 1 guest player to report score.", "error")
+        joined_player_ids = [p['player_id'] for p in joined] + [lobby['creator_id']]
+
+        # Check if current user is assigned staff
+        is_assigned_staff = False
+        if session.get('role') == 'facilitystaff' and lobby.get('reservation_id'):
+            res_resp = admin_db.table('court_reservations').select('facility_id').eq('id', lobby['reservation_id']).single().execute()
+            if res_resp.data:
+                fac_id = res_resp.data['facility_id']
+                staff_check = admin_db.table('facility_staff').select('id').eq('facility_id', fac_id).eq('staff_id', player_id).execute()
+                if staff_check.data:
+                    is_assigned_staff = True
+
+        # Check authorization based on lobby status
+        if lobby['status'] == 'staff_mediation':
+            if not is_assigned_staff:
+                flash("Only the assigned facility staff member on duty can submit the final score.", "error")
+                return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+            
+            # Staff submits the final score
+            if winner_team == 'team1':
+                winner_id = lobby['creator_id']
+            else:
+                team2_players = [p['player_id'] for p in joined if p.get('team') == 2]
+                winner_id = team2_players[0] if team2_players else (joined[0]['player_id'] if joined else lobby['creator_id'])
+            
+            admin_db = get_admin_db()
+            admin_db.table('matchmaker_lobbies').update({
+                'status': 'completed',
+                'score': score,
+                'winner_id': winner_id,
+                'verification_status': 'verified',
+                'reported_score': score,
+                'reported_winner_id': winner_id,
+                'reporter_id': player_id
+            }).eq('id', lobby_id).execute()
+
+            # Trigger rating updates
+            from app.ratings import update_matchmaker_ratings
+            update_matchmaker_ratings(admin_db, lobby_id)
+            
+            flash("Match score finalized and ratings updated by staff!", "success")
             return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
 
-        # Map winner team to a player ID to satisfy winner_id schema constraint
-        if winner_team == 'team1':
-            winner_id = lobby['creator_id'] # Host represents Team 1
-        else:
-            # Find a guest player on Team 2
-            team2_players = [p['player_id'] for p in joined if p.get('team') == 2]
-            if team2_players:
-                winner_id = team2_players[0]
-            else:
-                winner_id = joined[0]['player_id'] # fallback
+        # For normal players reporting:
+        if lobby['status'] == 'completed':
+            flash("Match already completed.", "error")
+            return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
 
-        # 1. Mark lobby as completed
-        db.table('matchmaker_lobbies').update({
-            'status': 'completed',
-            'score': score,
-            'winner_id': winner_id
+        if player_id not in joined_player_ids:
+            flash("You are not authorized to report scores for this lobby.", "error")
+            return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+
+        # Check if already pending verification (unless disputed)
+        if lobby['status'] == 'pending_verification' and lobby.get('verification_status') != 'disputed':
+            flash("Match score is already pending verification.", "error")
+            return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+
+        # Map winner team to a player ID
+        if winner_team == 'team1':
+            winner_id = lobby['creator_id']
+        else:
+            team2_players = [p['player_id'] for p in joined if p.get('team') == 2]
+            winner_id = team2_players[0] if team2_players else (joined[0]['player_id'] if joined else lobby['creator_id'])
+
+        # Update lobby details to pending_verification and reset verification_status
+        admin_db = get_admin_db()
+        admin_db.table('matchmaker_lobbies').update({
+            'status': 'pending_verification',
+            'reported_score': score,
+            'reported_winner_id': winner_id,
+            'reporter_id': player_id,
+            'verification_status': 'pending'
         }).eq('id', lobby_id).execute()
 
-        # 2. Call update_matchmaker_ratings to update ratings in profiles + rating_history
-        from app.ratings import update_matchmaker_ratings
-        update_matchmaker_ratings(db, lobby_id)
+        # Send notifications to all other joined players
+        for p in joined_player_ids:
+            if p != player_id:
+                try:
+                    admin_db.table('notifications').insert({
+                        'user_id': p,
+                        'title': 'Match Score Reported',
+                        'message': f'A score of "{score}" has been reported. Please verify or dispute it.',
+                        'type': 'info',
+                        'link': f'/player/matchmaker/{lobby_id}'
+                    }).execute()
+                except Exception as notif_err:
+                    print(f"Failed to insert notification: {notif_err}")
 
-        flash("Match score reported and player ratings updated!", "success")
+        flash("Match score reported! Opponents must confirm before ratings update.", "success")
     except Exception as e:
         flash(f"Error reporting score: {e}", "error")
 
+    return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+
+
+@player_bp.route('/matchmaker/<lobby_id>/verify', methods=['POST'])
+@require_role('player', 'facilitystaff')
+def matchmaker_verify(lobby_id):
+    player_id = session.get('user_id')
+    action = request.form.get('action') # 'confirm' or 'dispute'
+    admin_db = get_admin_db()
+    
+    try:
+        # 1. Fetch lobby details
+        lob_resp = admin_db.table('matchmaker_lobbies').select('*').eq('id', lobby_id).single().execute()
+        lobby = lob_resp.data
+        if not lobby or lobby['status'] != 'pending_verification':
+            flash("Lobby not found or not pending verification.", "error")
+            return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+            
+        # 2. Fetch joined participants to verify permissions and opposing team
+        part_resp = admin_db.table('lobby_participants').select('player_id, team').eq('lobby_id', lobby_id).eq('status', 'joined').execute()
+        participants = part_resp.data or []
+        
+        # Verify the user is part of the lobby
+        joined_player_ids = [p['player_id'] for p in participants] + [lobby['creator_id']]
+        if player_id not in joined_player_ids:
+            flash("You are not a member of this match lobby.", "error")
+            return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+            
+        # Verify the user is not the one who reported the score
+        if lobby['reporter_id'] == player_id:
+            flash("You cannot verify or dispute the score you reported yourself.", "error")
+            return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+
+        # Check teams to ensure opponent verification (not colluding teammate)
+        reporter_team = None
+        user_team = None
+        
+        # Creator (host) is always Team 1
+        if lobby['creator_id'] == lobby['reporter_id']:
+            reporter_team = 1
+        else:
+            for p in participants:
+                if p['player_id'] == lobby['reporter_id']:
+                    reporter_team = p.get('team') or 1
+                    break
+                    
+        if player_id == lobby['creator_id']:
+            user_team = 1
+        else:
+            for p in participants:
+                if p['player_id'] == player_id:
+                    user_team = p.get('team') or 1
+                    break
+                    
+        if reporter_team == user_team:
+            flash("A player from the opposing team must verify or dispute the score.", "error")
+            return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+        if action == 'confirm':
+            # 1. Mark lobby as completed and set verified status
+            admin_db.table('matchmaker_lobbies').update({
+                'status': 'completed',
+                'score': lobby['reported_score'],
+                'winner_id': lobby['reported_winner_id'],
+                'verification_status': 'verified'
+            }).eq('id', lobby_id).execute()
+            
+            # 2. Trigger rating updates
+            from app.ratings import update_matchmaker_ratings
+            update_matchmaker_ratings(admin_db, lobby_id)
+            
+            flash("Match score verified and ratings updated successfully!", "success")
+            
+        elif action == 'dispute':
+            # Increment dispute count
+            new_dispute_count = (lobby.get('dispute_count') or 0) + 1
+            
+            if new_dispute_count >= 3:
+                # Escalation to staff mediation!
+                # 1. Get facility ID
+                res_resp = admin_db.table('court_reservations').select('facility_id').eq('id', lobby['reservation_id']).single().execute()
+                if res_resp.data:
+                    fac_id = res_resp.data['facility_id']
+                    
+                    # 2. Get all staff members for this facility
+                    staff_resp = admin_db.table('facility_staff').select('staff_id, profiles(first_name, last_name)').eq('facility_id', fac_id).execute()
+                    staff_list = staff_resp.data or []
+                    
+                    # 3. Add staff to the lobby's chat (conversation_participants)
+                    staff_added_names = []
+                    for s in staff_list:
+                        s_id = s.get('staff_id')
+                        if s_id:
+                            admin_db.table('conversation_participants').upsert({
+                                'conversation_id': lobby_id,
+                                'profile_id': s_id
+                            }, on_conflict='conversation_id,profile_id').execute()
+                            
+                            prof = s.get('profiles') or {}
+                            staff_added_names.append(f"{prof.get('first_name', 'Staff')} {prof.get('last_name', '')}".strip())
+                    
+                    # 4. Insert auto message in chat
+                    staff_names_str = ", ".join(staff_added_names) or "Facility Staff"
+                    med_message = f"⚠️ [SYSTEM] This match result has been disputed 3 times. The lobby is now in Staff Mediation. Staff member(s) ({staff_names_str}) have joined the chat to resolve this. Only staff can now submit the final score."
+                    admin_db.table('messages').insert({
+                        'conversation_id': lobby_id,
+                        'sender_id': None,
+                        'content': med_message
+                    }).execute()
+                    
+                # Update lobby status to staff_mediation
+                admin_db.table('matchmaker_lobbies').update({
+                    'status': 'staff_mediation',
+                    'dispute_count': new_dispute_count,
+                    'verification_status': 'disputed'
+                }).eq('id', lobby_id).execute()
+                
+                flash("Match has been disputed 3 times. Escalated to Facility Staff Mediation.", "warning")
+                
+            else:
+                # Set verification status to disputed
+                admin_db.table('matchmaker_lobbies').update({
+                    'verification_status': 'disputed',
+                    'dispute_count': new_dispute_count
+                }).eq('id', lobby_id).execute()
+                
+                # Send notification to the reporter
+                try:
+                    admin_db.table('notifications').insert({
+                        'user_id': lobby['reporter_id'],
+                        'title': 'Match Score Disputed',
+                        'message': f'Your reported score has been disputed (Dispute count: {new_dispute_count}/3). Please coordinate resubmission.',
+                        'type': 'warning',
+                        'link': f'/player/matchmaker/{lobby_id}'
+                    }).execute()
+                except Exception as notif_err:
+                    print(f"Failed to insert dispute notification: {notif_err}")
+                    
+                flash(f"Match score has been marked as disputed (Dispute count: {new_dispute_count}/3). Either team can resubmit.", "warning")
+        else:
+            flash("Invalid verification action.", "error")
+            
+    except Exception as e:
+        flash(f"Error validating match result: {e}", "error")
+        
     return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
 
 
