@@ -27,6 +27,7 @@
 .res-status-badge { position:absolute;top:12px;right:12px;padding:4px 12px;border-radius:20px;font-size:.68rem;font-weight:800;letter-spacing:.4px;backdrop-filter:blur(6px); }
 .res-status-badge.confirmed   { background:rgba(41,163,86,.85);color:#fff; }
 .res-status-badge.pending_payment { background:rgba(217,119,6,.9);color:#fff; }
+.res-status-badge.pending_verification { background:rgba(245,158,11,.9);color:#fff; }
 .res-status-badge.cancelled   { background:rgba(239,68,68,.85);color:#fff; }
 .res-status-badge.completed   { background:rgba(100,116,139,.8);color:#fff; }
 
@@ -75,6 +76,7 @@
     <div class="res-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin:0;">
         <button class="res-tab active" onclick="filterRes('all',this)">All <span style="opacity:.7;font-weight:400;">({{ reservations|length }})</span></button>
         <button class="res-tab" onclick="filterRes('pending_payment',this)"><i class="ph ph-hourglass-low"></i> Pending Payment</button>
+        <button class="res-tab" onclick="filterRes('pending_verification',this)"><i class="ph ph-shield-warning"></i> Pending Verification</button>
         <button class="res-tab" onclick="filterRes('confirmed',this)"><i class="ph ph-check-circle"></i> Confirmed</button>
         <button class="res-tab" onclick="filterRes('completed',this)"><i class="ph ph-tennis-ball"></i> Completed</button>
         <button class="res-tab" onclick="filterRes('cancelled',this)"><i class="ph ph-x-circle"></i> Cancelled</button>
@@ -93,7 +95,7 @@
     {% set court  = r.courts or {} %}
     {% set fac    = r.facilities or {} %}
     {% set status = r.status %}
-    <div class="res-card" data-status="{{ status }}" data-search="{{ (court.name or '')|lower }} {{ (fac.name or '')|lower }} {{ (r.gcash_ref or '')|lower }}">
+    <div class="res-card" data-status="{% if status == 'pending_payment' and r.gcash_ref %}pending_verification{% else %}{{ status }}{% endif %}" data-search="{{ (court.name or '')|lower }} {{ (fac.name or '')|lower }} {{ (r.gcash_ref or '')|lower }}">
 
         <!-- Court Image Banner -->
         <div class="res-img-banner">
@@ -107,7 +109,11 @@
                 <p class="res-fac-name"><i class="ph ph-building"></i> {{ fac.name or '' }}{% if fac.location %} — {{ fac.location }}{% endif %}</p>
             </div>
             <!-- Status badge -->
+            {% if status == 'pending_payment' and r.gcash_ref %}
+            <span class="res-status-badge pending_verification">PENDING VERIFICATION</span>
+            {% else %}
             <span class="res-status-badge {{ status }}">{{ status.replace('_',' ')|upper }}</span>
+            {% endif %}
         </div>
 
         <!-- Card Body -->
@@ -151,12 +157,12 @@
                     <small>{{ r.total_hours|int }} hr × ₱{{ '%.2f'|format(r.hourly_rate) }}</small>
                 </div>
                 <div class="res-actions">
-                    {% if status == 'pending_payment' %}
+                    {% if status == 'pending_payment' and not r.gcash_ref %}
                     <a href="{{ url_for('player.payment', reservation_id=r.id) }}" class="btn-pay">
                         <i class="ph ph-device-mobile-camera"></i> Pay Now
                     </a>
                     {% endif %}
-                    {% if status in ['pending_payment','confirmed'] and r.can_cancel %}
+                    {% if status in ['pending_payment','confirmed'] and r.can_cancel and not r.gcash_ref %}
                     <form method="POST" action="{{ url_for('player.cancel_reservation', reservation_id=r.id) }}"
                           onsubmit="return confirm('Cancel this reservation?');" style="margin:0;">
                         <button type="submit" class="btn-cancel"><i class="ph ph-x-circle"></i> Cancel</button>

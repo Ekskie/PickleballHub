@@ -80,7 +80,7 @@ def update_kyc_status(facility_id):
     db = get_db()
     try:
         db.table('facilities').update({'kyc_status': status}).eq('id', facility_id).execute()
-        log_audit_action('update_facility_kyc', facility_id, {'status': status})
+        log_audit_action('update_facility_kyc', facility_id, {'status': status}, raise_on_error=True)
         flash(f'Facility KYC status updated to {status}.', 'success')
     except Exception as e:
         flash(f'Error updating status: {e}', 'error')
@@ -96,7 +96,7 @@ def update_platform_status(facility_id):
     db = get_db()
     try:
         db.table('facilities').update({'status': status}).eq('id', facility_id).execute()
-        log_audit_action('update_facility_platform_status', facility_id, {'status': status})
+        log_audit_action('update_facility_platform_status', facility_id, {'status': status}, raise_on_error=True)
         flash(f'Facility platform status updated to {status}.', 'success')
     except Exception as e:
         flash(f'Error updating platform status: {e}', 'error')
@@ -149,7 +149,7 @@ def add_adminstaff():
         supabase_admin.table('profiles').upsert({
             'id': staff_id, 'first_name': first_name, 'last_name': last_name, 'role': 'adminstaff'
         }, on_conflict='id').execute()
-        log_audit_action('create_adminstaff', staff_id, {'email': email, 'first_name': first_name, 'last_name': last_name})
+        log_audit_action('create_adminstaff', staff_id, {'email': email, 'first_name': first_name, 'last_name': last_name}, raise_on_error=True)
         flash(f'Admin Staff account for {first_name} created successfully!', 'success')
     except Exception as e:
         flash(f'Error creating admin staff: {e}', 'error')
@@ -389,7 +389,7 @@ def toggle_suspend_user(user_id):
         db.table('profiles').update({'is_suspended': new_status}).eq('id', user_id).execute()
         
         action = 'suspend_user' if new_status else 'unsuspend_user'
-        log_audit_action(action, user_id, {'role': p_resp.data.get('role'), 'name': p_resp.data.get('first_name')})
+        log_audit_action(action, user_id, {'role': p_resp.data.get('role'), 'name': p_resp.data.get('first_name')}, raise_on_error=True)
         
         msg = f"User has been {'suspended' if new_status else 'unsuspended'} successfully."
         flash(msg, 'success')

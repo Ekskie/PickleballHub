@@ -6,35 +6,30 @@ from functools import wraps
 from flask import session, redirect, url_for, flash, current_app
 from app.db import get_db
 
-ROLE_HIERARCHY = {
-    'player': 1,
-    'facilitystaff': 2,
-    'owner': 3,
-    'clubadmin': 4,
-    'adminstaff': 5,
-    'superadmin': 6
-}
-
 def has_role_permission(user_role, allowed_roles):
     """
-    Returns True if user_role is in allowed_roles, or if the user's role
-    has a higher priority in the hierarchy than any of the allowed_roles.
+    Returns True if user_role is in allowed_roles, or if authorized via logical security checks.
     """
     user_role = (user_role or 'player').strip().lower()
     allowed_roles_lower = [r.strip().lower() for r in allowed_roles]
     
-    # Direct match is always allowed
+    # 1. Superadmin has global permissions
+    if user_role == 'superadmin':
+        return True
+        
+    # 2. Direct role matches are always allowed
     if user_role in allowed_roles_lower:
         return True
         
-    user_priority = ROLE_HIERARCHY.get(user_role, 1)
-    
-    # If the user has a higher priority than at least one of the allowed roles, permit them.
-    for allowed in allowed_roles_lower:
-        allowed_priority = ROLE_HIERARCHY.get(allowed, 1)
-        if user_priority >= allowed_priority:
-            return True
-            
+    # 3. Any logged-in staff/owner can view player views (common monitors, feed, profile checks)
+    if 'player' in allowed_roles_lower:
+        return True
+        
+    # 4. Platform Admin Staff can manage and access Club Admin and Facility Staff actions
+    if user_role == 'adminstaff' and any(r in ['clubadmin', 'facilitystaff'] for r in allowed_roles_lower):
+        return True
+
+    # Note: Club admins, facility staff, and admin staff CANNOT access facility owner financial dashboards
     return False
 
 

@@ -4,72 +4,112 @@
 
 {% block extra_head %}
 <style>
-/* Stats layout overrides */
-.stat-box { display: flex; align-items: center; gap: 15px; padding: 15px; }
-.stat-info h3 { font-size: 0.9rem; color: var(--text-secondary); margin: 0; }
-.stat-value { font-size: 1.8rem; font-weight: 700; margin: 5px 0; color: var(--text-primary); }
-.stat-change { font-size: 0.8rem; font-weight: 600; }
-.stat-change.positive { color: #4ade80; }
-.stat-change.negative { color: #f87171; }
+    /* Stats layout overrides */
+    .stat-box {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px;
+    }
 
-/* Modal and layout styles */
-.btn-sm { 
-    padding: 7px 14px; 
-    border-radius: 8px; 
-    font-size: 0.8rem; 
-    font-weight: 600; 
-    cursor: pointer; 
-    border: none; 
-    transition: all 0.2s; 
-    display: inline-flex; 
-    align-items: center; 
-    gap: 5px; 
-}
-.btn-sm-outline { 
-    background: transparent; 
-    border: 1px solid var(--border-color); 
-    color: var(--text-secondary); 
-}
-.btn-sm-outline:hover { 
-    border-color: var(--text-muted); 
-    color: var(--text-primary); 
-    background: rgba(255, 255, 255, 0.05);
-}
-.btn-sm-primary { 
-    background: var(--primary-orange); 
-    color: white; 
-}
-.btn-sm-primary:hover { 
-    background: var(--primary-orange-hover); 
-}
+    .stat-info h3 {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin: 0;
+    }
 
-.modal-header h3 {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--text-primary);
-}
-.modal-close {
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    cursor: pointer;
-    font-size: 1.3rem;
-    padding: 4px;
-    border-radius: 6px;
-}
-.modal-close:hover {
-    color: var(--text-primary);
-}
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin: 5px 0;
+        color: var(--text-primary);
+    }
 
-@keyframes scanLaser {
-    0% { transform: translateY(-100px); }
-    50% { transform: translateY(100px); }
-    100% { transform: translateY(-100px); }
-}
+    .stat-change {
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
 
-.chat-shortcut:hover {
-    color: var(--primary-orange) !important;
-}
+    .stat-change.positive {
+        color: #4ade80;
+    }
+
+    .stat-change.negative {
+        color: #f87171;
+    }
+
+    /* Modal and layout styles */
+    .btn-sm {
+        padding: 7px 14px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .btn-sm-outline {
+        background: transparent;
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+    }
+
+    .btn-sm-outline:hover {
+        border-color: var(--text-muted);
+        color: var(--text-primary);
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .btn-sm-primary {
+        background: var(--primary-orange);
+        color: white;
+    }
+
+    .btn-sm-primary:hover {
+        background: var(--primary-orange-hover);
+    }
+
+    .modal-header h3 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 1.3rem;
+        padding: 4px;
+        border-radius: 6px;
+    }
+
+    .modal-close:hover {
+        color: var(--text-primary);
+    }
+
+    @keyframes scanLaser {
+        0% {
+            transform: translateY(-100px);
+        }
+
+        50% {
+            transform: translateY(100px);
+        }
+
+        100% {
+            transform: translateY(-100px);
+        }
+    }
+
+    .chat-shortcut:hover {
+        color: var(--primary-orange) !important;
+    }
 </style>
 {% endblock %}
 
@@ -86,9 +126,11 @@
             <div class="widget-header">
                 <h3>Live Court Status</h3>
             </div>
-            <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+            <div class="stats-grid"
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
                 {% for court in court_status_list %}
-                <div class="glass-card stat-box" style="background: {% if court.color == 'negative' %}rgba(239, 68, 68, 0.05){% elif court.color == 'positive' %}rgba(74, 222, 128, 0.05){% else %}rgba(245, 158, 11, 0.05){% endif %}; border-left: 4px solid {% if court.color == 'negative' %}#ef4444{% elif court.color == 'positive' %}#4ade80{% else %}#f59e0b{% endif %};">
+                <div class="glass-card stat-box"
+                    style="background: {% if court.color == 'negative' %}rgba(239, 68, 68, 0.05){% elif court.color == 'positive' %}rgba(74, 222, 128, 0.05){% else %}rgba(245, 158, 11, 0.05){% endif %}; border-left: 4px solid {% if court.color == 'negative' %}#ef4444{% elif court.color == 'positive' %}#4ade80{% else %}#f59e0b{% endif %};">
                     <div class="stat-info">
                         <h3>{{ court.name }}</h3>
                         <p class="stat-value" style="font-size: 1.2rem;">{{ court.status }}</p>
@@ -125,37 +167,51 @@
                             <td>
                                 <div style="display: inline-flex; align-items: center; gap: 8px;">
                                     <span>
-                                        {{ q.profiles.first_name if q.player_id else q.guest_name }} 
+                                        {{ q.profiles.first_name if q.player_id else q.guest_name }}
                                         {{ q.profiles.last_name if q.player_id else '(Walk-in)' }}
                                     </span>
                                     {% if q.player_id %}
-                                    <a href="{{ url_for('facilitystaff.messages') }}?chat_user={{ q.player_id }}" class="chat-shortcut" title="Chat with Player" style="color: var(--text-muted); transition: color 0.2s; display: inline-flex; align-items: center; margin-top: 1px;"><i class="ph ph-chat-circle-dots" style="font-size: 1.05rem;"></i></a>
+                                    <a href="{{ url_for('facilitystaff.messages') }}?chat_user={{ q.player_id }}"
+                                        class="chat-shortcut" title="Chat with Player"
+                                        style="color: var(--text-muted); transition: color 0.2s; display: inline-flex; align-items: center; margin-top: 1px;"><i
+                                            class="ph ph-chat-circle-dots" style="font-size: 1.05rem;"></i></a>
                                     {% endif %}
                                 </div>
                             </td>
                             <td>{{ q.party_size | default(1) }}</td>
                             <td>
-                                <span class="status-pill {% if q.status == 'playing' %}success{% elif q.status == 'next' %}warning{% else %}disabled{% endif %}">
-                                    {% if q.status == 'playing' %}Playing{% else %}{{ q.estimated_wait_mins }} mins{% endif %}
+                                <span
+                                    class="status-pill {% if q.status == 'playing' %}success{% elif q.status == 'next' %}warning{% else %}disabled{% endif %}">
+                                    {% if q.status == 'playing' %}Playing{% else %}{{ q.estimated_wait_mins }} mins{%
+                                    endif %}
                                 </span>
                             </td>
                             <td>
                                 <div style="display: flex; gap: 8px; align-items: center;">
                                     {% if q.status == 'waiting' %}
-                                        <button type="button" class="action-link" onclick="updateQueue('{{ q.id }}', 'next', this)" style="border:none; background:none; cursor:pointer;">Call Next</button>
+                                    <button type="button" class="action-link"
+                                        onclick="updateQueue('{{ q.id }}', 'next', this)"
+                                        style="border:none; background:none; cursor:pointer;">Call Next</button>
                                     {% endif %}
                                     {% if q.status == 'next' %}
-                                        <button type="button" class="action-link" onclick="updateQueue('{{ q.id }}', 'playing', this)" style="border:none; background:none; cursor:pointer; color: var(--btn-green); font-weight: 600;">Start Game</button>
-                                        {% if q.player_id %}
-                                        <button type="button" onclick="nudgePlayer('{{ q.player_id }}', this)" title="Nudge Player" style="border:none; background:none; cursor:pointer; color: var(--primary-orange); display: inline-flex; align-items: center; font-size: 1.05rem; padding: 2px;"><i class="ph ph-bell"></i></button>
-                                        {% endif %}
+                                    <button type="button" class="action-link"
+                                        onclick="updateQueue('{{ q.id }}', 'playing', this)"
+                                        style="border:none; background:none; cursor:pointer; color: var(--btn-green); font-weight: 600;">Start
+                                        Game</button>
+                                    {% if q.player_id %}
+                                    <button type="button" onclick="nudgePlayer('{{ q.player_id }}', this)"
+                                        title="Nudge Player"
+                                        style="border:none; background:none; cursor:pointer; color: var(--primary-orange); display: inline-flex; align-items: center; font-size: 1.05rem; padding: 2px;"><i
+                                            class="ph ph-bell"></i></button>
+                                    {% endif %}
                                     {% endif %}
                                 </div>
                             </td>
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="5" style="text-align: center; padding: 20px; color: var(--text-muted);">Queue is empty.</td>
+                            <td colspan="5" style="text-align: center; padding: 20px; color: var(--text-muted);">Queue
+                                is empty.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -188,92 +244,100 @@
 <div id="scanPassModal" class="modal-overlay">
     <div class="modal-box">
         <div class="modal-header">
-            <h3><i class="ph ph-qr-code" style="color:var(--primary-orange); margin-right: 6px;"></i> Scan Player Pass</h3>
+            <h3><i class="ph ph-qr-code" style="color:var(--primary-orange); margin-right: 6px;"></i> Scan Player Pass
+            </h3>
             <button class="modal-close" onclick="closeModal('scanPassModal')"><i class="ph ph-x"></i></button>
         </div>
         <div style="text-align: center; padding: 20px 0;">
-            <div style="width: 200px; height: 200px; border: 2px dashed var(--primary-orange); border-radius: 12px; margin: 0 auto; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; background: var(--input-bg);">
-                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, rgba(225, 86, 35, 0) 0%, rgba(225, 86, 35, 0.15) 50%, rgba(225, 86, 35, 0) 100%); animation: scanLaser 2s infinite ease-in-out;"></div>
+            <div
+                style="width: 200px; height: 200px; border: 2px dashed var(--primary-orange); border-radius: 12px; margin: 0 auto; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; background: var(--input-bg);">
+                <div
+                    style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, rgba(225, 86, 35, 0) 0%, rgba(225, 86, 35, 0.15) 50%, rgba(225, 86, 35, 0) 100%); animation: scanLaser 2s infinite ease-in-out;">
+                </div>
                 <i class="ph ph-camera" style="font-size: 3rem; color: var(--text-muted); z-index: 1;"></i>
             </div>
-            <p style="margin-top: 15px; font-size: 0.85rem; color: var(--text-secondary);">Position the player's QR Pass inside the frame to scan.</p>
-            
-            <div style="margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 15px; display: flex; flex-direction: column; gap: 10px; align-items: center;">
-                <button type="button" class="btn-sm btn-sm-primary" onclick="simulateScan()" style="width: 100%; justify-content: center; padding: 10px;"><i class="ph ph-sparkles"></i> Simulate Scan Success</button>
+            <p style="margin-top: 15px; font-size: 0.85rem; color: var(--text-secondary);">Position the player's QR Pass
+                inside the frame to scan.</p>
+
+            <div
+                style="margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 15px; display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <button type="button" class="btn-sm btn-sm-primary" onclick="simulateScan()"
+                    style="width: 100%; justify-content: center; padding: 10px;"><i class="ph ph-sparkles"></i> Simulate
+                    Scan Success</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-function openModal(id) { 
-    document.getElementById(id).classList.add('open'); 
-}
-
-function closeModal(id) { 
-    document.getElementById(id).classList.remove('open'); 
-}
-
-// Close modal when clicking outside the box
-document.querySelectorAll('.modal-overlay').forEach(overlay => {
-    overlay.addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeModal(this.id);
-        }
-    });
-});
-
-async function updateQueue(queueId, nextStatus, button) {
-    if (button) button.disabled = true;
-    try {
-        const response = await fetch("{{ url_for('facilitystaff.update_queue') }}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                queue_id: queueId,
-                status: nextStatus
-            })
-        });
-        const res = await response.json();
-        if (res.success) {
-            showToast('Success', res.message, 'success');
-            setTimeout(() => window.location.reload(), 500);
-        } else {
-            showToast('Error', res.message || 'Failed to update queue.', 'error');
-            if (button) button.disabled = false;
-        }
-    } catch(err) {
-        showToast('Error', 'An error occurred.', 'error');
-        if (button) button.disabled = false;
+    function openModal(id) {
+        document.getElementById(id).classList.add('open');
     }
-}
 
-async function nudgePlayer(playerId, button) {
-    if (button) button.disabled = true;
-    try {
-        const response = await fetch(`/facilitystaff/nudge/${playerId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('open');
+    }
+
+    // Close modal when clicking outside the box
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeModal(this.id);
             }
         });
-        const res = await response.json();
-        if (res.success) {
-            showToast('Nudged', res.message, 'success');
-        } else {
-            showToast('Error', res.message || 'Failed to nudge player.', 'error');
-        }
-    } catch(err) {
-        showToast('Error', 'An error occurred.', 'error');
-    }
-    if (button) button.disabled = false;
-}
+    });
 
-function simulateScan() {
-    closeModal('scanPassModal');
-    showToast('Pass Verified', 'Player pass scanned! Check-in confirmed for walk-in or queue entry.', 'success');
-}
+    async function updateQueue(queueId, nextStatus, button) {
+        if (button) button.disabled = true;
+        try {
+            const response = await fetch("{{ url_for('facilitystaff.update_queue') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    queue_id: queueId,
+                    status: nextStatus
+                })
+            });
+            const res = await response.json();
+            if (res.success) {
+                showToast('Success', res.message, 'success');
+                setTimeout(() => window.location.reload(), 500);
+            } else {
+                showToast('Error', res.message || 'Failed to update queue.', 'error');
+                if (button) button.disabled = false;
+            }
+        } catch (err) {
+            showToast('Error', 'An error occurred.', 'error');
+            if (button) button.disabled = false;
+        }
+    }
+
+    async function nudgePlayer(playerId, button) {
+        if (button) button.disabled = true;
+        try {
+            const response = await fetch(`/facilitystaff/nudge/${playerId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const res = await response.json();
+            if (res.success) {
+                showToast('Nudged', res.message, 'success');
+            } else {
+                showToast('Error', res.message || 'Failed to nudge player.', 'error');
+            }
+        } catch (err) {
+            showToast('Error', 'An error occurred.', 'error');
+        }
+        if (button) button.disabled = false;
+    }
+
+    function simulateScan() {
+        closeModal('scanPassModal');
+        showToast('Pass Verified', 'Player pass scanned! Check-in confirmed for walk-in or queue entry.', 'success');
+    }
 </script>
 {% endblock %}

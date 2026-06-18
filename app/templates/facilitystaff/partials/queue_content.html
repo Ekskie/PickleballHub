@@ -1,86 +1,135 @@
 {% if facilities %}
     {% for fac in facilities %}
     <div class="glass-card queue-table-wrapper" style="margin-bottom: 30px;">
-        <h2 style="font-size: 1.2rem; margin-bottom: 15px; color: var(--primary-orange);">{{ fac.facilities.name }} Queue</h2>
-        <div class="table-container">
-            <table class="data-grid">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
+            <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; margin: 0;">
+                <i class="ph ph-users-three" style="color: var(--primary-orange); font-size: 1.5rem;"></i>
+                <span>{{ fac.facilities.name }} Queue</span>
+            </h2>
+            {% set fac_queues = queues | selectattr('facility_id', 'equalto', fac.facility_id) | list %}
+            <span class="queue-count-badge">{{ fac_queues | length }} Active</span>
+        </div>
+        
+        <div class="table-container" style="overflow-x: auto;">
+            <table class="data-grid premium-table">
                 <thead>
                     <tr>
-                        <th>POSITION</th>
+                        <th style="width: 80px; text-align: center;">POSITION</th>
                         <th>PLAYER</th>
                         <th>STATUS</th>
                         <th>ASSIGNED COURT</th>
                         <th>WAIT TIME</th>
-                        <th>ACTIONS</th>
+                        <th style="text-align: right; padding-right: 15px;">ACTIONS</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% set fac_queues = queues | selectattr('facility_id', 'equalto', fac.facility_id) | list %}
-                    
                     {% if fac_queues %}
                         {% for q in fac_queues %}
-                        <tr>
-                            <td class="bold">
+                        <tr class="queue-row-item">
+                            <td class="bold" style="text-align: center;">
                                 {% if q.status == 'playing' %}
-                                    <span style="color:var(--primary-orange);">-</span>
+                                    <span class="playing-dash">-</span>
                                 {% else %}
-                                    {{ loop.index }}
+                                    <span class="position-number">{{ loop.index }}</span>
                                 {% endif %}
                             </td>
                             <td>
-                                <div style="display: inline-flex; align-items: center; gap: 8px;">
-                                    <span>
-                                        {{ q.profiles.first_name if q.player_id else q.guest_name }} 
-                                        {{ q.profiles.last_name if q.player_id else '(Walk-in)' }}
-                                    </span>
+                                <div style="display: inline-flex; align-items: center; gap: 10px;">
                                     {% if q.player_id %}
-                                    <a href="{{ url_for('facilitystaff.messages') }}?chat_user={{ q.player_id }}" class="chat-shortcut" title="Chat with Player" style="color: var(--text-muted); transition: color 0.2s; display: inline-flex; align-items: center; margin-top: 1px;"><i class="ph ph-chat-circle-dots" style="font-size: 1.05rem;"></i></a>
+                                        <div class="player-avatar-mini" onclick="openPlayerDetails('{{ q.player_id }}')" title="View profile & history">
+                                            {% if q.profiles.avatar_url %}
+                                                <img src="{{ q.profiles.avatar_url }}" alt="Avatar">
+                                            {% else %}
+                                                <div class="player-initials-mini">
+                                                    {{ ((q.profiles.first_name or 'P')[0] + (q.profiles.last_name or '')[0]).upper() }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div style="display: flex; flex-direction: column;">
+                                            <span class="player-name-link" onclick="openPlayerDetails('{{ q.player_id }}')" title="View profile & history">
+                                                {{ q.profiles.first_name }} {{ q.profiles.last_name }}
+                                            </span>
+                                        </div>
+                                        <a href="{{ url_for('facilitystaff.messages') }}?chat_user={{ q.player_id }}" class="chat-shortcut-link" title="Chat with Player">
+                                            <i class="ph ph-chat-circle-dots"></i>
+                                        </a>
+                                    {% else %}
+                                        <div class="player-initials-mini walkin-avatar">
+                                            W
+                                        </div>
+                                        <div style="display: flex; flex-direction: column;">
+                                            <span class="guest-name-text">
+                                                {{ q.guest_name }}
+                                            </span>
+                                            <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 500;">Walk-in Guest</span>
+                                        </div>
                                     {% endif %}
                                 </div>
                             </td>
                             <td>
                                 {% if q.status == 'playing' %}
-                                    <span class="status-pill" style="background:var(--primary-orange);color:white;">Playing</span>
+                                    <span class="status-badge orange-glow"><span class="dot-indicator bg-orange"></span>Playing</span>
                                 {% elif q.status == 'next' %}
-                                    <span class="status-pill" style="background:var(--btn-green-light);color:var(--btn-green);">Next Up</span>
+                                    <span class="status-badge green-glow"><span class="dot-indicator bg-green"></span>Next Up</span>
                                 {% else %}
-                                    <span class="status-pill warning">Waiting</span>
+                                    <span class="status-badge gray-glow"><span class="dot-indicator bg-gray"></span>Waiting</span>
                                 {% endif %}
                             </td>
                             <td>
-                                {% set court = courts | selectattr('id', 'equalto', q.court_id) | first %}
-                                {{ court.name if court else 'Any Available' }}
+                                <div style="display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-weight: 500;">
+                                    <i class="ph ph-layout" style="font-size: 1.1rem; color: var(--text-muted);"></i>
+                                    <span>
+                                        {% set court = courts | selectattr('id', 'equalto', q.court_id) | first %}
+                                        {{ court.name if court else 'Any Available' }}
+                                    </span>
+                                </div>
                             </td>
                             <td>
-                                {% if q.status == 'playing' %}
-                                    <span class="wait-time-display" style="color:var(--primary-orange);font-weight:bold;" data-target-time="{{ q.target_time }}" data-time-type="Remaining">{{ q.estimated_wait_mins }} min left</span>
-                                {% else %}
-                                    <span class="wait-time-display" data-target-time="{{ q.target_time }}" data-time-type="Wait">~{{ q.estimated_wait_mins }} mins</span>
-                                {% endif %}
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <i class="ph ph-clock" style="font-size: 1.1rem; color: var(--text-muted);"></i>
+                                    {% if q.status == 'playing' %}
+                                        <span class="wait-time-display font-bold" style="color: var(--primary-orange);" data-target-time="{{ q.target_time }}" data-time-type="Remaining">{{ q.estimated_wait_mins }} min left</span>
+                                    {% else %}
+                                        <span class="wait-time-display font-medium" style="color: var(--text-primary);" data-target-time="{{ q.target_time }}" data-time-type="Wait">~{{ q.estimated_wait_mins }} mins</span>
+                                    {% endif %}
+                                </div>
                             </td>
                             <td>
-                                <div style="display: flex; gap: 8px;">
+                                <div style="display: flex; gap: 8px; justify-content: flex-end;">
                                     {% if q.status == 'waiting' %}
-                                        <button type="button" onclick="updateQueueStatus('{{ q.id }}', 'next', this)" class="action-box green" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; width: auto; cursor:pointer; border:none; color:white; background:var(--btn-green); border-radius: 6px; font-weight: 600;">Call Next</button>
+                                        <button type="button" onclick="updateQueueStatus('{{ q.id }}', 'next', this)" class="btn-action green-btn" title="Call to Court">
+                                            <i class="ph ph-microphone-stage"></i> <span>Call Next</span>
+                                        </button>
                                     {% endif %}
                                     {% if q.status == 'next' %}
-                                        <button type="button" onclick="updateQueueStatus('{{ q.id }}', 'playing', this)" class="action-box navy" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; width: auto; cursor:pointer; border:none; color:white; background:var(--btn-navy); border-radius: 6px; font-weight: 600;">Start Game</button>
+                                        <button type="button" onclick="updateQueueStatus('{{ q.id }}', 'playing', this)" class="btn-action navy-btn" title="Start Match">
+                                            <i class="ph ph-play-circle"></i> <span>Start Game</span>
+                                        </button>
                                         {% if q.player_id %}
-                                        <button type="button" onclick="nudgePlayer('{{ q.player_id }}', this)" class="action-box orange" style="padding: 0.35rem 0.5rem; font-size: 0.8rem; width: auto; cursor:pointer; border:none; color:white; background:var(--primary-orange); border-radius: 6px; font-weight: 600;" title="Nudge Player"><i class="ph ph-bell"></i></button>
+                                        <button type="button" onclick="nudgePlayer('{{ q.player_id }}', this)" class="btn-action-icon orange-btn" title="Nudge Player (Send alert notification)">
+                                            <i class="ph ph-bell"></i>
+                                        </button>
                                         {% endif %}
                                     {% endif %}
                                     {% if q.status == 'playing' %}
-                                        <button type="button" onclick="updateQueueStatus('{{ q.id }}', 'completed', this)" class="action-box navy" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; width: auto; cursor:pointer; border:none; color:white; background:var(--btn-navy); border-radius: 6px; font-weight: 600;">Complete</button>
+                                        <button type="button" onclick="updateQueueStatus('{{ q.id }}', 'completed', this)" class="btn-action completed-btn" title="Mark Game Completed">
+                                            <i class="ph ph-check-square"></i> <span>Complete</span>
+                                        </button>
                                     {% endif %}
-                                    <button type="button" onclick="if(confirm('Remove player from queue?')) updateQueueStatus('{{ q.id }}', 'cancelled', this)" class="action-box red" style="padding: 0.35rem 0.5rem; font-size: 0.8rem; width: auto; background: #fee2e2; color: #ef4444; border:none; cursor:pointer; border-radius: 6px;"><i class="ph ph-trash"></i></button>
+                                    <button type="button" onclick="if(confirm('Remove player from queue?')) updateQueueStatus('{{ q.id }}', 'cancelled', this)" class="btn-action-icon red-btn" title="Remove Player">
+                                        <i class="ph ph-trash"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
                         {% endfor %}
                     {% else %}
                         <tr>
-                            <td colspan="6" style="text-align: center; padding: 20px; color: var(--text-muted);">
-                                No players in queue for this facility.
+                            <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                                    <i class="ph ph-user-list" style="font-size: 2.5rem; color: var(--border-color);"></i>
+                                    <p style="margin: 0; font-weight: 500;">No players in queue for this facility.</p>
+                                </div>
                             </td>
                         </tr>
                     {% endif %}
@@ -90,9 +139,9 @@
     </div>
     {% endfor %}
 {% else %}
-    <div class="glass-card" style="text-align: center; padding: 40px;">
-        <i class="ph ph-warning-circle" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 15px;"></i>
-        <h3 style="margin-bottom: 10px;">No Facilities Assigned</h3>
-        <p style="color: var(--text-muted);">You are not assigned to manage any facility queues yet. Please contact your facility owner.</p>
+    <div class="glass-card" style="text-align: center; padding: 50px;">
+        <i class="ph ph-warning-circle" style="font-size: 3.5rem; color: var(--primary-orange); opacity: 0.8; margin-bottom: 15px; display: block;"></i>
+        <h3 style="margin-bottom: 10px; font-weight: 700; color: var(--text-primary);">No Facilities Assigned</h3>
+        <p style="color: var(--text-muted); max-width: 400px; margin: 0 auto; line-height: 1.5;">You are not assigned to manage any facility queues yet. Please contact your facility owner.</p>
     </div>
 {% endif %}

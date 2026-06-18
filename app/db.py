@@ -8,6 +8,29 @@ from flask import g, session, current_app
 import httpx
 from supabase import create_client, ClientOptions, Client
 
+def is_jwt_expired(token: str) -> bool:
+    """Decodes a JWT payload locally to check if it's expired or close to it (5-minute window)."""
+    import base64
+    import json
+    import time
+    if not token:
+        return True
+    try:
+        parts = token.split('.')
+        if len(parts) != 3:
+            return True
+        payload_b64 = parts[1]
+        # Base64 padding correction
+        payload_b64 += '=' * (4 - len(payload_b64) % 4)
+        payload = json.loads(base64.urlsafe_b64decode(payload_b64.encode('utf-8')).decode('utf-8'))
+        exp = payload.get('exp')
+        if exp:
+            # Refresh if it expires in less than 5 minutes (300 seconds)
+            return time.time() > (exp - 300)
+        return False
+    except Exception:
+        return True
+
 def get_db() -> Client:
     """
     Get a thread-safe, request-scoped Supabase client.
@@ -29,6 +52,21 @@ def get_db() -> Client:
         access_token = session.get('access_token')
         refresh_token = session.get('refresh_token', '')
         if access_token:
+            # Check for token expiry and auto-refresh dynamically
+            if is_jwt_expired(access_token) and refresh_token:
+                try:
+                    refresh_resp = client.auth.refresh_session(refresh_token)
+                    if refresh_resp and refresh_resp.session:
+                        new_access = refresh_resp.session.access_token
+                        new_refresh = refresh_resp.session.refresh_token
+                        # Update Flask session dynamically
+                        session['access_token'] = new_access
+                        session['refresh_token'] = new_refresh
+                        access_token = new_access
+                        refresh_token = new_refresh
+                except Exception as refresh_err:
+                    current_app.logger.error(f"[get_db] Supabase JWT session refresh failed: {refresh_err}")
+
             try:
                 client.auth.set_session(access_token, refresh_token)
             except Exception as e:
@@ -56,7 +94,7 @@ def get_admin_db() -> Client:
         
     return g.admin_db_client
 
-def log_audit_action(action: str, target: str, details: dict = None):
+def log_audit_action(action: str, target: str, details: dict = None, raise_on_error: bool = False):
     """
     Log administrative or critical actions to the database for audit trail.
     Safe to call with or without active Flask request context.
@@ -77,4 +115,7 @@ def log_audit_action(action: str, target: str, details: dict = None):
         }).execute()
     except Exception as e:
         current_app.logger.error(f"[log_audit_action] Failed to write audit log: {e}")
+        if raise_on_error:
+            raise RuntimeError(f"Audit log write failed. Action cancelled for security compliance. Error: {e}")
+
 

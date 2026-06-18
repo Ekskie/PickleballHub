@@ -127,7 +127,7 @@ def get_staff_processed_queues(db, fac_ids):
         return []
     try:
         resp = db.table('court_queues').select(
-            'id, facility_id, court_id, status, estimated_wait_mins, joined_at, player_id, profiles(first_name, last_name), court_reservations!inner(date, start_time, end_time)'
+            'id, facility_id, court_id, status, estimated_wait_mins, joined_at, player_id, profiles(first_name, last_name, avatar_url), court_reservations!inner(date, start_time, end_time)'
         ).in_('facility_id', fac_ids).in_('status', ['waiting', 'next', 'playing']).order('joined_at').execute()
         raw_queues = resp.data or []
     except Exception as e:
@@ -230,6 +230,143 @@ def queue_partial():
         pass
         
     return render_template('facilitystaff/partials/queue_content.html', facilities=assigned_facilities, courts=courts, queues=queues)
+
+
+@facilitystaff_bp.route('/player/<player_id>/details')
+@require_role('facilitystaff')
+def player_details(player_id):
+    db = get_db()
+    try:
+        # Fetch profile details
+        prof_resp = db.table('profiles').select('*').eq('id', player_id).single().execute()
+        profile = prof_resp.data
+        if not profile:
+            return "<div style='text-align:center; padding: 30px; color: var(--text-muted);'><p>Player profile not found.</p></div>", 404
+        
+        # Calculate stats
+        wins = profile.get('wins') or 0
+        losses = profile.get('losses') or 0
+        total_played = wins + losses
+        win_rate = round((wins / total_played) * 100) if total_played > 0 else 0
+        stats = {
+            'wins': wins,
+            'losses': losses,
+            'total_played': total_played,
+            'win_rate': win_rate
+        }
+
+        # Fetch matches (up to 5)
+        player_matches = []
+        try:
+            # 1. Completed tournament matches
+            matches_resp = db.table('tournament_matches').select(
+                'id, event_id, player1_score, player2_score, winner_id, status, played_at, player1_id, player2_id, '
+                'player1:profiles!player1_id(id, first_name, last_name), '
+                'player2:profiles!player2_id(id, first_name, last_name), '
+                'events(title)'
+            ).or_(f"player1_id.eq.{player_id},player2_id.eq.{player_id}").eq('status', 'completed').order('played_at', desc=True).limit(5).execute()
+            
+            raw_matches = matches_resp.data or []
+            for m in raw_matches:
+                is_p1 = m.get('player1_id') == player_id
+                opponent = m.get('player2') if is_p1 else m.get('player1')
+                opp_name = f"{opponent.get('first_name', '')} {opponent.get('last_name', '')}".strip() if opponent else "Unknown Opponent"
+                
+                my_score = m.get('player1_score') if is_p1 else m.get('player2_score')
+                opp_score = m.get('player2_score') if is_p1 else m.get('player1_score')
+                
+                result = "WIN" if m.get('winner_id') == player_id else "LOSS"
+                if m.get('winner_id') is None:
+                    result = "DRAW"
+                    
+                player_matches.append({
+                    'event_title': m.get('events', {}).get('title', 'Tournament Match') if m.get('events') else 'Tournament Match',
+                    'opponent_name': opp_name,
+                    'score': f"{my_score} - {opp_score}" if my_score is not None and opp_score is not None else "N/A",
+                    'result': result,
+                    'played_at': m.get('played_at')
+                })
+
+            # 2. Completed matchmaking lobbies
+            raw_lobbies = []
+            creator_lobbies = db.table('matchmaker_lobbies').select(
+                'id, title, score, winner_id, creator_id, created_at, '
+                'creator:profiles!creator_id(id, first_name, last_name)'
+            ).eq('creator_id', player_id).eq('status', 'completed').limit(5).execute()
+            if creator_lobbies.data:
+                raw_lobbies.extend(creator_lobbies.data)
+
+            joined_lobbies = db.table('lobby_participants').select(
+                'lobby_id, lobby:matchmaker_lobbies!lobby_id(id, title, score, winner_id, creator_id, created_at, creator:profiles!creator_id(id, first_name, last_name))'
+            ).eq('player_id', player_id).eq('status', 'joined').execute()
+            
+            if joined_lobbies.data:
+                for item in joined_lobbies.data:
+                    lobby_data = item.get('lobby')
+                    if lobby_data and lobby_data.get('status') == 'completed':
+                        if not any(x['id'] == lobby_data['id'] for x in raw_lobbies):
+                            raw_lobbies.append(lobby_data)
+
+            for lob in raw_lobbies[:5]:
+                lob_id = lob['id']
+                opponent_name = "Unknown Player"
+                
+                if lob.get('creator_id') == player_id:
+                    part_resp = db.table('lobby_participants').select(
+                        'player_id, profiles!player_id(first_name, last_name)'
+                    ).eq('lobby_id', lob_id).eq('status', 'joined').execute()
+                    
+                    if part_resp.data:
+                        opp_profile = None
+                        for p in part_resp.data:
+                            if p.get('player_id') != player_id:
+                                opp_profile = p.get('profiles') or {}
+                                break
+                        if opp_profile:
+                            opponent_name = f"{opp_profile.get('first_name', '')} {opp_profile.get('last_name', '')}".strip() or "Unknown Player"
+                else:
+                    opp_profile = lob.get('creator') or {}
+                    opponent_name = f"{opp_profile.get('first_name', '')} {opp_profile.get('last_name', '')}".strip() or "Unknown Player"
+
+                result = "DRAW"
+                if lob.get('winner_id') == player_id:
+                    result = "WIN"
+                elif lob.get('winner_id') is not None:
+                    result = "LOSS"
+
+                player_matches.append({
+                    'event_title': 'Matchmaker: ' + lob['title'],
+                    'opponent_name': opponent_name,
+                    'score': lob.get('score') or "N/A",
+                    'result': result,
+                    'played_at': lob.get('created_at')
+                })
+
+            # Sort chronologically descending
+            def parse_time(dt_str):
+                if not dt_str:
+                    return datetime.min.replace(tzinfo=PH_TZ)
+                try:
+                    if dt_str.endswith('Z'):
+                        dt_str = dt_str[:-1] + '+00:00'
+                    return datetime.fromisoformat(dt_str)
+                except Exception:
+                    return datetime.min.replace(tzinfo=PH_TZ)
+
+            player_matches.sort(key=lambda x: parse_time(x.get('played_at')), reverse=True)
+            player_matches = player_matches[:5]
+
+        except Exception as match_err:
+            print("Error fetching matches in modal:", match_err)
+
+        return render_template(
+            'facilitystaff/partials/player_details.html',
+            profile=profile,
+            stats=stats,
+            player_matches=player_matches
+        )
+    except Exception as e:
+        return f"<div style='text-align:center; padding: 30px; color: #ef4444;'><p>Error loading player details: {e}</p></div>", 500
 
 
 @facilitystaff_bp.route('/queue/update', methods=['POST'])

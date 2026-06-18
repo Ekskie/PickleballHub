@@ -107,6 +107,14 @@ def create_app():
                 
                 def add_csrf_field(match):
                     form_tag = match.group(0)
+                    
+                    # Prevent injecting hidden inputs inside JavaScript strings
+                    start_pos = match.start()
+                    last_script_open = html.rfind('<script', 0, start_pos)
+                    last_script_close = html.rfind('</script', 0, start_pos)
+                    if last_script_open > last_script_close:
+                        return form_tag
+
                     if 'name="csrf_token"' in form_tag or 'name="csrf_token"' in html[match.end():match.end()+150]:
                         return form_tag
                     csrf_token = generate_csrf()

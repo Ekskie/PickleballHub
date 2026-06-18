@@ -271,14 +271,14 @@
         <div class="glass-card" style="padding: 24px;">
             <h3 class="widget-title" style="margin: 0 0 16px 0; font-size: 1.05rem; color: var(--text-primary); border-bottom: 1px solid var(--border-color-soft); padding-bottom: 12px;">User Distribution</h3>
             <div style="position:relative; height:180px; margin-bottom: 16px;">
-                <canvas id="roleChart"></canvas>
+                <canvas id="roleChart" data-labels="{{ user_role_chart.labels | tojson | safe }}" data-values="{{ user_role_chart.data | tojson | safe }}"></canvas>
             </div>
             <ul style="margin: 0; padding: 0; list-style: none; font-size: 0.85rem; display: flex; flex-direction: column; gap: 8px;">
                 {% set role_colors = ['#6366f1','#4ade80','#f59e0b','#f87171','#a5b4fc','#34d399'] %}
                 {% for label in user_role_chart.labels %}
                 <li style="display:flex; justify-content:space-between; align-items:center; color: var(--text-secondary);">
                     <span style="display:flex; align-items:center; gap:8px;">
-                        <span style="width:10px; height:10px; border-radius:50%; background:{{ role_colors[loop.index0 % role_colors|length] }}; display:inline-block;"></span>
+                        <span class="role-color-dot" data-color="{{ role_colors[loop.index0 % role_colors|length] }}" style="width:10px; height:10px; border-radius:50%; display:inline-block;"></span>
                         {{ label | title }}
                     </span>
                     <strong style="color: var(--text-primary);">{{ user_role_chart.data[loop.index0] }}</strong>
@@ -293,12 +293,16 @@
 Chart.defaults.color = 'rgba(255,255,255,0.7)';
 Chart.defaults.borderColor = 'rgba(255,255,255,0.1)';
 
-new Chart(document.getElementById('roleChart'), {
+const roleCanvas = document.getElementById('roleChart');
+const roleLabels = JSON.parse(roleCanvas.dataset.labels || '[]');
+const roleValues = JSON.parse(roleCanvas.dataset.values || '[]');
+
+new Chart(roleCanvas, {
     type: 'doughnut',
     data: {
-        labels: {{ user_role_chart.labels | tojson }},
+        labels: roleLabels,
         datasets: [{
-            data: {{ user_role_chart.data | tojson }},
+            data: roleValues,
             backgroundColor: ['#6366f1','#4ade80','#f59e0b','#f87171','#a5b4fc','#34d399'],
             borderWidth: 0,
         }]
@@ -309,6 +313,12 @@ new Chart(document.getElementById('roleChart'), {
         cutout: '72%',
         plugins: { legend: { display: false } }
     }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.role-color-dot').forEach(el => {
+        el.style.backgroundColor = el.dataset.color;
+    });
 });
 </script>
 {% endblock %}

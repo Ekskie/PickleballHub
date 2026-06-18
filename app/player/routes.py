@@ -69,7 +69,7 @@ def dashboard():
     try:
         # Fetch next confirmed reservation
         res_resp = db.table('court_reservations').select(
-            'id, date, start_time, end_time, status, courts(name), facilities(name, location)'
+            'id, date, start_time, end_time, status, courts(name, image_url), facilities(name, location)'
         ).eq('player_id', player_id).in_('status', ['confirmed']).order('date').order('start_time').limit(1).execute()
         if res_resp.data:
             next_reservation = res_resp.data[0]
@@ -451,7 +451,7 @@ def book_reservation():
 
     db = get_db()
     try:
-        # Check for overlapping reservation
+        # Check for overlapping reservation on this court
         overlap_resp = db.table('court_reservations').select('id')\
             .eq('court_id', court_id)\
             .eq('date', date)\
@@ -462,6 +462,19 @@ def book_reservation():
             
         if overlap_resp.data:
             flash('This court is already reserved during the selected time slot. Please choose another time or court.', 'error')
+            return redirect(url_for('player.reservation'))
+
+        # Check if player already has another overlapping reservation (prevent double-booking)
+        player_overlap = db.table('court_reservations').select('id')\
+            .eq('player_id', player_id)\
+            .eq('date', date)\
+            .in_('status', ['confirmed', 'pending_payment'])\
+            .lt('start_time', end_time)\
+            .gt('end_time', start_time)\
+            .execute()
+            
+        if player_overlap.data:
+            flash('You already have another court reservation during this time slot.', 'error')
             return redirect(url_for('player.reservation'))
 
         resp = db.table('court_reservations').insert({
@@ -604,30 +617,11 @@ def confirm_payment(reservation_id):
         res_data = res_resp.data
 
         db.table('court_reservations').update({
-            'status': 'confirmed',
             'gcash_ref': gcash_ref,
         }).eq('id', reservation_id).eq('player_id', player_id).eq(
             'status', 'pending_payment').execute()
 
-        if res_data:
-            # Insert into court_queues
-            db.table('court_queues').insert({
-                'player_id': player_id,
-                'facility_id': res_data['facility_id'],
-                'court_id': res_data['court_id'],
-                'reservation_id': reservation_id,
-                'status': 'waiting',
-                'estimated_wait_mins': 0
-            }).execute()
-
-            # Trigger automated chat messages from owner and staff
-            try:
-                from app.chats import trigger_booking_autochat
-                trigger_booking_autochat(db, reservation_id, player_id)
-            except Exception as chat_err:
-                print(f"Error triggering autochats: {chat_err}")
-
-        flash('Payment confirmed! Your court is booked and you are added to the queue.', 'success')
+        flash('Payment reference submitted successfully! Your booking is pending verification by the facility owner.', 'success')
     except Exception as e:
         flash(f'Payment error: {e}', 'error')
     return redirect(url_for('player.my_reservations'))
@@ -637,7 +631,7 @@ def get_processed_queues(db, player_id=None):
     try:
         resp = db.table('court_queues').select(
             'id, status, estimated_wait_mins, joined_at, player_id, facility_id, '
-            'courts(name), profiles(first_name, last_name), '
+            'courts(name), profiles(first_name, last_name, avatar_url), '
             'facilities(id, name), '
             'court_reservations!inner(date, start_time, end_time)'
         ).in_('status', ['waiting', 'next', 'playing']).order('joined_at').execute()
@@ -1849,8 +1843,12 @@ def matchmaker_join(lobby_id):
     db = get_db()
     
     try:
-        # Get lobby details
-        lob_resp = db.table('matchmaker_lobbies').select('status, slots_total, slots_filled, creator_id, min_dupr, max_dupr').eq('id', lobby_id).single().execute()
+        # Get lobby details with court reservation info
+        lob_resp = db.table('matchmaker_lobbies').select(
+            'status, slots_total, slots_filled, creator_id, min_dupr, max_dupr, reservation_id, '
+            'court_reservations(date, start_time, end_time)'
+        ).eq('id', lobby_id).single().execute()
+        
         lobby = lob_resp.data
         if not lobby or lobby['status'] != 'open':
             flash("Lobby is not open.", "error")
@@ -1859,6 +1857,25 @@ def matchmaker_join(lobby_id):
         if lobby['creator_id'] == player_id:
             flash("You cannot join your own lobby.", "error")
             return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+
+        # Check for scheduling conflicts (prevent double-booking)
+        res = lobby.get('court_reservations')
+        if res:
+            res_date = res.get('date')
+            res_start = res.get('start_time')
+            res_end = res.get('end_time')
+            
+            player_overlap = db.table('court_reservations').select('id')\
+                .eq('player_id', player_id)\
+                .eq('date', res_date)\
+                .in_('status', ['confirmed', 'pending_payment'])\
+                .lt('start_time', res_end)\
+                .gt('end_time', res_start)\
+                .execute()
+                
+            if player_overlap.data:
+                flash("You already have another court reservation during this lobby's time slot.", "error")
+                return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
 
         # Verify rating
         prof_resp = db.table('profiles').select('dupr').eq('id', player_id).single().execute()

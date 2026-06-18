@@ -1,0 +1,97 @@
+<div class="player-profile-modal-body">
+    <!-- Header/Avatar Section -->
+    <div class="profile-header-card">
+        <div class="profile-avatar-wrapper">
+            {% if profile.avatar_url %}
+                <img src="{{ profile.avatar_url }}" alt="{{ profile.first_name }} {{ profile.last_name }}">
+            {% else %}
+                <div class="profile-avatar-initials">
+                    {{ ((profile.first_name or 'P')[0] + (profile.last_name or '')[0]).upper() }}
+                </div>
+            {% endif %}
+        </div>
+        <h3 class="profile-name-title">{{ profile.first_name }} {{ profile.last_name }}</h3>
+        <span class="profile-role-badge">Player</span>
+        
+        <!-- Ratings Section -->
+        <div class="profile-ratings-grid">
+            <div class="rating-badge-card elo">
+                <span class="rating-label">ELO</span>
+                <span class="rating-value">{{ profile.elo | default(1500, true) | int }}</span>
+            </div>
+            <div class="rating-badge-card dupr">
+                <span class="rating-label">DUPR</span>
+                <span class="rating-value">{{ "%.2f"|format(profile.dupr|default(3.0, true)|float) }}</span>
+            </div>
+            <div class="rating-badge-card proficiency">
+                <span class="rating-label">LEVEL</span>
+                <span class="rating-value">{{ profile.proficiency|default('N/A', true)|title }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact details -->
+    <div class="profile-section-card">
+        <h4 class="section-card-title"><i class="ph ph-user-focus"></i> Player Details</h4>
+        <div class="detail-info-row">
+            <span class="detail-label"><i class="ph ph-phone"></i> Phone:</span>
+            <span class="detail-value">{{ profile.phone | default('None Provided', true) }}</span>
+        </div>
+        <div class="detail-info-row">
+            <span class="detail-label"><i class="ph ph-calendar"></i> Joined:</span>
+            <span class="detail-value">{{ profile.created_at[:10] if profile.created_at else 'N/A' }}</span>
+        </div>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="profile-section-card">
+        <h4 class="section-card-title"><i class="ph ph-chart-bar"></i> Performance Stats</h4>
+        <div class="profile-stats-container">
+            <div class="stat-box-mini">
+                <span class="stat-number">{{ stats.total_played }}</span>
+                <span class="stat-lbl">Played</span>
+            </div>
+            <div class="stat-box-mini win">
+                <span class="stat-number">{{ stats.wins }}</span>
+                <span class="stat-lbl">Wins</span>
+            </div>
+            <div class="stat-box-mini loss">
+                <span class="stat-number">{{ stats.losses }}</span>
+                <span class="stat-lbl">Losses</span>
+            </div>
+            <div class="stat-box-mini rate">
+                <span class="stat-number">{{ stats.win_rate }}%</span>
+                <span class="stat-lbl">Win Rate</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Match History Section -->
+    <div class="profile-section-card">
+        <h4 class="section-card-title"><i class="ph ph-clock-counter-clockwise"></i> Recent Matches</h4>
+        {% if player_matches %}
+            <div class="modal-match-history-list">
+                {% for m in player_matches %}
+                    <div class="modal-match-item">
+                        <div class="match-meta-info">
+                            <span class="match-event-name">{{ m.event_title }}</span>
+                            <span class="match-opponent">vs {{ m.opponent_name }}</span>
+                        </div>
+                        <div class="match-score-result">
+                            <span class="match-score-val">{{ m.score }}</span>
+                            {% if m.result == 'WIN' %}
+                                <span class="match-result-pill win">WIN</span>
+                            {% elif m.result == 'LOSS' %}
+                                <span class="match-result-pill loss">LOSS</span>
+                            {% else %}
+                                <span class="match-result-pill draw">DRAW</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="no-matches-text">No matches recorded yet.</p>
+        {% endif %}
+    </div>
+</div>

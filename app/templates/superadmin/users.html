@@ -18,11 +18,11 @@
         opacity: 0;
         transition: opacity 0.3s ease;
     }
-    
+
     .custom-modal-overlay.active {
         opacity: 1;
     }
-    
+
     .custom-modal-box {
         background: var(--modal-box-bg);
         border: 1px solid var(--modal-box-border);
@@ -34,7 +34,7 @@
         transform: scale(0.9) translateY(15px);
         transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-    
+
     .custom-modal-overlay.active .custom-modal-box {
         transform: scale(1) translateY(0);
     }
@@ -80,16 +80,16 @@
         scrollbar-width: thin;
         scrollbar-color: rgba(255, 87, 34, 0.2) transparent;
     }
-    
+
     .filter-tabs::-webkit-scrollbar {
         height: 4px;
     }
-    
+
     .filter-tabs::-webkit-scrollbar-thumb {
         background-color: rgba(255, 87, 34, 0.2);
         border-radius: 4px;
     }
-    
+
     .filter-tab {
         padding: 8px 16px;
         border-radius: 20px;
@@ -105,13 +105,13 @@
         align-items: center;
         gap: 6px;
     }
-    
+
     .filter-tab:hover {
         background: rgba(255, 87, 34, 0.08);
         color: var(--primary-orange);
         border-color: rgba(255, 87, 34, 0.2);
     }
-    
+
     .filter-tab.active {
         background: var(--primary-orange);
         color: #fff;
@@ -122,25 +122,32 @@
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-header" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+<div class="dashboard-header"
+    style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
     <div>
         <h1 class="page-title" style="margin: 0 0 4px 0;">User Management</h1>
-        <small style="color:var(--text-secondary); font-size: 0.85rem; font-weight: 500;">Monitor, filter, suspend, or add platform users and administrators</small>
+        <small style="color:var(--text-secondary); font-size: 0.85rem; font-weight: 500;">Monitor, filter, suspend, or
+            add platform users and administrators</small>
     </div>
-    <button class="dropdown-trigger" style="padding: 10px 18px; background: var(--primary-orange); border-color: var(--primary-orange); color: #fff;" onclick="openAddModal()">
+    <button class="dropdown-trigger"
+        style="padding: 10px 18px; background: var(--primary-orange); border-color: var(--primary-orange); color: #fff;"
+        onclick="openAddModal()">
         <i class="ph ph-user-plus" style="font-size: 1.05rem;"></i> Add Admin Staff
     </button>
 </div>
 
 <div class="glass-card" style="padding: 24px;">
     <!-- Filter and Search Header -->
-    <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color-soft); padding-bottom: 16px;">
+    <div
+        style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color-soft); padding-bottom: 16px;">
         <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap;">
             <!-- Dynamic search input -->
-            <div style="flex: 1; min-width: 280px; max-width: 400px; position: relative; display: flex; align-items: center;">
-                <i class="ph ph-magnifying-glass" style="position: absolute; left: 14px; color: var(--text-muted); font-size: 1.1rem; z-index: 10;"></i>
+            <div
+                style="flex: 1; min-width: 280px; max-width: 400px; position: relative; display: flex; align-items: center;">
+                <i class="ph ph-magnifying-glass"
+                    style="position: absolute; left: 14px; color: var(--text-muted); font-size: 1.1rem; z-index: 10;"></i>
                 <input type="text" id="userSearchInput" placeholder="Search by name or email..."
-                       style="width: 100%; padding: 10px 14px 10px 42px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-primary); font-size: 0.9rem; outline: none; transition: all 0.2s;">
+                    style="width: 100%; padding: 10px 14px 10px 42px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-primary); font-size: 0.9rem; outline: none; transition: all 0.2s;">
             </div>
         </div>
 
@@ -150,7 +157,8 @@
             <div class="filter-tab" data-role="player"><i class="ph ph-user"></i> Players</div>
             <div class="filter-tab" data-role="clubadmin"><i class="ph ph-user-gear"></i> Club Admins</div>
             <div class="filter-tab" data-role="owner"><i class="ph ph-briefcase"></i> Owners</div>
-            <div class="filter-tab" data-role="facilitystaff"><i class="ph ph-identification-card"></i> Facility Staff</div>
+            <div class="filter-tab" data-role="facilitystaff"><i class="ph ph-identification-card"></i> Facility Staff
+            </div>
             <div class="filter-tab" data-role="adminstaff"><i class="ph ph-shield-check"></i> Admin Staff</div>
             <div class="filter-tab" data-role="superadmin"><i class="ph ph-crown"></i> Superadmins</div>
         </div>
@@ -170,7 +178,9 @@
             </thead>
             <tbody>
                 {% for profile in profiles %}
-                <tr class="user-row" data-name="{{ (profile.first_name ~ ' ' ~ profile.last_name) | lower }}" data-email="{{ (profile.email or '') | lower }}" data-role="{{ (profile.role or 'player') | lower }}">
+                <tr class="user-row" data-name="{{ (profile.first_name ~ ' ' ~ profile.last_name) | lower }}"
+                    data-email="{{ (profile.email or '') | lower }}"
+                    data-role="{{ (profile.role or 'player') | lower }}">
                     <td class="bold">
                         <div style="display: flex; align-items: center; gap: 12px;">
                             <div class="user-avatar" style="
@@ -190,80 +200,92 @@
                                 {{ profile.first_name[0] }}{{ profile.last_name[0] if profile.last_name else '' }}
                             </div>
                             <div>
-                                <span style="display: block; color: var(--text-primary); font-weight: 600;">{{ profile.first_name }} {{ profile.last_name }}</span>
-                                <span style="display: block; font-size: 0.78rem; color: var(--text-muted);">{{ profile.email or 'N/A' }}</span>
+                                <span style="display: block; color: var(--text-primary); font-weight: 600;">{{
+                                    profile.first_name }} {{ profile.last_name }}</span>
+                                <span style="display: block; font-size: 0.78rem; color: var(--text-muted);">{{
+                                    profile.email or 'N/A' }}</span>
                             </div>
                         </div>
                     </td>
                     <td>
                         {% if profile.role == 'superadmin' %}
-                            <span class="status-pill error" style="text-transform: capitalize;">
-                                <i class="ph ph-crown"></i> Superadmin
-                            </span>
+                        <span class="status-pill error" style="text-transform: capitalize;">
+                            <i class="ph ph-crown"></i> Superadmin
+                        </span>
                         {% elif profile.role == 'adminstaff' %}
-                            <span class="status-pill success" style="text-transform: capitalize;">
-                                <i class="ph ph-shield-check"></i> Admin Staff
-                            </span>
+                        <span class="status-pill success" style="text-transform: capitalize;">
+                            <i class="ph ph-shield-check"></i> Admin Staff
+                        </span>
                         {% elif profile.role == 'clubadmin' %}
-                            <span class="status-pill warning" style="text-transform: capitalize;">
-                                <i class="ph ph-user-gear"></i> Club Admin
-                            </span>
+                        <span class="status-pill warning" style="text-transform: capitalize;">
+                            <i class="ph ph-user-gear"></i> Club Admin
+                        </span>
                         {% elif profile.role == 'owner' %}
-                            <span class="status-pill info" style="text-transform: capitalize;">
-                                <i class="ph ph-briefcase"></i> Owner
-                            </span>
+                        <span class="status-pill info" style="text-transform: capitalize;">
+                            <i class="ph ph-briefcase"></i> Owner
+                        </span>
                         {% elif profile.role == 'facilitystaff' %}
-                            <span class="status-pill info" style="text-transform: capitalize; background: rgba(6, 182, 212, 0.08) !important; border: 1px solid rgba(6, 182, 212, 0.25) !important; color: #06b6d4 !important;">
-                                <i class="ph ph-identification-card"></i> Staff
-                            </span>
+                        <span class="status-pill info"
+                            style="text-transform: capitalize; background: rgba(6, 182, 212, 0.08) !important; border: 1px solid rgba(6, 182, 212, 0.25) !important; color: #06b6d4 !important;">
+                            <i class="ph ph-identification-card"></i> Staff
+                        </span>
                         {% else %}
-                            <span class="status-pill" style="text-transform: capitalize; background: rgba(107, 114, 128, 0.08) !important; border: 1px solid rgba(107, 114, 128, 0.25) !important; color: #9ca3af !important;">
-                                <i class="ph ph-user"></i> Player
-                            </span>
+                        <span class="status-pill"
+                            style="text-transform: capitalize; background: rgba(107, 114, 128, 0.08) !important; border: 1px solid rgba(107, 114, 128, 0.25) !important; color: #9ca3af !important;">
+                            <i class="ph ph-user"></i> Player
+                        </span>
                         {% endif %}
                     </td>
                     <td>
                         {% if profile.is_suspended %}
-                            <span class="status-pill error">
-                                <i class="ph ph-prohibit"></i> Suspended
-                            </span>
+                        <span class="status-pill error">
+                            <i class="ph ph-prohibit"></i> Suspended
+                        </span>
                         {% else %}
-                            <span class="status-pill success">
-                                <i class="ph ph-check-circle"></i> Active
-                            </span>
+                        <span class="status-pill success">
+                            <i class="ph ph-check-circle"></i> Active
+                        </span>
                         {% endif %}
                     </td>
                     <td>{{ profile.created_at | community_timeago }}</td>
                     <td style="text-align: right; padding-right: 24px !important;">
                         {% if profile.id == session.get('user_id') %}
-                            <span style="font-size: 0.78rem; color: var(--text-muted); font-style: italic;">Current User</span>
+                        <span style="font-size: 0.78rem; color: var(--text-muted); font-style: italic;">Current
+                            User</span>
                         {% else %}
-                            <form method="POST" action="{{ url_for('superadmin.toggle_suspend_user', user_id=profile.id) }}" style="display: inline;">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                {% if profile.is_suspended %}
-                                    <button type="submit" class="dropdown-trigger" style="background: rgba(16, 185, 129, 0.08); border-color: rgba(16,185,129,0.2); color: #10b981; font-size: 0.78rem; padding: 6px 12px; display: inline-flex; align-items: center; gap: 4px;" onclick="return confirm('Are you sure you want to unsuspend this user account?');">
-                                        <i class="ph ph-user-check"></i> Unsuspend
-                                    </button>
-                                {% else %}
-                                    <button type="submit" class="dropdown-trigger" style="background: rgba(239, 68, 68, 0.08); border-color: rgba(239,68,68,0.2); color: #ef4444; font-size: 0.78rem; padding: 6px 12px; display: inline-flex; align-items: center; gap: 4px;" onclick="return confirm('Are you sure you want to suspend this user account? Suspended users will be immediately logged out and blocked from logging in.');">
-                                        <i class="ph ph-prohibit-line"></i> Suspend
-                                    </button>
-                                {% endif %}
-                            </form>
+                        <form method="POST" action="{{ url_for('superadmin.toggle_suspend_user', user_id=profile.id) }}"
+                            style="display: inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            {% if profile.is_suspended %}
+                            <button type="submit" class="dropdown-trigger"
+                                style="background: rgba(16, 185, 129, 0.08); border-color: rgba(16,185,129,0.2); color: #10b981; font-size: 0.78rem; padding: 6px 12px; display: inline-flex; align-items: center; gap: 4px;"
+                                onclick="return confirm('Are you sure you want to unsuspend this user account?');">
+                                <i class="ph ph-user-check"></i> Unsuspend
+                            </button>
+                            {% else %}
+                            <button type="submit" class="dropdown-trigger"
+                                style="background: rgba(239, 68, 68, 0.08); border-color: rgba(239,68,68,0.2); color: #ef4444; font-size: 0.78rem; padding: 6px 12px; display: inline-flex; align-items: center; gap: 4px;"
+                                onclick="return confirm('Are you sure you want to suspend this user account? Suspended users will be immediately logged out and blocked from logging in.');">
+                                <i class="ph ph-prohibit-line"></i> Suspend
+                            </button>
+                            {% endif %}
+                        </form>
                         {% endif %}
                     </td>
                 </tr>
                 {% else %}
                 <tr id="noUsersRow">
                     <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-muted);">
-                        <i class="ph ph-users-three" style="font-size: 2.5rem; display: block; margin-bottom: 10px;"></i>
+                        <i class="ph ph-users-three"
+                            style="font-size: 2.5rem; display: block; margin-bottom: 10px;"></i>
                         No users registered matching this category.
                     </td>
                 </tr>
                 {% endfor %}
                 <tr id="searchNoMatchRow" style="display: none;">
                     <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-muted);">
-                        <i class="ph ph-magnifying-glass" style="font-size: 2.5rem; display: block; margin-bottom: 10px;"></i>
+                        <i class="ph ph-magnifying-glass"
+                            style="font-size: 2.5rem; display: block; margin-bottom: 10px;"></i>
                         No users match your search criteria.
                     </td>
                 </tr>
@@ -275,11 +297,14 @@
 <!-- ADD ADMIN STAFF MODAL (SPRING SLIDE OVERLAY) -->
 <div class="custom-modal-overlay" id="addAdminStaffModal">
     <div class="custom-modal-box">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--border-color-soft); padding-bottom: 14px;">
-            <h3 style="margin: 0; font-size: 1.25rem; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--border-color-soft); padding-bottom: 14px;">
+            <h3
+                style="margin: 0; font-size: 1.25rem; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
                 <i class="ph ph-user-plus" style="color: var(--primary-orange);"></i> Add Admin Staff
             </h3>
-            <button class="dropdown-trigger" onclick="closeAddModal()" style="padding: 6px; border-radius: 50%;"><i class="ph ph-x"></i></button>
+            <button class="dropdown-trigger" onclick="closeAddModal()" style="padding: 6px; border-radius: 50%;"><i
+                    class="ph ph-x"></i></button>
         </div>
         <form method="POST" action="{{ url_for('superadmin.add_adminstaff') }}" onsubmit="submitModal(this)">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -293,15 +318,20 @@
             </div>
             <div class="form-group">
                 <label>Email Address *</label>
-                <input type="email" name="email" required placeholder="staff@pickleballhub.com" class="form-control-input">
+                <input type="email" name="email" required placeholder="staff@pickleballhub.com"
+                    class="form-control-input">
             </div>
             <div class="form-group" style="margin-bottom: 24px;">
                 <label>Temporary Password *</label>
-                <input type="password" name="password" required minlength="6" placeholder="At least 6 characters" class="form-control-input">
+                <input type="password" name="password" required minlength="6" placeholder="At least 6 characters"
+                    class="form-control-input">
             </div>
-            <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--border-color-soft); padding-top: 18px;">
-                <button type="button" class="dropdown-trigger" onclick="closeAddModal()" style="padding: 10px 18px;">Cancel</button>
-                <button type="submit" id="submitBtn" class="dropdown-trigger" style="padding: 10px 18px; background: var(--primary-orange); border-color: var(--primary-orange); color: #fff;">
+            <div
+                style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--border-color-soft); padding-top: 18px;">
+                <button type="button" class="dropdown-trigger" onclick="closeAddModal()"
+                    style="padding: 10px 18px;">Cancel</button>
+                <button type="submit" id="submitBtn" class="dropdown-trigger"
+                    style="padding: 10px 18px; background: var(--primary-orange); border-color: var(--primary-orange); color: #fff;">
                     <i class="ph ph-check"></i> Create Account
                 </button>
             </div>
@@ -310,91 +340,93 @@
 </div>
 
 <script>
-// Search and Role Filter Tabs Logic
-const searchInput = document.getElementById('userSearchInput');
-const tabs = document.querySelectorAll('.filter-tab');
-const rows = document.querySelectorAll('.user-row');
-const searchNoMatchRow = document.getElementById('searchNoMatchRow');
-const noUsersRow = document.getElementById('noUsersRow');
+    // Search and Role Filter Tabs Logic
+    const searchInput = document.getElementById('userSearchInput');
+    const tabs = document.querySelectorAll('.filter-tab');
+    const rows = document.querySelectorAll('.user-row');
+    const searchNoMatchRow = document.getElementById('searchNoMatchRow');
+    const noUsersRow = document.getElementById('noUsersRow');
 
-let currentRoleFilter = 'all';
-let currentSearchQuery = '';
+    let currentRoleFilter = 'all';
+    let currentSearchQuery = '';
 
-function applyFilter() {
-    let visibleCount = 0;
-    
-    rows.forEach(row => {
-        const name = row.dataset.name;
-        const email = row.dataset.email;
-        const role = row.dataset.role;
-        
-        const matchesSearch = !currentSearchQuery || name.includes(currentSearchQuery) || email.includes(currentSearchQuery);
-        const matchesRole = currentRoleFilter === 'all' || role === currentRoleFilter;
-        
-        if (matchesSearch && matchesRole) {
-            row.style.display = '';
-            visibleCount++;
-        } else {
-            row.style.display = 'none';
-        }
-    });
-    
-    // Display no match row if filtered out all rows
-    if (visibleCount === 0) {
-        if (currentSearchQuery) {
-            searchNoMatchRow.style.display = '';
-            if (noUsersRow) noUsersRow.style.display = 'none';
+    function applyFilter() {
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const name = row.dataset.name;
+            const email = row.dataset.email;
+            const role = row.dataset.role;
+
+            const matchesSearch = !currentSearchQuery || name.includes(currentSearchQuery) || email.includes(currentSearchQuery);
+            const matchesRole = currentRoleFilter === 'all' || role === currentRoleFilter;
+
+            if (matchesSearch && matchesRole) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Display no match row if filtered out all rows
+        if (visibleCount === 0) {
+            if (currentSearchQuery) {
+                searchNoMatchRow.style.display = '';
+                if (noUsersRow) noUsersRow.style.display = 'none';
+            } else {
+                searchNoMatchRow.style.display = 'none';
+                if (noUsersRow) noUsersRow.style.display = '';
+            }
         } else {
             searchNoMatchRow.style.display = 'none';
-            if (noUsersRow) noUsersRow.style.display = '';
+            if (noUsersRow) noUsersRow.style.display = 'none';
         }
-    } else {
-        searchNoMatchRow.style.display = 'none';
-        if (noUsersRow) noUsersRow.style.display = 'none';
     }
-}
 
-searchInput.addEventListener('input', function() {
-    currentSearchQuery = this.value.toLowerCase().trim();
-    applyFilter();
-});
-
-tabs.forEach(tab => {
-    tab.addEventListener('click', function() {
-        tabs.forEach(t => t.classList.remove('active'));
-        this.classList.add('active');
-        currentRoleFilter = this.dataset.role;
+    searchInput.addEventListener('input', function () {
+        currentSearchQuery = this.value.toLowerCase().trim();
         applyFilter();
     });
-});
 
-// Modal Logic
-function openAddModal() {
-    const modal = document.getElementById('addAdminStaffModal');
-    modal.style.display = 'flex';
-    setTimeout(() => {
-        modal.classList.add('active');
-    }, 10);
-}
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function () {
+            tabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            currentRoleFilter = this.dataset.role;
+            applyFilter();
+        });
+    });
 
-function closeAddModal() {
-    const modal = document.getElementById('addAdminStaffModal');
-    modal.classList.remove('active');
-    setTimeout(() => {
-        modal.style.display = 'none';
-    }, 300);
-}
+    // Modal Logic
+    function openAddModal() {
+        const modal = document.getElementById('addAdminStaffModal');
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            modal.classList.add('active');
+        }, 10);
+    }
 
-function submitModal(form) {
-    const btn = document.getElementById('submitBtn');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="ph ph-circle-notch" style="animation:spin 0.8s linear infinite; display:inline-block;"></i> Creating...';
-}
+    function closeAddModal() {
+        const modal = document.getElementById('addAdminStaffModal');
+        modal.classList.remove('active');
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300);
+    }
+
+    function submitModal(form) {
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="ph ph-circle-notch" style="animation:spin 0.8s linear infinite; display:inline-block;"></i> Creating...';
+    }
 </script>
 
 <style>
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
 </style>
 {% endblock %}

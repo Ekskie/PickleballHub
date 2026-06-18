@@ -86,7 +86,7 @@ def resolve_ticket(ticket_id):
     db = get_db()
     try:
         db.table('tickets').update({'status': 'closed', 'response': response}).eq('id', ticket_id).execute()
-        log_audit_action('resolve_ticket', ticket_id, {'response': response})
+        log_audit_action('resolve_ticket', ticket_id, {'response': response}, raise_on_error=True)
         flash('Ticket resolved successfully.', 'success')
     except Exception as e:
         flash(f'Error resolving ticket: {e}', 'error')
@@ -114,7 +114,7 @@ def update_kyc_status(facility_id):
     db = get_db()
     try:
         db.table('facilities').update({'kyc_status': status}).eq('id', facility_id).execute()
-        log_audit_action('update_facility_kyc', facility_id, {'status': status})
+        log_audit_action('update_facility_kyc', facility_id, {'status': status}, raise_on_error=True)
         flash(f'Facility KYC status updated to {status}.', 'success')
     except Exception as e:
         flash(f'Error updating status: {e}', 'error')
@@ -152,7 +152,7 @@ def update_dispute(dispute_id):
             'resolution': resolution,
             'updated_at': datetime.now(PH_TZ).isoformat()
         }).eq('id', dispute_id).execute()
-        log_audit_action('update_dispute', dispute_id, {'status': new_status, 'resolution': resolution})
+        log_audit_action('update_dispute', dispute_id, {'status': new_status, 'resolution': resolution}, raise_on_error=True)
         flash(f'Dispute marked as {new_status}.', 'success')
     except Exception as e:
         flash(f'Error updating dispute: {e}', 'error')

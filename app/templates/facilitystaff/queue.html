@@ -2,6 +2,600 @@
 
 {% block title %}Queue Management{% endblock %}
 
+{% block extra_head %}
+<style>
+    /* ----- PREMIUM TABLE STYLE ----- */
+    .premium-table {
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 100%;
+        margin-top: 10px;
+    }
+    
+    .premium-table th {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        letter-spacing: 0.5px;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border-color);
+        background: var(--input-bg);
+    }
+    
+    .premium-table th:first-child {
+        border-top-left-radius: 8px;
+        border-bottom-left-radius: 8px;
+    }
+    
+    .premium-table th:last-child {
+        border-top-right-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+    
+    .queue-row-item {
+        transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+    
+    .queue-row-item:hover {
+        background-color: rgba(229, 231, 235, 0.2);
+    }
+    
+    html.dark-mode .queue-row-item:hover {
+        background-color: rgba(255, 255, 255, 0.02);
+    }
+    
+    .premium-table td {
+        padding: 16px;
+        border-bottom: 1px solid var(--border-color);
+        vertical-align: middle;
+    }
+    
+    .premium-table tr:last-child td {
+        border-bottom: none;
+    }
+    
+    /* Position Indicator */
+    .position-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: var(--input-bg);
+        color: var(--text-primary);
+        font-weight: 700;
+        font-size: 0.85rem;
+        border: 1px solid var(--border-color);
+    }
+    
+    .playing-dash {
+        color: var(--primary-orange);
+        font-weight: 700;
+        font-size: 1.2rem;
+    }
+    
+    /* Interactive Player Link */
+    .player-avatar-mini {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--border-color);
+        background: var(--input-bg);
+        transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    
+    .player-avatar-mini img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .player-avatar-mini:hover {
+        transform: scale(1.1);
+        border-color: var(--primary-orange);
+    }
+    
+    .player-initials-mini {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--primary-orange-light);
+        color: var(--primary-orange);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 700;
+        border: 1px solid rgba(225, 86, 35, 0.15);
+    }
+    
+    .walkin-avatar {
+        background: var(--border-color);
+        color: var(--text-muted);
+        border: 1px solid var(--border-color);
+    }
+    
+    .player-name-link {
+        font-weight: 600;
+        color: var(--text-primary);
+        transition: color 0.2s ease;
+        text-decoration: none;
+    }
+    
+    .player-name-link:hover {
+        color: var(--primary-orange);
+        text-decoration: underline;
+    }
+    
+    .guest-name-text {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    
+    .chat-shortcut-link {
+        color: var(--text-muted);
+        display: inline-flex;
+        align-items: center;
+        padding: 4px;
+        border-radius: 4px;
+        transition: color 0.2s, background-color 0.2s;
+    }
+    
+    .chat-shortcut-link:hover {
+        color: var(--primary-orange);
+        background-color: var(--primary-orange-light);
+    }
+    
+    /* Queue Counter Badge */
+    .queue-count-badge {
+        font-size: 0.75rem;
+        font-weight: 700;
+        background: var(--primary-orange-light);
+        color: var(--primary-orange);
+        padding: 4px 10px;
+        border-radius: 12px;
+        border: 1px solid rgba(225, 86, 35, 0.15);
+    }
+    
+    /* ----- GLOWING STATUS BADGES ----- */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 12px;
+        line-height: 1;
+        border: 1px solid transparent;
+    }
+    
+    .dot-indicator {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+    }
+    
+    .orange-glow {
+        background: rgba(225, 86, 35, 0.08);
+        color: var(--primary-orange);
+        border-color: rgba(225, 86, 35, 0.2);
+    }
+    .bg-orange { background: var(--primary-orange); box-shadow: 0 0 6px var(--primary-orange); }
+    
+    .green-glow {
+        background: var(--btn-green-light);
+        color: var(--btn-green);
+        border-color: rgba(41, 163, 86, 0.2);
+    }
+    .bg-green { background: var(--btn-green); box-shadow: 0 0 6px var(--btn-green); }
+    
+    .gray-glow {
+        background: var(--input-bg);
+        color: var(--text-secondary);
+        border-color: var(--border-color);
+    }
+    .bg-gray { background: var(--text-muted); }
+    
+    /* ----- ACTIONS BUTTONS ----- */
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        color: white;
+        transition: transform 0.15s ease, background-color 0.2s;
+    }
+    
+    .btn-action-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        transition: transform 0.15s ease, background-color 0.2s;
+    }
+    
+    .btn-action:hover, .btn-action-icon:hover {
+        transform: translateY(-1px);
+    }
+    
+    .btn-action:active, .btn-action-icon:active {
+        transform: translateY(1px);
+    }
+    
+    .green-btn { background: var(--btn-green); }
+    .green-btn:hover { background: #228a48; }
+    
+    .navy-btn { background: var(--btn-navy); }
+    .navy-btn:hover { background: #13182b; }
+    
+    .completed-btn { background: var(--btn-navy); }
+    .completed-btn:hover { background: #13182b; }
+    
+    .orange-btn { background: var(--primary-orange); color: white; }
+    .orange-btn:hover { background: var(--primary-orange-hover); }
+    
+    .red-btn { background: #fee2e2; color: #ef4444; }
+    .red-btn:hover { background: #fecaca; }
+    
+    /* ----- SLIDE-OVER DRAWER (PLAYER PROFILE) ----- */
+    .drawer-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 18, 25, 0.4);
+        backdrop-filter: blur(4px);
+        z-index: 999998 !important;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+    
+    .drawer-overlay.open {
+        opacity: 1;
+        pointer-events: auto;
+    }
+    
+    .drawer-panel {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 420px;
+        max-width: 100%;
+        background: var(--sidebar-bg);
+        border-left: 1px solid var(--border-color);
+        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
+        z-index: 999999 !important;
+        transform: translateX(100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .drawer-panel.open {
+        transform: translateX(0);
+    }
+    
+    .drawer-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .drawer-header h3 {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+    
+    .drawer-close-btn {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 6px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s, color 0.2s;
+    }
+    
+    .drawer-close-btn:hover {
+        background-color: var(--input-bg);
+        color: var(--text-primary);
+    }
+    
+    .drawer-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 24px;
+    }
+    
+    /* Loading state */
+    .drawer-loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        flex: 1;
+        color: var(--text-muted);
+    }
+    
+    .drawer-spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid var(--border-color);
+        border-top-color: var(--primary-orange);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    /* ----- PROFILE DRAWER CONTENT DETAILS ----- */
+    .player-profile-modal-body {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .profile-header-card {
+        text-align: center;
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 24px 16px;
+    }
+    
+    .profile-avatar-wrapper {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin: 0 auto 12px;
+        border: 2px solid var(--primary-orange);
+        box-shadow: 0 4px 10px rgba(225, 86, 35, 0.15);
+    }
+    
+    .profile-avatar-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .profile-avatar-initials {
+        width: 100%;
+        height: 100%;
+        background: var(--primary-orange-light);
+        color: var(--primary-orange);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+    
+    .profile-name-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin: 0 0 4px 0;
+        color: var(--text-primary);
+    }
+    
+    .profile-role-badge {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .profile-ratings-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+        margin-top: 18px;
+    }
+    
+    .rating-badge-card {
+        display: flex;
+        flex-direction: column;
+        padding: 10px 6px;
+        background: var(--sidebar-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+    }
+    
+    .rating-label {
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+    
+    .rating-value {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+    
+    /* Section Cards */
+    .profile-section-card {
+        background: var(--sidebar-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 20px;
+    }
+    
+    .section-card-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0 0 14px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 8px;
+    }
+    
+    .section-card-title i {
+        color: var(--primary-orange);
+        font-size: 1.15rem;
+    }
+    
+    .detail-info-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        margin-bottom: 10px;
+    }
+    
+    .detail-info-row:last-child {
+        margin-bottom: 0;
+    }
+    
+    .detail-label {
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .detail-value {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    
+    /* Stats grid inside drawer */
+    .profile-stats-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        gap: 8px;
+    }
+    
+    .stat-box-mini {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 12px 6px;
+        border-radius: 8px;
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+    }
+    
+    .stat-number {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+    
+    .stat-lbl {
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        margin-top: 2px;
+    }
+    
+    .stat-box-mini.win { border-color: rgba(41, 163, 86, 0.2); }
+    .stat-box-mini.win .stat-number { color: var(--btn-green); }
+    
+    .stat-box-mini.loss { border-color: rgba(239, 68, 68, 0.2); }
+    .stat-box-mini.loss .stat-number { color: #ef4444; }
+    
+    .stat-box-mini.rate { border-color: rgba(225, 86, 35, 0.2); }
+    .stat-box-mini.rate .stat-number { color: var(--primary-orange); }
+    
+    /* Matches inside drawer */
+    .modal-match-history-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .modal-match-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 12px;
+        border-radius: 8px;
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+    }
+    
+    .match-meta-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    
+    .match-event-name {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+    
+    .match-opponent {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+    }
+    
+    .match-score-result {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .match-score-val {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+    }
+    
+    .match-result-pill {
+        font-size: 0.65rem;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+    
+    .match-result-pill.win { background: #e6f6ee; color: var(--btn-green); }
+    .match-result-pill.loss { background: #fee2e2; color: #ef4444; }
+    .match-result-pill.draw { background: var(--border-color); color: var(--text-secondary); }
+    
+    .no-matches-text {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        text-align: center;
+        margin: 10px 0 0;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="dashboard-header">
     <h1 class="page-title">Live Waitlist</h1>
@@ -11,8 +605,32 @@
     {% include 'facilitystaff/partials/queue_content.html' %}
 </div>
 
+<!-- Slide-over Profile Drawer Panel -->
+<div id="profile-drawer-overlay" class="drawer-overlay" onclick="closePlayerDetails()"></div>
+<div id="profile-drawer" class="drawer-panel">
+    <div class="drawer-header">
+        <h3>Player Profile</h3>
+        <button class="drawer-close-btn" onclick="closePlayerDetails()" aria-label="Close panel">
+            <i class="ph ph-x"></i>
+        </button>
+    </div>
+    <div id="drawer-loading-indicator" class="drawer-loading" style="display: none;">
+        <div class="drawer-spinner"></div>
+        <p>Loading player details...</p>
+    </div>
+    <div id="profile-drawer-content" class="drawer-content">
+        <!-- Dynamic content loaded via AJAX goes here -->
+    </div>
+</div>
+
 <script>
     document.addEventListener("DOMContentLoaded", () => {
+        // Move drawer and overlay to body to escape stacking context
+        const drawer = document.getElementById('profile-drawer');
+        const overlay = document.getElementById('profile-drawer-overlay');
+        if (drawer) document.body.appendChild(drawer);
+        if (overlay) document.body.appendChild(overlay);
+
         // --- 1. Client-side Realtime Countdown ---
         function updateWaitTimes() {
             const displays = document.querySelectorAll('.wait-time-display');
@@ -37,7 +655,6 @@
                     if (timeType === 'Remaining' && diffMins < 0) {
                         el.innerText = `Time's Up!`;
                         el.style.color = '#ef4444'; // Red alert
-                        // Could potentially trigger a browser notification here if permitted
                     } else {
                         if (diffMins < 0) diffMins = 0;
                         if (timeType === 'Remaining') {
@@ -53,6 +670,9 @@
         // Run immediately and every 1 minute
         updateWaitTimes();
         setInterval(updateWaitTimes, 60000);
+
+        // Expose to window so ajax partial reload can reinitialize wait times
+        window.updateWaitTimes = updateWaitTimes;
 
         // --- 2. Supabase Realtime Subscription ---
         if (typeof supabaseClient !== 'undefined' && supabaseClient) {
@@ -94,6 +714,17 @@
             const res = await response.json();
             if (res.success) {
                 showToast('Success', res.message, 'success');
+                // Fetch and update the queue partial html immediately
+                try {
+                    const partialResponse = await fetch("{{ url_for('facilitystaff.queue_partial') }}");
+                    if (partialResponse.ok) {
+                        const html = await partialResponse.text();
+                        document.getElementById('queue-container').innerHTML = html;
+                        if (window.updateWaitTimes) window.updateWaitTimes();
+                    }
+                } catch (refreshErr) {
+                    console.error('Error refreshing queue after update:', refreshErr);
+                }
             } else {
                 showToast('Error', res.message || 'Failed to update queue.', 'error');
                 if (button) button.disabled = false;
@@ -123,6 +754,44 @@
             showToast('Error', 'An error occurred.', 'error');
         }
         if (button) button.disabled = false;
+    }
+
+    // --- 3. AJAX Profile Details Drawer ---
+    async function openPlayerDetails(playerId) {
+        const drawer = document.getElementById('profile-drawer');
+        const overlay = document.getElementById('profile-drawer-overlay');
+        const content = document.getElementById('profile-drawer-content');
+        const loader = document.getElementById('drawer-loading-indicator');
+        
+        if (!drawer || !overlay || !content || !loader) return;
+        
+        // Open drawer visual state
+        content.innerHTML = '';
+        loader.style.display = 'flex';
+        drawer.classList.add('open');
+        overlay.classList.add('open');
+        
+        try {
+            const response = await fetch(`/facilitystaff/player/${playerId}/details`);
+            if (response.ok) {
+                const html = await response.text();
+                content.innerHTML = html;
+            } else {
+                content.innerHTML = '<div style="text-align:center; padding: 30px; color: var(--text-muted);"><p><i class="ph ph-warning-circle" style="font-size:2rem; color:#ef4444; margin-bottom:8px; display:block;"></i>Failed to load player details.</p></div>';
+            }
+        } catch (err) {
+            console.error('Error loading player details:', err);
+            content.innerHTML = '<div style="text-align:center; padding: 30px; color: var(--text-muted);"><p><i class="ph ph-warning-circle" style="font-size:2rem; color:#ef4444; margin-bottom:8px; display:block;"></i>An error occurred while loading player details.</p></div>';
+        } finally {
+            loader.style.display = 'none';
+        }
+    }
+    
+    function closePlayerDetails() {
+        const drawer = document.getElementById('profile-drawer');
+        const overlay = document.getElementById('profile-drawer-overlay');
+        if (drawer) drawer.classList.remove('open');
+        if (overlay) overlay.classList.remove('open');
     }
 </script>
 {% endblock %}

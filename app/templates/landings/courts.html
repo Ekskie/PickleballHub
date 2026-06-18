@@ -359,6 +359,7 @@
             .courts-header h1 {
                 font-size: 2.2rem;
             }
+
             .courts-header h1 {
                 font-size: 2rem;
             }
@@ -489,6 +490,7 @@
                 transform: scale(0.5);
                 opacity: 0.8;
             }
+
             100% {
                 transform: scale(2.2);
                 opacity: 0;
@@ -501,7 +503,7 @@
             box-shadow: 0 6px 16px rgba(255, 87, 34, 0.8);
             border-color: #ff5722;
         }
-        
+
         .custom-map-marker.active .marker-pin i {
             color: #0f1419;
         }
@@ -519,7 +521,7 @@
             font-size: 0.72rem !important;
             border-top-left-radius: 4px;
         }
-        
+
         .leaflet-control-attribution a {
             color: #ff5722 !important;
             text-decoration: none;
@@ -562,7 +564,7 @@
 
         .leaflet-bar {
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
             border-radius: 8px !important;
             overflow: hidden;
         }
@@ -814,80 +816,85 @@
 
         <!-- Courts Layout Split Pane -->
         <div class="courts-layout-wrap" id="courts-layout">
-            
+
             <!-- Left Pane: Listings -->
             <div class="courts-list-pane">
                 <!-- Courts Count -->
                 {% if courts %}
-                    <div class="courts-count">Found {{ courts_count }} available court{% if courts_count != 1 %}s{% endif %}</div>
+                <div class="courts-count">Found {{ courts_count }} available court{% if courts_count != 1 %}s{% endif %}
+                </div>
                 {% endif %}
 
                 <!-- Courts Grid -->
                 {% if courts %}
-                    <div class="courts-grid">
-                        {% for court in courts %}
-                            <div class="court-card" data-court-id="{{ court.id }}" data-facility-id="{{ court.facility_id }}" onmouseenter="highlightMarker('{{ court.facility_id }}')" onmouseleave="unhighlightMarker('{{ court.facility_id }}')">
-                                <div class="court-card-header">
-                                    <div class="court-header">
-                                        <div class="court-icon">
-                                            {% if court.type == 'Outdoor' %}
-                                                <i class="ph ph-sun"></i>
-                                            {% else %}
-                                                <i class="ph ph-house"></i>
-                                            {% endif %}
-                                        </div>
-                                        <div class="court-info">
-                                            <div class="court-name">{{ court.name }}</div>
-                                            <span class="court-type">{{ court.type }}</span>
-                                        </div>
-                                    </div>
+                <div class="courts-grid">
+                    {% for court in courts %}
+                    <div class="court-card" data-court-id="{{ court.id }}" data-facility-id="{{ court.facility_id }}"
+                        onmouseenter="highlightMarker('{{ court.facility_id }}')"
+                        onmouseleave="unhighlightMarker('{{ court.facility_id }}')">
+                        <div class="court-card-header">
+                            <div class="court-header">
+                                <div class="court-icon">
+                                    {% if court.type == 'Outdoor' %}
+                                    <i class="ph ph-sun"></i>
+                                    {% else %}
+                                    <i class="ph ph-house"></i>
+                                    {% endif %}
                                 </div>
-
-                                <div class="court-card-body">
-                                    <div class="facility-info">
-                                        <div class="facility-name">{{ court.facility_name }}</div>
-                                        <div class="facility-location">
-                                            <i class="ph ph-map-pin"></i>
-                                            {{ court.facility_location }}
-                                        </div>
-                                    </div>
-
-                                    <div class="court-rate">
-                                        ₱{{ "%.2f"|format(court.hourly_rate) }}
-                                        <span class="court-rate-label">/hour</span>
-                                    </div>
-
-                                    <div class="court-actions">
-                                        <a href="{{ url_for('auth.login') }}" class="btn-view">
-                                            <i class="ph ph-calendar-check"></i> Book Now
-                                        </a>
-                                        {% if session.get('user_id') %}
-                                            <a href="#" class="btn-view" onclick="viewCourtDetails('{{ court.id }}')">
-                                                <i class="ph ph-info"></i> Details
-                                            </a>
-                                        {% else %}
-                                            <a href="{{ url_for('auth.login') }}" class="btn-login">
-                                                <i class="ph ph-sign-in"></i> Sign In
-                                            </a>
-                                        {% endif %}
-                                    </div>
+                                <div class="court-info">
+                                    <div class="court-name">{{ court.name }}</div>
+                                    <span class="court-type">{{ court.type }}</span>
                                 </div>
                             </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="empty-state">
-                        <div class="empty-icon">
-                            <i class="ph ph-magnifying-glass"></i>
                         </div>
-                        <h2>No Courts Found</h2>
-                        <p>{% if search_query %}No courts match "{{ search_query }}". Try a different search term.{% else %}No courts available at the moment.{% endif %}</p>
-                        {% if search_query %}
-                            <a href="{{ url_for('main.courts_listing') }}" class="btn-view" style="display: inline-flex; margin-top: 20px;">
-                                <i class="ph ph-arrow-left"></i> Clear Search
-                            </a>
-                        {% endif %}
+
+                        <div class="court-card-body">
+                            <div class="facility-info">
+                                <div class="facility-name">{{ court.facility_name }}</div>
+                                <div class="facility-location">
+                                    <i class="ph ph-map-pin"></i>
+                                    {{ court.facility_location }}
+                                </div>
+                            </div>
+
+                            <div class="court-rate">
+                                ₱{{ "%.2f"|format(court.hourly_rate) }}
+                                <span class="court-rate-label">/hour</span>
+                            </div>
+
+                            <div class="court-actions">
+                                <a href="{{ url_for('auth.login') }}" class="btn-view">
+                                    <i class="ph ph-calendar-check"></i> Book Now
+                                </a>
+                                {% if session.get('user_id') %}
+                                <a href="#" class="btn-view" onclick="viewCourtDetails('{{ court.id }}')">
+                                    <i class="ph ph-info"></i> Details
+                                </a>
+                                {% else %}
+                                <a href="{{ url_for('auth.login') }}" class="btn-login">
+                                    <i class="ph ph-sign-in"></i> Sign In
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="ph ph-magnifying-glass"></i>
+                    </div>
+                    <h2>No Courts Found</h2>
+                    <p>{% if search_query %}No courts match "{{ search_query }}". Try a different search term.{% else
+                        %}No courts available at the moment.{% endif %}</p>
+                    {% if search_query %}
+                    <a href="{{ url_for('main.courts_listing') }}" class="btn-view"
+                        style="display: inline-flex; margin-top: 20px;">
+                        <i class="ph ph-arrow-left"></i> Clear Search
+                    </a>
+                    {% endif %}
+                </div>
                 {% endif %}
             </div>
 
@@ -895,7 +902,7 @@
             <div class="courts-map-pane">
                 <div id="courts-map"></div>
             </div>
-            
+
         </div>
 
         <!-- Mobile Floating View Toggle Button -->
@@ -907,8 +914,8 @@
 
     <script>
         // Retrieve courts data passed from Flask
-        const courtsData = {{ courts|tojson|safe }};
-        
+        const courtsData = {{ courts| tojson | safe }};
+
         let map = null;
         const markers = {};
 
@@ -992,13 +999,13 @@
                 });
 
                 // Setup dynamic Popup Card Content HTML
-                const kycBadge = f.kyc_status === 'verified' 
-                    ? `<div class="popup-kyc-badge"><i class="ph ph-shield-check"></i> Verified</div>` 
+                const kycBadge = f.kyc_status === 'verified'
+                    ? `<div class="popup-kyc-badge"><i class="ph ph-shield-check"></i> Verified</div>`
                     : '';
-                const imageBanner = f.image_url 
-                    ? `<img src="${f.image_url}" alt="${f.name}">` 
+                const imageBanner = f.image_url
+                    ? `<img src="${f.image_url}" alt="${f.name}">`
                     : `<div class="popup-img-placeholder"><i class="ph ph-buildings"></i></div>`;
-                
+
                 let courtsListHtml = '';
                 f.courts.slice(0, 3).forEach(c => {
                     courtsListHtml += `
@@ -1074,7 +1081,7 @@
             // Mobile toggle panel handler
             const mobileToggle = document.getElementById('mobile-view-toggle');
             const layout = document.getElementById('courts-layout');
-            
+
             if (mobileToggle && layout) {
                 mobileToggle.addEventListener('click', () => {
                     const isShowingMap = layout.classList.toggle('show-map-view');
@@ -1134,7 +1141,7 @@
             if (cards.length > 0) {
                 const firstCard = cards[0];
                 firstCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                
+
                 // Trigger quick bounce highlight animation
                 cards.forEach(card => {
                     card.classList.add('highlight');

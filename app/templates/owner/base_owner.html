@@ -7,6 +7,8 @@
                 href="{{ url_for('owner.facilities') }}"><i class="ph ph-buildings"></i> My Facilities</a></li>
 <li class="{% if request.endpoint == 'owner.courts' %}active{% endif %}"><a href="{{ url_for('owner.courts') }}"><i
                         class="ph ph-intersect"></i> Courts & Pricing</a></li>
+<li class="{% if request.endpoint == 'owner.payment_ledger' %}active{% endif %}"><a href="{{ url_for('owner.payment_ledger') }}"><i
+                        class="ph ph-receipt"></i> Payment Ledger</a></li>
 <li class="{% if request.endpoint in ['owner.events','owner.create_event_page'] %}active{% endif %}"><a
                 href="{{ url_for('owner.events') }}"><i class="ph ph-trophy"></i> Events</a></li>
 <li class="{% if request.endpoint == 'owner.staff' %}active{% endif %}"><a href="{{ url_for('owner.staff') }}"><i

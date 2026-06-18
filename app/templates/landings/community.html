@@ -50,47 +50,50 @@
                     <div class="feed-list">
 
                         {% if posts %}
-                            {% for post in posts %}
-                            {# ── Time-ago helper ────────────────────────────── #}
-                            {% set now_ts  = now() if now is defined else none %}
-                            <div class="feed-item">
-                                <div class="feed-header">
-                                    <div class="feed-avatar-init">{{ post.author_init }}</div>
-                                    <div class="feed-user-info">
-                                        <h4>{{ post.author_name }}</h4>
-                                        <span>{{ post.author_role }} &bull;
-                                            {{ post.created_at | community_timeago }}
-                                        </span>
-                                    </div>
+                        {% for post in posts %}
+                        {# ── Time-ago helper ────────────────────────────── #}
+                        {% set now_ts = now() if now is defined else none %}
+                        <div class="feed-item">
+                            <div class="feed-header">
+                                <div class="feed-avatar-init">{{ post.author_init }}</div>
+                                <div class="feed-user-info">
+                                    <h4>{{ post.author_name }}</h4>
+                                    <span>{{ post.author_role }} &bull;
+                                        {{ post.created_at | community_timeago }}
+                                    </span>
                                 </div>
-                                <div class="feed-body">
-                                    <p>{{ post.content }}</p>
-                                </div>
-                                {% if post.image_url %}
-                                <div class="feed-post-img-wrap">
-                                    <img src="{{ post.image_url }}" alt="Post image" class="feed-post-img"
-                                         loading="lazy" />
-                                </div>
-                                {% endif %}
-                                <div class="feed-footer">
-                                    <a href="{{ url_for('auth.login') }}" class="feed-action-btn">
-                                        <i class="ph ph-heart"></i> {{ post.likes }} Like{{ 's' if post.likes != 1 }}
-                                    </a>
-                                    <a href="{{ url_for('auth.login') }}" class="feed-action-btn">
-                                        <i class="ph ph-chat-circle"></i> {{ post.comments }} Comment{{ 's' if post.comments != 1 }}
-                                    </a>
-                                    <a href="{{ url_for('auth.login') }}" class="feed-action-btn">
-                                        <i class="ph ph-share-network"></i> Share
-                                    </a>
-                                </div>
+                            </div>
+                            <div class="feed-body">
+                                <p>{{ post.content }}</p>
+                            </div>
+                            {% if post.image_url %}
+                            <div class="feed-post-img-wrap">
+                                <img src="{{ post.image_url }}" alt="Post image" class="feed-post-img" loading="lazy" />
+                            </div>
+                            {% endif %}
+                            <div class="feed-footer">
+                                <a href="{{ url_for('auth.login') }}" class="feed-action-btn">
+                                    <i class="ph ph-heart"></i> {{ post.likes }} Like{{ 's' if post.likes != 1 }}
+                                </a>
+                                <a href="{{ url_for('auth.login') }}" class="feed-action-btn">
+                                    <i class="ph ph-chat-circle"></i> {{ post.comments }} Comment{{ 's' if post.comments
+                                    != 1 }}
+                                </a>
+                                <a href="{{ url_for('auth.login') }}" class="feed-action-btn">
+                                    <i class="ph ph-share-network"></i> Share
+                                </a>
+                            </div>
 
-                            </div>
-                            {% endfor %}
+                        </div>
+                        {% endfor %}
                         {% else %}
-                            <div class="feed-item" style="text-align:center; padding: 2rem;">
-                                <i class="ph ph-chats" style="font-size:2.5rem; opacity:0.3; display:block; margin-bottom:12px;"></i>
-                                <p style="color: var(--text-secondary);">Be the first to post! <a href="{{ url_for('auth.login') }}" style="color:var(--primary-orange);">Join the community</a></p>
-                            </div>
+                        <div class="feed-item" style="text-align:center; padding: 2rem;">
+                            <i class="ph ph-chats"
+                                style="font-size:2.5rem; opacity:0.3; display:block; margin-bottom:12px;"></i>
+                            <p style="color: var(--text-secondary);">Be the first to post! <a
+                                    href="{{ url_for('auth.login') }}" style="color:var(--primary-orange);">Join the
+                                    community</a></p>
+                        </div>
                         {% endif %}
 
                     </div>
@@ -105,34 +108,35 @@
                     </div>
 
                     {% if clubs %}
-                        {% for club in clubs %}
-                        <div class="club-card">
-                            <div class="club-image"
-                                style="background-image: url('{{ club.logo_url or 'https://images.unsplash.com/photo-1554068865-24cecd4e34f8?q=80&w=400&auto=format&fit=crop' }}');">
-                            </div>
-                            <div class="club-content">
-                                <div class="club-header">
-                                    <div>
-                                        <h4 class="club-title">{{ club.name }}</h4>
-                                        <span class="club-location"><i class="ph-fill ph-map-pin"></i> Local Club</span>
-                                    </div>
-                                </div>
-                                <div class="club-stats">
-                                    <span class="club-stat"><i class="ph-fill ph-users"></i> Member Community</span>
-                                    <span class="club-stat"><i class="ph-fill ph-star"></i> Verified</span>
-                                </div>
-                                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 16px;">
-                                    {{ club.description or 'A local pickleball community.' }}
-                                </p>
-                                <a href="{{ url_for('auth.login') }}" class="btn-join">Join Group</a>
-                            </div>
+                    {% for club in clubs %}
+                    <div class="club-card">
+                        <div class="club-image"
+                            style="background-image: url('{{ club.logo_url or 'https://images.unsplash.com/photo-1554068865-24cecd4e34f8?q=80&w=400&auto=format&fit=crop' }}');">
                         </div>
-                        {% endfor %}
+                        <div class="club-content">
+                            <div class="club-header">
+                                <div>
+                                    <h4 class="club-title">{{ club.name }}</h4>
+                                    <span class="club-location"><i class="ph-fill ph-map-pin"></i> Local Club</span>
+                                </div>
+                            </div>
+                            <div class="club-stats">
+                                <span class="club-stat"><i class="ph-fill ph-users"></i> Member Community</span>
+                                <span class="club-stat"><i class="ph-fill ph-star"></i> Verified</span>
+                            </div>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 16px;">
+                                {{ club.description or 'A local pickleball community.' }}
+                            </p>
+                            <a href="{{ url_for('auth.login') }}" class="btn-join">Join Group</a>
+                        </div>
+                    </div>
+                    {% endfor %}
                     {% else %}
-                        <div style="text-align:center; padding: 2rem;">
-                            <i class="ph ph-users-three" style="font-size:2.5rem; opacity:0.3; display:block; margin-bottom:12px;"></i>
-                            <p style="color: var(--text-secondary);">No featured clubs right now. Check back soon!</p>
-                        </div>
+                    <div style="text-align:center; padding: 2rem;">
+                        <i class="ph ph-users-three"
+                            style="font-size:2.5rem; opacity:0.3; display:block; margin-bottom:12px;"></i>
+                        <p style="color: var(--text-secondary);">No featured clubs right now. Check back soon!</p>
+                    </div>
                     {% endif %}
                 </div>
             </div>

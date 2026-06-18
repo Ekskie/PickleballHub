@@ -8,20 +8,22 @@ document.addEventListener('DOMContentLoaded', () => {
         .details-drawer {
             position: fixed;
             top: 0;
-            right: -480px;
-            width: 480px;
+            right: -420px;
+            width: 420px;
             height: 100vh;
             background: var(--sidebar-bg);
             border-left: 1px solid var(--border-color);
-            box-shadow: -10px 0 35px rgba(0, 0, 0, 0.1);
-            z-index: 10000;
-            transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-            padding: 30px;
+            box-shadow: -10px 0 35px rgba(0, 0, 0, 0.15);
+            z-index: 999999 !important;
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 24px;
             overflow-y: auto;
             color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
         }
         html.dark-mode .details-drawer {
-            box-shadow: -10px 0 35px rgba(0, 0, 0, 0.45);
+            box-shadow: -10px 0 35px rgba(0, 0, 0, 0.5);
         }
         .details-drawer.active {
             right: 0;
@@ -32,15 +34,15 @@ document.addEventListener('DOMContentLoaded', () => {
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(2px);
-            z-index: 9999;
+            background: rgba(15, 18, 25, 0.45);
+            backdrop-filter: blur(4px);
+            z-index: 999998 !important;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease;
         }
         html.dark-mode .details-drawer-overlay {
-            background: rgba(0, 0, 0, 0.65);
+            background: rgba(0, 0, 0, 0.7);
         }
         .details-drawer-overlay.active {
             opacity: 1;
@@ -57,96 +59,255 @@ document.addEventListener('DOMContentLoaded', () => {
             text-decoration: underline;
         }
 
-        /* Unified Theme-Aware Status Pills */
-        .status-pill {
-            display: inline-flex;
+        /* ----- PROFILE DRAWER CONTENT DETAILS ----- */
+        .player-profile-modal-body {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        
+        .profile-header-card {
+            text-align: center;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px 16px;
+        }
+        
+        .profile-avatar-wrapper {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin: 0 auto 12px;
+            border: 2px solid var(--primary-orange);
+            box-shadow: 0 4px 10px rgba(225, 86, 35, 0.15);
+            display: flex;
             align-items: center;
-            gap: 4px;
-            padding: 4px 10px;
-            border-radius: 6px;
+            justify-content: center;
+            background: var(--sidebar-bg);
+        }
+        
+        .profile-avatar-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .profile-avatar-initials {
+            width: 100%;
+            height: 100%;
+            background: var(--primary-orange-light);
+            color: var(--primary-orange);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .profile-name-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin: 0 0 4px 0;
+            color: var(--text-primary);
+        }
+        
+        .profile-role-badge {
             font-size: 0.75rem;
             font-weight: 600;
-            width: max-content;
-            border: 1px solid transparent;
-            transition: background 0.3s, color 0.3s, border-color 0.3s;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
-        /* Light Mode Pill Styles */
-        .status-pill.success, .status-pill.active {
-            background: #E6F6EE;
-            color: #166534;
-            border-color: #bbf7d0;
-        }
-        .status-pill.warning, .status-pill.pending, .status-pill.advanced {
-            background: #FEF3C7;
-            color: #92400E;
-            border-color: #fde68a;
-        }
-        .status-pill.error, .status-pill.expired, .status-pill.rejected {
-            background: #FEE2E2;
-            color: #991B1B;
-            border-color: #fca5a5;
-        }
-        .status-pill.intermediate {
-            background: #E0F2FE;
-            color: #075985;
-            border-color: #bae6fd;
-        }
-        .status-pill.pro {
-            background: #F3E8FF;
-            color: #6B21A8;
-            border-color: #e9d5ff;
-        }
-        .status-pill.beginner, .status-pill.disabled {
-            background: #F3F4F6;
-            color: #374151;
-            border-color: #e5e7eb;
+        .profile-ratings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-top: 18px;
         }
         
-        /* Dark Mode Pill Styles */
-        html.dark-mode .status-pill.success, html.dark-mode .status-pill.active {
-            background: rgba(41, 163, 86, 0.15);
-            color: #4ade80;
-            border-color: rgba(74, 222, 128, 0.2);
+        .rating-badge-card {
+            display: flex;
+            flex-direction: column;
+            padding: 10px 4px;
+            background: var(--sidebar-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            align-items: center;
         }
-        html.dark-mode .status-pill.warning, html.dark-mode .status-pill.pending, html.dark-mode .status-pill.advanced {
-            background: rgba(245, 158, 11, 0.12);
-            color: #fbbf24;
-            border-color: rgba(251, 191, 36, 0.2);
+        
+        .rating-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 4px;
         }
-        html.dark-mode .status-pill.error, html.dark-mode .status-pill.expired, html.dark-mode .status-pill.rejected {
-            background: rgba(239, 68, 68, 0.12);
-            color: #f87171;
-            border-color: rgba(248, 113, 113, 0.2);
+        
+        .rating-value {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-primary);
         }
-        html.dark-mode .status-pill.intermediate {
-            background: rgba(14, 165, 233, 0.12);
-            color: #38bdf8;
-            border-color: rgba(56, 189, 248, 0.2);
+        
+        .profile-section-card {
+            background: var(--sidebar-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
         }
-        html.dark-mode .status-pill.pro {
-            background: rgba(168, 85, 247, 0.12);
-            color: #c084fc;
-            border-color: rgba(192, 132, 252, 0.2);
+        
+        .section-card-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0 0 14px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            text-align: left;
         }
-        html.dark-mode .status-pill.beginner, html.dark-mode .status-pill.disabled {
-            background: rgba(148, 163, 184, 0.12);
-            color: #cbd5e1;
-            border-color: rgba(203, 213, 225, 0.2);
+        
+        .section-card-title i {
+            color: var(--primary-orange);
+            font-size: 1.15rem;
         }
-
-        /* Accessible Text colors */
-        .text-success {
-            color: #166534;
+        
+        .detail-info-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
         }
-        html.dark-mode .text-success {
-            color: #4ade80;
+        
+        .detail-info-row:last-child {
+            margin-bottom: 0;
         }
-        .text-danger {
-            color: #991B1B;
+        
+        .detail-label {
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        html.dark-mode .text-danger {
-            color: #f87171;
+        
+        .detail-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .profile-stats-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .stat-box-mini {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 4px;
+            border-radius: 8px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+        }
+        
+        .stat-number {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .stat-lbl {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+        
+        .stat-box-mini.win { border-color: rgba(41, 163, 86, 0.2); }
+        .stat-box-mini.win .stat-number { color: var(--btn-green); }
+        
+        .stat-box-mini.loss { border-color: rgba(239, 68, 68, 0.2); }
+        .stat-box-mini.loss .stat-number { color: #ef4444; }
+        
+        .stat-box-mini.rate { border-color: rgba(225, 86, 35, 0.2); }
+        .stat-box-mini.rate .stat-number { color: var(--primary-orange); }
+        
+        .modal-match-history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .modal-match-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            border-radius: 8px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+        }
+        
+        .match-meta-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            text-align: left;
+        }
+        
+        .match-event-name {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .match-opponent {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+        
+        .match-score-result {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .match-score-val {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        
+        .match-result-pill {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .match-result-pill.win { background: #e6f6ee; color: var(--btn-green); }
+        .match-result-pill.loss { background: #fee2e2; color: #ef4444; }
+        .match-result-pill.draw { background: var(--border-color); color: var(--text-secondary); }
+        
+        .drawer-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--primary-orange);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         /* Mobile Responsive Drawer override */
@@ -171,58 +332,90 @@ document.addEventListener('DOMContentLoaded', () => {
         
         <!-- Player Details Drawer -->
         <div id="playerDrawer" class="details-drawer">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; border-bottom:1px solid var(--border-color); padding-bottom:15px;">
-                <h2 style="margin:0; font-size:1.4rem; color:var(--text-primary); display:flex; align-items:center; gap:8px;"><i class="ph ph-user"></i> Player Profile</h2>
-                <button onclick="closePlayerDrawer()" style="background:none; border:none; color:var(--text-primary); font-size:1.5rem; cursor:pointer;"><i class="ph ph-x"></i></button>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--border-color); padding-bottom:15px;">
+                <h3 style="margin:0; font-size:1.2rem; font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:8px;"><i class="ph ph-user-focus" style="color:var(--primary-orange); font-size:1.4rem;"></i> Player Profile</h3>
+                <button onclick="closePlayerDrawer()" style="background:none; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:6px; border-radius:50%; transition:background-color 0.2s;" onmouseover="this.style.backgroundColor='var(--input-bg)';this.style.color='var(--text-primary)'" onmouseout="this.style.backgroundColor='transparent';this.style.color='var(--text-muted)'"><i class="ph ph-x"></i></button>
             </div>
             
-            <!-- Profile Card Header -->
-            <div style="display:flex; align-items:center; gap:16px; margin-bottom:24px;">
-                <div id="pDrawerAvatar" style="width:70px; height:70px; border-radius:50%; background:var(--btn-navy); color:white; display:flex; align-items:center; justify-content:center; font-size:1.8rem; font-weight:700; overflow:hidden; flex-shrink:0; border:2px solid var(--border-color);">
-                    ?
-                </div>
-                <div>
-                    <h3 id="pDrawerName" style="margin:0; font-size:1.25rem; color:var(--text-primary);">John Doe</h3>
-                    <span id="pDrawerSkill" class="status-pill" style="margin-top:6px; display:inline-block;">Beginner</span>
-                </div>
+            <!-- Loading Indicator -->
+            <div id="pDrawerLoading" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; height:200px; color:var(--text-muted);">
+                <div class="drawer-spinner"></div>
+                <p style="font-size:0.85rem;">Loading player details...</p>
             </div>
             
-            <!-- General Stats Info -->
-            <div style="padding:15px; margin-bottom:24px; border:1px solid var(--border-color); border-radius:12px; background: var(--bg-color);">
-                <h4 style="margin:0 0 10px 0; color:var(--text-primary); font-size:0.95rem; display:flex; align-items:center; gap:6px;"><i class="ph ph-chart-bar" style="color:var(--primary-orange);"></i> Player Ratings & Record</h4>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:0.85rem;">
-                    <div>
-                        <span style="color:var(--text-secondary); display:block;">DUPR Rating</span>
-                        <strong id="pDrawerDupr" style="color:var(--btn-green); font-size:1.05rem;">0.00</strong>
+            <!-- Content Card -->
+            <div id="pDrawerContent" style="display:none;" class="player-profile-modal-body">
+                <!-- Header/Avatar Section -->
+                <div class="profile-header-card">
+                    <div id="pDrawerAvatar" class="profile-avatar-wrapper">
+                        <!-- Filled dynamically -->
                     </div>
-                    <div>
-                        <span style="color:var(--text-secondary); display:block;">Elo Rating</span>
-                        <strong id="pDrawerElo" style="color:var(--text-primary); font-size:1.05rem;">0</strong>
-                    </div>
-                    <div>
-                        <span style="color:var(--text-secondary); display:block;">Match Record</span>
-                        <strong id="pDrawerRecord" style="color:var(--text-primary);">0W - 0L</strong>
-                    </div>
-                    <div>
-                        <span style="color:var(--text-secondary); display:block;">Win Rate</span>
-                        <strong id="pDrawerWinRate" style="color:var(--text-primary);">0%</strong>
+                    <h3 id="pDrawerName" class="profile-name-title">John Doe</h3>
+                    <span class="profile-role-badge">Player</span>
+                    
+                    <!-- Ratings Section -->
+                    <div class="profile-ratings-grid">
+                        <div class="rating-badge-card elo">
+                            <span class="rating-label">ELO</span>
+                            <span id="pDrawerElo" class="rating-value">0</span>
+                        </div>
+                        <div class="rating-badge-card dupr">
+                            <span class="rating-label">DUPR</span>
+                            <span id="pDrawerDupr" class="rating-value">0.00</span>
+                        </div>
+                        <div class="rating-badge-card proficiency">
+                            <span class="rating-label">LEVEL</span>
+                            <span id="pDrawerSkill" class="rating-value">Beginner</span>
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Tournament & Match History Tab -->
-            <div style="margin-bottom:24px;">
-                <h4 style="margin:0 0 12px 0; color:var(--text-primary); font-size:0.95rem; border-bottom:1px solid var(--border-color); padding-bottom:6px; display:flex; align-items:center; gap:6px;"><i class="ph ph-sword" style="color:#f59e0b;"></i> Recent Matches</h4>
-                <div id="pDrawerMatches" style="display:flex; flex-direction:column; gap:8px;">
-                    <!-- Dynamic content -->
+
+                <!-- Contact details -->
+                <div class="profile-section-card">
+                    <h4 class="section-card-title"><i class="ph ph-user-focus"></i> Player Details</h4>
+                    <div class="detail-info-row">
+                        <span class="detail-label"><i class="ph ph-phone"></i> Phone:</span>
+                        <span id="pDrawerPhone" class="detail-value">—</span>
+                    </div>
                 </div>
-            </div>
-            
-            <!-- Rating History Tab -->
-            <div style="margin-bottom:24px;">
-                <h4 style="margin:0 0 12px 0; color:var(--text-primary); font-size:0.95rem; border-bottom:1px solid var(--border-color); padding-bottom:6px; display:flex; align-items:center; gap:6px;"><i class="ph ph-chart-line-up" style="color:#a855f7;"></i> Rating History (Recent)</h4>
-                <div id="pDrawerRatingHistory" style="display:flex; flex-direction:column; gap:8px; font-size:0.85rem; max-height:250px; overflow-y:auto; padding-right:4px;">
-                    <!-- Dynamic content -->
+
+                <!-- Stats Section -->
+                <div class="profile-section-card">
+                    <h4 class="section-card-title"><i class="ph ph-chart-bar"></i> Performance Stats</h4>
+                    <div class="profile-stats-container">
+                        <div class="stat-box-mini">
+                            <span id="pDrawerPlayed" class="stat-number">0</span>
+                            <span class="stat-lbl">Played</span>
+                        </div>
+                        <div class="stat-box-mini win">
+                            <span id="pDrawerWins" class="stat-number">0</span>
+                            <span class="stat-lbl">Wins</span>
+                        </div>
+                        <div class="stat-box-mini loss">
+                            <span id="pDrawerLosses" class="stat-number">0</span>
+                            <span class="stat-lbl">Losses</span>
+                        </div>
+                        <div class="stat-box-mini rate">
+                            <span id="pDrawerWinRate" class="stat-number">0%</span>
+                            <span class="stat-lbl">Win Rate</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Match History Section -->
+                <div class="profile-section-card">
+                    <h4 class="section-card-title"><i class="ph ph-clock-counter-clockwise"></i> Recent Matches</h4>
+                    <div id="pDrawerMatches" class="modal-match-history-list">
+                        <!-- Filled dynamically -->
+                    </div>
+                </div>
+
+                <!-- Rating History Section -->
+                <div class="profile-section-card">
+                    <h4 class="section-card-title"><i class="ph ph-chart-line-up"></i> Rating History (Recent)</h4>
+                    <div id="pDrawerRatingHistory" style="display:flex; flex-direction:column; gap:8px; max-height:200px; overflow-y:auto; padding-right:4px;">
+                        <!-- Filled dynamically -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -237,15 +430,12 @@ function openPlayerDrawer(playerId) {
     if (!drawer || !overlay) return;
     
     // Reset loader states
-    document.getElementById('pDrawerName').innerText = "Loading...";
-    document.getElementById('pDrawerSkill').className = "status-pill";
-    document.getElementById('pDrawerSkill').innerText = "—";
-    document.getElementById('pDrawerDupr').innerText = "—";
-    document.getElementById('pDrawerElo').innerText = "—";
-    document.getElementById('pDrawerRecord').innerText = "—";
-    document.getElementById('pDrawerWinRate').innerText = "—";
-    document.getElementById('pDrawerMatches').innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem;">Loading...</div>';
-    document.getElementById('pDrawerRatingHistory').innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem;">Loading...</div>';
+    document.getElementById('pDrawerLoading').style.display = 'flex';
+    document.getElementById('pDrawerLoading').innerHTML = `
+        <div class="drawer-spinner"></div>
+        <p style="font-size:0.85rem;">Loading player details...</p>
+    `;
+    document.getElementById('pDrawerContent').style.display = 'none';
     
     // Show drawer
     overlay.classList.add('active');
@@ -255,7 +445,9 @@ function openPlayerDrawer(playerId) {
         .then(res => res.json())
         .then(data => {
             if (data.error) {
-                document.getElementById('pDrawerName').innerText = "Error loading details";
+                const loadingDiv = document.getElementById('pDrawerLoading');
+                loadingDiv.style.display = 'flex';
+                loadingDiv.innerHTML = `<p style="color:#ef4444;"><i class="ph ph-warning-circle" style="font-size:2rem; display:block; margin-bottom:8px;"></i>Error loading details</p>`;
                 return;
             }
             
@@ -263,42 +455,48 @@ function openPlayerDrawer(playerId) {
             document.getElementById('pDrawerName').innerText = `${data.first_name} ${data.last_name}`;
             document.getElementById('pDrawerDupr').innerText = parseFloat(data.dupr).toFixed(2);
             document.getElementById('pDrawerElo').innerText = data.elo;
-            document.getElementById('pDrawerRecord').innerText = `${data.wins}W - ${data.losses}L`;
+            document.getElementById('pDrawerPlayed').innerText = parseInt(data.wins || 0) + parseInt(data.losses || 0);
+            document.getElementById('pDrawerWins').innerText = data.wins;
+            document.getElementById('pDrawerLosses').innerText = data.losses;
             document.getElementById('pDrawerWinRate').innerText = `${data.win_rate}%`;
+            document.getElementById('pDrawerPhone').innerText = data.phone || '—';
             
-            // Skill pill
-            const skill = (data.proficiency || 'beginner').toLowerCase();
-            const skillPill = document.getElementById('pDrawerSkill');
-            skillPill.innerText = data.proficiency || 'Beginner';
-            skillPill.removeAttribute('style');
-            skillPill.className = `status-pill ${skill}`;
+            // Skill badge
+            document.getElementById('pDrawerSkill').innerText = data.proficiency || 'Beginner';
             
             // Avatar
             const avatarDiv = document.getElementById('pDrawerAvatar');
             if (data.avatar_url) {
-                avatarDiv.innerHTML = `<img src="${data.avatar_url}" style="width:100%; height:100%; object-fit:cover;">`;
+                avatarDiv.innerHTML = `<img src="${data.avatar_url}">`;
             } else {
-                const initials = ((data.first_name || ' ')[0] + (data.last_name || ' ')[0]).toUpperCase().trim() || '?';
-                avatarDiv.innerHTML = initials;
+                const initials = (((data.first_name || ' ')[0] + (data.last_name || ' ')[0]).toUpperCase().trim() || '?');
+                avatarDiv.innerHTML = `<div class="profile-avatar-initials">${initials}</div>`;
             }
             
             // Match history list
             const matchesDiv = document.getElementById('pDrawerMatches');
             if (data.matches && data.matches.length > 0) {
-                matchesDiv.innerHTML = data.matches.map(m => `
-                    <div style="background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <div style="font-weight:600; color:var(--text-primary); font-size:0.85rem;">vs ${m.opponent}</div>
-                            <small style="color:var(--text-muted); font-size:0.75rem;">${m.event_title} (Round ${m.round})</small>
+                matchesDiv.innerHTML = data.matches.map(m => {
+                    let pillClass = 'draw';
+                    let resText = m.result.toUpperCase();
+                    if (resText === 'WIN') pillClass = 'win';
+                    else if (resText === 'LOSS') pillClass = 'loss';
+                    
+                    return `
+                        <div class="modal-match-item">
+                            <div class="match-meta-info">
+                                <span class="match-event-name">${m.event_title}</span>
+                                <span class="match-opponent">vs ${m.opponent}</span>
+                            </div>
+                            <div class="match-score-result">
+                                <span class="match-score-val">${m.score}</span>
+                                <span class="match-result-pill ${pillClass}">${resText}</span>
+                            </div>
                         </div>
-                        <div style="text-align:right;">
-                            <span class="${m.result === 'Win' ? 'text-success' : m.result === 'Loss' ? 'text-danger' : ''}" style="font-weight:700; font-size:0.85rem; ${m.result !== 'Win' && m.result !== 'Loss' ? 'color:var(--text-secondary);' : ''}">${m.result}</span>
-                            <div style="font-size:0.75rem; color:var(--text-muted);">${m.score}</div>
-                        </div>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
             } else {
-                matchesDiv.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; font-style:italic;">No matches played yet</div>';
+                matchesDiv.innerHTML = '<div style="color:var(--text-muted); font-size:0.8rem; text-align:center; font-style:italic;">No matches played yet</div>';
             }
             
             // Rating history list
@@ -307,15 +505,25 @@ function openPlayerDrawer(playerId) {
                 ratingHistoryDiv.innerHTML = data.rating_history.map(h => {
                     const dateStr = h.recorded_at ? h.recorded_at.split('T')[0] : '—';
                     return `
-                        <div style="padding:6px 0; border-bottom: 1px dashed var(--border-color); display:flex; justify-content:space-between;">
-                            <span style="color:var(--text-secondary); font-size:0.8rem;">${dateStr}</span>
-                            <span style="font-weight:600; color:var(--text-primary); font-size:0.8rem;">DUPR: ${parseFloat(h.dupr).toFixed(2)} | ELO: ${h.elo}</span>
+                        <div style="padding:6px 0; border-bottom: 1px dashed var(--border-color); display:flex; justify-content:space-between; font-size:0.8rem;">
+                            <span style="color:var(--text-secondary);">${dateStr}</span>
+                            <span style="font-weight:600; color:var(--text-primary);">DUPR: ${parseFloat(h.dupr).toFixed(2)} | ELO: ${h.elo}</span>
                         </div>
                     `;
                 }).join('');
             } else {
-                ratingHistoryDiv.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; font-style:italic;">No rating logs available</div>';
+                ratingHistoryDiv.innerHTML = '<div style="color:var(--text-muted); font-size:0.8rem; text-align:center; font-style:italic;">No rating logs available</div>';
             }
+            
+            // Toggle visibility
+            document.getElementById('pDrawerLoading').style.display = 'none';
+            document.getElementById('pDrawerContent').style.display = 'flex';
+        })
+        .catch(err => {
+            console.error('Drawer details fetch error:', err);
+            const loadingDiv = document.getElementById('pDrawerLoading');
+            loadingDiv.style.display = 'flex';
+            loadingDiv.innerHTML = `<p style="color:#ef4444;"><i class="ph ph-warning-circle" style="font-size:2rem; display:block; margin-bottom:8px;"></i>An error occurred while loading details</p>`;
         });
 }
 

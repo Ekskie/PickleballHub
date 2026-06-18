@@ -8,20 +8,22 @@ document.addEventListener('DOMContentLoaded', () => {
         .details-drawer {
             position: fixed;
             top: 0;
-            right: -480px;
-            width: 480px;
+            right: -420px;
+            width: 420px;
             height: 100vh;
             background: var(--sidebar-bg);
             border-left: 1px solid var(--border-color);
-            box-shadow: -10px 0 35px rgba(0, 0, 0, 0.1);
-            z-index: 10000;
-            transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-            padding: 30px;
+            box-shadow: -10px 0 35px rgba(0, 0, 0, 0.15);
+            z-index: 999999 !important;
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 24px;
             overflow-y: auto;
             color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
         }
         html.dark-mode .details-drawer {
-            box-shadow: -10px 0 35px rgba(0, 0, 0, 0.45);
+            box-shadow: -10px 0 35px rgba(0, 0, 0, 0.5);
         }
         .details-drawer.active {
             right: 0;
@@ -32,15 +34,15 @@ document.addEventListener('DOMContentLoaded', () => {
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(2px);
-            z-index: 9999;
+            background: rgba(15, 18, 25, 0.45);
+            backdrop-filter: blur(4px);
+            z-index: 999998 !important;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease;
         }
         html.dark-mode .details-drawer-overlay {
-            background: rgba(0, 0, 0, 0.65);
+            background: rgba(0, 0, 0, 0.7);
         }
         .details-drawer-overlay.active {
             opacity: 1;
@@ -57,96 +59,255 @@ document.addEventListener('DOMContentLoaded', () => {
             text-decoration: underline;
         }
 
-        /* Unified Theme-Aware Status Pills */
-        .status-pill {
-            display: inline-flex;
+        /* ----- PROFILE DRAWER CONTENT DETAILS ----- */
+        .player-profile-modal-body {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        
+        .profile-header-card {
+            text-align: center;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px 16px;
+        }
+        
+        .profile-avatar-wrapper {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin: 0 auto 12px;
+            border: 2px solid var(--primary-orange);
+            box-shadow: 0 4px 10px rgba(225, 86, 35, 0.15);
+            display: flex;
             align-items: center;
-            gap: 4px;
-            padding: 4px 10px;
-            border-radius: 6px;
+            justify-content: center;
+            background: var(--sidebar-bg);
+        }
+        
+        .profile-avatar-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .profile-avatar-initials {
+            width: 100%;
+            height: 100%;
+            background: var(--primary-orange-light);
+            color: var(--primary-orange);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .profile-name-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin: 0 0 4px 0;
+            color: var(--text-primary);
+        }
+        
+        .profile-role-badge {
             font-size: 0.75rem;
             font-weight: 600;
-            width: max-content;
-            border: 1px solid transparent;
-            transition: background 0.3s, color 0.3s, border-color 0.3s;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
-        /* Light Mode Pill Styles */
-        .status-pill.success, .status-pill.active {
-            background: #E6F6EE;
-            color: #166534;
-            border-color: #bbf7d0;
-        }
-        .status-pill.warning, .status-pill.pending, .status-pill.advanced {
-            background: #FEF3C7;
-            color: #92400E;
-            border-color: #fde68a;
-        }
-        .status-pill.error, .status-pill.expired, .status-pill.rejected {
-            background: #FEE2E2;
-            color: #991B1B;
-            border-color: #fca5a5;
-        }
-        .status-pill.intermediate {
-            background: #E0F2FE;
-            color: #075985;
-            border-color: #bae6fd;
-        }
-        .status-pill.pro {
-            background: #F3E8FF;
-            color: #6B21A8;
-            border-color: #e9d5ff;
-        }
-        .status-pill.beginner, .status-pill.disabled {
-            background: #F3F4F6;
-            color: #374151;
-            border-color: #e5e7eb;
+        .profile-ratings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-top: 18px;
         }
         
-        /* Dark Mode Pill Styles */
-        html.dark-mode .status-pill.success, html.dark-mode .status-pill.active {
-            background: rgba(41, 163, 86, 0.15);
-            color: #4ade80;
-            border-color: rgba(74, 222, 128, 0.2);
+        .rating-badge-card {
+            display: flex;
+            flex-direction: column;
+            padding: 10px 4px;
+            background: var(--sidebar-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            align-items: center;
         }
-        html.dark-mode .status-pill.warning, html.dark-mode .status-pill.pending, html.dark-mode .status-pill.advanced {
-            background: rgba(245, 158, 11, 0.12);
-            color: #fbbf24;
-            border-color: rgba(251, 191, 36, 0.2);
+        
+        .rating-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 4px;
         }
-        html.dark-mode .status-pill.error, html.dark-mode .status-pill.expired, html.dark-mode .status-pill.rejected {
-            background: rgba(239, 68, 68, 0.12);
-            color: #f87171;
-            border-color: rgba(248, 113, 113, 0.2);
+        
+        .rating-value {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-primary);
         }
-        html.dark-mode .status-pill.intermediate {
-            background: rgba(14, 165, 233, 0.12);
-            color: #38bdf8;
-            border-color: rgba(56, 189, 248, 0.2);
+        
+        .profile-section-card {
+            background: var(--sidebar-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
         }
-        html.dark-mode .status-pill.pro {
-            background: rgba(168, 85, 247, 0.12);
-            color: #c084fc;
-            border-color: rgba(192, 132, 252, 0.2);
+        
+        .section-card-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0 0 14px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            text-align: left;
         }
-        html.dark-mode .status-pill.beginner, html.dark-mode .status-pill.disabled {
-            background: rgba(148, 163, 184, 0.12);
-            color: #cbd5e1;
-            border-color: rgba(203, 213, 225, 0.2);
+        
+        .section-card-title i {
+            color: var(--primary-orange);
+            font-size: 1.15rem;
         }
-
-        /* Accessible Text colors for match history result */
-        .text-success {
-            color: #166534;
+        
+        .detail-info-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
         }
-        html.dark-mode .text-success {
-            color: #4ade80;
+        
+        .detail-info-row:last-child {
+            margin-bottom: 0;
         }
-        .text-danger {
-            color: #991B1B;
+        
+        .detail-label {
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        html.dark-mode .text-danger {
-            color: #f87171;
+        
+        .detail-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .profile-stats-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .stat-box-mini {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 4px;
+            border-radius: 8px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+        }
+        
+        .stat-number {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .stat-lbl {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+        
+        .stat-box-mini.win { border-color: rgba(41, 163, 86, 0.2); }
+        .stat-box-mini.win .stat-number { color: var(--btn-green); }
+        
+        .stat-box-mini.loss { border-color: rgba(239, 68, 68, 0.2); }
+        .stat-box-mini.loss .stat-number { color: #ef4444; }
+        
+        .stat-box-mini.rate { border-color: rgba(225, 86, 35, 0.2); }
+        .stat-box-mini.rate .stat-number { color: var(--primary-orange); }
+        
+        .modal-match-history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .modal-match-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            border-radius: 8px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+        }
+        
+        .match-meta-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            text-align: left;
+        }
+        
+        .match-event-name {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .match-opponent {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+        
+        .match-score-result {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .match-score-val {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        
+        .match-result-pill {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .match-result-pill.win { background: #e6f6ee; color: var(--btn-green); }
+        .match-result-pill.loss { background: #fee2e2; color: #ef4444; }
+        .match-result-pill.draw { background: var(--border-color); color: var(--text-secondary); }
+        
+        .drawer-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--primary-orange);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         /* Mobile Responsive Drawer override */
@@ -171,83 +332,99 @@ document.addEventListener('DOMContentLoaded', () => {
         
         <!-- Member Details Drawer -->
         <div id="memberDrawer" class="details-drawer">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; border-bottom:1px solid var(--border-color); padding-bottom:15px;">
-                <h2 style="margin:0; font-size:1.4rem; color:var(--text-primary); display:flex; align-items:center; gap:8px;"><i class="ph ph-user"></i> Member Details</h2>
-                <button onclick="closeMemberDrawer()" style="background:none; border:none; color:var(--text-primary); font-size:1.5rem; cursor:pointer;"><i class="ph ph-x"></i></button>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--border-color); padding-bottom:15px;">
+                <h3 style="margin:0; font-size:1.2rem; font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:8px;"><i class="ph ph-user-focus" style="color:var(--primary-orange); font-size:1.4rem;"></i> Member Details</h3>
+                <button onclick="closeMemberDrawer()" style="background:none; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:6px; border-radius:50%; transition:background-color 0.2s;" onmouseover="this.style.backgroundColor='var(--input-bg)';this.style.color='var(--text-primary)'" onmouseout="this.style.backgroundColor='transparent';this.style.color='var(--text-muted)'"><i class="ph ph-x"></i></button>
             </div>
             
-            <!-- Profile Card Header -->
-            <div style="display:flex; align-items:center; gap:16px; margin-bottom:24px;">
-                <div id="drawerAvatar" style="width:70px; height:70px; border-radius:50%; background:var(--btn-navy); color:white; display:flex; align-items:center; justify-content:center; font-size:1.8rem; font-weight:700; overflow:hidden; flex-shrink:0; border:2px solid var(--border-color);">
-                    ?
-                </div>
-                <div>
-                    <h3 id="drawerName" style="margin:0; font-size:1.25rem; color:var(--text-primary);">John Doe</h3>
-                    <span id="drawerSkill" class="status-pill" style="margin-top:6px; display:inline-block;">Beginner</span>
-                    <div id="drawerPhone" style="font-size:0.85rem; color:var(--text-secondary); margin-top:6px;">Phone: —</div>
-                </div>
+            <!-- Loading Indicator -->
+            <div id="pDrawerLoading" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; height:200px; color:var(--text-muted);">
+                <div class="drawer-spinner"></div>
+                <p style="font-size:0.85rem;">Loading member details...</p>
             </div>
             
-            <!-- General Membership Info -->
-            <div style="padding:15px; margin-bottom:24px; border:1px solid var(--border-color); border-radius:12px; background: var(--bg-color);">
-                <h4 style="margin:0 0 10px 0; color:var(--text-primary); font-size:0.95rem; display:flex; align-items:center; gap:6px;"><i class="ph ph-shield-check" style="color:var(--btn-green);"></i> Membership Info</h4>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:0.85rem;">
-                    <div>
-                        <span style="color:var(--text-secondary); display:block;">Status</span>
-                        <strong id="drawerStatus" style="color:var(--text-primary);">Active</strong>
+            <!-- Content Card -->
+            <div id="pDrawerContent" style="display:none;" class="player-profile-modal-body">
+                <!-- Header/Avatar Section -->
+                <div class="profile-header-card">
+                    <div id="drawerAvatar" class="profile-avatar-wrapper">
+                        <!-- Filled dynamically -->
                     </div>
-                    <div>
-                        <span style="color:var(--text-secondary); display:block;">Expiration</span>
-                        <strong id="drawerExpires" style="color:var(--text-primary);">Lifetime</strong>
+                    <h3 id="drawerName" class="profile-name-title">John Doe</h3>
+                    <span id="drawerStatus" class="profile-role-badge">Active</span>
+                    
+                    <!-- Ratings Section -->
+                    <div class="profile-ratings-grid">
+                        <div class="rating-badge-card elo">
+                            <span class="rating-label">ELO</span>
+                            <span id="drawerElo" class="rating-value">0</span>
+                        </div>
+                        <div class="rating-badge-card dupr">
+                            <span class="rating-label">DUPR</span>
+                            <span id="drawerDupr" class="rating-value">0.00</span>
+                        </div>
+                        <div class="rating-badge-card proficiency">
+                            <span class="rating-label">LEVEL</span>
+                            <span id="drawerSkill" class="rating-value">Beginner</span>
+                        </div>
                     </div>
-                    <div>
-                        <span style="color:var(--text-secondary); display:block;">Joined Date</span>
-                        <strong id="drawerJoined" style="color:var(--text-primary);">—</strong>
+                </div>
+
+                <!-- Contact & Membership details -->
+                <div class="profile-section-card">
+                    <h4 class="section-card-title"><i class="ph ph-shield-check"></i> Membership Details</h4>
+                    <div class="detail-info-row">
+                        <span class="detail-label"><i class="ph ph-phone"></i> Phone:</span>
+                        <span id="drawerPhone" class="detail-value">—</span>
                     </div>
-                    <div>
-                        <span style="color:var(--text-secondary); display:block;">Ratings</span>
-                        <strong id="drawerRatings" style="color:var(--btn-green);">DUPR: 0.00 | ELO: 0</strong>
+                    <div class="detail-info-row">
+                        <span class="detail-label"><i class="ph ph-calendar"></i> Joined:</span>
+                        <span id="drawerJoined" class="detail-value">—</span>
+                    </div>
+                    <div class="detail-info-row">
+                        <span class="detail-label"><i class="ph ph-calendar-x"></i> Expiration:</span>
+                        <span id="drawerExpires" class="detail-value">Lifetime</span>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Active Registrations Tab -->
-            <div style="margin-bottom:24px;">
-                <h4 style="margin:0 0 12px 0; color:var(--text-primary); font-size:0.95rem; border-bottom:1px solid var(--border-color); padding-bottom:6px; display:flex; align-items:center; gap:6px;"><i class="ph ph-calendar-star" style="color:#00c6ff;"></i> Active Registrations</h4>
-                <div id="drawerRegistrations" style="display:flex; flex-direction:column; gap:8px;">
-                    <!-- Dynamic content -->
+
+                <!-- Active Registrations Tab -->
+                <div class="profile-section-card">
+                    <h4 class="section-card-title"><i class="ph ph-calendar-star"></i> Active Registrations</h4>
+                    <div id="drawerRegistrations" class="modal-match-history-list">
+                        <!-- Filled dynamically -->
+                    </div>
                 </div>
-            </div>
-            
-            <!-- Tournament History Tab -->
-            <div style="margin-bottom:24px;">
-                <h4 style="margin:0 0 12px 0; color:var(--text-primary); font-size:0.95rem; border-bottom:1px solid var(--border-color); padding-bottom:6px; display:flex; align-items:center; gap:6px;"><i class="ph ph-sword" style="color:#f59e0b;"></i> Tournament History</h4>
-                <div id="drawerMatches" style="display:flex; flex-direction:column; gap:8px;">
-                    <!-- Dynamic content -->
+
+                <!-- Tournament History Tab -->
+                <div class="profile-section-card">
+                    <h4 class="section-card-title"><i class="ph ph-sword"></i> Tournament History</h4>
+                    <div id="drawerMatches" class="modal-match-history-list">
+                        <!-- Filled dynamically -->
+                    </div>
                 </div>
-            </div>
-            
-            <!-- Rating History Tab -->
-            <div style="margin-bottom:24px;">
-                <h4 style="margin:0 0 12px 0; color:var(--text-primary); font-size:0.95rem; border-bottom:1px solid var(--border-color); padding-bottom:6px; display:flex; align-items:center; gap:6px;"><i class="ph ph-chart-line-up" style="color:#a855f7;"></i> Rating History (Recent)</h4>
-                <div id="drawerRatingHistory" style="display:flex; flex-direction:column; gap:8px; font-size:0.85rem; max-height:200px; overflow-y:auto; padding-right:4px;">
-                    <!-- Dynamic content -->
+
+                <!-- Rating History Section -->
+                <div class="profile-section-card">
+                    <h4 class="section-card-title"><i class="ph ph-chart-line-up"></i> Rating History (Recent)</h4>
+                    <div id="drawerRatingHistory" style="display:flex; flex-direction:column; gap:8px; max-height:200px; overflow-y:auto; padding-right:4px;">
+                        <!-- Filled dynamically -->
+                    </div>
                 </div>
-            </div>
-            
-            <!-- Membership Payments Tab -->
-            <div style="margin-bottom:24px;">
-                <h4 style="margin:0 0 12px 0; color:var(--text-primary); font-size:0.95rem; border-bottom:1px solid var(--border-color); padding-bottom:6px; display:flex; align-items:center; gap:6px;"><i class="ph ph-receipt" style="color:#00c6ff;"></i> Membership Payments</h4>
-                <div id="drawerPayments" style="font-size:0.85rem;">
-                    <!-- Dynamic content -->
+
+                <!-- Membership Payments Tab -->
+                <div class="profile-section-card">
+                    <h4 class="section-card-title"><i class="ph ph-receipt"></i> Membership Payments</h4>
+                    <div id="drawerPayments">
+                        <!-- Filled dynamically -->
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Lightbox Modal for Receipt -->
-        <div id="receiptModal" class="details-drawer-overlay" style="display:none; justify-content:center; align-items:center; opacity:0; pointer-events:none; transition: opacity 0.2s ease; z-index: 10001;">
-            <div style="background:var(--sidebar-bg); border: 1px solid var(--border-color); border-radius:12px; padding:20px; max-width:500px; width:90%; max-height:90vh; box-shadow:var(--shadow-hover); position:relative; display:flex; flex-direction:column; align-items:center;">
-                <button onclick="closeReceiptModal()" style="position:absolute; top:15px; right:15px; background:none; border:none; color:var(--text-primary); font-size:1.5rem; cursor:pointer;"><i class="ph ph-x"></i></button>
+        <div id="receiptModal" class="details-drawer-overlay" style="display:none; justify-content:center; align-items:center; opacity:0; pointer-events:none; transition: opacity 0.2s ease; z-index: 99999999 !important;">
+            <div style="background:var(--sidebar-bg); border: 1px solid var(--border-color); border-radius:12px; padding:20px; max-width:500px; width:90%; max-height:90vh; box-shadow:var(--shadow-hover); position:relative; display:flex; flex-direction:column; align-items:center; z-index: 999999999 !important;">
+                <button onclick="closeReceiptModal()" style="position:absolute; top:15px; right:15px; background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;"><i class="ph ph-x"></i></button>
                 <h3 style="margin: 0 0 15px 0; color:var(--text-primary); font-size:1.2rem; display:flex; align-items:center; gap:8px;"><i class="ph ph-wallet" style="color:#00c6ff;"></i> GCash Receipt Screenshot</h3>
                 <img id="receiptImage" src="" style="width:100%; max-height:60vh; object-fit:contain; border-radius:8px; border:1px solid var(--border-color); background:#000;">
                 <div id="receiptRef" style="margin-top:15px; font-family:monospace; font-size:1.1rem; color:var(--text-secondary); background:var(--bg-color); padding:8px 16px; border-radius:6px; border:1px solid var(--border-color);">Ref: -</div>
@@ -262,19 +439,13 @@ function openMemberDrawer(playerId) {
     const overlay = document.getElementById('drawerOverlay');
     if (!drawer || !overlay) return;
     
-    // Clear drawer elements or show a loader
-    document.getElementById('drawerName').innerText = "Loading...";
-    document.getElementById('drawerSkill').className = "status-pill";
-    document.getElementById('drawerSkill').innerText = "—";
-    document.getElementById('drawerPhone').innerText = "Phone: —";
-    document.getElementById('drawerStatus').innerText = "—";
-    document.getElementById('drawerExpires').innerText = "—";
-    document.getElementById('drawerJoined').innerText = "—";
-    document.getElementById('drawerRatings').innerText = "—";
-    document.getElementById('drawerRegistrations').innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem;">Loading...</div>';
-    document.getElementById('drawerMatches').innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem;">Loading...</div>';
-    document.getElementById('drawerRatingHistory').innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem;">Loading...</div>';
-    document.getElementById('drawerPayments').innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem;">Loading...</div>';
+    // Reset loader states
+    document.getElementById('pDrawerLoading').style.display = 'flex';
+    document.getElementById('pDrawerLoading').innerHTML = `
+        <div class="drawer-spinner"></div>
+        <p style="font-size:0.85rem;">Loading member details...</p>
+    `;
+    document.getElementById('pDrawerContent').style.display = 'none';
     
     // Show drawer
     overlay.classList.add('active');
@@ -284,73 +455,82 @@ function openMemberDrawer(playerId) {
         .then(res => res.json())
         .then(data => {
             if (data.error) {
-                document.getElementById('drawerName').innerText = "Error loading details";
+                const loadingDiv = document.getElementById('pDrawerLoading');
+                loadingDiv.style.display = 'flex';
+                loadingDiv.innerHTML = `<p style="color:#ef4444;"><i class="ph ph-warning-circle" style="font-size:2rem; display:block; margin-bottom:8px;"></i>Error loading details</p>`;
                 return;
             }
             
             // Profile & Meta
             document.getElementById('drawerName').innerText = `${data.first_name} ${data.last_name}`;
-            document.getElementById('drawerPhone').innerText = `Phone: ${data.phone}`;
+            document.getElementById('drawerPhone').innerText = data.phone || '—';
+            document.getElementById('drawerJoined').innerText = data.joined_at || '—';
+            document.getElementById('drawerExpires').innerText = data.expires_at || 'Lifetime';
+            document.getElementById('drawerElo').innerText = data.elo;
+            document.getElementById('drawerDupr').innerText = parseFloat(data.dupr).toFixed(2);
+            document.getElementById('drawerSkill').innerText = data.proficiency || 'Beginner';
             
             // Avatar
             const avatarDiv = document.getElementById('drawerAvatar');
             if (data.avatar_url) {
-                avatarDiv.innerHTML = `<img src="${data.avatar_url}" style="width:100%; height:100%; object-fit:cover;">`;
+                avatarDiv.innerHTML = `<img src="${data.avatar_url}">`;
             } else {
                 const initials = ((data.first_name || ' ')[0] + (data.last_name || ' ')[0]).toUpperCase().trim() || '?';
-                avatarDiv.innerHTML = initials;
+                avatarDiv.innerHTML = `<div class="profile-avatar-initials">${initials}</div>`;
             }
             
-            // Skill pill
-            const skill = (data.proficiency || 'beginner').toLowerCase();
-            const skillPill = document.getElementById('drawerSkill');
-            skillPill.innerText = data.proficiency || 'Beginner';
-            skillPill.removeAttribute('style'); // Clear inline styles
-            skillPill.className = `status-pill ${skill}`;
-            
-            // Status and expiry
+            // Status text
             const statusEl = document.getElementById('drawerStatus');
             statusEl.innerText = data.status.charAt(0).toUpperCase() + data.status.slice(1);
-            statusEl.removeAttribute('style'); // Clear inline styles
-            statusEl.className = `status-pill ${data.status}`;
-            
-            document.getElementById('drawerExpires').innerText = data.expires_at || 'Lifetime';
-            document.getElementById('drawerJoined').innerText = data.joined_at || '—';
-            document.getElementById('drawerRatings').innerText = `DUPR: ${parseFloat(data.dupr).toFixed(2)} | ELO: ${data.elo}`;
             
             // Active registrations
             const regsDiv = document.getElementById('drawerRegistrations');
             if (data.registrations && data.registrations.length > 0) {
-                regsDiv.innerHTML = data.registrations.map(r => `
-                    <div style="background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <div style="font-weight:600; color:var(--text-primary); font-size:0.85rem;">${r.title}</div>
-                            <small style="color:var(--text-muted); font-size:0.75rem;">${r.date} | ${r.type.toUpperCase()}</small>
+                regsDiv.innerHTML = data.registrations.map(r => {
+                    let statusClass = 'draw';
+                    if (r.status === 'registered') statusClass = 'win';
+                    else if (r.status === 'pending') statusClass = 'loss';
+                    
+                    return `
+                        <div class="modal-match-item">
+                            <div class="match-meta-info">
+                                <span class="match-event-name">${r.title}</span>
+                                <span class="match-opponent">${r.date} | ${r.type.toUpperCase()}</span>
+                            </div>
+                            <div class="match-score-result">
+                                <span class="match-result-pill ${statusClass}">${r.status}</span>
+                            </div>
                         </div>
-                        <span class="status-pill ${r.status === 'registered' ? 'success' : 'warning'}" style="font-size:0.75rem;">${r.status}</span>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
             } else {
-                regsDiv.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; font-style:italic;">No active registrations</div>';
+                regsDiv.innerHTML = '<div style="color:var(--text-muted); font-size:0.8rem; text-align:center; font-style:italic;">No active registrations</div>';
             }
             
             // Tournament History (matches)
             const matchesDiv = document.getElementById('drawerMatches');
             if (data.matches && data.matches.length > 0) {
-                matchesDiv.innerHTML = data.matches.map(m => `
-                    <div style="background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <div style="font-weight:600; color:var(--text-primary); font-size:0.85rem;">vs ${m.opponent}</div>
-                            <small style="color:var(--text-muted); font-size:0.75rem;">${m.event_title} (Round ${m.round})</small>
+                matchesDiv.innerHTML = data.matches.map(m => {
+                    let pillClass = 'draw';
+                    let resText = m.result.toUpperCase();
+                    if (resText === 'WIN') pillClass = 'win';
+                    else if (resText === 'LOSS') pillClass = 'loss';
+                    
+                    return `
+                        <div class="modal-match-item">
+                            <div class="match-meta-info">
+                                <span class="match-event-name">vs ${m.opponent}</span>
+                                <span class="match-opponent">${m.event_title} (Round ${m.round})</span>
+                            </div>
+                            <div class="match-score-result">
+                                <span class="match-score-val">${m.score}</span>
+                                <span class="match-result-pill ${pillClass}">${resText}</span>
+                            </div>
                         </div>
-                        <div style="text-align:right;">
-                            <span class="${m.result === 'Win' ? 'text-success' : m.result === 'Loss' ? 'text-danger' : ''}" style="font-weight:700; font-size:0.85rem; ${m.result !== 'Win' && m.result !== 'Loss' ? 'color:var(--text-secondary);' : ''}">${m.result}</span>
-                            <div style="font-size:0.75rem; color:var(--text-muted);">${m.score}</div>
-                        </div>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
             } else {
-                matchesDiv.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; font-style:italic;">No tournament matches</div>';
+                matchesDiv.innerHTML = '<div style="color:var(--text-muted); font-size:0.8rem; text-align:center; font-style:italic;">No tournament matches</div>';
             }
             
             // Rating history list
@@ -359,45 +539,55 @@ function openMemberDrawer(playerId) {
                 ratingHistoryDiv.innerHTML = data.rating_history.map((h, index) => {
                     const dateStr = h.recorded_at ? h.recorded_at.split('T')[0] : '—';
                     return `
-                        <div style="padding:6px 0; border-bottom: 1px dashed var(--border-color); display:flex; justify-content:space-between;">
-                            <span style="color:var(--text-secondary); font-size:0.8rem;">${dateStr}</span>
-                            <span style="font-weight:600; color:var(--text-primary); font-size:0.8rem;">DUPR: ${parseFloat(h.dupr).toFixed(2)} | ELO: ${h.elo}</span>
+                        <div style="padding:6px 0; border-bottom: 1px dashed var(--border-color); display:flex; justify-content:space-between; font-size:0.8rem;">
+                            <span style="color:var(--text-secondary);">${dateStr}</span>
+                            <span style="font-weight:600; color:var(--text-primary);">DUPR: ${parseFloat(h.dupr).toFixed(2)} | ELO: ${h.elo}</span>
                         </div>
                     `;
                 }).join('');
             } else {
-                ratingHistoryDiv.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; font-style:italic;">No rating history logs</div>';
+                ratingHistoryDiv.innerHTML = '<div style="color:var(--text-muted); font-size:0.8rem; text-align:center; font-style:italic;">No rating history logs</div>';
             }
             
             // Membership Payments info
             const paymentsDiv = document.getElementById('drawerPayments');
             if (data.gcash_ref) {
                 paymentsDiv.innerHTML = `
-                    <div style="background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; padding:12px;">
+                    <div style="background:var(--input-bg); border:1px solid var(--border-color); border-radius:8px; padding:12px;">
                         <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.8rem;">
-                            <span style="color:var(--text-secondary);">GCash Reference</span>
+                            <span style="color:var(--text-secondary);">GCash Reference:</span>
                             <strong style="color:var(--text-primary); font-family:monospace;">${data.gcash_ref}</strong>
                         </div>
                         <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.8rem;">
-                            <span style="color:var(--text-secondary);">Amount</span>
+                            <span style="color:var(--text-secondary);">Amount:</span>
                             <strong style="color:var(--text-primary);">₱${parseFloat(data.membership_fee).toFixed(2)}</strong>
                         </div>
                         <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.8rem;">
-                            <span style="color:var(--text-secondary);">Submission Date</span>
+                            <span style="color:var(--text-secondary);">Submission Date:</span>
                             <span style="color:var(--text-primary);">${data.joined_at}</span>
                         </div>
                         ${data.receipt_url ? `
                         <div style="margin-top:12px; text-align:center;">
                             <button onclick="showReceipt('${data.receipt_url}', '${data.gcash_ref}')" style="background:rgba(0,198,255,0.15); color:#00c6ff; border:1px solid rgba(0,198,255,0.3); border-radius:6px; padding:6px 12px; cursor:pointer; font-size:0.75rem; display:inline-flex; align-items:center; gap:6px; font-weight:600;">
-                                <i class="ph ph-image"></i> View Receipt screenshot
+                                <i class="ph ph-image"></i> View Receipt Screenshot
                             </button>
                         </div>
                         ` : ''}
                     </div>
                 `;
             } else {
-                paymentsDiv.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; font-style:italic;">No payment reference details</div>';
+                paymentsDiv.innerHTML = '<div style="color:var(--text-muted); font-size:0.8rem; text-align:center; font-style:italic;">No payment reference details</div>';
             }
+            
+            // Toggle visibility
+            document.getElementById('pDrawerLoading').style.display = 'none';
+            document.getElementById('pDrawerContent').style.display = 'flex';
+        })
+        .catch(err => {
+            console.error('Drawer fetch error:', err);
+            const loadingDiv = document.getElementById('pDrawerLoading');
+            loadingDiv.style.display = 'flex';
+            loadingDiv.innerHTML = `<p style="color:#ef4444;"><i class="ph ph-warning-circle" style="font-size:2rem; display:block; margin-bottom:8px;"></i>An error occurred while loading details</p>`;
         });
 }
 

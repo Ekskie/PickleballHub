@@ -4,35 +4,70 @@
 
 {% block extra_head %}
 <style>
+    /* ----- PREMIUM LAYOUT & CARDS ----- */
     .queue-position-card {
         display: flex;
         align-items: center;
         gap: 24px;
-        padding: 28px;
+        padding: 24px;
         background: var(--card-bg);
         border: 1px solid var(--card-border);
         border-radius: 12px;
         box-shadow: var(--shadow-card);
         margin-bottom: 24px;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
     }
-    .queue-circle {
-        width: 70px;
-        height: 70px;
+    .queue-position-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    }
+    html.dark-mode .queue-position-card:hover {
+        box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    }
+    
+    /* Background light glow effect */
+    .queue-position-card::after {
+        content: "";
+        position: absolute;
+        top: -50%;
+        right: -30%;
+        width: 200px;
+        height: 200px;
         border-radius: 50%;
-        background: var(--primary-orange-light);
+        background: radial-gradient(circle, rgba(225, 86, 35, 0.05) 0%, transparent 70%);
+        pointer-events: none;
+    }
+    
+    .queue-circle {
+        width: 76px;
+        height: 76px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-orange-light) 0%, rgba(225, 86, 35, 0.15) 100%);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.6rem;
+        font-size: 1.8rem;
         font-weight: 800;
         color: var(--primary-orange);
         flex-shrink: 0;
+        border: 2px solid rgba(225, 86, 35, 0.25);
+        box-shadow: 0 4px 12px rgba(225, 86, 35, 0.1);
+        position: relative;
+        z-index: 1;
+    }
+    
+    .queue-details {
+        position: relative;
+        z-index: 1;
     }
     .queue-details h2 {
-        font-size: 1.15rem;
+        font-size: 1.25rem;
         font-weight: 700;
         color: var(--text-primary);
-        margin-bottom: 4px;
+        margin-bottom: 6px;
+        letter-spacing: -0.2px;
     }
     .queue-details p {
         font-size: 0.875rem;
@@ -41,60 +76,146 @@
         line-height: 1.6;
     }
 
-    /* Queue table */
-    .queue-table-header {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 16px;
-    }
-    .queue-table-header i {
-        color: var(--primary-orange);
-        font-size: 1.2rem;
-    }
-    .queue-table-header h3 {
-        font-size: 1rem;
-        font-weight: 700;
-        color: var(--text-primary);
-    }
-    .queue-table {
+    /* ----- PREMIUM TABLE STYLE ----- */
+    .premium-table {
+        border-collapse: separate;
+        border-spacing: 0;
         width: 100%;
-        border-collapse: collapse;
+        margin-top: 10px;
     }
-    .queue-table th {
-        text-align: left;
-        font-size: 0.7rem;
+    
+    .premium-table th {
+        font-size: 0.75rem;
         font-weight: 600;
-        color: var(--text-muted);
-        padding-bottom: 12px;
-        border-bottom: 1px solid var(--border-color);
         text-transform: uppercase;
+        color: var(--text-muted);
         letter-spacing: 0.5px;
-    }
-    .queue-table td {
-        padding: 16px 0;
-        font-size: 0.875rem;
-        color: var(--text-secondary);
+        padding: 14px 16px;
         border-bottom: 1px solid var(--border-color);
+        background: var(--input-bg);
     }
-    .queue-table tr:last-child td {
+    
+    .premium-table th:first-child {
+        border-top-left-radius: 8px;
+        border-bottom-left-radius: 8px;
+    }
+    
+    .premium-table th:last-child {
+        border-top-right-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+    
+    .queue-row-item {
+        transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+    
+    .queue-row-item:hover {
+        background-color: rgba(229, 231, 235, 0.2);
+    }
+    
+    html.dark-mode .queue-row-item:hover {
+        background-color: rgba(255, 255, 255, 0.02);
+    }
+    
+    .premium-table td {
+        padding: 16px;
+        border-bottom: 1px solid var(--border-color);
+        vertical-align: middle;
+    }
+    
+    .premium-table tr:last-child td {
         border-bottom: none;
     }
-    .queue-table td:first-child {
-        font-weight: 700;
+    
+    /* Position Indicator */
+    .position-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: var(--input-bg);
         color: var(--text-primary);
-        width: 40px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        border: 1px solid var(--border-color);
     }
-    .queue-table td.player-name {
+    
+    .playing-dash {
+        color: var(--primary-orange);
+        font-weight: 700;
+        font-size: 1.2rem;
+    }
+    
+    /* Interactive Player Link/Avatar */
+    .player-avatar-mini {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--border-color);
+        background: var(--input-bg);
+        transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s;
+    }
+    
+    .player-avatar-mini img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .player-avatar-mini:hover {
+        transform: scale(1.1);
+        border-color: var(--primary-orange);
+        box-shadow: 0 2px 8px rgba(225, 86, 35, 0.2);
+    }
+    
+    .player-initials-mini {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--primary-orange-light);
+        color: var(--primary-orange);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 700;
+        border: 1px solid rgba(225, 86, 35, 0.15);
+    }
+    
+    .walkin-avatar {
+        background: var(--border-color);
+        color: var(--text-muted);
+        border: 1px solid var(--border-color);
+    }
+    
+    .player-name-link {
+        font-weight: 600;
+        color: var(--text-primary);
+        transition: color 0.2s ease;
+        text-decoration: none;
+    }
+    
+    .player-name-link:hover {
+        color: var(--primary-orange);
+        text-decoration: underline;
+    }
+    
+    .guest-name-text {
         font-weight: 600;
         color: var(--text-primary);
     }
-    .queue-table td.court-mono {
-        font-family: monospace;
-        font-size: 0.85rem;
-    }
+    
     .queue-row-you {
-        background: var(--primary-orange-light);
+        background: var(--primary-orange-light) !important;
+    }
+    html.dark-mode .queue-row-you {
+        background: rgba(225, 86, 35, 0.12) !important;
     }
     .queue-row-you td {
         color: var(--text-primary) !important;
@@ -102,11 +223,11 @@
     .you-label {
         color: var(--primary-orange);
         font-size: 0.75rem;
-        font-weight: 600;
+        font-weight: 700;
         margin-left: 6px;
     }
-
-    /* Status pills */
+    
+    /* Legacy pills for fallback */
     .pill-next {
         display: inline-block;
         background: var(--btn-green-light);
@@ -133,7 +254,48 @@
         background: rgba(225, 86, 35, 0.15);
     }
 
-    /* ===== Facility Tabs ===== */
+    /* ----- GLOWING STATUS BADGES ----- */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 12px;
+        line-height: 1;
+        border: 1px solid transparent;
+        white-space: nowrap;
+    }
+    
+    .dot-indicator {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+    }
+    
+    .orange-glow {
+        background: rgba(225, 86, 35, 0.08);
+        color: var(--primary-orange);
+        border-color: rgba(225, 86, 35, 0.2);
+    }
+    .bg-orange { background: var(--primary-orange); box-shadow: 0 0 6px var(--primary-orange); }
+    
+    .green-glow {
+        background: var(--btn-green-light);
+        color: var(--btn-green);
+        border-color: rgba(41, 163, 86, 0.2);
+    }
+    .bg-green { background: var(--btn-green); box-shadow: 0 0 6px var(--btn-green); }
+    
+    .gray-glow {
+        background: var(--input-bg);
+        color: var(--text-secondary);
+        border-color: var(--border-color);
+    }
+    .bg-gray { background: var(--text-muted); }
+
+    /* ----- FACILITY TABS ----- */
     .fac-tabs-wrapper {
         background: var(--card-bg);
         border: 1px solid var(--card-border);
@@ -153,8 +315,8 @@
         position: relative;
         display: flex;
         align-items: center;
-        gap: 6px;
-        padding: 12px 18px;
+        gap: 8px;
+        padding: 14px 20px;
         font-size: 0.875rem;
         font-weight: 600;
         color: var(--text-muted);
@@ -174,7 +336,7 @@
         border-bottom-color: var(--primary-orange);
     }
     .fac-tab i {
-        font-size: 1rem;
+        font-size: 1.1rem;
         flex-shrink: 0;
     }
     .fac-tab-badge {
@@ -211,7 +373,7 @@
     /* Panels */
     .fac-panel {
         display: none;
-        padding: 20px 24px 24px;
+        padding: 24px;
     }
     .fac-panel.active {
         display: block;
@@ -225,12 +387,14 @@
         background: var(--primary-orange-light);
         color: var(--text-primary);
         border-radius: 8px;
-        padding: 10px 16px;
+        padding: 12px 16px;
         font-size: 0.875rem;
-        margin-bottom: 16px;
+        margin-bottom: 20px;
+        font-weight: 500;
+        border: 1px solid rgba(225, 86, 35, 0.15);
     }
     html.dark-mode .fac-my-position-bar {
-        background: rgba(225, 86, 35, 0.15);
+        background: rgba(225, 86, 35, 0.12);
     }
 </style>
 {% endblock %}

@@ -203,8 +203,13 @@
         {% if next_reservation %}
         <div class="reservation-grid">
             <div class="court-image">
+                {% if next_reservation.courts and next_reservation.courts.image_url %}
+                <img src="{{ next_reservation.courts.image_url }}" alt="{{ next_reservation.courts.name or 'Pickleball Court' }}"
+                    style="border-radius: 8px;">
+                {% else %}
                 <img src="{{ url_for('static', filename='images/court-hero.jpg') }}" alt="Pickleball Court"
                     style="border-radius: 8px;">
+                {% endif %}
             </div>
             <div class="reservation-info">
                 <p class="small-caps">UPCOMING RESERVATION</p>

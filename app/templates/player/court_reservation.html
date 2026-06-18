@@ -1058,16 +1058,25 @@
             card.dataset.name = c.name;
             card.dataset.rate = c.hourly_rate;
 
-            // Draw a mini interactive court graphic with realistic pickleball colors
-            const courtGraphicHtml = `
-                <div class="visual-court-drawing-area">
-                    <div class="court-line-border"></div>
-                    <div class="court-kitchen-area"></div>
-                    <div class="court-line-center"></div>
-                    <div class="court-line-center-right"></div>
-                    <div class="court-net"></div>
-                </div>
-            `;
+            // Draw a mini interactive court graphic or use court's custom image if provided
+            let courtGraphicHtml = '';
+            if (c.image_url) {
+                courtGraphicHtml = `
+                    <div class="visual-court-drawing-area" style="background: var(--input-bg); box-shadow: none; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center;">
+                        <img src="${c.image_url}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; ${isOccupied ? 'filter: grayscale(80%) brightness(70%);' : ''}">
+                    </div>
+                `;
+            } else {
+                courtGraphicHtml = `
+                    <div class="visual-court-drawing-area">
+                        <div class="court-line-border"></div>
+                        <div class="court-kitchen-area"></div>
+                        <div class="court-line-center"></div>
+                        <div class="court-line-center-right"></div>
+                        <div class="court-net"></div>
+                    </div>
+                `;
+            }
 
             card.innerHTML = `
                 <div class="visual-court-header">

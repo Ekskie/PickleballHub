@@ -167,15 +167,38 @@ def signup():
                             profile_data['elo'] = elo
                             profile_data['dupr'] = dupr
                             
-                            admin_client.table('profiles').upsert(profile_data, on_conflict='id').execute()
+                            # Safely write with a retry loop to prevent race conditions with DB trigger
+                            import time
+                            max_retries = 3
+                            for attempt in range(max_retries):
+                                try:
+                                    update_resp = admin_client.table('profiles').update(profile_data).eq('id', sign_up_resp.user.id).execute()
+                                    if not update_resp.data:
+                                        admin_client.table('profiles').upsert(profile_data, on_conflict='id').execute()
+                                    break
+                                except Exception as e:
+                                    if attempt == max_retries - 1:
+                                        raise e
+                                    time.sleep(0.5)
                             
                             # Ensure baseline history record is populated
                             now_str = datetime.now(timezone.utc).isoformat()
                             ensure_initial_history(admin_client, sign_up_resp.user.id, elo, dupr, now_str)
                         else:
-                            admin_client.table('profiles').upsert(profile_data, on_conflict='id').execute()
+                            import time
+                            max_retries = 3
+                            for attempt in range(max_retries):
+                                try:
+                                    update_resp = admin_client.table('profiles').update(profile_data).eq('id', sign_up_resp.user.id).execute()
+                                    if not update_resp.data:
+                                        admin_client.table('profiles').upsert(profile_data, on_conflict='id').execute()
+                                    break
+                                except Exception as e:
+                                    if attempt == max_retries - 1:
+                                        raise e
+                                    time.sleep(0.5)
                     except Exception as upsert_err:
-                        print(f'[signup] profile upsert error: {upsert_err}')
+                        print(f'[signup] profile upsert/update error: {upsert_err}')
 
                 # Store email so the login page can pre-fill the resend form
                 session['pending_email'] = email

@@ -4,95 +4,110 @@
 
 {% block extra_head %}
 <style>
-/* Local style tokens to match premium layout */
-.btn-sm { 
-    padding: 7px 14px; 
-    border-radius: 8px; 
-    font-size: 0.8rem; 
-    font-weight: 600; 
-    cursor: pointer; 
-    border: none; 
-    transition: all 0.2s; 
-    display: inline-flex; 
-    align-items: center; 
-    gap: 5px; 
-}
-.btn-sm-outline { 
-    background: transparent; 
-    border: 1px solid var(--border-color); 
-    color: var(--text-secondary); 
-}
-.btn-sm-outline:hover { 
-    border-color: var(--text-muted); 
-    color: var(--text-primary); 
-    background: rgba(255, 255, 255, 0.05);
-}
-.btn-sm-primary { 
-    background: var(--primary-orange); 
-    color: white; 
-}
-.btn-sm-primary:hover { 
-    background: var(--primary-orange-hover); 
-}
-.btn-sm-danger { 
-    background: rgba(239, 68, 68, 0.1); 
-    color: #ef4444; 
-    border: 1px solid rgba(239, 68, 68, 0.2); 
-}
-.btn-sm-danger:hover { 
-    background: rgba(239, 68, 68, 0.2); 
-}
+    /* Local style tokens to match premium layout */
+    .btn-sm {
+        padding: 7px 14px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
 
-/* Modal Form Styles */
-.form-group { 
-    margin-bottom: 16px; 
-}
-.form-group label { 
-    display: block; 
-    font-size: 0.8rem; 
-    font-weight: 600; 
-    color: var(--text-secondary); 
-    margin-bottom: 6px; 
-}
-.form-group input, .form-group select { 
-    width: 100%; 
-    padding: 10px 14px; 
-    background: var(--input-bg); 
-    border: 1px solid var(--border-color); 
-    border-radius: 8px; 
-    color: var(--text-primary); 
-    font-size: 0.9rem; 
-    font-family: inherit; 
-    box-sizing: border-box; 
-    transition: border-color 0.2s; 
-}
-.form-group input:focus, .form-group select:focus { 
-    outline: none; 
-    border-color: var(--primary-orange); 
-}
-.modal-footer { 
-    display: flex; 
-    justify-content: flex-end; 
-    gap: 10px; 
-    margin-top: 22px; 
-}
-.modal-header h3 {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--text-primary);
-}
-.modal-close {
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    cursor: pointer;
-    font-size: 1.3rem;
-    padding: 4px;
-    border-radius: 6px;
-}
-.modal-close:hover {
-    color: var(--text-primary);
-}
+    .btn-sm-outline {
+        background: transparent;
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+    }
+
+    .btn-sm-outline:hover {
+        border-color: var(--text-muted);
+        color: var(--text-primary);
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .btn-sm-primary {
+        background: var(--primary-orange);
+        color: white;
+    }
+
+    .btn-sm-primary:hover {
+        background: var(--primary-orange-hover);
+    }
+
+    .btn-sm-danger {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .btn-sm-danger:hover {
+        background: rgba(239, 68, 68, 0.2);
+    }
+
+    /* Modal Form Styles */
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 6px;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 10px 14px;
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        font-family: inherit;
+        box-sizing: border-box;
+        transition: border-color 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: var(--primary-orange);
+    }
+
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 22px;
+    }
+
+    .modal-header h3 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 1.3rem;
+        padding: 4px;
+        border-radius: 6px;
+    }
+
+    .modal-close:hover {
+        color: var(--text-primary);
+    }
 </style>
 {% endblock %}
 
@@ -100,7 +115,8 @@
 <div class="dashboard-header">
     <div>
         <h1 class="page-title">Manage Facility Staff</h1>
-        <p style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">{{ staff|length }} staff member{{ 's' if staff|length != 1 else '' }} assigned</p>
+        <p style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">{{ staff|length }} staff member{{ 's' if
+            staff|length != 1 else '' }} assigned</p>
     </div>
     <button class="action-box green" style="width:auto;padding:0.5rem 1.1rem;" onclick="openModal('addStaffModal')">
         <i class="ph ph-plus-circle"></i> Add Staff
@@ -120,46 +136,56 @@
             </thead>
             <tbody>
                 {% if staff %}
-                    {% for s in staff %}
-                    <tr>
-                        <td>
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <div class="avatar" style="overflow: hidden; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; background: var(--btn-navy); color: white; font-weight: 600; font-size: 0.85rem; flex-shrink: 0; border: 1px solid var(--border-color);">
-                                    {% set fn = s.profiles.first_name if (s.profiles and s.profiles.first_name) else 'S' %}
-                                    {% set ln = s.profiles.last_name if (s.profiles and s.profiles.last_name) else '' %}
-                                    {{ fn[0]|upper }}{{ ln[0]|upper if ln else '' }}
-                                </div>
-                                <div>
-                                    <div class="bold" style="color: var(--text-primary);">{{ s.profiles.first_name if s.profiles else 'Unknown' }} {{ s.profiles.last_name if s.profiles else '' }}</div>
-                                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">{{ s.profiles.email if s.profiles else '' }}</div>
-                                </div>
+                {% for s in staff %}
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div class="avatar"
+                                style="overflow: hidden; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; background: var(--btn-navy); color: white; font-weight: 600; font-size: 0.85rem; flex-shrink: 0; border: 1px solid var(--border-color);">
+                                {% set fn = s.profiles.first_name if (s.profiles and s.profiles.first_name) else 'S' %}
+                                {% set ln = s.profiles.last_name if (s.profiles and s.profiles.last_name) else '' %}
+                                {{ fn[0]|upper }}{{ ln[0]|upper if ln else '' }}
                             </div>
-                        </td>
-                        <td>{{ s.profiles.phone if (s.profiles and s.profiles.phone) else 'N/A' }}</td>
-                        <td>
-                            <span class="status-pill" style="background: var(--primary-orange-light); color: var(--primary-orange); border: 1px solid rgba(225, 86, 35, 0.15);">
-                                <i class="ph ph-buildings" style="margin-right: 4px;"></i> {{ s.facilities.name if s.facilities else 'Unknown Facility' }}
-                            </span>
-                        </td>
-                        <td>
-                            <div style="display: flex; gap: 8px; align-items: center;">
-                                <button class="btn-sm btn-sm-outline" onclick="openEditStaffModal('{{ s.id }}', '{{ s.facility_id }}', '{{ s.profiles.first_name if s.profiles else 'Staff' }} {{ s.profiles.last_name if s.profiles else '' }}')">
-                                    <i class="ph ph-pencil-simple"></i> Edit
-                                </button>
-                                <form method="POST" action="{{ url_for('owner.remove_staff_assignment', fs_id=s.id) }}" onsubmit="return confirm('Remove this staff member from the facility?');" style="margin:0;">
-                                    <button type="submit" class="btn-sm btn-sm-danger"><i class="ph ph-trash"></i> Remove</button>
-                                </form>
+                            <div>
+                                <div class="bold" style="color: var(--text-primary);">{{ s.profiles.first_name if
+                                    s.profiles else 'Unknown' }} {{ s.profiles.last_name if s.profiles else '' }}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">{{
+                                    s.profiles.email if s.profiles else '' }}</div>
                             </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
+                        </div>
+                    </td>
+                    <td>{{ s.profiles.phone if (s.profiles and s.profiles.phone) else 'N/A' }}</td>
+                    <td>
+                        <span class="status-pill"
+                            style="background: var(--primary-orange-light); color: var(--primary-orange); border: 1px solid rgba(225, 86, 35, 0.15);">
+                            <i class="ph ph-buildings" style="margin-right: 4px;"></i> {{ s.facilities.name if
+                            s.facilities else 'Unknown Facility' }}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button class="btn-sm btn-sm-outline"
+                                onclick="openEditStaffModal('{{ s.id }}', '{{ s.facility_id }}', '{{ s.profiles.first_name if s.profiles else 'Staff' }} {{ s.profiles.last_name if s.profiles else '' }}')">
+                                <i class="ph ph-pencil-simple"></i> Edit
+                            </button>
+                            <form method="POST" action="{{ url_for('owner.remove_staff_assignment', fs_id=s.id) }}"
+                                onsubmit="return confirm('Remove this staff member from the facility?');"
+                                style="margin:0;">
+                                <button type="submit" class="btn-sm btn-sm-danger"><i class="ph ph-trash"></i>
+                                    Remove</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
                 {% else %}
-                    <tr>
-                        <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-muted);">
-                            <i class="ph ph-users-three" style="font-size: 2.5rem; opacity: 0.3; display: block; margin-bottom: 10px;"></i>
-                            No staff assigned yet.
-                        </td>
-                    </tr>
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                        <i class="ph ph-users-three"
+                            style="font-size: 2.5rem; opacity: 0.3; display: block; margin-bottom: 10px;"></i>
+                        No staff assigned yet.
+                    </td>
+                </tr>
                 {% endif %}
             </tbody>
         </table>
@@ -170,7 +196,8 @@
 <div id="addStaffModal" class="modal-overlay">
     <div class="modal-box">
         <div class="modal-header">
-            <h3><i class="ph ph-user-plus" style="color:var(--primary-orange); margin-right: 6px;"></i> Add New Staff Member</h3>
+            <h3><i class="ph ph-user-plus" style="color:var(--primary-orange); margin-right: 6px;"></i> Add New Staff
+                Member</h3>
             <button class="modal-close" onclick="closeModal('addStaffModal')"><i class="ph ph-x"></i></button>
         </div>
         <form method="POST" action="{{ url_for('owner.add_staff') }}">
@@ -179,11 +206,11 @@
                 <select name="facility_id" required>
                     <option value="">-- Select Facility --</option>
                     {% for f in facilities %}
-                        <option value="{{ f.id }}">{{ f.name }}</option>
+                    <option value="{{ f.id }}">{{ f.name }}</option>
                     {% endfor %}
                 </select>
             </div>
-            
+
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                 <div class="form-group">
                     <label>First Name</label>
@@ -202,11 +229,13 @@
 
             <div class="form-group">
                 <label><i class="ph ph-key"></i> Temporary Password</label>
-                <input type="text" name="password" required minlength="6" placeholder="Provide this to the staff member">
+                <input type="text" name="password" required minlength="6"
+                    placeholder="Provide this to the staff member">
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn-sm btn-sm-outline" onclick="closeModal('addStaffModal')">Cancel</button>
+                <button type="button" class="btn-sm btn-sm-outline"
+                    onclick="closeModal('addStaffModal')">Cancel</button>
                 <button type="submit" class="btn-sm btn-sm-primary"><i class="ph ph-check"></i> Create Account</button>
             </div>
         </form>
@@ -217,54 +246,58 @@
 <div id="editStaffModal" class="modal-overlay">
     <div class="modal-box">
         <div class="modal-header">
-            <h3><i class="ph ph-pencil-simple" style="color:var(--primary-orange); margin-right: 6px;"></i> Edit Staff Assignment</h3>
+            <h3><i class="ph ph-pencil-simple" style="color:var(--primary-orange); margin-right: 6px;"></i> Edit Staff
+                Assignment</h3>
             <button class="modal-close" onclick="closeModal('editStaffModal')"><i class="ph ph-x"></i></button>
         </div>
         <form method="POST" id="editStaffForm" action="">
             <div class="form-group">
                 <label>Staff Member</label>
-                <input type="text" id="editStaffName" readonly style="opacity: 0.7; cursor: not-allowed; background: var(--border-color);">
+                <input type="text" id="editStaffName" readonly
+                    style="opacity: 0.7; cursor: not-allowed; background: var(--border-color);">
             </div>
             <div class="form-group">
                 <label><i class="ph ph-buildings"></i> Facility to Assign</label>
                 <select name="facility_id" id="editStaffFacility" required>
                     {% for f in facilities %}
-                        <option value="{{ f.id }}">{{ f.name }}</option>
+                    <option value="{{ f.id }}">{{ f.name }}</option>
                     {% endfor %}
                 </select>
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn-sm btn-sm-outline" onclick="closeModal('editStaffModal')">Cancel</button>
-                <button type="submit" class="btn-sm btn-sm-primary"><i class="ph ph-check"></i> Update Assignment</button>
+                <button type="button" class="btn-sm btn-sm-outline"
+                    onclick="closeModal('editStaffModal')">Cancel</button>
+                <button type="submit" class="btn-sm btn-sm-primary"><i class="ph ph-check"></i> Update
+                    Assignment</button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
-function openModal(id) { 
-    document.getElementById(id).classList.add('open'); 
-}
+    function openModal(id) {
+        document.getElementById(id).classList.add('open');
+    }
 
-function closeModal(id) { 
-    document.getElementById(id).classList.remove('open'); 
-}
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('open');
+    }
 
-function openEditStaffModal(fsId, currentFacilityId, staffName) {
-    document.getElementById('editStaffForm').action = `/owner/staff/${fsId}/edit`;
-    document.getElementById('editStaffName').value = staffName;
-    document.getElementById('editStaffFacility').value = currentFacilityId;
-    openModal('editStaffModal');
-}
+    function openEditStaffModal(fsId, currentFacilityId, staffName) {
+        document.getElementById('editStaffForm').action = `/owner/staff/${fsId}/edit`;
+        document.getElementById('editStaffName').value = staffName;
+        document.getElementById('editStaffFacility').value = currentFacilityId;
+        openModal('editStaffModal');
+    }
 
-// Close modal when clicking outside the box
-document.querySelectorAll('.modal-overlay').forEach(overlay => {
-    overlay.addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeModal(this.id);
-        }
+    // Close modal when clicking outside the box
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeModal(this.id);
+            }
+        });
     });
-});
 </script>
 {% endblock %}
