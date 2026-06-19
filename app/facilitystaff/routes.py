@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 from app.decorators import require_role
-from app import supabase_admin, supabase
 from datetime import datetime, timedelta, timezone
 
 PH_TZ = timezone(timedelta(hours=8))
@@ -118,7 +117,7 @@ def dashboard():
                 })
                 
     except Exception as e:
-        flash(f'Error loading dashboard: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
         
     return render_template('facilitystaff/dashboard.html', court_status_list=court_status_list, queues=queues, disputed_lobbies=disputed_lobbies)
 
@@ -202,7 +201,7 @@ def queue():
             queues = get_staff_processed_queues(db, fac_ids)
             
     except Exception as e:
-        flash(f'Error loading queues: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
         
     return render_template('facilitystaff/queue.html', facilities=assigned_facilities, courts=courts, queues=queues)
 
@@ -469,7 +468,7 @@ def schedule():
             reservations = r_resp.data or []
             
     except Exception as e:
-        flash(f'Error loading schedule: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
         
     return render_template('facilitystaff/schedule.html', 
                            date=date_str, 
@@ -576,7 +575,7 @@ def walkin():
             return redirect(url_for('facilitystaff.walkin_receipt'))
 
         except Exception as e:
-            flash(f"Error registering walk-in: {e}", "error")
+            flash('An error occurred. Please try again.', 'error')
             return redirect(url_for('facilitystaff.walkin'))
 
     # GET: Fetch available courts
@@ -588,7 +587,7 @@ def walkin():
             c_resp = db.table('courts').select('id, name, hourly_rate').in_('facility_id', fac_ids).eq('status', 'active').execute()
             courts = c_resp.data or []
     except Exception as e:
-        flash(f"Error loading courts: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
 
     return render_template('facilitystaff/walkin.html', courts=courts)
 
@@ -640,7 +639,7 @@ def profile():
                 
             flash("Profile updated successfully.", "success")
         except Exception as e:
-            flash(f"Error updating profile: {e}", "error")
+            flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('facilitystaff.profile'))
     return render_template('facilitystaff/profile.html')
 
@@ -881,7 +880,7 @@ def matchmaker_detail(lobby_id):
             print(f"Error fetching lobby messages: {msg_err}")
 
     except Exception as e:
-        flash(f"Error loading lobby: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('facilitystaff.dashboard'))
 
     # Staff check logic
@@ -960,7 +959,7 @@ def mediation_desk():
             except Exception as lob_err:
                 print(f"Error fetching disputed lobbies: {lob_err}")
     except Exception as e:
-        flash(f'Error loading Mediation Desk: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
         
     return render_template('facilitystaff/mediation_desk.html', disputed_lobbies=disputed_lobbies)
 

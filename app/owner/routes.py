@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify, flash
 from app.decorators import require_role
-from app import supabase_admin, supabase
 from datetime import datetime, timedelta, timezone
 
 PH_TZ = timezone(timedelta(hours=8))
@@ -103,7 +102,7 @@ def facilities():
             f['court_count'] = court_resp.count if court_resp.count is not None else 0
             facilities_list.append(f)
     except Exception as e:
-        flash(f'Error loading facilities: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
 
     return render_template('owner/facilities.html', facilities=facilities_list)
 
@@ -131,20 +130,12 @@ def add_facility():
     image_url = None
     image_file = request.files.get('facility_image')
     if image_file and image_file.filename:
-        try:
-            import time
-            ext = image_file.filename.rsplit('.', 1)[-1].lower()
-            filename = f"facility_{owner_id}_{int(time.time())}.{ext}"
-            file_bytes = image_file.read()
-            db.storage.from_('facility-images').upload(
-                file=file_bytes,
-                path=filename,
-                file_options={"content-type": image_file.content_type}
-            )
-            image_url = db.storage.from_('facility-images').get_public_url(filename)
-        except Exception as e:
-            print(f"Facility image upload error: {e}")
-            flash('Warning: Image could not be uploaded.', 'warning')
+        from app.upload_utils import validate_and_upload
+        url, err = validate_and_upload(db, image_file, bucket='facility-images', prefix='facility', owner_id=owner_id)
+        if err:
+            flash(f'Warning: {err}', 'warning')
+        else:
+            image_url = url
 
     try:
         db.table('facilities').insert({
@@ -161,7 +152,7 @@ def add_facility():
         }).execute()
         flash(f'Facility "{name}" added successfully!', 'success')
     except Exception as e:
-        flash(f'Error adding facility: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
 
     return redirect(url_for('owner.facilities'))
 
@@ -214,7 +205,7 @@ def edit_facility(facility_id):
         db.table('facilities').update(update_data).eq('id', facility_id).eq('owner_id', owner_id).execute()
         flash(f'Facility updated successfully!', 'success')
     except Exception as e:
-        flash(f'Error updating facility: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
 
     return redirect(url_for('owner.facilities'))
 
@@ -228,7 +219,7 @@ def delete_facility(facility_id):
         db.table('facilities').delete().eq('id', facility_id).eq('owner_id', owner_id).execute()
         flash('Facility deleted.', 'success')
     except Exception as e:
-        flash(f'Error deleting facility: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
     return redirect(url_for('owner.facilities'))
 
 @owner_bp.route('/facilities/<facility_id>/kyc', methods=['POST'])
@@ -271,7 +262,7 @@ def kyc_upload(facility_id):
         flash("KYC document uploaded successfully. Status is now pending approval.", "success")
     except Exception as e:
         print(f"Upload error: {e}")
-        flash(f"Error uploading document: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         
     return redirect(url_for('owner.facilities'))
 
@@ -296,7 +287,7 @@ def courts():
         ).eq('owner_id', owner_id).order('created_at', desc=True).execute()
         courts_list = court_resp.data or []
     except Exception as e:
-        flash(f'Error loading courts: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
 
     return render_template('owner/courts.html', courts=courts_list, facilities=facilities_list)
 
@@ -348,7 +339,7 @@ def add_court():
         }).execute()
         flash(f'Court "{name}" added successfully!', 'success')
     except Exception as e:
-        flash(f'Error adding court: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
 
     return redirect(url_for('owner.courts'))
 
@@ -395,7 +386,7 @@ def edit_court(court_id):
         db.table('courts').update(update_data).eq('id', court_id).eq('owner_id', owner_id).execute()
         flash('Court updated!', 'success')
     except Exception as e:
-        flash(f'Error updating court: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
 
     return redirect(url_for('owner.courts'))
 
@@ -409,7 +400,7 @@ def delete_court(court_id):
         db.table('courts').delete().eq('id', court_id).eq('owner_id', owner_id).execute()
         flash('Court deleted.', 'success')
     except Exception as e:
-        flash(f'Error deleting court: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
     return redirect(url_for('owner.courts'))
 
 
@@ -441,7 +432,7 @@ def queue():
             queues = q_resp.data or []
             
     except Exception as e:
-        flash(f'Error loading queues: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
         
     return render_template('owner/queue.html', facilities=assigned_facilities, courts=courts, queues=queues)
 
@@ -472,7 +463,7 @@ def update_queue():
     except Exception as e:
         if is_ajax:
             return jsonify({'success': False, 'message': str(e)}), 500
-        flash(f'Error updating queue: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
         
     return redirect(url_for('owner.queue'))
 
@@ -500,7 +491,7 @@ def events():
                 reg_resp = db.table('event_registrations').select('id', count='exact').eq('event_id', ev['id']).eq('status', 'registered').execute()
                 ev['registered_count'] = reg_resp.count if reg_resp.count is not None else 0
     except Exception as e:
-        flash(f'Error loading events: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
 
     return render_template('owner/events.html', events=events_list)
 
@@ -530,8 +521,8 @@ def event_participants(event_id):
                 
                 # Fetch emails dynamically (batch)
                 try:
-                    from app import supabase_admin
-                    auth_users = supabase_admin.auth.admin.list_users()
+                    admin_db = get_admin_db()
+                    auth_users = admin_db.auth.admin.list_users()
                     email_map = {u.id: u.email for u in auth_users}
                     for p in participants:
                         p_id = p.get('player_id')
@@ -544,7 +535,7 @@ def event_participants(event_id):
                 return redirect(url_for('owner.events'))
                 
     except Exception as e:
-        flash(f'Error loading participants: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
         
     return render_template('owner/event_participants.html', event=event_details, participants=participants)
 
@@ -581,7 +572,7 @@ def event_check_in(event_id, reg_id):
         
         flash("Participant attendance updated.", "success")
     except Exception as e:
-        flash(f"Error updating attendance: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         
     return redirect(url_for('owner.event_participants', event_id=event_id))
 
@@ -641,7 +632,7 @@ def tournament_manage(event_id):
                                booked_courts=booked_courts)
                                
     except Exception as e:
-        flash(f"Error loading tournament manage: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('owner.events'))
 
 @owner_bp.route('/tournaments/<event_id>/bracket/generate', methods=['POST'])
@@ -690,7 +681,7 @@ def bracket_generate(event_id):
         flash("Bracket generated successfully!", "success")
         
     except Exception as e:
-        flash(f"Error generating bracket: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         
     return redirect(url_for('owner.tournament_manage', event_id=event_id))
 
@@ -790,7 +781,7 @@ def match_score(event_id, match_id):
         flash("Score recorded! Bracket and ratings updated.", "success")
 
     except Exception as e:
-        flash(f"Error recording score: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
 
     return redirect(url_for('owner.tournament_manage', event_id=event_id))
 
@@ -827,7 +818,7 @@ def match_assign(event_id, match_id):
         
         flash("Match assignment updated.", "success")
     except Exception as e:
-        flash(f"Error updating assignment: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         
     return redirect(url_for('owner.tournament_manage', event_id=event_id))
 
@@ -842,7 +833,7 @@ def create_event_page():
         fac_resp = db.table('facilities').select('id, name, location').eq('owner_id', owner_id).eq('status', 'active').execute()
         facilities_list = fac_resp.data or []
     except Exception as e:
-        flash(f'Error loading facilities: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
     return render_template('owner/create_event.html', facilities=facilities_list)
 
 
@@ -922,7 +913,7 @@ def create_event():
 
         flash(f'Event "{title}" created successfully!', 'success')
     except Exception as e:
-        flash(f'Error creating event: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
 
     return redirect(url_for('owner.events'))
 
@@ -1020,7 +1011,7 @@ def edit_event(event_id):
         return redirect(url_for('owner.event_participants', event_id=event_id))
         
     except Exception as e:
-        flash(f"Error updating event: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('owner.events'))
 
 @owner_bp.route('/events/<event_id>/delete', methods=['POST'])
@@ -1061,7 +1052,7 @@ def delete_event(event_id):
         flash(f'Event "{title}" deleted successfully.', 'success')
         
     except Exception as e:
-        flash(f'Error deleting event: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
         
     return redirect(url_for('owner.events'))
 
@@ -1103,9 +1094,9 @@ def staff():
             
             # Fetch emails dynamically (batch)
             try:
-                from app import supabase_admin
-                if supabase_admin:
-                    auth_users = supabase_admin.auth.admin.list_users()
+                admin_db = get_admin_db()
+                if admin_db:
+                    auth_users = admin_db.auth.admin.list_users()
                     email_map = {u.id: u.email for u in auth_users}
                     for s in staff_list:
                         p_id = s.get('profiles', {}).get('id') if s.get('profiles') else None
@@ -1115,7 +1106,7 @@ def staff():
                 print("Failed to map auth emails for staff:", ae)
             
     except Exception as e:
-        flash(f'Error loading staff: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
         
     return render_template('owner/staff.html', staff=staff_list, facilities=facilities_list)
 
@@ -1135,13 +1126,13 @@ def add_staff():
         
     db = get_db()
     try:
-        from app import supabase_admin
-        if not supabase_admin:
+        admin_db = get_admin_db()
+        if not admin_db:
             flash("Admin client not available.", "error")
             return redirect(url_for('owner.staff'))
             
         # 1. Create User in Supabase Auth
-        new_user = supabase_admin.auth.admin.create_user({
+        new_user = admin_db.auth.admin.create_user({
             "email": email,
             "password": password,
             "email_confirm": True,
@@ -1155,7 +1146,7 @@ def add_staff():
         staff_id = new_user.user.id
         
         # 2. Add to profiles table
-        supabase_admin.table('profiles').upsert({
+        admin_db.table('profiles').upsert({
             'id': staff_id,
             'first_name': first_name,
             'last_name': last_name,
@@ -1170,7 +1161,7 @@ def add_staff():
         
         flash(f'Staff account for {first_name} created and assigned!', 'success')
     except Exception as e:
-        flash(f'Error creating staff: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
         
     return redirect(url_for('owner.staff'))
 
@@ -1193,7 +1184,7 @@ def remove_staff_assignment(fs_id):
             else:
                 flash('Unauthorized to remove this staff.', 'error')
     except Exception as e:
-        flash(f'Error removing staff: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
     return redirect(url_for('owner.staff'))
 
 @owner_bp.route('/staff/<fs_id>/edit', methods=['POST'])
@@ -1228,7 +1219,7 @@ def edit_staff_assignment(fs_id):
         else:
             flash('Staff assignment not found.', 'error')
     except Exception as e:
-        flash(f'Error updating staff assignment: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
         
     return redirect(url_for('owner.staff'))
 
@@ -1271,7 +1262,7 @@ def profile():
                 
             flash("Profile updated successfully.", "success")
         except Exception as e:
-            flash(f"Error updating profile: {e}", "error")
+            flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('owner.profile'))
 
     stats = {'facilities': 0, 'courts': 0, 'staff': 0}
@@ -1368,7 +1359,7 @@ def change_event_status(event_id):
                     'type': 'warning'
                 }).execute()
     except Exception as e:
-        flash(f"Error updating status: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
 
     return redirect(url_for('owner.events'))
 
@@ -1400,7 +1391,7 @@ def toggle_court_status(court_id):
         db.table('courts').update({'status': new_status}).eq('id', court_id).execute()
         flash(f"Court status set to '{new_status.title()}'.", "success")
     except Exception as e:
-        flash(f"Error updating court status: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
 
     return redirect(url_for('owner.courts'))
 
@@ -1437,7 +1428,7 @@ def payment_ledger():
                 last = (prof.get('last_name') or ' ')[0]
                 prof['initials'] = (first + last).upper().strip() or '?'
     except Exception as e:
-        flash(f"Error loading payment ledger: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         
     return render_template('owner/ledger.html', transactions=transactions)
 
@@ -1501,7 +1492,7 @@ def approve_payment(reservation_id):
             
         flash("Payment approved successfully.", "success")
     except Exception as e:
-        flash(f"Error approving payment: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         
     return redirect(url_for('owner.payment_ledger'))
 
@@ -1548,7 +1539,7 @@ def decline_payment(reservation_id):
             
         flash("Payment declined and reservation cancelled.", "success")
     except Exception as e:
-        flash(f"Error declining payment: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         
     return redirect(url_for('owner.payment_ledger'))
 

@@ -1,9 +1,11 @@
 import os
 import sys
-from flask import Flask, session, render_template, request, redirect, url_for, flash
+from flask import Flask, session, render_template, request, redirect, url_for, flash, g, jsonify
 from dotenv import load_dotenv
 from supabase import create_client, Client
 from flask_wtf.csrf import CSRFProtect
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 load_dotenv()
 
@@ -11,16 +13,12 @@ supabase_url = os.environ.get("SUPABASE_URL")
 supabase_key = os.environ.get("SUPABASE_KEY")           # anon key
 service_role_key = os.environ.get("SERVICE_ROLE_KEY")   # service role (bypasses RLS)
 
-supabase: Client | None = None
-if supabase_url and supabase_key:
-    supabase = create_client(supabase_url, supabase_key)
-
-# Separate admin client that bypasses Row Level Security
-supabase_admin: Client | None = None
-if supabase_url and service_role_key:
-    supabase_admin = create_client(supabase_url, service_role_key)
-
 csrf = CSRFProtect()
+limiter = Limiter(
+    key_func=get_remote_address,
+    default_limits=["60/minute"],
+    storage_uri="memory://",
+)
 
 
 
@@ -36,6 +34,7 @@ def create_app():
         app.secret_key = secret_key
         
     csrf.init_app(app)
+    limiter.init_app(app)
    
     from app.main.routes import main_bp
     from app.auth.routes import auth_bp
@@ -59,7 +58,10 @@ def create_app():
 
     @app.before_request
     def verify_session_integrity():
-        """Verify session integrity, sync roles dynamically, and check suspension."""
+        """Verify session integrity, sync roles dynamically, and check suspension.
+        Also caches the profile in flask.g so downstream code (require_role,
+        inject_current_user) can reuse it without extra DB round-trips.
+        """
         if request.endpoint and (request.endpoint.startswith('static') or request.endpoint == 'auth.logout'):
             return
             
@@ -76,9 +78,14 @@ def create_app():
         from app.db import get_admin_db
         try:
             db = get_admin_db()
-            resp = db.table('profiles').select('role, is_suspended').eq('id', user_id).single().execute()
+            resp = db.table('profiles').select(
+                'role, is_suspended, first_name, last_name, phone, elo, dupr, proficiency, avatar_url'
+            ).eq('id', user_id).single().execute()
             if resp.data:
                 profile = resp.data
+                
+                # Cache in flask.g for reuse by require_role and inject_current_user
+                g.current_profile = profile
                 
                 # 1. Force logout if suspended
                 if profile.get('is_suspended'):
@@ -127,6 +134,18 @@ def create_app():
                 pass
         return response
 
+    @app.after_request
+    def add_security_headers(response):
+        """Inject security headers on every response."""
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['X-Frame-Options'] = 'DENY'
+        response.headers['X-XSS-Protection'] = '1; mode=block'
+        response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+        response.headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=()'
+        if request.is_secure:
+            response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+        return response
+
     @app.context_processor
     def inject_current_user():
         """Inject logged-in user info into every template as `current_user`."""
@@ -152,51 +171,54 @@ def create_app():
                 supabase_anon_key=supabase_key
             )
 
-        # --- 1. Try Supabase request-scoped admin client ---
-        from app.db import get_admin_db
-        client = get_admin_db()
-        if client:
-            try:
-                resp = client.table('profiles').select(
-                    'first_name, last_name, phone, role, elo, dupr, proficiency, avatar_url'
-                ).eq('id', user_id).single().execute()
+        # --- 1. Reuse profile cached in flask.g by verify_session_integrity ---
+        d = getattr(g, 'current_profile', None)
 
-                if resp.data:
-                    d        = resp.data
-                    first    = (d.get('first_name') or '').strip() or 'Player'
-                    last     = (d.get('last_name')  or '').strip()
-                    full     = f"{first} {last}".strip()
-                    initials = (first[0] + (last[0] if last else '')).upper()
-                    role     = (d.get('role') or 'player').strip().lower()
+        # --- 2. Fallback: fetch from DB if g.current_profile wasn't populated ---
+        if not d:
+            from app.db import get_admin_db
+            client = get_admin_db()
+            if client:
+                try:
+                    resp = client.table('profiles').select(
+                        'first_name, last_name, phone, role, elo, dupr, proficiency, avatar_url'
+                    ).eq('id', user_id).single().execute()
+                    d = resp.data
+                except Exception as exc:
+                    print(f"[context_processor] Supabase error: {exc}", file=sys.stderr)
 
-                    # Retrieve elo/dupr with proficiency fallback
-                    elo = d.get('elo')
-                    dupr = d.get('dupr')
-                    if elo is None or dupr is None:
-                        from app.ratings import get_initial_rating
-                        elo_def, dupr_def = get_initial_rating(d.get('proficiency'))
-                        if elo is None: elo = elo_def
-                        if dupr is None: dupr = dupr_def
+        if d:
+            first    = (d.get('first_name') or '').strip() or 'Player'
+            last     = (d.get('last_name')  or '').strip()
+            full     = f"{first} {last}".strip()
+            initials = (first[0] + (last[0] if last else '')).upper()
+            role     = (d.get('role') or 'player').strip().lower()
 
-                    return dict(current_user={
-                        'first_name':   first,
-                        'last_name':    last,
-                        'full_name':    full,
-                        'initials':     initials,
-                        'email':        (d.get('email') or session.get('email', '')),
-                        'phone':        (d.get('phone') or ''),
-                        'role':         role.capitalize(),
-                        'role_raw':     role,
-                        'id':           user_id,
-                        'is_logged_in': True,
-                        'access_token': session.get('access_token', ''),
-                        'elo':          elo,
-                        'dupr':         dupr,
-                        'proficiency':  d.get('proficiency'),
-                        'avatar_url':   d.get('avatar_url'),
-                    }, supabase_url=supabase_url, supabase_anon_key=supabase_key)
-            except Exception as exc:
-                print(f"[context_processor] Supabase error: {exc}", file=sys.stderr)
+            # Retrieve elo/dupr with proficiency fallback
+            elo = d.get('elo')
+            dupr = d.get('dupr')
+            if elo is None or dupr is None:
+                from app.ratings import get_initial_rating
+                elo_def, dupr_def = get_initial_rating(d.get('proficiency'))
+                if elo is None: elo = elo_def
+                if dupr is None: dupr = dupr_def
+
+            return dict(current_user={
+                'first_name':   first,
+                'last_name':    last,
+                'full_name':    full,
+                'initials':     initials,
+                'email':        (d.get('email') or session.get('email', '')),
+                'phone':        (d.get('phone') or ''),
+                'role':         role.capitalize(),
+                'role_raw':     role,
+                'id':           user_id,
+                'is_logged_in': True,
+                'elo':          elo,
+                'dupr':         dupr,
+                'proficiency':  d.get('proficiency'),
+                'avatar_url':   d.get('avatar_url'),
+            }, supabase_url=supabase_url, supabase_anon_key=supabase_key)
 
         # --- 2. Fall back to whatever was stored in session at login ---
         first    = session.get('first_name', 'Player')
@@ -219,7 +241,6 @@ def create_app():
             'role_raw':     role,
             'id':           user_id,
             'is_logged_in': True,
-            'access_token': session.get('access_token', ''),
             'elo':          session.get('elo', elo_def),
             'dupr':         session.get('dupr', dupr_def),
             'proficiency':  session.get('proficiency'),

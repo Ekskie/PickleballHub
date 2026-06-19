@@ -675,26 +675,33 @@
         window.updateWaitTimes = updateWaitTimes;
 
         // --- 2. Supabase Realtime Subscription ---
+        function initStaffQueueRealtime() {
+            if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+                const queueChannel = supabaseClient.channel('staff-queue-channel')
+                    .on(
+                        'postgres_changes',
+                        { event: '*', schema: 'public', table: 'court_queues' },
+                        (payload) => {
+                            fetch("{{ url_for('facilitystaff.queue_partial') }}")
+                                .then(response => response.text())
+                                .then(html => {
+                                    document.getElementById('queue-container').innerHTML = html;
+                                    updateWaitTimes();
+                                })
+                                .catch(error => console.error('Error fetching updated queue:', error));
+                        }
+                    )
+                    .subscribe();
+                    
+                window.addEventListener("beforeunload", () => {
+                    supabaseClient.removeChannel(queueChannel);
+                });
+            }
+        }
         if (typeof supabaseClient !== 'undefined' && supabaseClient) {
-            const queueChannel = supabaseClient.channel('staff-queue-channel')
-                .on(
-                    'postgres_changes',
-                    { event: '*', schema: 'public', table: 'court_queues' },
-                    (payload) => {
-                        fetch("{{ url_for('facilitystaff.queue_partial') }}")
-                            .then(response => response.text())
-                            .then(html => {
-                                document.getElementById('queue-container').innerHTML = html;
-                                updateWaitTimes();
-                            })
-                            .catch(error => console.error('Error fetching updated queue:', error));
-                    }
-                )
-                .subscribe();
-                
-            window.addEventListener("beforeunload", () => {
-                supabaseClient.removeChannel(queueChannel);
-            });
+            initStaffQueueRealtime();
+        } else {
+            window.addEventListener("supabase-ready", initStaffQueueRealtime);
         }
     });
 

@@ -1,5 +1,4 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
-from app import supabase_admin, supabase
 
 from app.db import get_db
 
@@ -34,7 +33,7 @@ def submit_ticket():
         }).execute()
         flash("Your ticket has been submitted. Our support team will get back to you shortly.", "success")
     except Exception as e:
-        flash(f"Error submitting ticket: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
 
     return redirect(request.referrer or url_for('main.index'))
 

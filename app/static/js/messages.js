@@ -9,7 +9,7 @@
  *  - Inline conversation filter search
  *  - Realtime updates via Supabase
  */
-document.addEventListener('DOMContentLoaded', () => {
+function initMessages() {
     if (!supabaseClient) {
         console.error('[Messages] Supabase client not initialised.');
         return;
@@ -651,4 +651,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         })();
     }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (supabaseClient) initMessages();
+    else window.addEventListener('supabase-ready', initMessages);
 });

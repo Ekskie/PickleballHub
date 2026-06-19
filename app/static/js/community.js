@@ -1,7 +1,7 @@
 /**
  * community.js — Image upload, Share, Smart News Feed
  */
-document.addEventListener('DOMContentLoaded', () => {
+function initCommunity() {
     if (!supabaseClient) { console.error('[Community] Supabase not init.'); return; }
 
     /* ── DOM refs ─────────────────────────────────── */
@@ -640,6 +640,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /* ── Initial load ────────────────────────────── */
     loadPosts();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (supabaseClient) initCommunity();
+    else window.addEventListener('supabase-ready', initCommunity);
 });
 
 /* spin keyframe (used inline) */

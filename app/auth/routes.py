@@ -1,6 +1,7 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
 from flask import g
 from app.db import get_db, get_admin_db
+from app import limiter
 
 auth_bp = Blueprint('auth', __name__, url_prefix='')
 
@@ -29,6 +30,7 @@ def _redirect_by_role(role: str):
 
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
+@limiter.limit("10/minute")
 def login():
     # Redirect already-authenticated users
     if request.method == 'GET' and session.get('user_id'):
@@ -54,7 +56,7 @@ def login():
                         flash('Verification failed. The link may have expired.', 'error')
                         return redirect(url_for('auth.login'))
             except Exception as e:
-                flash(f'Verification error: {str(e)}', 'error')
+                flash('An error occurred. Please try again.', 'error')
                 return redirect(url_for('auth.login'))
 
     # ── POST: sign in ────────────────────────────────────────────────────────
@@ -109,13 +111,14 @@ def login():
                 return render_template('landings/login.html')
 
         except Exception as e:
-            flash(f"Login Failed: {str(e)}", 'error')
+            flash("Login failed. Please check your email and password.", 'error')
             return render_template('landings/login.html')
 
     return render_template('landings/login.html')
 
 
 @auth_bp.route('/signup', methods=['GET', 'POST'])
+@limiter.limit("10/minute")
 def signup():
     if request.method == 'GET' and session.get('user_id'):
         return _redirect_by_role(session.get('role', 'player'))
@@ -208,13 +211,14 @@ def signup():
                 return render_template('landings/signup.html')
 
         except Exception as e:
-            flash(f"Signup Failed: {str(e)}", 'error')
+            flash("Signup failed. Please try again or use a different email.", 'error')
             return render_template('landings/signup.html')
 
     return render_template('landings/signup.html')
 
 
 @auth_bp.route('/resend-verification', methods=['POST'])
+@limiter.limit("5/minute")
 def resend_verification():
     """Resend the email verification link to the given address."""
     email = request.form.get('email', '').strip()
@@ -236,7 +240,7 @@ def resend_verification():
         else:
             flash('Supabase not configured locally.', 'error')
     except Exception as e:
-        flash(f'Could not resend email: {str(e)}', 'error')
+        flash('Could not resend email. Please try again later.', 'error')
 
     return redirect(url_for('auth.login', pending_verification='1'))
 
@@ -244,6 +248,7 @@ def resend_verification():
 # ── Forgot / Reset Password ────────────────────────────────────────────────
 
 @auth_bp.route('/forgot-password', methods=['GET', 'POST'])
+@limiter.limit("5/minute")
 def forgot_password():
     """Step 1: user enters email → Supabase sends reset link."""
     if request.method == 'POST':
@@ -263,7 +268,7 @@ def forgot_password():
             # Always show the "sent" state — don't leak whether email exists
             return redirect(url_for('auth.forgot_password', sent='1', email=email))
         except Exception as e:
-            flash(f'Could not send reset email: {str(e)}', 'error')
+            flash('Could not send reset email. Please try again later.', 'error')
             return render_template('landings/forgot_password.html')
 
     return render_template('landings/forgot_password.html')
@@ -296,7 +301,7 @@ def reset_password():
                                                access_token=resp.session.access_token,
                                                refresh_token=resp.session.refresh_token or '')
             except Exception as e:
-                flash(f'Reset link error: {str(e)}', 'error')
+                flash('An error occurred. Please try again.', 'error')
             return render_template('landings/reset_password.html', token_valid=False)
 
         # ── Path B: Implicit/hash flow — ?access_token=xxx&type=recovery ─────
@@ -313,7 +318,7 @@ def reset_password():
                                            access_token=access_token,
                                            refresh_token=refresh_token)
             except Exception as e:
-                flash(f'Reset link error: {str(e)}', 'error')
+                flash('An error occurred. Please try again.', 'error')
             return render_template('landings/reset_password.html', token_valid=False)
 
         # ── No token at all ───────────────────────────────────────────────────
@@ -367,10 +372,23 @@ def reset_password():
                                    access_token=access_token)
 
     except Exception as e:
-        flash(f'Could not update password: {str(e)}', 'error')
+        flash('An error occurred. Please try again.', 'error')
         return render_template('landings/reset_password.html',
                                token_valid=True,
                                access_token=access_token)
+
+
+@auth_bp.route('/auth/supabase-token')
+@limiter.limit("15/minute")
+def supabase_token():
+    """Return the current user's Supabase access token via a secure JSON endpoint.
+    This prevents the token from being embedded in rendered HTML (XSS protection).
+    The token is only available to authenticated, same-origin requests.
+    """
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'token': ''}), 401
+    return jsonify({'token': session.get('access_token', '')})
 
 
 @auth_bp.route('/logout')

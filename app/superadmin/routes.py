@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 from app.decorators import require_role
-from app import supabase_admin, supabase
 from datetime import datetime, timedelta, timezone
 
 PH_TZ = timezone(timedelta(hours=8))
@@ -67,7 +66,7 @@ def facilities():
         resp = db.table('facilities').select('*, profiles!owner_id(first_name, last_name), courts(*)').order('created_at', desc=True).execute()
         facilities = resp.data or []
     except Exception as e:
-        flash(f'Error loading facilities: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
     return render_template('superadmin/facilities.html', facilities=facilities)
 
 @superadmin_bp.route('/facilities/<facility_id>/status', methods=['POST'])
@@ -83,7 +82,7 @@ def update_kyc_status(facility_id):
         log_audit_action('update_facility_kyc', facility_id, {'status': status}, raise_on_error=True)
         flash(f'Facility KYC status updated to {status}.', 'success')
     except Exception as e:
-        flash(f'Error updating status: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
     return redirect(url_for('superadmin.facilities'))
 
 @superadmin_bp.route('/facilities/<facility_id>/platform_status', methods=['POST'])
@@ -99,7 +98,7 @@ def update_platform_status(facility_id):
         log_audit_action('update_facility_platform_status', facility_id, {'status': status}, raise_on_error=True)
         flash(f'Facility platform status updated to {status}.', 'success')
     except Exception as e:
-        flash(f'Error updating platform status: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
     return redirect(url_for('superadmin.facilities'))
 
 
@@ -114,7 +113,8 @@ def users():
         
         # Hydrate emails from Supabase auth
         try:
-            auth_users = supabase_admin.auth.admin.list_users()
+            admin_db = get_admin_db()
+            auth_users = admin_db.auth.admin.list_users()
             email_map = {u.id: u.email for u in auth_users}
             for p in profiles_list:
                 p['email'] = email_map.get(p['id'], 'N/A')
@@ -122,7 +122,7 @@ def users():
             print("Failed to map auth emails for superadmin:", ae)
             
     except Exception as e:
-        flash(f'Error loading users: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
     return render_template('superadmin/users.html', profiles=profiles_list)
 
 @superadmin_bp.route('/users/add_adminstaff', methods=['POST'])
@@ -137,22 +137,22 @@ def add_adminstaff():
         return redirect(url_for('superadmin.users'))
     db = get_db()
     try:
-        from app import supabase_admin
-        if not supabase_admin:
+        admin_db = get_admin_db()
+        if not admin_db:
             flash("Admin client not available.", "error")
             return redirect(url_for('superadmin.users'))
-        new_user = supabase_admin.auth.admin.create_user({
+        new_user = admin_db.auth.admin.create_user({
             "email": email, "password": password, "email_confirm": True,
             "user_metadata": {"first_name": first_name, "last_name": last_name, "role": "adminstaff"}
         })
         staff_id = new_user.user.id
-        supabase_admin.table('profiles').upsert({
+        admin_db.table('profiles').upsert({
             'id': staff_id, 'first_name': first_name, 'last_name': last_name, 'role': 'adminstaff'
         }, on_conflict='id').execute()
         log_audit_action('create_adminstaff', staff_id, {'email': email, 'first_name': first_name, 'last_name': last_name}, raise_on_error=True)
         flash(f'Admin Staff account for {first_name} created successfully!', 'success')
     except Exception as e:
-        flash(f'Error creating admin staff: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
     return redirect(url_for('superadmin.users'))
 
 # ── Reports with real data ──────────────────────────────────────────────────────
@@ -221,7 +221,7 @@ def reports():
 
     except Exception as e:
         print(f"Reports error: {e}")
-        flash(f'Error loading reports data: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
 
     return render_template('superadmin/reports.html',
                            stats=stats,
@@ -273,7 +273,7 @@ def settings():
             
             flash('Settings saved successfully!', 'success')
         except Exception as e:
-            flash(f'Error saving settings: {e}', 'error')
+            flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('superadmin.settings'))
 
     # GET — load from DB
@@ -328,7 +328,7 @@ def profile():
                 
             flash("Profile updated successfully.", "success")
         except Exception as e:
-            flash(f"Error updating profile: {e}", "error")
+            flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('superadmin.profile'))
     return render_template('superadmin/profile.html')
 
@@ -394,7 +394,7 @@ def toggle_suspend_user(user_id):
         msg = f"User has been {'suspended' if new_status else 'unsuspended'} successfully."
         flash(msg, 'success')
     except Exception as e:
-        flash(f"Error toggling suspension: {e}", 'error')
+        flash('An error occurred. Please try again.', 'error')
     return redirect(url_for('superadmin.users'))
 
 @superadmin_bp.route('/logs')
@@ -409,7 +409,7 @@ def audit_logs():
         ).order('created_at', desc=True).limit(150).execute()
         logs_list = resp.data or []
     except Exception as e:
-        flash(f'Error loading audit logs: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
     return render_template('superadmin/logs.html', logs=logs_list)
 
 

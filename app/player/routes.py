@@ -1,11 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 from app.decorators import require_role
-from app import supabase_admin, supabase
+from app import limiter
 from datetime import datetime, timedelta, timezone
 
 PH_TZ = timezone(timedelta(hours=8))
-
-from app import supabase_admin, supabase
 
 player_bp = Blueprint('player', __name__, url_prefix='/player')
 
@@ -91,7 +89,7 @@ def dashboard():
         recent_activities = act_resp.data or []
 
     except Exception as e:
-        flash(f"Error loading dashboard data: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
 
     # Fetch active queue position for the live queue tracker widget
     my_queue = None
@@ -118,21 +116,44 @@ def support():
 
 
 @player_bp.route('/change-password', methods=['POST'])
+@limiter.limit("5/minute")
 @require_role('player')
 def change_password():
     player_id = session.get('user_id')
-    new_password = request.form.get('new_password')
-    confirm_password = request.form.get('confirm_password')
+    old_password = request.form.get('old_password', '').strip()
+    new_password = request.form.get('new_password', '').strip()
+    confirm_password = request.form.get('confirm_password', '').strip()
     
     if not new_password or new_password != confirm_password:
         flash("Passwords do not match or are empty.", "error")
         return redirect(url_for('player.profile'))
+    
+    if len(new_password) < 8:
+        flash("Password must be at least 8 characters long.", "error")
+        return redirect(url_for('player.profile'))
+    
+    # Verify old password before allowing change
+    if not old_password:
+        flash("Current password is required to set a new password.", "error")
+        return redirect(url_for('player.profile'))
+    
+    try:
+        # Verify old password by attempting sign-in
+        email = session.get('email', '')
+        db = get_db()
+        db.auth.sign_in_with_password({"email": email, "password": old_password})
+    except Exception:
+        flash("Current password is incorrect.", "error")
+        return redirect(url_for('player.profile'))
         
     try:
-        supabase_admin.auth.admin.update_user_by_id(player_id, {"password": new_password})
+        admin_db = get_admin_db()
+        admin_db.auth.admin.update_user_by_id(player_id, {"password": new_password})
         flash("Password updated successfully.", "success")
     except Exception as e:
-        flash(f"Error updating password: {e}", "error")
+        import sys
+        print(f"[change_password] Error: {e}", file=sys.stderr)
+        flash("Could not update password. Please try again.", "error")
         
     return redirect(url_for('player.profile'))
 
@@ -176,7 +197,7 @@ def profile():
             
             flash("Profile updated successfully.", "success")
         except Exception as e:
-            flash(f"Error updating profile: {e}", "error")
+            flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('player.profile'))
 
     stats = {'courts': 0, 'events': 0, 'tournaments': 0}
@@ -356,7 +377,7 @@ def reservation():
         ).eq('status', 'active').order('name').execute()
         facilities = resp.data or []
     except Exception as e:
-        flash(f'Error loading facilities: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
     return render_template('player/court_reservation.html', facilities=facilities)
 
 
@@ -496,7 +517,7 @@ def book_reservation():
             flash('Reservation created! Complete payment to confirm.', 'success')
             return redirect(url_for('player.payment', reservation_id=reservation_id))
     except Exception as e:
-        flash(f'Error creating reservation: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
 
     return redirect(url_for('player.reservation'))
 
@@ -543,7 +564,7 @@ def my_reservations():
             reservations.append(r)
             
     except Exception as e:
-        flash(f'Error loading reservations: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
     return render_template('player/my_reservations.html', reservations=reservations)
 
 
@@ -563,7 +584,7 @@ def cancel_reservation(reservation_id):
         else:
             flash('Could not cancel reservation. It may have already started.', 'error')
     except Exception as e:
-        flash(f'Error cancelling: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
     return redirect(url_for('player.my_reservations'))
 
 
@@ -585,7 +606,7 @@ def payment(reservation_id):
             flash('This reservation is already paid.', 'info')
             return redirect(url_for('player.my_reservations'))
     except Exception as e:
-        flash(f'Error: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('player.my_reservations'))
     return render_template('player/payment.html', reservation=reservation)
 
@@ -623,7 +644,7 @@ def confirm_payment(reservation_id):
 
         flash('Payment reference submitted successfully! Your booking is pending verification by the facility owner.', 'success')
     except Exception as e:
-        flash(f'Payment error: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
     return redirect(url_for('player.my_reservations'))
 
 def get_processed_queues(db, player_id=None):
@@ -764,9 +785,14 @@ def events():
         events_list = ev_resp.data or []
 
         # Attach registration count to each event
-        for ev in events_list:
-            reg_resp = db.table('event_registrations').select('id', count='exact').eq('event_id', ev['id']).eq('status', 'registered').execute()
-            ev['registered_count'] = reg_resp.count if reg_resp.count is not None else 0
+        if events_list:
+            event_ids = [ev['id'] for ev in events_list]
+            reg_resp = db.table('event_registrations').select('event_id').in_('event_id', event_ids).eq('status', 'registered').execute()
+            reg_counts = {}
+            for r in (reg_resp.data or []):
+                reg_counts[r['event_id']] = reg_counts.get(r['event_id'], 0) + 1
+            for ev in events_list:
+                ev['registered_count'] = reg_counts.get(ev['id'], 0)
 
         # Fetch this player's registrations
         if player_id:
@@ -775,7 +801,7 @@ def events():
             joined_count = len(registered_ids)
 
     except Exception as e:
-        flash(f'Error loading events: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
 
     return render_template(
         'player/events.html',
@@ -830,7 +856,7 @@ def register_event(event_id):
             flash(f'Successfully registered for "{ev["title"]}"!', 'success')
 
     except Exception as e:
-        flash(f'Error registering: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
 
     return redirect(url_for('player.events'))
 
@@ -882,7 +908,7 @@ def tournament_payment(event_id):
                 flash('Payment confirmed! You are now officially registered.', 'success')
                 
         except Exception as e:
-            flash(f'Payment error: {e}', 'error')
+            flash('An error occurred. Please try again.', 'error')
             
         return redirect(url_for('player.event_detail', event_id=event_id))
         
@@ -901,7 +927,7 @@ def tournament_payment(event_id):
             return redirect(url_for('player.event_detail', event_id=event_id))
             
     except Exception as e:
-        flash(f'Error: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('player.events'))
         
     return render_template('player/tournament_payment.html', event=event, event_id=event_id)
@@ -949,7 +975,7 @@ def unregister_event(event_id):
         # ───────────────────────────────────────────────────────────────────────
 
     except Exception as e:
-        flash(f'Error unregistering: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
     return redirect(url_for('player.events'))
 
 
@@ -979,7 +1005,7 @@ def event_detail(event_id):
                 is_registered = (player_status == 'registered')
 
     except Exception as e:
-        flash(f'Error: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('player.events'))
 
     if not ev:
@@ -1060,17 +1086,25 @@ def clubs():
         clubs_list = resp.data or []
         
         # Attach member count and player's status
-        for c in clubs_list:
-            # count
-            count_resp = db.table('club_memberships').select('id', count='exact').eq('club_id', c['id']).eq('status', 'active').execute()
-            c['member_count'] = count_resp.count or 0
+        if clubs_list:
+            club_ids = [c['id'] for c in clubs_list]
             
-            # my status
-            my_resp = db.table('club_memberships').select('status').eq('club_id', c['id']).eq('player_id', player_id).execute()
-            c['my_status'] = my_resp.data[0]['status'] if my_resp.data else None
+            # Batch fetch active members counts
+            members_resp = db.table('club_memberships').select('club_id').in_('club_id', club_ids).eq('status', 'active').execute()
+            member_counts = {}
+            for m in (members_resp.data or []):
+                member_counts[m['club_id']] = member_counts.get(m['club_id'], 0) + 1
+                
+            # Batch fetch player's status
+            my_resp = db.table('club_memberships').select('club_id, status').in_('club_id', club_ids).eq('player_id', player_id).execute()
+            my_status_map = {m['club_id']: m['status'] for m in (my_resp.data or [])}
+
+            for c in clubs_list:
+                c['member_count'] = member_counts.get(c['id'], 0)
+                c['my_status'] = my_status_map.get(c['id'])
 
     except Exception as e:
-        flash(f"Error loading clubs: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         
     return render_template('player/clubs.html', clubs=clubs_list)
 
@@ -1126,7 +1160,7 @@ def club_detail(club_id):
         events_list = events_resp.data or []
         
     except Exception as e:
-        flash(f"Error loading club details: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('player.clubs'))
         
     return render_template(
@@ -1151,7 +1185,7 @@ def my_clubs():
         ).eq('player_id', player_id).neq('status', 'rejected').order('joined_at', desc=True).execute()
         my_clubs_list = resp.data or []
     except Exception as e:
-        flash(f"Error loading my clubs: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         
     return render_template('player/my_clubs.html', my_clubs=my_clubs_list)
 
@@ -1183,7 +1217,7 @@ def join_club(club_id):
         flash("You have successfully joined the club!", "success")
         
     except Exception as e:
-        flash(f"Error joining club: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         
     return redirect(url_for('player.my_clubs'))
 
@@ -1256,7 +1290,7 @@ def club_payment(club_id):
             return redirect(url_for('player.my_clubs'))
             
     except Exception as e:
-        flash(f"Error: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('player.clubs'))
         
     return render_template('player/club_payment.html', club=club)
@@ -1270,7 +1304,7 @@ def leave_club(club_id):
         db.table('club_memberships').delete().eq('club_id', club_id).eq('player_id', player_id).execute()
         flash("You have left the club.", "success")
     except Exception as e:
-        flash(f"Error leaving club: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
     return redirect(url_for('player.my_clubs'))
 
 
@@ -1292,7 +1326,7 @@ def my_tournaments():
                 ev['my_registration_status'] = r['status']
                 tournaments.append(ev)
     except Exception as e:
-        flash(f"Error loading tournaments: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
     return render_template('player/my_tournaments.html', tournaments=tournaments)
 
 
@@ -1333,7 +1367,7 @@ def tournament_bracket(event_id):
                     champion = final_ms[0]['winner']
 
     except Exception as e:
-        flash(f"Error loading bracket: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('player.my_tournaments'))
 
     return render_template('player/tournament_bracket.html',
@@ -1473,7 +1507,7 @@ def matchmaker():
             lobbies.append(lobby_item)
 
     except Exception as e:
-        flash(f"Error loading Matchmaker: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
 
     return render_template(
         'player/matchmaker.html',
@@ -1537,7 +1571,7 @@ def matchmaker_create():
 
         flash("Matchmaking lobby published successfully!", "success")
     except Exception as e:
-        flash(f"Error publishing lobby: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
 
     return redirect(url_for('player.matchmaker'))
 
@@ -1783,7 +1817,7 @@ def matchmaker_detail(lobby_id):
             print(f"Error fetching lobby messages: {msg_err}")
 
     except Exception as e:
-        flash(f"Error loading lobby: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('player.matchmaker'))
 
     # Calculate teams for current user and reporter, and check if user is assigned staff
@@ -1963,7 +1997,7 @@ def matchmaker_join(lobby_id):
 
         flash("Joined open play match lobby!", "success")
     except Exception as e:
-        flash(f"Error joining lobby: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
     return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
 
 
@@ -2010,7 +2044,7 @@ def matchmaker_switch(lobby_id):
         
         flash("Switched slot successfully!", "success")
     except Exception as e:
-        flash(f"Error switching slot: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         
     return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
 
@@ -2045,7 +2079,7 @@ def matchmaker_leave(lobby_id):
 
         flash("Left open play match lobby.", "success")
     except Exception as e:
-        flash(f"Error leaving lobby: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
     return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
 
 
@@ -2100,7 +2134,7 @@ def matchmaker_message(lobby_id):
         }).execute()
         
     except Exception as e:
-        flash(f"Error sending message: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         
     return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
 
@@ -2152,7 +2186,7 @@ def matchmaker_edit(lobby_id):
         
         flash("Match lobby updated successfully!", "success")
     except Exception as e:
-        flash(f"Error updating lobby: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         
     return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
 
@@ -2186,7 +2220,7 @@ def matchmaker_delete(lobby_id):
             
         flash("Matchmaking lobby deleted successfully.", "success")
     except Exception as e:
-        flash(f"Error deleting lobby: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
         
     return redirect(url_for('player.matchmaker'))
@@ -2304,7 +2338,7 @@ def matchmaker_report(lobby_id):
 
         flash("Match score reported! Opponents must confirm before ratings update.", "success")
     except Exception as e:
-        flash(f"Error reporting score: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
 
     return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
 
@@ -2448,7 +2482,7 @@ def matchmaker_verify(lobby_id):
             flash("Invalid verification action.", "error")
             
     except Exception as e:
-        flash(f"Error validating match result: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         
     return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
 
@@ -2554,7 +2588,7 @@ def leaderboard():
             r['rank'] = i + 1
 
     except Exception as e:
-        flash(f"Error loading leaderboard: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
 
     return render_template(
         'player/leaderboard.html',
@@ -2604,7 +2638,7 @@ def leaderboard_challenge(target_id):
 
         return redirect(url_for('player.messages') + f"#convo-{convo_id}")
     except Exception as e:
-        flash(f"Error starting challenge: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('player.leaderboard'))
 
 
@@ -2640,7 +2674,7 @@ def player_chat(target_id):
 
         return redirect(url_for('player.messages') + f"#convo-{convo_id}")
     except Exception as e:
-        flash(f"Error starting chat: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('player.dashboard'))
 
 

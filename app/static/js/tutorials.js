@@ -7,7 +7,7 @@
  *  - Search & level filter
  *  - Realtime updates
  */
-document.addEventListener('DOMContentLoaded', () => {
+function initTutorials() {
     if (!supabaseClient) {
         console.error('[Tutorials] Supabase client not initialised.');
         return;
@@ -231,4 +231,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /* ── Init ─────────────────────────────────────────── */
     loadTutorials();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (supabaseClient) initTutorials();
+    else window.addEventListener('supabase-ready', initTutorials);
 });

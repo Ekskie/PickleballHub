@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 from app.decorators import require_role
-from app import supabase_admin, supabase
 from datetime import datetime, timedelta, timezone, date
 
 PH_TZ = timezone(timedelta(hours=8))
@@ -59,7 +58,7 @@ def dashboard():
         ticket_chart = {'labels': labels, 'opened': opened_data, 'closed': closed_data}
 
     except Exception as e:
-        flash(f'Dashboard error: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
 
     return render_template('adminstaff/dashboard.html',
                            stats=stats,
@@ -76,7 +75,7 @@ def support():
         resp = db.table('tickets').select('*, profiles!user_id(first_name, last_name, role)').order('created_at', desc=True).execute()
         tickets = resp.data or []
     except Exception as e:
-        flash(f'Error loading tickets: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
     return render_template('adminstaff/support.html', tickets=tickets)
 
 @adminstaff_bp.route('/support/<ticket_id>/resolve', methods=['POST'])
@@ -89,7 +88,7 @@ def resolve_ticket(ticket_id):
         log_audit_action('resolve_ticket', ticket_id, {'response': response}, raise_on_error=True)
         flash('Ticket resolved successfully.', 'success')
     except Exception as e:
-        flash(f'Error resolving ticket: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
     return redirect(url_for('adminstaff.support'))
 
 @adminstaff_bp.route('/verifications')
@@ -101,7 +100,7 @@ def verifications():
         resp = db.table('facilities').select('*, profiles!owner_id(first_name, last_name), courts(*)').order('created_at', desc=True).execute()
         facilities = resp.data or []
     except Exception as e:
-        flash(f'Error loading verifications: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
     return render_template('adminstaff/verifications.html', facilities=facilities)
 
 @adminstaff_bp.route('/verifications/<facility_id>/status', methods=['POST'])
@@ -117,7 +116,7 @@ def update_kyc_status(facility_id):
         log_audit_action('update_facility_kyc', facility_id, {'status': status}, raise_on_error=True)
         flash(f'Facility KYC status updated to {status}.', 'success')
     except Exception as e:
-        flash(f'Error updating status: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
     return redirect(url_for('adminstaff.verifications'))
 
 # ── Disputes ────────────────────────────────────────────────────────────────────
@@ -133,7 +132,7 @@ def disputes():
         ).order('created_at', desc=True).execute()
         disputes_list = resp.data or []
     except Exception as e:
-        flash(f'Error loading disputes: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
     return render_template('adminstaff/disputes.html', disputes=disputes_list)
 
 @adminstaff_bp.route('/disputes/<dispute_id>/update', methods=['POST'])
@@ -155,7 +154,7 @@ def update_dispute(dispute_id):
         log_audit_action('update_dispute', dispute_id, {'status': new_status, 'resolution': resolution}, raise_on_error=True)
         flash(f'Dispute marked as {new_status}.', 'success')
     except Exception as e:
-        flash(f'Error updating dispute: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
     return redirect(url_for('adminstaff.disputes'))
 
 @adminstaff_bp.route('/profile', methods=['GET', 'POST'])
@@ -196,7 +195,7 @@ def profile():
                 
             flash("Profile updated successfully.", "success")
         except Exception as e:
-            flash(f"Error updating profile: {e}", "error")
+            flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('adminstaff.profile'))
     
     # GET — load stats and render

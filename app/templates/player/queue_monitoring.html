@@ -472,28 +472,36 @@
         initTabs();
 
         // --- 3. Supabase Realtime Subscription ---
+        function initQueueRealtime() {
+            if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+                const queueChannel = supabaseClient.channel('custom-all-channel')
+                    .on(
+                        'postgres_changes',
+                        { event: '*', schema: 'public', table: 'court_queues' },
+                        (payload) => {
+                            console.log('Queue change received!', payload);
+                            fetch("{{ url_for('player.queue_partial') }}")
+                                .then(response => response.text())
+                                .then(html => {
+                                    document.getElementById('queue-container').innerHTML = html;
+                                    updateWaitTimes();
+                                    initTabs();
+                                })
+                                .catch(error => console.error('Error fetching updated queue:', error));
+                        }
+                    )
+                    .subscribe();
+                    
+                window.addEventListener("beforeunload", () => {
+                    supabaseClient.removeChannel(queueChannel);
+                });
+            }
+        }
+        // Init now if client is ready, otherwise wait for the event
         if (typeof supabaseClient !== 'undefined' && supabaseClient) {
-            const queueChannel = supabaseClient.channel('custom-all-channel')
-                .on(
-                    'postgres_changes',
-                    { event: '*', schema: 'public', table: 'court_queues' },
-                    (payload) => {
-                        console.log('Queue change received!', payload);
-                        fetch("{{ url_for('player.queue_partial') }}")
-                            .then(response => response.text())
-                            .then(html => {
-                                document.getElementById('queue-container').innerHTML = html;
-                                updateWaitTimes();
-                                initTabs();
-                            })
-                            .catch(error => console.error('Error fetching updated queue:', error));
-                    }
-                )
-                .subscribe();
-                
-            window.addEventListener("beforeunload", () => {
-                supabaseClient.removeChannel(queueChannel);
-            });
+            initQueueRealtime();
+        } else {
+            window.addEventListener("supabase-ready", initQueueRealtime);
         }
     });
 </script>

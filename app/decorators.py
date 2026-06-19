@@ -3,7 +3,7 @@ Role-based access control decorators for protecting routes.
 """
 
 from functools import wraps
-from flask import session, redirect, url_for, flash, current_app
+from flask import session, redirect, url_for, flash, current_app, g
 from app.db import get_db
 
 def has_role_permission(user_role, allowed_roles):
@@ -68,26 +68,34 @@ def require_role(*allowed_roles):
                 flash('Please login first.', 'error')
                 return redirect(url_for('auth.login'))
 
-            # Get fresh user record from the database to check role and suspension
+            # Get fresh user record from the database to check role and suspension.
+            # Prefer the cached profile from flask.g (set by verify_session_integrity)
+            # to avoid a redundant DB round-trip.
             db = get_db()
             user_role = session.get('role', 'player')
-            try:
-                resp = db.table('profiles').select('role, is_suspended').eq('id', user_id).single().execute()
-                if resp.data:
-                    profile = resp.data
-                    
-                    # 1. Force logout if suspended
-                    if profile.get('is_suspended'):
-                        session.clear()
-                        flash('Your account has been suspended. Please contact support.', 'error')
-                        return redirect(url_for('auth.login'))
-                        
-                    # 2. Sync role dynamically to session
-                    user_role = (profile.get('role') or 'player').strip().lower()
-                    session['role'] = user_role
-            except Exception as e:
-                # Log the issue but fall back to cached session key to fail-safe if DB is temporarily down
-                current_app.logger.error(f"[require_role] Integrity check failed: {e}")
+            cached = getattr(g, 'current_profile', None)
+            if cached:
+                # Reuse the profile already fetched by before_request
+                profile = cached
+                if profile.get('is_suspended'):
+                    session.clear()
+                    flash('Your account has been suspended. Please contact support.', 'error')
+                    return redirect(url_for('auth.login'))
+                user_role = (profile.get('role') or 'player').strip().lower()
+                session['role'] = user_role
+            else:
+                try:
+                    resp = db.table('profiles').select('role, is_suspended').eq('id', user_id).single().execute()
+                    if resp.data:
+                        profile = resp.data
+                        if profile.get('is_suspended'):
+                            session.clear()
+                            flash('Your account has been suspended. Please contact support.', 'error')
+                            return redirect(url_for('auth.login'))
+                        user_role = (profile.get('role') or 'player').strip().lower()
+                        session['role'] = user_role
+                except Exception as e:
+                    current_app.logger.error(f"[require_role] Integrity check failed: {e}")
 
             # Check if role is allowed (direct match or hierarchy match)
             if not has_role_permission(user_role, allowed_roles):
@@ -103,19 +111,22 @@ def require_role(*allowed_roles):
 
 
 def upload_avatar(db, user_id, avatar_file):
-    """Uploads an avatar file to Supabase storage and returns public URL, or None."""
-    if avatar_file and avatar_file.filename:
-        try:
-            import time
-            ext = avatar_file.filename.split('.')[-1]
-            filename = f"avatar_{user_id}_{int(time.time())}.{ext}"
-            db.storage.from_('profile-images').upload(
-                file=avatar_file.read(),
-                path=filename,
-                file_options={"content-type": avatar_file.content_type}
-            )
-            return db.storage.from_('profile-images').get_public_url(filename)
-        except Exception as e:
-            print(f"[upload_avatar] Failed: {e}")
-            raise e
-    return None
+    """Uploads an avatar file to Supabase storage and returns public URL, or None.
+    Uses centralized validation for extension, MIME type, and file size checks.
+    """
+    from app.upload_utils import validate_and_upload, ALLOWED_IMAGE_EXTENSIONS, MAX_IMAGE_SIZE
+    
+    if not avatar_file or not avatar_file.filename:
+        return None
+    
+    url, error = validate_and_upload(
+        db, avatar_file,
+        bucket='profile-images',
+        prefix='avatar',
+        owner_id=user_id,
+        allowed_exts=ALLOWED_IMAGE_EXTENSIONS,
+        max_size=MAX_IMAGE_SIZE
+    )
+    if error:
+        raise ValueError(error)
+    return url

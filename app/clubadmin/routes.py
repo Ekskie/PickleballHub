@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, g
 from app.decorators import require_role
-from app import supabase_admin, supabase
 from datetime import datetime, timedelta, timezone
 
 PH_TZ = timezone(timedelta(hours=8))
@@ -131,17 +130,14 @@ def club_setup():
         logo_file = request.files.get('logo')
         if logo_file and logo_file.filename:
             try:
-                import time
-                ext = logo_file.filename.split('.')[-1]
-                filename = f"club_{admin_id}_{int(time.time())}.{ext}"
-                db.storage.from_('community-images').upload(
-                    file=logo_file.read(),
-                    path=filename,
-                    file_options={"content-type": logo_file.content_type}
-                )
-                update_data['logo_url'] = db.storage.from_('community-images').get_public_url(filename)
+                from app.upload_utils import validate_and_upload
+                logo_url, err = validate_and_upload(db, logo_file, bucket='community-images', prefix='club', owner_id=admin_id)
+                if err:
+                    flash(f"Warning: {err}", "warning")
+                else:
+                    update_data['logo_url'] = logo_url
             except Exception as e:
-                flash(f"Warning: Logo upload failed - {e}", "warning")
+                flash("Warning: Logo upload failed.", "warning")
                 
         try:
             if g.club:
@@ -152,7 +148,7 @@ def club_setup():
                 flash("Club created successfully!", "success")
             return redirect(url_for('clubadmin.dashboard'))
         except Exception as e:
-            flash(f"Error saving club: {e}", "error")
+            flash('An error occurred. Please try again.', 'error')
             
     return render_template('clubadmin/club_setup.html')
 
@@ -360,7 +356,7 @@ def log_casual_match():
             flash("Doubles casual match logged. Ratings updated!", "success")
             
     except Exception as e:
-        flash(f"Error logging casual match: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         
     return redirect(url_for('clubadmin.dashboard'))
 
@@ -393,7 +389,7 @@ def members():
                         if elo is None: prof['elo'] = elo_def
                         if dupr is None: prof['dupr'] = dupr_def
         except Exception as e:
-            flash(f"Error loading members: {e}", "error")
+            flash('An error occurred. Please try again.', 'error')
             
     return render_template('clubadmin/members.html', members=members_list)
 
@@ -519,7 +515,7 @@ def ledger():
                 last = (prof.get('last_name') or ' ')[0]
                 prof['initials'] = (first + last).upper().strip() or '?'
         except Exception as e:
-            flash(f"Error loading ledger: {e}", "error")
+            flash('An error occurred. Please try again.', 'error')
             
     return render_template('clubadmin/ledger.html', transactions=transactions)
 
@@ -551,7 +547,7 @@ def approve_member(membership_id):
         db.table('club_memberships').update(update_data).eq('id', membership_id).eq('club_id', g.club['id']).execute()
         flash("Member approved successfully.", "success")
     except Exception as e:
-        flash(f"Error approving member: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
     return redirect(url_for('clubadmin.members'))
 
 @clubadmin_bp.route('/members/<membership_id>/remove', methods=['POST'])
@@ -565,7 +561,7 @@ def remove_member(membership_id):
         db.table('club_memberships').delete().eq('id', membership_id).eq('club_id', g.club['id']).execute()
         flash("Member removed.", "success")
     except Exception as e:
-        flash(f"Error removing member: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
     return redirect(url_for('clubadmin.members'))
 
 @clubadmin_bp.route('/events')
@@ -585,7 +581,7 @@ def events():
             ev['registered_count'] = reg_resp.count if reg_resp.count is not None else 0
             
     except Exception as e:
-        flash(f'Error loading events: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
         
     return render_template('clubadmin/events.html', events=events_list)
 
@@ -611,7 +607,8 @@ def event_participants(event_id):
             
             # Map auth emails dynamically
             try:
-                auth_users = supabase_admin.auth.admin.list_users()
+                admin_db = get_admin_db()
+                auth_users = admin_db.auth.admin.list_users()
                 email_map = {u.id: u.email for u in auth_users}
                 for p in participants:
                     p_id = p.get('player_id')
@@ -624,7 +621,7 @@ def event_participants(event_id):
             return redirect(url_for('clubadmin.events'))
             
     except Exception as e:
-        flash(f'Error loading participants: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
         
     return render_template('clubadmin/event_participants.html', event=event_details, participants=participants)
 
@@ -654,7 +651,7 @@ def event_check_in(event_id, reg_id):
         
         flash("Participant attendance updated.", "success")
     except Exception as e:
-        flash(f"Error updating attendance: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         
     return redirect(url_for('clubadmin.event_participants', event_id=event_id))
 
@@ -674,7 +671,7 @@ def tournaments():
             reg_resp = db.table('event_registrations').select('id', count='exact').eq('event_id', t['id']).eq('status', 'registered').execute()
             t['registered_count'] = reg_resp.count or 0
     except Exception as e:
-        flash(f"Error loading tournaments: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         
     return render_template('clubadmin/tournaments.html', tournaments=tournaments_list)
 
@@ -729,7 +726,7 @@ def tournament_manage(event_id):
                                booked_courts=booked_courts)
                                
     except Exception as e:
-        flash(f"Error loading tournament manage: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('clubadmin.tournaments'))
 
 @clubadmin_bp.route('/tournaments/<event_id>/bracket/generate', methods=['POST'])
@@ -778,7 +775,7 @@ def bracket_generate(event_id):
         flash("Bracket generated successfully!", "success")
         
     except Exception as e:
-        flash(f"Error generating bracket: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         
     return redirect(url_for('clubadmin.tournament_manage', event_id=event_id))
 
@@ -881,7 +878,7 @@ def match_score(event_id, match_id):
         flash("Score recorded! Bracket and ratings updated.", "success")
 
     except Exception as e:
-        flash(f"Error recording score: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
 
     return redirect(url_for('clubadmin.tournament_manage', event_id=event_id))
 
@@ -916,7 +913,7 @@ def match_assign(event_id, match_id):
         
         flash("Match assignment updated.", "success")
     except Exception as e:
-        flash(f"Error updating assignment: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         
     return redirect(url_for('clubadmin.tournament_manage', event_id=event_id))
 
@@ -989,7 +986,7 @@ def leaderboard():
                 rankings.sort(key=lambda x: (-x['elo'], -x['wins']))
 
     except Exception as e:
-        flash(f"Error loading leaderboard: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
 
     return render_template('clubadmin/leaderboard.html', rankings=rankings)
 
@@ -1031,7 +1028,7 @@ def profile():
                 
             flash("Profile updated successfully.", "success")
         except Exception as e:
-            flash(f"Error updating profile: {e}", "error")
+            flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('clubadmin.profile'))
     return render_template('clubadmin/profile.html')
 
@@ -1089,7 +1086,7 @@ def create_event():
             fac_resp = db.table('facilities').select('id, name, location').eq('status', 'active').execute()
             facilities_list = fac_resp.data or []
         except Exception as e:
-            flash(f'Error loading facilities: {e}', 'error')
+            flash('An error occurred. Please try again.', 'error')
         return render_template('clubadmin/create_event.html', facilities=facilities_list)
         
     # POST
@@ -1172,7 +1169,7 @@ def create_event():
                 return redirect(url_for('clubadmin.events'))
                 
     except Exception as e:
-        flash(f'Error creating event: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
 
     return redirect(url_for('clubadmin.events'))
 
@@ -1208,7 +1205,7 @@ def facility_payment(event_id):
         return redirect(url_for('clubadmin.events'))
         
     except Exception as e:
-        flash(f'Error processing payment: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('clubadmin.events'))
 
 @clubadmin_bp.route('/events/<event_id>/edit', methods=['GET', 'POST'])
@@ -1297,7 +1294,7 @@ def edit_event(event_id):
         return redirect(url_for('clubadmin.event_participants', event_id=event_id))
         
     except Exception as e:
-        flash(f"Error updating event: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('clubadmin.events'))
 
 @clubadmin_bp.route('/events/<event_id>/delete', methods=['POST'])
@@ -1330,7 +1327,7 @@ def delete_event(event_id):
         flash(f'Event "{title}" deleted successfully.', 'success')
         
     except Exception as e:
-        flash(f'Error deleting event: {e}', 'error')
+        flash('An error occurred. Please try again.', 'error')
         
     return redirect(url_for('clubadmin.events'))
 
@@ -1387,7 +1384,7 @@ def change_event_status(event_id):
                     'type': 'warning'
                 }).execute()
     except Exception as e:
-        flash(f"Error updating status: {e}", "error")
+        flash('An error occurred. Please try again.', 'error')
 
     return redirect(url_for('clubadmin.events'))
 

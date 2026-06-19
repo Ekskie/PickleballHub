@@ -9,7 +9,24 @@ _settings_cache_time = 0.0
 SETTINGS_CACHE_TTL = 30.0  # cache settings for 30 seconds
 
 def get_db_client():
-    """Returns a client bypassing RLS if service role key is available."""
+    """Returns a Supabase client for querying platform_settings.
+    Prefers the request-scoped admin client from app.db to avoid
+    creating a new HTTP client on every cache miss.
+    Falls back to creating a standalone client only when called
+    outside of a Flask request context (e.g., during app startup).
+    """
+    # 1. Prefer the request-scoped client (no new connections)
+    try:
+        from flask import has_request_context
+        if has_request_context():
+            from app.db import get_admin_db
+            client = get_admin_db()
+            if client:
+                return client
+    except Exception:
+        pass
+
+    # 2. Fallback: create a standalone client (outside request context)
     url = os.environ.get('SUPABASE_URL')
     key = os.environ.get('SERVICE_ROLE_KEY') or os.environ.get('SUPABASE_KEY')
     if not url or not key:
