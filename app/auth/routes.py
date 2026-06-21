@@ -161,6 +161,7 @@ def signup():
                             'last_name':  last_name,
                             'role':       role,
                             'phone':      phone,
+                            'email':      email,
                         }
                         if role == 'player':
                             from app.ratings import get_initial_rating, ensure_initial_history

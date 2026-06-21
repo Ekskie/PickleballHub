@@ -138,16 +138,24 @@
         <li><div class="step-n">1</div>Open your GCash app and tap <strong>Send Money</strong> or scan the QR.</li>
         <li><div class="step-n">2</div>Enter amount: <strong>₱{{ '%.2f'|format(reservation.total_amount) }}</strong></li>
         <li><div class="step-n">3</div>Copy the 13-digit <strong>reference number</strong> from your GCash receipt.</li>
-        <li><div class="step-n">4</div>Paste it below and click <strong>Confirm Payment</strong>.</li>
+        <li><div class="step-n">4</div>Paste reference and upload receipt screenshot below, then click <strong>Confirm Payment</strong>.</li>
     </ul>
 
     <!-- Reference Number Form -->
     <div class="ref-card">
-        <form method="POST" action="{{ url_for('player.confirm_payment', reservation_id=reservation.id) }}">
-            <label for="gcash_ref"><i class="ph ph-hash"></i> GCash Reference Number</label>
-            <input type="text" name="gcash_ref" id="gcash_ref" class="ref-input"
-                   placeholder="e.g. 1234567890123" maxlength="20" required
-                   pattern="[0-9]{10,20}" title="Enter your GCash reference number (10–20 digits)">
+        <form method="POST" action="{{ url_for('player.confirm_payment', reservation_id=reservation.id) }}" enctype="multipart/form-data">
+            <div style="margin-bottom: 16px;">
+                <label for="gcash_ref"><i class="ph ph-hash"></i> GCash Reference Number</label>
+                <input type="text" name="gcash_ref" id="gcash_ref" class="ref-input"
+                       placeholder="e.g. 1234567890123" maxlength="20" required
+                       pattern="[0-9]{10,20}" title="Enter your GCash reference number (10–20 digits)">
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label for="receipt" style="display: block; margin-bottom: 8px; color: var(--text-primary); font-size: .85rem; font-weight: 700;">GCash Receipt Screenshot</label>
+                <input type="file" id="receipt" name="receipt" accept="image/*" required class="ref-input"
+                       style="padding: 10px; border: 1px dashed var(--border-color); cursor: pointer;">
+                <small style="color: var(--text-muted); display: block; margin-top: 4px; font-size: 0.78rem;">Please upload a clear screenshot of your GCash receipt.</small>
+            </div>
             <button type="submit" class="btn-submit-pay">
                 <i class="ph ph-check-circle"></i> Confirm Payment
             </button>

@@ -1,0 +1,380 @@
+{% extends "facilitystaff/base_facilitystaff.html" %}
+{% block title %}Payment Ledger{% endblock %}
+
+{% block extra_head %}
+<style>
+    .ledger-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
+        margin-bottom: 24px;
+    }
+    
+    .ledger-stat-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: var(--shadow-card);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    
+    .ledger-stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    
+    .ledger-stat-icon.pending {
+        background: rgba(245, 158, 11, 0.12);
+        color: #f59e0b;
+    }
+    
+    .ledger-stat-icon.approved {
+        background: var(--btn-green-light);
+        color: var(--btn-green);
+    }
+    
+    .ledger-stat-icon.declined {
+        background: rgba(239, 68, 68, 0.12);
+        color: #ef4444;
+    }
+    
+    .ledger-stat-info h4 {
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin: 0 0 4px 0;
+    }
+    
+    .ledger-stat-info p {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        margin: 0;
+    }
+    
+    .action-btn-group {
+        display: flex;
+        gap: 6px;
+    }
+    
+    .btn-ledger-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.15s, background-color 0.2s;
+    }
+    
+    .btn-ledger-action:hover {
+        transform: translateY(-1px);
+    }
+    
+    .btn-ledger-action.approve {
+        background: var(--btn-green);
+        color: white;
+    }
+    
+    .btn-ledger-action.approve:hover {
+        background: #228a48;
+    }
+    
+    .btn-ledger-action.decline {
+        background: transparent;
+        color: #ef4444;
+        border: 1px solid #ef4444;
+    }
+    
+    .btn-ledger-action.decline:hover {
+        background: rgba(239, 68, 68, 0.08);
+    }
+    
+    .details-drawer-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(15, 18, 25, 0.45);
+        backdrop-filter: blur(4px);
+        z-index: 999998 !important;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+        display: none;
+        justify-content: center;
+        align-items: center;
+    }
+    html.dark-mode .details-drawer-overlay {
+        background: rgba(0, 0, 0, 0.7);
+    }
+    .details-drawer-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="page-title">Court Booking Ledger</h1>
+    <span style="color:var(--text-secondary);font-size:0.9rem;">{{ transactions|length }} payment transaction(s) logged</span>
+</div>
+
+<!-- Ledger Stats Metrics -->
+{% set pending_count = namespace(value=0) %}
+{% set approved_count = namespace(value=0) %}
+{% set declined_count = namespace(value=0) %}
+
+{% for t in transactions %}
+    {% if t.status == 'pending_payment' %}
+        {% set pending_count.value = pending_count.value + 1 %}
+    {% elif t.status == 'confirmed' %}
+        {% set approved_count.value = approved_count.value + 1 %}
+    {% elif t.status == 'cancelled' %}
+        {% set declined_count.value = declined_count.value + 1 %}
+    {% endif %}
+{% endfor %}
+
+<div class="ledger-stats-grid">
+    <div class="ledger-stat-card">
+        <div class="ledger-stat-icon pending">
+            <i class="ph ph-shield-warning"></i>
+        </div>
+        <div class="ledger-stat-info">
+            <h4>Pending Verification</h4>
+            <p>{{ pending_count.value }}</p>
+        </div>
+    </div>
+    
+    <div class="ledger-stat-card">
+        <div class="ledger-stat-icon approved">
+            <i class="ph ph-check-circle"></i>
+        </div>
+        <div class="ledger-stat-info">
+            <h4>Approved Bookings</h4>
+            <p>{{ approved_count.value }}</p>
+        </div>
+    </div>
+    
+    <div class="ledger-stat-card">
+        <div class="ledger-stat-icon declined">
+            <i class="ph ph-x-circle"></i>
+        </div>
+        <div class="ledger-stat-info">
+            <h4>Declined / Cancelled</h4>
+            <p>{{ declined_count.value }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="glass-card">
+    <div class="widget-header" style="margin-bottom:16px;">
+        <div class="header-search" style="flex:1;max-width:360px;">
+            <i class="ph ph-magnifying-glass"></i>
+            <input type="text" id="ledgerSearch" placeholder="Search player name or reference..." oninput="filterLedger()">
+        </div>
+        <div class="filter-actions" style="display:flex;gap:8px;">
+            <select id="statusFilter" onchange="filterLedger()"
+                style="padding:0.5rem 10px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);cursor:pointer;border-radius:8px;font-size:0.85rem;">
+                <option value="all">All Statuses</option>
+                <option value="pending_verification">Pending Verification</option>
+                <option value="approved">Approved</option>
+                <option value="declined">Declined</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="table-container" style="overflow-x: auto;">
+        <table class="data-grid" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th style="text-align: left; padding: 12px 16px;">BOOKING DATE</th>
+                    <th style="text-align: left; padding: 12px 16px;">PLAYER</th>
+                    <th style="text-align: left; padding: 12px 16px;">COURT</th>
+                    <th style="text-align: left; padding: 12px 16px;">TIME SLOT</th>
+                    <th style="text-align: left; padding: 12px 16px;">AMOUNT</th>
+                    <th style="text-align: left; padding: 12px 16px;">GCASH REFERENCE</th>
+                    <th style="text-align: left; padding: 12px 16px;">STATUS</th>
+                    <th style="text-align: left; padding: 12px 16px;">RECEIPT</th>
+                    <th style="text-align: center; padding: 12px 16px; width: 180px;">ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if transactions %}
+                    {% for t in transactions %}
+                    {% set status_class = "" %}
+                    {% set display_status = "" %}
+                    
+                    {% if t.status == 'pending_payment' %}
+                        {% set status_class = "pending" %}
+                        {% set display_status = "pending_verification" %}
+                    {% elif t.status == 'confirmed' %}
+                        {% set status_class = "success" %}
+                        {% set display_status = "approved" %}
+                    {% elif t.status == 'cancelled' %}
+                        {% set status_class = "expired" %}
+                        {% set display_status = "declined" %}
+                    {% else %}
+                        {% set status_class = "inactive" %}
+                        {% set display_status = t.status %}
+                    {% endif %}
+                    
+                    <tr class="ledger-row"
+                        data-name="{{ (t.profiles.first_name ~ ' ' ~ t.profiles.last_name)|lower }}"
+                        data-ref="{{ t.gcash_ref|lower }}"
+                        data-status="{{ display_status }}">
+                        <td style="color:var(--text-secondary); font-size:0.85rem; padding: 14px 16px;">
+                            {{ t.date }}
+                        </td>
+                        <td class="bold" style="padding: 14px 16px;">
+                            <div style="display:flex;align-items:center;gap:12px;">
+                                <div style="width:32px;height:32px;border-radius:50%;background:var(--btn-navy);color:white;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;flex-shrink:0;overflow:hidden;">
+                                    {% if t.profiles.avatar_url %}
+                                        <img src="{{ t.profiles.avatar_url }}" style="width:100%;height:100%;object-fit:cover;">
+                                    {% else %}
+                                        {{ t.profiles.initials }}
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div style="font-size:0.9rem; color:var(--text-primary);">{{ t.profiles.first_name }} {{ t.profiles.last_name }}</div>
+                                    <small style="color:var(--text-muted); font-size:0.7rem; font-weight:normal;">{{ t.profiles.phone or 'No phone' }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="padding: 14px 16px; color: var(--text-secondary); font-size: 0.85rem;">
+                            <div style="font-weight: 600; color: var(--text-primary);">{{ t.courts.name }}</div>
+                            <div style="font-size: 0.72rem; color: var(--text-muted);">{{ t.facilities.name }} • {{ t.courts.type|capitalize }}</div>
+                        </td>
+                        <td style="padding: 14px 16px; color: var(--text-primary); font-size: 0.85rem; font-weight: 500;">
+                            {{ t.start_time[:5] }} – {{ t.end_time[:5] }}
+                        </td>
+                        <td class="bold" style="color:var(--text-primary); font-size:0.95rem; padding: 14px 16px;">
+                            ₱{{ "%.2f"|format(t.total_amount) }}
+                        </td>
+                        <td style="font-family:monospace; color:var(--text-primary); font-size:0.95rem; letter-spacing:0.5px; padding: 14px 16px;">
+                            {{ t.gcash_ref }}
+                        </td>
+                        <td style="padding: 14px 16px;">
+                            {% if display_status == 'pending_verification' %}
+                                <span class="status-pill pending">Pending Verification</span>
+                            {% elif display_status == 'approved' %}
+                                <span class="status-pill success">Approved</span>
+                            {% elif display_status == 'declined' %}
+                                <span class="status-pill expired">Declined</span>
+                            {% else %}
+                                <span class="status-pill inactive">{{ display_status|title }}</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 14px 16px;">
+                            {% if t.receipt_url %}
+                                <button onclick="showReceipt('{{ t.receipt_url }}', '{{ t.gcash_ref }}')"
+                                        style="background:rgba(0,198,255,0.12); color:#00c6ff; border:1px solid rgba(0,198,255,0.2); border-radius:6px; padding:6px 12px; cursor:pointer; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px; font-weight:600;">
+                                    <i class="ph ph-image"></i> View Receipt
+                                </button>
+                            {% else %}
+                                <span style="color:var(--text-muted); font-size:0.8rem; font-style:italic;">No upload</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 14px 16px; text-align: center;">
+                            {% if display_status == 'pending_verification' %}
+                                <div class="action-btn-group" style="justify-content: center;">
+                                    <form method="POST" action="{{ url_for('facilitystaff.approve_payment', reservation_id=t.id) }}" style="margin: 0;">
+                                        <button type="submit" class="btn-ledger-action approve" title="Confirm Payment">
+                                            <i class="ph ph-check"></i> Approve
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="{{ url_for('facilitystaff.decline_payment', reservation_id=t.id) }}" style="margin: 0;" onsubmit="return confirm('Decline this payment reference? This will cancel the booking.');">
+                                        <button type="submit" class="btn-ledger-action decline" title="Decline Payment">
+                                            <i class="ph ph-x"></i> Decline
+                                        </button>
+                                    </form>
+                                </div>
+                            {% else %}
+                                <span style="color:var(--text-muted); font-size:0.8rem; font-style:italic;">Verified</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="9" style="text-align:center;padding:40px;color:var(--text-muted);">
+                            <i class="ph ph-receipt" style="font-size:2rem;display:block;margin-bottom:8px;opacity:0.4;"></i>
+                            No transaction references submitted yet.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <div id="noResultsMsg" style="display:none;text-align:center;padding:30px;color:var(--text-muted);">
+        <i class="ph ph-magnifying-glass" style="font-size:1.5rem;display:block;margin-bottom:6px;opacity:0.4;"></i>
+        No transactions match your search.
+    </div>
+</div>
+
+<!-- Lightbox Modal for Receipt -->
+<div id="receiptModal" class="details-drawer-overlay">
+    <div style="background:var(--sidebar-bg); border: 1px solid var(--border-color); border-radius:12px; padding:20px; max-width:500px; width:90%; max-height:90vh; box-shadow:var(--shadow-hover); position:relative; display:flex; flex-direction:column; align-items:center; z-index: 999999999 !important;">
+        <button onclick="closeReceiptModal()" style="position:absolute; top:15px; right:15px; background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;"><i class="ph ph-x"></i></button>
+        <h3 style="margin: 0 0 15px 0; color:var(--text-primary); font-size:1.2rem; display:flex; align-items:center; gap:8px;"><i class="ph ph-wallet" style="color:#00c6ff;"></i> GCash Receipt Screenshot</h3>
+        <img id="receiptImage" src="" style="width:100%; max-height:60vh; object-fit:contain; border-radius:8px; border:1px solid var(--border-color); background:#000;">
+        <div id="receiptRef" style="margin-top:15px; font-family:monospace; font-size:1.1rem; color:var(--text-secondary); background:var(--bg-color); padding:8px 16px; border-radius:6px; border:1px solid var(--border-color);">Ref: -</div>
+    </div>
+</div>
+
+<script>
+function filterLedger() {
+    const query = document.getElementById('ledgerSearch').value.toLowerCase();
+    const status = document.getElementById('statusFilter').value;
+    let visible = 0;
+    document.querySelectorAll('.ledger-row').forEach(row => {
+        const matchName   = row.dataset.name.includes(query);
+        const matchRef    = row.dataset.ref.includes(query);
+        const matchStatus = status === 'all' || row.dataset.status === status;
+        const show = (matchName || matchRef) && matchStatus;
+        row.style.display = show ? '' : 'none';
+        if (show) visible++;
+    });
+    document.getElementById('noResultsMsg').style.display = visible === 0 ? 'block' : 'none';
+}
+
+function showReceipt(url, ref) {
+    const modal = document.getElementById('receiptModal');
+    const img = document.getElementById('receiptImage');
+    const refText = document.getElementById('receiptRef');
+    if (!modal || !img || !refText) return;
+    
+    img.src = url;
+    refText.innerText = "Ref: " + (ref || '—');
+    modal.style.display = 'flex';
+    setTimeout(() => {
+        modal.classList.add('active');
+    }, 10);
+}
+
+function closeReceiptModal() {
+    const modal = document.getElementById('receiptModal');
+    if (!modal) return;
+    modal.classList.remove('active');
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 300);
+}
+</script>
+{% endblock %}

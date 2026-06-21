@@ -122,63 +122,55 @@ def update_match_ratings(db, match_id, prev_match=None):
         new_dupr1 = elo_to_dupr(new_elo1)
         new_dupr2 = elo_to_dupr(new_elo2)
         
-        # 7. Update profiles
-        db.table('profiles').update({'elo': new_elo1, 'dupr': new_dupr1}).eq('id', p1_id).execute()
-        db.table('profiles').update({'elo': new_elo2, 'dupr': new_dupr2}).eq('id', p2_id).execute()
+        # 7. Calculate wins and losses changes (including prev_match rollback if needed)
+        p1_wins, p1_losses = (1, 0) if winner_id == p1_id else ((0, 1) if winner_id == p2_id else (0, 0))
+        p2_wins, p2_losses = (0, 1) if winner_id == p1_id else ((1, 0) if winner_id == p2_id else (0, 0))
         
-        # Update wins and losses
-        curr_winner = winner_id
-        curr_loser = p2_id if winner_id == p1_id else (p1_id if winner_id == p2_id else None)
+        p1_wins_change = p1_wins
+        p1_losses_change = p1_losses
+        p2_wins_change = p2_wins
+        p2_losses_change = p2_losses
         
         if prev_match and prev_match.get('stats_applied'):
-            # Revert previous stats
             prev_winner = prev_match.get('winner_id')
             prev_loser = p2_id if prev_winner == p1_id else (p1_id if prev_winner == p2_id else None)
             
-            if prev_winner:
-                adjust_profile_stats(db, prev_winner, -1, 0)
-            if prev_loser:
-                adjust_profile_stats(db, prev_loser, 0, -1)
+            if prev_winner == p1_id:
+                p1_wins_change -= 1
+            elif prev_winner == p2_id:
+                p2_wins_change -= 1
                 
-            # Apply current stats
-            if curr_winner:
-                adjust_profile_stats(db, curr_winner, 1, 0)
-            if curr_loser:
-                adjust_profile_stats(db, curr_loser, 0, 1)
-        else:
-            # First time applying stats
-            if curr_winner:
-                adjust_profile_stats(db, curr_winner, 1, 0)
-            if curr_loser:
-                adjust_profile_stats(db, curr_loser, 0, 1)
-                
-        # Mark stats as applied on the match record
-        try:
-            db.table('tournament_matches').update({'stats_applied': True}).eq('id', match_id).execute()
-        except Exception as e:
-            print(f"[update_match_ratings] Failed to update stats_applied for match {match_id}: {e}")
-        
-        # 8. Record history
+            if prev_loser == p1_id:
+                p1_losses_change -= 1
+            elif prev_loser == p2_id:
+                p2_losses_change -= 1
+
         match_created = match.get('created_at') or datetime.now(timezone.utc).isoformat()
-        ensure_initial_history(db, p1_id, r1_elo, r1_dupr, match_created)
-        ensure_initial_history(db, p2_id, r2_elo, r2_dupr, match_created)
-        
         played_at = match.get('played_at') or datetime.now(timezone.utc).isoformat()
-        
-        db.table('rating_history').insert({
-            'player_id': p1_id,
-            'match_id': match_id,
-            'elo': new_elo1,
-            'dupr': new_dupr1,
-            'recorded_at': played_at
-        }).execute()
-        
-        db.table('rating_history').insert({
-            'player_id': p2_id,
-            'match_id': match_id,
-            'elo': new_elo2,
-            'dupr': new_dupr2,
-            'recorded_at': played_at
+
+        # Get initial ELO values in case history is missing
+        p1_init_elo, p1_init_dupr = get_initial_rating(p1.get('proficiency'))
+        p2_init_elo, p2_init_dupr = get_initial_rating(p2.get('proficiency'))
+
+        # 8. Execute Postgres transaction RPC
+        db.rpc('apply_match_ratings_rpc', {
+            'p_match_id': match_id,
+            'p_p1_id': p1_id,
+            'p_p2_id': p2_id,
+            'p1_elo': new_elo1,
+            'p1_dupr': new_dupr1,
+            'p2_elo': new_elo2,
+            'p2_dupr': new_dupr2,
+            'p1_wins_change': p1_wins_change,
+            'p1_losses_change': p1_losses_change,
+            'p2_wins_change': p2_wins_change,
+            'p2_losses_change': p2_losses_change,
+            'p_played_at': played_at,
+            'p_match_created': match_created,
+            'p1_initial_elo': p1_init_elo,
+            'p1_initial_dupr': p1_init_dupr,
+            'p2_initial_elo': p2_init_elo,
+            'p2_initial_dupr': p2_init_dupr
         }).execute()
         
     except Exception as e:
@@ -251,7 +243,15 @@ def update_matchmaker_ratings(db, lobby_id):
         actual1 = 1.0 if team1_won else 0.0
         actual2 = 1.0 - actual1
         
-        # 6. Apply updates for Team 1
+        # 6. Build ELO update arrays
+        player_ids = []
+        new_elos = []
+        new_duprs = []
+        wins_changes = []
+        losses_changes = []
+        old_elos = []
+        old_duprs = []
+        
         for pid in team1_ids:
             if pid not in profiles:
                 continue
@@ -262,17 +262,19 @@ def update_matchmaker_ratings(db, lobby_id):
             new_elo = round(old_elo + 32 * (actual1 - expected1))
             new_dupr = elo_to_dupr(new_elo)
             
-            db.table('profiles').update({'elo': new_elo, 'dupr': new_dupr}).eq('id', pid).execute()
-            ensure_initial_history(db, pid, old_elo, old_dupr, played_at)
+            player_ids.append(pid)
+            new_elos.append(new_elo)
+            new_duprs.append(new_dupr)
+            old_elos.append(old_elo)
+            old_duprs.append(old_dupr)
             
-            db.table('rating_history').insert({
-                'player_id': pid,
-                'match_id': None,
-                'elo': new_elo,
-                'dupr': new_dupr,
-                'recorded_at': played_at
-            }).execute()
-            
+            if not lobby.get('stats_applied'):
+                wins_changes.append(1 if team1_won else 0)
+                losses_changes.append(0 if team1_won else 1)
+            else:
+                wins_changes.append(0)
+                losses_changes.append(0)
+                
         # 7. Apply updates for Team 2
         for pid in team2_ids:
             if pid not in profiles:
@@ -284,31 +286,31 @@ def update_matchmaker_ratings(db, lobby_id):
             new_elo = round(old_elo + 32 * (actual2 - expected2))
             new_dupr = elo_to_dupr(new_elo)
             
-            db.table('profiles').update({'elo': new_elo, 'dupr': new_dupr}).eq('id', pid).execute()
-            ensure_initial_history(db, pid, old_elo, old_dupr, played_at)
+            player_ids.append(pid)
+            new_elos.append(new_elo)
+            new_duprs.append(new_dupr)
+            old_elos.append(old_elo)
+            old_duprs.append(old_dupr)
             
-            db.table('rating_history').insert({
-                'player_id': pid,
-                'match_id': None,
-                'elo': new_elo,
-                'dupr': new_dupr,
-                'recorded_at': played_at
-            }).execute()
-            
-        # 8. Apply wins and losses in profiles if not already applied
-        if not lobby.get('stats_applied'):
-            winners = team1_ids if team1_won else team2_ids
-            losers = team2_ids if team1_won else team1_ids
-            
-            for pid in winners:
-                adjust_profile_stats(db, pid, 1, 0)
-            for pid in losers:
-                adjust_profile_stats(db, pid, 0, 1)
+            if not lobby.get('stats_applied'):
+                wins_changes.append(0 if team1_won else 1)
+                losses_changes.append(1 if team1_won else 0)
+            else:
+                wins_changes.append(0)
+                losses_changes.append(0)
                 
-            try:
-                db.table('matchmaker_lobbies').update({'stats_applied': True}).eq('id', lobby_id).execute()
-            except Exception as e:
-                print(f"[update_matchmaker_ratings] Failed to mark stats_applied for lobby {lobby_id}: {e}")
+        # 8. Execute Postgres transaction RPC for matchmaking lobby ELO updates
+        db.rpc('apply_matchmaker_ratings_rpc', {
+            'p_lobby_id': lobby_id,
+            'p_player_ids': player_ids,
+            'p_new_elos': new_elos,
+            'p_new_duprs': new_duprs,
+            'p_wins_changes': wins_changes,
+            'p_losses_changes': losses_changes,
+            'p_played_at': played_at,
+            'p_old_elos': old_elos,
+            'p_old_duprs': old_duprs
+        }).execute()
             
     except Exception as e:
         print(f"[update_matchmaker_ratings] Failed to update matchmaker ratings for lobby {lobby_id}: {e}")

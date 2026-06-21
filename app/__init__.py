@@ -38,12 +38,12 @@ def create_app():
    
     from app.main.routes import main_bp
     from app.auth.routes import auth_bp
-    from app.player.routes import player_bp
+    from app.player import player_bp
     from app.superadmin.routes import superadmin_bp
     from app.adminstaff.routes import adminstaff_bp
-    from app.owner.routes import owner_bp
+    from app.owner import owner_bp
     from app.facilitystaff.routes import facilitystaff_bp
-    from app.clubadmin.routes import clubadmin_bp
+    from app.clubadmin import clubadmin_bp
     from app.support.routes import support_bp
 
     app.register_blueprint(main_bp)
