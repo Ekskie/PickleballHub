@@ -35,9 +35,8 @@
     <section class="hero-section">
         <div class="hero-content">
             <div class="pill"><i class="ph ph-sparkle"></i> LAGUNA'S PREMIER NETWORK</div>
-            <h1>Your Ultimate Centralized Pickleball Hub</h1>
-            <p>Discover available courts across Paete, Pakil, Pangil and beyond. Book instantly, join District
-                Tournaments, and connect with players of your skill level.</p>
+            <h1>Instant Pickleball Reservations &amp; Matchmaking</h1>
+            <p>Discover and reserve available courts across Paete, Pakil, Pangil, and beyond. Book instantly, join tournaments, and connect with players matching your exact skill level.</p>
 
             <form class="search-bar" action="{{ url_for('main.courts_listing') }}" method="GET">
                 <i class="ph ph-map-pin"
@@ -50,6 +49,28 @@
                 </div>
                 <button type="submit" class="search-btn">Find Courts</button>
             </form>
+
+            <div class="popular-locations">
+                <span>Popular Locations:</span>
+                <button type="button" class="loc-pill" onclick="searchLocation('Paete')">Paete</button>
+                <button type="button" class="loc-pill" onclick="searchLocation('Pakil')">Pakil</button>
+                <button type="button" class="loc-pill" onclick="searchLocation('Pangil')">Pangil</button>
+            </div>
+
+            <div class="hero-trust-badges">
+                <div class="trust-badge">
+                    <i class="ph ph-shield-check"></i>
+                    <span>Secure GCash Checkout</span>
+                </div>
+                <div class="trust-badge">
+                    <i class="ph ph-circle-wavy-check"></i>
+                    <span>Verified Facilities Only</span>
+                </div>
+                <div class="trust-badge">
+                    <i class="ph ph-clock"></i>
+                    <span>100% Real-Time Booking</span>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -65,51 +86,151 @@
             <div class="feature-card">
                 <div class="feature-icon"><i class="ph ph-calendar-check"></i></div>
                 <h3>Smart Court Booking</h3>
-                <p>View real-time availability across multiple municipalities. Members enjoy exclusive rates. Secure
-                    your spot easily with integrated GCash payments.</p>
+                <p>View real-time availability across multiple municipalities. Members enjoy exclusive rates. Secure your spot easily with integrated GCash payments.</p>
+                <a href="{{ url_for('main.courts_listing') }}" class="feature-link">Reserve a Court <i class="ph ph-arrow-right"></i></a>
             </div>
 
             <!-- Tournament Module -->
             <div class="feature-card">
                 <div class="feature-icon"><i class="ph ph-trophy"></i></div>
                 <h3>Tournament Engine</h3>
-                <p>Club organizers can create and manage open or exclusive tournaments. Register for Singles or Doubles
-                    brackets with automated matchmaking.</p>
+                <p>Club organizers can create and manage open or exclusive tournaments. Register for Singles or Doubles brackets with automated matchmaking.</p>
+                <a href="{{ url_for('main.tournaments') }}" class="feature-link">Browse Tournaments <i class="ph ph-arrow-right"></i></a>
             </div>
 
             <!-- Player Matchmaking Module -->
             <div class="feature-card">
                 <div class="feature-icon"><i class="ph ph-users-three"></i></div>
                 <h3>Skill-Based Matchmaking</h3>
-                <p>No more mismatches. Our system classifies players from Beginner to Pro, ensuring you always play
-                    against the right competitors.</p>
+                <p>No more mismatches. Our system classifies players from Beginner to Pro, ensuring you always play against the right competitors.</p>
+                <a href="{{ url_for('auth.signup') }}" class="feature-link">Join the Network <i class="ph ph-arrow-right"></i></a>
             </div>
 
             <!-- Live Queue Module -->
             <div class="feature-card">
                 <div class="feature-icon"><i class="ph ph-list-numbers"></i></div>
                 <h3>Live Queue System</h3>
-                <p>Arrive at the court and track your place in line digitally. Facility operators can manage walk-ins
-                    and reservations seamlessly.</p>
+                <p>Arrive at the court and track your place in line digitally. Facility operators can manage walk-ins and reservations seamlessly.</p>
+                <a href="{{ url_for('main.courts_listing') }}" class="feature-link">View Live Queues <i class="ph ph-arrow-right"></i></a>
             </div>
 
             <!-- Learning Module -->
             <div class="feature-card">
                 <div class="feature-icon"><i class="ph ph-graduation-cap"></i></div>
-                <h3>Clinics & Tutorials</h3>
-                <p>Access training sessions, upload your gameplay for feedback, and learn techniques from advanced
-                    players in the community.</p>
+                <h3>Clinics &amp; Tutorials</h3>
+                <p>Access training sessions, upload your gameplay for feedback, and learn techniques from advanced players in the community.</p>
+                <a href="{{ url_for('main.clinics') }}" class="feature-link">Explore Clinics <i class="ph ph-arrow-right"></i></a>
             </div>
 
             <!-- Smart Analytics Module -->
             <div class="feature-card">
                 <div class="feature-icon"><i class="ph ph-chart-line-up"></i></div>
                 <h3>Owner Analytics</h3>
-                <p>Facility owners get a bird's-eye view of revenue, peak hours, and court utilization with GPS
-                    integration and transparent commission tracking.</p>
+                <p>Facility owners get a bird's-eye view of revenue, peak hours, and court utilization with GPS integration and transparent commission tracking.</p>
+                <a href="{{ url_for('auth.signup') }}" class="feature-link">List Your Facility <i class="ph ph-arrow-right"></i></a>
             </div>
         </div>
     </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials-section">
+        <div class="section-title">
+            <h2>What Our Community Says</h2>
+            <p>Hear from players and court owners in Laguna.</p>
+        </div>
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <div class="testimonial-rating">
+                    <i class="ph-fill ph-star" style="color: #ffb300;"></i>
+                    <i class="ph-fill ph-star" style="color: #ffb300;"></i>
+                    <i class="ph-fill ph-star" style="color: #ffb300;"></i>
+                    <i class="ph-fill ph-star" style="color: #ffb300;"></i>
+                    <i class="ph-fill ph-star" style="color: #ffb300;"></i>
+                </div>
+                <p class="testimonial-text">"Booking a court in Paete used to take 5 text messages. Now I just make a pickleball reservation here and pay via GCash in under 30 seconds."</p>
+                <div class="testimonial-author">
+                    <div class="author-avatar"><i class="ph ph-user"></i></div>
+                    <div class="author-info">
+                        <h4>Mark T.</h4>
+                        <span>Player (3.5 DUPR Rating)</span>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <div class="testimonial-rating">
+                    <i class="ph-fill ph-star" style="color: #ffb300;"></i>
+                    <i class="ph-fill ph-star" style="color: #ffb300;"></i>
+                    <i class="ph-fill ph-star" style="color: #ffb300;"></i>
+                    <i class="ph-fill ph-star" style="color: #ffb300;"></i>
+                    <i class="ph-fill ph-star" style="color: #ffb300;"></i>
+                </div>
+                <p class="testimonial-text">"We've seen a 40% increase in court utilization since listing our Pakil facility on PickleballHub. The real-time booking has completely eliminated schedule conflicts."</p>
+                <div class="testimonial-author">
+                    <div class="author-avatar"><i class="ph ph-storefront"></i></div>
+                    <div class="author-info">
+                        <h4>Coach Arnold</h4>
+                        <span>Pakil Arena Owner</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section" id="faq">
+        <div class="section-title">
+            <h2>Frequently Asked Questions</h2>
+            <p>Got questions about Pickleball Reservations? We've got answers.</p>
+        </div>
+        <div class="faq-grid">
+            <div class="faq-item">
+                <h3>How do I make a pickleball reservation on PickleballHub?</h3>
+                <p>Simply enter your location in the search bar or click "Find Courts" in the menu. Browse the available times, select your slot, and secure it with integrated GCash payments.</p>
+            </div>
+            <div class="faq-item">
+                <h3>How does player matchmaking work?</h3>
+                <p>When you sign up, you specify your experience level. You can search the community feed for matches or create public court bookings that other players of similar ratings can join.</p>
+            </div>
+            <div class="faq-item">
+                <h3>What is the weather refund policy?</h3>
+                <p>If you make a reservation at an outdoor court and it rains, you can request a booking cancellation. Our system automatically processes refunds or credits to your account.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ JSON-LD Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How do I make a pickleball reservation on PickleballHub?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Simply enter your location in the search bar or click 'Find Courts' in the menu. Browse the available times, select your slot, and secure it with integrated GCash payments."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does player matchmaking work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "When you sign up, you specify your experience level. You can search the community feed for matches or create public court bookings that other players of similar ratings can join."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the weather refund policy?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "If you make a reservation at an outdoor court and it rains, you can request a booking cancellation. Our system automatically processes refunds or credits to your account."
+          }
+        }
+      ]
+    }
+    </script>
 
     <!-- Utilizing existing stats footer -->
     <footer class="stats-footer">
@@ -132,6 +253,15 @@
     </footer>
 
     <script>
+        // Popular Locations quick-search handler
+        function searchLocation(loc) {
+            const input = document.getElementById('courtSearchInput');
+            if (input) {
+                input.value = loc;
+                input.closest('form').submit();
+            }
+        }
+
         // Court Search Autocomplete
         const searchInput = document.getElementById('courtSearchInput');
         const suggestionsContainer = document.getElementById('searchSuggestions');

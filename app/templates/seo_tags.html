@@ -76,3 +76,35 @@
   })();
 </script>
 {% endif %}
+
+<!-- Structured Data (JSON-LD) for SEO -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SportsActivityLocation",
+  "name": "{{ platform_settings.platform_name or 'PickleballHub' }}",
+  "description": "{{ platform_settings.seo_meta_description or 'Reserve pickleball courts, join local tournaments, and find matchmaking partners.' }}",
+  "url": "{{ request.url_root }}",
+  "image": "{{ platform_settings.seo_og_image or url_for('static', filename='images/logo.png', _external=True) }}",
+  "paymentAccepted": "GCash, Cash",
+  "areaServed": [
+    {
+      "@type": "AdministrativeArea",
+      "name": "Laguna"
+    },
+    {
+      "@type": "AdministrativeArea",
+      "name": "Paete"
+    },
+    {
+      "@type": "AdministrativeArea",
+      "name": "Pakil"
+    },
+    {
+      "@type": "AdministrativeArea",
+      "name": "Pangil"
+    }
+  ]
+}
+</script>
+

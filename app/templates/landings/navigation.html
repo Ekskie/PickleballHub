@@ -16,13 +16,31 @@
             style="color: var(--primary-orange); font-weight: 600;" {% endif %}>Community</a>
     </div>
     <div class="nav-auth-btns">
-        {% if request.endpoint == 'auth.login' %}
-        <a href="{{ url_for('auth.signup') }}" class="btn-solid"
-            style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.2);">Sign Up</a>
-        {% elif request.endpoint == 'auth.signup' %}
-        <a href="{{ url_for('auth.login') }}" class="btn-outline">Log In</a>
+        {% if current_user.is_logged_in %}
+            {% if current_user.role_raw == 'player' %}
+                <a href="{{ url_for('player.dashboard') }}" class="btn-solid">Dashboard</a>
+            {% elif current_user.role_raw == 'owner' %}
+                <a href="{{ url_for('owner.dashboard') }}" class="btn-solid">Dashboard</a>
+            {% elif current_user.role_raw == 'superadmin' %}
+                <a href="{{ url_for('superadmin.dashboard') }}" class="btn-solid">Dashboard</a>
+            {% elif current_user.role_raw == 'clubadmin' %}
+                <a href="{{ url_for('clubadmin.dashboard') }}" class="btn-solid">Dashboard</a>
+            {% elif current_user.role_raw == 'facilitystaff' %}
+                <a href="{{ url_for('facilitystaff.dashboard') }}" class="btn-solid">Dashboard</a>
+            {% elif current_user.role_raw == 'adminstaff' %}
+                <a href="{{ url_for('adminstaff.dashboard') }}" class="btn-solid">Dashboard</a>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn-solid">Dashboard</a>
+            {% endif %}
         {% else %}
-        <a href="{{ url_for('auth.login') }}" class="btn-outline">Log In</a>
+            {% if request.endpoint == 'auth.login' %}
+            <a href="{{ url_for('auth.signup') }}" class="btn-solid"
+                style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.2);">Sign Up</a>
+            {% elif request.endpoint == 'auth.signup' %}
+            <a href="{{ url_for('auth.login') }}" class="btn-outline">Log In</a>
+            {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn-outline">Log In</a>
+            {% endif %}
         {% endif %}
     </div>
     <i class="ph ph-list mobile-toggle" onclick="this.parentElement.classList.toggle('nav-open')"></i>

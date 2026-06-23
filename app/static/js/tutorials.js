@@ -26,6 +26,17 @@ function initTutorials() {
     const closeModalBtn= document.getElementById('closeTutorialModal');
     const submitBtn    = document.getElementById('submitTutorialBtn');
 
+    // Admin edit elements
+    const editModal     = document.getElementById('editTutorialModal');
+    const editForm      = document.getElementById('editTutorialForm');
+    const editIdInput   = document.getElementById('editTId');
+    const editTitleInput= document.getElementById('editTTitle');
+    const editDescInput = document.getElementById('editTDesc');
+    const editUrlInput  = document.getElementById('editTUrl');
+    const editLevelInput= document.getElementById('editTLevel');
+    const closeEditModalBtn = document.getElementById('closeEditTutorialModal');
+    const submitEditBtn = document.getElementById('submitEditTutorialBtn');
+
     // Watch modal (player page)
     const watchModal   = document.getElementById('watchModal');
     const watchFrame   = document.getElementById('watchFrame');
@@ -81,7 +92,7 @@ function initTutorials() {
 
         const { data, error } = await supabaseClient
             .from('tutorials')
-            .select('*')
+            .select('*, profiles(first_name, last_name, role)')
             .order('created_at', { ascending: false });
 
         if (error) {
@@ -116,6 +127,9 @@ function initTutorials() {
             const lvlIco = levelIcon(t.level);
             const isAdmin = !!addBtn; // admin pages have the add button
 
+            const uploader = t.profiles;
+            const uploaderName = uploader ? `${esc(uploader.first_name)} ${esc(uploader.last_name)}` : 'System';
+
             const card = document.createElement('div');
             card.className = 'tutorial-card';
             card.innerHTML = `
@@ -128,11 +142,19 @@ function initTutorials() {
                 <div class="tutorial-info">
                     <h4>${esc(t.title)}</h4>
                     <p>${esc(t.description || '')}</p>
+                    <div class="tutorial-uploader" style="font-size: 0.73rem; color: var(--text-muted); margin-top: auto; display: flex; align-items: center; gap: 4px; padding-top: 8px;">
+                        <i class="ph ph-user"></i> Uploaded by: ${uploaderName}
+                    </div>
                     <div class="tutorial-footer">
                         <a href="${esc(t.youtube_url)}" target="_blank" rel="noopener" class="tutorial-yt-link">
                             <i class="ph ph-youtube-logo"></i> Watch on YouTube
                         </a>
-                        ${isAdmin ? `<button class="tutorial-delete-btn" data-id="${esc(t.id)}" title="Remove tutorial"><i class="ph ph-trash"></i></button>` : ''}
+                        ${isAdmin ? `
+                        <div style="display:flex; gap:6px;">
+                            <button class="tutorial-edit-btn" data-id="${esc(t.id)}" title="Edit tutorial"><i class="ph ph-note-pencil"></i></button>
+                            <button class="tutorial-delete-btn" data-id="${esc(t.id)}" title="Remove tutorial"><i class="ph ph-trash"></i></button>
+                        </div>
+                        ` : ''}
                     </div>
                 </div>`;
             grid.appendChild(card);
@@ -141,6 +163,11 @@ function initTutorials() {
         // Attach play handlers
         grid.querySelectorAll('.tutorial-play-btn').forEach(btn => {
             btn.addEventListener('click', () => openWatch(btn.dataset.url, btn.dataset.title));
+        });
+
+        // Attach edit handlers (admin only)
+        grid.querySelectorAll('.tutorial-edit-btn').forEach(btn => {
+            btn.addEventListener('click', () => editTutorial(btn.dataset.id));
         });
 
         // Attach delete handlers (admin only)
@@ -185,10 +212,10 @@ function initTutorials() {
         submitBtn && (submitBtn.disabled = true);
         submitBtn && (submitBtn.textContent = 'Adding…');
 
-        const { error } = await supabaseClient.from('tutorials').insert({
+        const { data, error } = await supabaseClient.from('tutorials').insert({
             title, description: desc, youtube_url: url, level,
             uploaded_by: currentUserId || null
-        });
+        }).select();
 
         submitBtn && (submitBtn.disabled = false);
         submitBtn && (submitBtn.textContent = 'Add Tutorial');
@@ -198,16 +225,104 @@ function initTutorials() {
             return;
         }
 
+        // Audit Log insertion
+        if (data && data.length > 0) {
+            await supabaseClient.from('audit_logs').insert({
+                actor_id: currentUserId || null,
+                action: 'CREATE_TUTORIAL',
+                target_resource: 'tutorials',
+                details: { id: data[0].id, title, level, youtube_url: url }
+            });
+        }
+
         addForm.reset();
         addModal?.classList.remove('open');
         loadTutorials();
     });
+
+    /* ── Edit tutorial (admin) ────────────────────────── */
+    async function editTutorial(id) {
+        if (!editModal) return;
+        
+        const { data, error } = await supabaseClient
+            .from('tutorials')
+            .select('*')
+            .eq('id', id)
+            .single();
+            
+        if (error) {
+            alert('Could not fetch tutorial details: ' + error.message);
+            return;
+        }
+        
+        if (data) {
+            editIdInput.value = data.id;
+            editTitleInput.value = data.title;
+            editDescInput.value = data.description || '';
+            editUrlInput.value = data.youtube_url;
+            editLevelInput.value = data.level;
+            
+            editModal.classList.add('open');
+        }
+    }
+
+    editForm?.addEventListener('submit', async e => {
+        e.preventDefault();
+        const id    = editIdInput.value;
+        const title = editTitleInput.value.trim();
+        const desc  = editDescInput.value.trim();
+        const url   = editUrlInput.value.trim();
+        const level = editLevelInput.value;
+
+        if (!id || !title || !url) return;
+
+        submitEditBtn && (submitEditBtn.disabled = true);
+        submitEditBtn && (submitEditBtn.innerHTML = '<i class="ph ph-spinner"></i> Saving…');
+
+        const { data, error } = await supabaseClient.from('tutorials').update({
+            title, description: desc, youtube_url: url, level
+        }).eq('id', id).select();
+
+        submitEditBtn && (submitEditBtn.disabled = false);
+        submitEditBtn && (submitEditBtn.innerHTML = '<i class="ph ph-check"></i> Save Changes');
+
+        if (error) {
+            alert('Error updating tutorial: ' + error.message);
+            return;
+        }
+
+        // Insert Audit Log on Update
+        if (data && data.length > 0) {
+            await supabaseClient.from('audit_logs').insert({
+                actor_id: currentUserId || null,
+                action: 'UPDATE_TUTORIAL',
+                target_resource: 'tutorials',
+                details: { id, title, level, youtube_url: url }
+            });
+        }
+
+        editForm.reset();
+        editModal?.classList.remove('open');
+        loadTutorials();
+    });
+
+    closeEditModalBtn?.addEventListener('click', () => editModal?.classList.remove('open'));
+    editModal?.addEventListener('click', e => { if (e.target === editModal) editModal.classList.remove('open'); });
 
     /* ── Delete tutorial (admin) ──────────────────────── */
     async function deleteTutorial(id) {
         if (!confirm('Remove this tutorial?')) return;
         const { error } = await supabaseClient.from('tutorials').delete().eq('id', id);
         if (error) { alert('Could not delete tutorial: ' + error.message); return; }
+        
+        // Insert Audit Log on Delete
+        await supabaseClient.from('audit_logs').insert({
+            actor_id: currentUserId || null,
+            action: 'DELETE_TUTORIAL',
+            target_resource: 'tutorials',
+            details: { id }
+        });
+
         loadTutorials();
     }
 

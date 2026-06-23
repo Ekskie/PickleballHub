@@ -205,3 +205,209 @@
         border-radius: 12px;
     }
 }
+
+/* Popular Locations */
+.popular-locations {
+    margin-top: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.loc-pill {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    padding: 6px 16px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-family: inherit;
+    transition: all 0.3s ease;
+}
+
+.loc-pill:hover {
+    background: rgba(255, 87, 34, 0.1);
+    border-color: var(--primary-orange);
+    color: var(--primary-orange);
+    transform: translateY(-1px);
+}
+
+/* Hero Trust Badges */
+.hero-trust-badges {
+    margin-top: 48px;
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+}
+
+.trust-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.trust-badge i {
+    color: var(--primary-orange);
+    font-size: 1.25rem;
+}
+
+/* Feature Card Links */
+.feature-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--primary-orange);
+    text-decoration: none;
+    font-weight: 600;
+    margin-top: 20px;
+    font-size: 0.95rem;
+    transition: gap 0.2s ease;
+}
+
+.feature-link:hover {
+    gap: 10px;
+}
+
+/* Testimonials Section */
+.testimonials-section {
+    padding: 100px 48px;
+    background: linear-gradient(180deg, var(--bg-color) 0%, rgba(22, 25, 33, 0.2) 100%);
+    position: relative;
+    z-index: 2;
+}
+
+.testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.testimonial-card {
+    background: rgba(22, 25, 33, 0.4);
+    border: 1px solid var(--card-border);
+    padding: 40px 32px;
+    border-radius: 24px;
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.testimonial-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(255, 87, 34, 0.2);
+}
+
+.testimonial-rating {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 4px;
+}
+
+.testimonial-rating i {
+    font-size: 1.1rem;
+}
+
+.testimonial-text {
+    font-size: 1.05rem;
+    color: var(--text-primary);
+    line-height: 1.6;
+    font-style: italic;
+    margin-bottom: 24px;
+}
+
+.testimonial-author {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.author-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(255, 87, 34, 0.1);
+    color: var(--primary-orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    border: 1px solid rgba(255, 87, 34, 0.2);
+}
+
+.author-info h4 {
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.author-info span {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+/* FAQ Section */
+.faq-section {
+    padding: 100px 48px;
+    background: var(--bg-color);
+    position: relative;
+    z-index: 2;
+    border-top: 1px solid var(--card-border);
+}
+
+.faq-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.faq-item {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    padding: 32px;
+    border-radius: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.faq-item:hover {
+    border-color: rgba(255, 87, 34, 0.15);
+}
+
+.faq-item h3 {
+    font-size: 1.2rem;
+    color: white;
+    margin-bottom: 16px;
+    font-weight: 600;
+}
+
+.faq-item p {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+    .testimonials-section, .faq-section {
+        padding: 60px 24px;
+    }
+    
+    .hero-trust-badges {
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        margin-top: 32px;
+    }
+}

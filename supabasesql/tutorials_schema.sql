@@ -32,6 +32,14 @@ CREATE POLICY "Admins can delete tutorials" ON public.tutorials
         IN ('superadmin', 'adminstaff')
     );
 
+-- Only the uploader or superadmin/adminstaff/clubadmin can update
+CREATE POLICY "Admins can update tutorials" ON public.tutorials
+    FOR UPDATE USING (
+        uploaded_by = auth.uid() OR
+        (SELECT role FROM public.profiles WHERE id = auth.uid())
+        IN ('superadmin', 'adminstaff', 'clubadmin')
+    );
+
 -- Realtime for live updates (optional)
 ALTER PUBLICATION supabase_realtime ADD TABLE public.tutorials;
 

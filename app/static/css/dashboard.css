@@ -2649,6 +2649,22 @@ html.dark-mode .contact-item.unread {
     background: rgba(239, 68, 68, 0.1);
 }
 
+.tutorial-edit-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    transition: color 0.2s, background 0.2s;
+}
+
+.tutorial-edit-btn:hover {
+    color: var(--primary-orange);
+    background: rgba(255, 87, 34, 0.1);
+}
+
 /* ── Empty / Loading states ─────────────────────── */
 .tutorials-empty,
 .tutorials-loading {
