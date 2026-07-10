@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ article.title }} | Pickleball Hub Daily</title>
+    {% include 'seo_tags.html' %}
+    <!-- Google Fonts: Lora for Serif Titles and Outfit for UI Elements -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Base CSS (Reusing style variables) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Landing Page CSS (Contains article page layouts) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing/landing.css') }}">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+</head>
+
+<body>
+
+    <!-- Animated overlay background from style.css -->
+    <div class="background-wrap">
+        <div class="overlay"></div>
+    </div>
+
+    <!-- Navigation & Masthead -->
+    {% include 'landings/navigation.html' %}
+
+    <!-- Full-Width Article Container -->
+    <main class="article-page-container">
+        <!-- Article Header Block -->
+        <header class="article-header">
+            <div class="article-category-badge">{{ article.category }}</div>
+            <h1 class="article-main-title font-serif">{{ article.title }}</h1>
+            
+            <div class="article-author-byline">
+                <div class="author-avatar-circle">
+                    <i class="ph ph-newspaper-clipping"></i>
+                </div>
+                <div class="author-meta-info">
+                    <span class="author-by">By <strong>{{ article.author }}</strong></span>
+                    <span class="publish-time-details">Published on {{ article.date }} · {{ article.read_time }}</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Article Banner Image (Uses full page width) -->
+        <div class="article-banner-wrapper">
+            <img src="{{ url_for('static', filename='images/' + article.image_filename) }}" alt="{{ article.title }}">
+        </div>
+
+        <!-- Article Main Content Layout -->
+        <div class="article-body-grid">
+            <!-- 2-column or single column reading path (maximized for line-length legibility) -->
+            <article class="article-core-body font-serif">
+                {{ article.content | safe }}
+            </article>
+
+            <!-- Sidebar Column: circulation ads and related links -->
+            <aside class="article-sidebar-ads">
+                <div class="circulation-ad-box">
+                    <span class="ad-tag">Advertisement</span>
+                    <h3 class="font-serif">Subscribe for Unlimited Court Reports</h3>
+                    <p>Get instant updates, match schedules, and early access league signups across Paete, Pakil, and Pangil.</p>
+                    <a href="/#subscription-pricing" class="ad-sub-btn">Subscribe Free</a>
+                </div>
+                
+                <div class="related-stories-box">
+                    <h4 class="font-serif">Featured Bulletins</h4>
+                    <ul class="related-list">
+                        <li>
+                            <span class="related-time">Reserve</span>
+                            <a href="/article/1">Court Directory Spike</a>
+                        </li>
+                        <li>
+                            <span class="related-time">Cup</span>
+                            <a href="/article/2">Automated Bracket Engines</a>
+                        </li>
+                        <li>
+                            <span class="related-time">Academy</span>
+                            <a href="/article/3">Spin Mechanics Masterclass</a>
+                        </li>
+                    </ul>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <!-- Stats Footer -->
+    <footer class="stats-footer">
+        <div class="stat-item" style="text-align: center;">
+            <h3>500+</h3>
+            <p>Active Players</p>
+        </div>
+        <div class="stat-item" style="text-align: center;">
+            <h3>12</h3>
+            <p>Connected Towns</p>
+        </div>
+        <div class="stat-item" style="text-align: center;">
+            <h3>10k+</h3>
+            <p>Matches Played</p>
+        </div>
+        <div class="stat-item" style="text-align: center;">
+            <h3>100%</h3>
+            <p>Automated Booking</p>
+        </div>
+    </footer>
+
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+</body>
+
+</html>

@@ -13,6 +13,7 @@
     <!-- Base CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <!-- Landing CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing/landing.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/landing/clinics.css') }}">
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -178,25 +179,8 @@
         </section>
 
         <!-- Utilizing existing stats footer -->
-        <footer class="stats-footer">
-            <div class="stat-item">
-                <h3>500+</h3>
-                <p>Active Players</p>
-            </div>
-            <div class="stat-item">
-                <h3>12</h3>
-                <p>Connected Towns</p>
-            </div>
-            <div class="stat-item">
-                <h3>10k+</h3>
-                <p>Matches Played</p>
-            </div>
-            <div class="stat-item">
-                <h3>100%</h3>
-                <p>Automated Booking</p>
-            </div>
-        </footer>
     </div>
+    {% include 'landings/footer.html' %}
 </body>
 
 </html>

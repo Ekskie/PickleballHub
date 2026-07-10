@@ -1,0 +1,120 @@
+<!-- Unified Stats Footer -->
+<footer class="stats-footer">
+    <div class="stat-item" style="text-align: center;">
+        <h3>500+</h3>
+        <p>Active Players</p>
+    </div>
+    <div class="stat-item" style="text-align: center;">
+        <h3>12</h3>
+        <p>Connected Towns</p>
+    </div>
+    <div class="stat-item" style="text-align: center;">
+        <h3>10k+</h3>
+        <p>Matches Played</p>
+    </div>
+    <div class="stat-item" style="text-align: center;">
+        <h3>100%</h3>
+        <p>Automated Booking</p>
+    </div>
+</footer>
+
+<!-- Final Conversion CTA -->
+<section class="final-cta-section">
+    <div class="final-cta-inner">
+        <span class="final-cta-kicker">Special Correspondent · Open Invitation</span>
+        <h2 class="final-cta-headline">Ready to take the court?</h2>
+        <p class="final-cta-text">Join <strong>500+ players</strong> across <strong>12 towns</strong> in Laguna today. Book courts, enter tournaments, and track your DUPR rating—all in one platform.</p>
+        <a href="{{ url_for('auth.signup') }}" class="final-cta-btn">Sign Up for Free <i class="ph ph-arrow-right"></i></a>
+    </div>
+</section>
+
+<!-- Main Brand Footer -->
+<footer class="main-footer">
+    <div class="footer-top">
+        <!-- Left Column: Branding and Socials -->
+        <div class="footer-brand-col">
+            <a href="/" class="footer-logo">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="{{ platform_settings.platform_name or 'PickleballHub' }} Logo" class="footer-logo-img">
+                <span>{{ platform_settings.platform_name or 'PickleballHub' }}</span>
+            </a>
+            <p class="footer-brand-desc">The ultimate pickleball community platform. Connect, compete, and elevate your game.</p>
+            <div class="footer-socials">
+                <a href="#" aria-label="Facebook"><i class="ph ph-facebook-logo"></i></a>
+                <a href="#" aria-label="Instagram"><i class="ph ph-instagram-logo"></i></a>
+                <a href="#" aria-label="Twitter"><i class="ph ph-twitter-logo"></i></a>
+                <a href="#" aria-label="YouTube"><i class="ph ph-youtube-logo"></i></a>
+            </div>
+        </div>
+        
+        <!-- Link Columns -->
+        <div class="footer-links-col">
+            <h4>Community</h4>
+            <ul>
+                <li><a href="/#courts-listing">Find Players</a></li>
+                <li><a href="/#courts-listing">Clubs</a></li>
+                <li><a href="/#tournaments-listing">Events</a></li>
+                <li><a href="/#faq">Forum</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer-links-col">
+            <h4>Play</h4>
+            <ul>
+                <li><a href="{{ url_for('main.courts_listing') }}">Book Courts</a></li>
+                <li><a href="{{ url_for('main.tournaments') }}">Tournaments</a></li>
+                <li><a href="{{ url_for('main.tournaments') }}">Leagues</a></li>
+                <li><a href="{{ url_for('main.tournaments') }}">Rankings</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer-links-col">
+            <h4>Academy</h4>
+            <ul>
+                <li><a href="{{ url_for('main.clinics') }}">Tips & Guides</a></li>
+                <li><a href="{{ url_for('main.clinics') }}">Video Tutorials</a></li>
+                <li><a href="{{ url_for('main.clinics') }}">Coaching</a></li>
+                <li><a href="{{ url_for('main.clinics') }}">Training Plans</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer-links-col">
+            <h4>Company</h4>
+            <ul>
+                <li><a href="{{ url_for('main.about_us') }}">About Us</a></li>
+                <li><a href="{{ url_for('auth.signup') }}">Careers</a></li>
+                <li><a href="{{ url_for('auth.signup') }}">Press</a></li>
+                <li><a href="mailto:support@pickleballhub.com">Contact</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer-links-col">
+            <h4>Support</h4>
+            <ul>
+                <li><a href="/#faq">Help Center</a></li>
+                <li><a href="/#faq">Safety</a></li>
+                <li><a href="{{ url_for('main.terms_of_service') }}">Terms of Service</a></li>
+                <li><a href="{{ url_for('main.privacy_policy') }}">Privacy Policy</a></li>
+            </ul>
+        </div>
+        
+        <!-- Right Column: Stay Updated -->
+        <div class="footer-subscribe-col">
+            <h4>Stay Updated</h4>
+            <p>Get the latest news and updates from PickleballHub.</p>
+            <form class="footer-subscribe-form" action="#" method="POST" onsubmit="event.preventDefault(); alert('Thank you for subscribing!');">
+                <input type="email" placeholder="Enter your email" required aria-label="Email Address">
+                <button type="submit">Subscribe</button>
+            </form>
+        </div>
+    </div>
+    
+    <hr class="footer-divider">
+    
+    <div class="footer-bottom">
+        <p class="copyright">© 2026 PickleballHub. All rights reserved.</p>
+        <p class="made-by">Made with <span class="heart">❤️</span> for the pickleball community</p>
+    </div>
+</footer>
+
+<!-- Floating Scroll to Top button setup -->
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>

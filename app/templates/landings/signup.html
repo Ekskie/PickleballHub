@@ -12,6 +12,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing/landing.css') }}">
+    <!-- GSAP for page animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
@@ -23,193 +26,352 @@
         <div class="overlay"></div>
     </div>
 
+    {% set hide_editorial_nav = true %}
     {% include 'landings/navigation.html' %}
 
 
-    <main class="auth-container">
-        <!-- Left Side content (Hero info) -->
-        <div class="hero-info">
-            <div class="pill">JOIN THE COMMUNITY</div>
-            <h1>Create Your Account</h1>
-            <p>Connect with players of your skill level, book premium courts, and participate in District Tournaments
-                across Laguna.</p>
+    <section class="premium-hero-container" style="flex: 1; display: flex; align-items: center;">
+        <div class="hero-grid">
+            <!-- Column 1: Marketing -->
+            <div class="hero-marketing-col">
+                <span class="hero-tag">PREMIUM PICKLEBALL EXPERIENCE</span>
+                <h1 class="hero-heading">Where Players<br>Meet Excellence</h1>
+                <p class="hero-text">Join the fastest growing community of elite pickleball players. Book courts, find
+                    matches, and track your progress in real-time.</p>
+                <div class="hero-ctas">
+                    <a href="{{ url_for('auth.signup') }}" class="btn-solid hero-btn-join">Join Today <i
+                            class="ph ph-arrow-right"></i></a>
+                    <a href="#demo" class="btn-outline hero-btn-demo"><i class="ph ph-play-circle"></i> Watch Demo</a>
+                </div>
+            </div>
+
+            <!-- Column 2: Live Dashboard Stats Widget -->
+            <div class="hero-stats-col">
+                <div class="stats-dashboard-card">
+                    <div class="widget-title-sec">
+                        <i class="ph ph-activity"></i>
+                        <span>Live Dashboard</span>
+                    </div>
+                    <div class="widget-row">
+                        <span class="widget-label">DUPR Rating</span>
+                        <span class="widget-value">1,532 <span class="rating-pill"><i class="ph ph-trend-up"></i>
+                                +24</span></span>
+                    </div>
+                    <div class="widget-row">
+                        <span class="widget-label">Win Streak</span>
+                        <span class="widget-value"><span class="win-streak-badge">7 <i
+                                    class="ph ph-fire-simple"></i></span></span>
+                    </div>
+                    <div class="widget-row">
+                        <span class="widget-label">Upcoming Match</span>
+                        <span class="widget-value" style="font-size: 0.95rem; font-weight: 600;">7:30 PM vs. Laguna
+                            Smashers</span>
+                    </div>
+                    <div>
+                        <div class="widget-row" style="margin-bottom: 4px;">
+                            <span class="widget-label">Court Occupancy</span>
+                            <span class="widget-value" style="font-size: 0.9rem; font-weight: 600;">85%</span>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column 3: Active Sign Up Card -->
+            <div class="hero-auth-col">
+                <div class="hero-auth-card">
+                    <h2 class="auth-card-title">Create Account</h2>
+                    <p class="auth-card-subtitle">Set up your profile to join the community.</p>
+
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                    <div class="alerts" style="margin-bottom: 20px;">
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}"
+                            style="padding: 12px; border-radius: 8px; font-size: 0.88rem; margin-bottom: 8px;">{{
+                            message }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+
+                    <div class="stepper-container" id="signup-stepper" style="margin-bottom: 24px;">
+                        <div class="step-indicator active" id="step-ind-1">1</div>
+                        <div class="step-indicator" id="step-ind-2">2</div>
+                        <div class="step-indicator" id="step-ind-3">3</div>
+                    </div>
+
+                    <!-- Signup Form wrapper -->
+                    <div id="forms-wrapper" style="position: relative; overflow: visible;">
+                        <form id="form-signup" class="auth-form active" action="{{ url_for('auth.signup') }}"
+                            method="POST" style="display: flex; flex-direction: column; gap: 16px;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+
+                            <!-- STEP 1: ROLE -->
+                            <div class="signup-step active" id="signup-step-1"
+                                style="flex-direction: column; gap: 16px;">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label style="margin-bottom: 6px; display: block;">I AM A...</label>
+                                </div>
+                                <div class="role-selection-group"
+                                    style="display: flex; flex-direction: column; gap: 12px;">
+                                    <div class="role-choice-card active" id="role-card-player"
+                                        onclick="selectRoleGrid('player')"
+                                        style="background: rgba(15, 17, 21, 0.45); border: 1px solid rgba(255,255,255,0.12); padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: var(--transition);">
+                                        <i class="ph ph-game-controller"
+                                            style="font-size: 1.5rem; color: var(--primary-orange);"></i>
+                                        <div class="role-info" style="display: flex; flex-direction: column;">
+                                            <span
+                                                style="font-weight: 600; color: #ffffff; font-size: 0.9rem;">Player</span>
+                                            <small style="font-size: 0.75rem; color: #94a3b8; line-height: 1.2;">Reserve
+                                                courts, join events, connect with community</small>
+                                        </div>
+                                    </div>
+                                    <div class="role-choice-card" id="role-card-clubadmin"
+                                        onclick="selectRoleGrid('clubadmin')"
+                                        style="background: rgba(15, 17, 21, 0.45); border: 1px solid rgba(255,255,255,0.12); padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: var(--transition);">
+                                        <i class="ph ph-shield"
+                                            style="font-size: 1.5rem; color: var(--primary-orange);"></i>
+                                        <div class="role-info" style="display: flex; flex-direction: column;">
+                                            <span style="font-weight: 600; color: #ffffff; font-size: 0.9rem;">Club
+                                                Administrator</span>
+                                            <small style="font-size: 0.75rem; color: #94a3b8; line-height: 1.2;">Manage
+                                                courts, users, queue, analytics & settings</small>
+                                        </div>
+                                    </div>
+                                    <div class="role-choice-card" id="role-card-owner" onclick="selectRoleGrid('owner')"
+                                        style="background: rgba(15, 17, 21, 0.45); border: 1px solid rgba(255,255,255,0.12); padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: var(--transition);">
+                                        <i class="ph ph-buildings"
+                                            style="font-size: 1.5rem; color: var(--primary-orange);"></i>
+                                        <div class="role-info" style="display: flex; flex-direction: column;">
+                                            <span style="font-weight: 600; color: #ffffff; font-size: 0.9rem;">Facility
+                                                Owner</span>
+                                            <small style="font-size: 0.75rem; color: #94a3b8; line-height: 1.2;">Manage
+                                                facility, revenue, events & analytics</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="role" id="selected-role" value="player">
+
+                                <div class="button-group" style="margin-top: 8px;">
+                                    <button type="button" class="submit-btn primary-orange" onclick="nextSignupStep(1)"
+                                        style="width: 100%; padding: 12px; font-size: 0.95rem; border-radius: 8px;">Next
+                                        Step <i class="ph ph-arrow-right"></i></button>
+                                </div>
+                            </div>
+
+                            <!-- STEP 2: PERSONAL -->
+                            <div class="signup-step" id="signup-step-2" style="flex-direction: column; gap: 16px;">
+                                <div class="form-row" style="display: flex; gap: 16px;">
+                                    <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                                        <label style="margin-bottom: 6px; display: block;">First Name</label>
+                                        <div class="input-wrapper">
+                                            <i class="ph ph-user"></i>
+                                            <input type="text" name="first_name" placeholder="John" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                                        <label style="margin-bottom: 6px; display: block;">Last Name</label>
+                                        <div class="input-wrapper">
+                                            <i class="ph ph-user"></i>
+                                            <input type="text" name="last_name" placeholder="Doe" required>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group" id="proficiency-group" style="margin-bottom: 0;">
+                                    <label style="margin-bottom: 6px; display: block;">Proficiency</label>
+                                    <div class="input-wrapper">
+                                        <i class="ph ph-trophy"></i>
+                                        <select name="proficiency" id="proficiency-input" class="select-input" required
+                                            style="background: rgba(15, 17, 21, 0.45); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; width: 100%; padding: 14px 16px 14px 48px; border-radius: 8px; outline: none; appearance: none; -webkit-appearance: none;">
+                                            <option value="beginner" selected style="background: #1e2530; color: #fff;">
+                                                Beginner</option>
+                                            <option value="intermediate" style="background: #1e2530; color: #fff;">
+                                                Intermediate</option>
+                                            <option value="advanced" style="background: #1e2530; color: #fff;">Advanced
+                                            </option>
+                                            <option value="pro" style="background: #1e2530; color: #fff;">Pro</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label style="margin-bottom: 6px; display: block;">Cellphone Number</label>
+                                    <div class="input-wrapper">
+                                        <i class="ph ph-phone"></i>
+                                        <input type="tel" name="phone" placeholder="e.g. 123-456-7890" required>
+                                    </div>
+                                </div>
+
+                                <div class="button-group" style="display: flex; gap: 12px; margin-top: 8px;">
+                                    <button type="button" class="btn-secondary" onclick="prevSignupStep(2)"
+                                        style="flex: 1; padding: 12px; font-size: 0.95rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;"><i
+                                            class="ph ph-arrow-left"></i> Back</button>
+                                    <button type="button" class="submit-btn primary-orange" onclick="nextSignupStep(2)"
+                                        style="flex: 2; padding: 12px; font-size: 0.95rem; border-radius: 8px;">Next
+                                        Step <i class="ph ph-arrow-right"></i></button>
+                                </div>
+                            </div>
+
+                            <!-- STEP 3: CREDENTIALS -->
+                            <div class="signup-step" id="signup-step-3" style="flex-direction: column; gap: 16px;">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label style="margin-bottom: 6px; display: block;">Email Address</label>
+                                    <div class="input-wrapper">
+                                        <i class="ph ph-envelope"></i>
+                                        <input type="email" name="email" placeholder="john@example.com" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label style="margin-bottom: 6px; display: block;">Password</label>
+                                    <div class="input-wrapper">
+                                        <i class="ph ph-lock-key"></i>
+                                        <input type="password" name="password" id="signup-password"
+                                            placeholder="Create a strong password" required>
+                                        <i class="ph ph-eye hover-icon" onclick="togglePassword('signup-password')"></i>
+                                    </div>
+                                </div>
+
+                                <div class="button-group" style="display: flex; gap: 12px; margin-top: 8px;">
+                                    <button type="button" class="btn-secondary" onclick="prevSignupStep(3)"
+                                        style="flex: 1; padding: 12px; font-size: 0.95rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;"><i
+                                            class="ph ph-arrow-left"></i> Back</button>
+                                    <button type="submit" class="submit-btn primary-orange"
+                                        onclick="return validateFinalStep()"
+                                        style="flex: 2; padding: 12px; font-size: 0.95rem; border-radius: 8px;">Create
+                                        Account <i class="ph ph-check"></i></button>
+                                </div>
+                                <div class="terms-text"
+                                    style="font-size: 0.72rem; color: #94a3b8; text-align: center; line-height: 1.4; margin-top: 8px;">
+                                    By creating an account, you agree to our Terms of Service and Privacy Policy.</div>
+                            </div>
+
+                        </form>
+                    </div>
+                    <div class="auth-alternative">
+                        <span>Already have an account?</span>
+                        <a href="{{ url_for('auth.login') }}">Log in here</a>
+                    </div>
+                </div>
+            </div>
         </div>
+    </section>
 
-        <!-- Right Side content (Auth Card) -->
-        <div class="auth-card">
+    <!-- Value Proposition Lead-In -->
+    <section class="value-prop-banner">
+        <div class="value-prop-inner">
+            <p class="value-prop-kicker">Letters to the Editor · Join the Movement</p>
+            <h2 class="value-prop-headline">The definitive platform for Laguna pickleball.</h2>
+            <p class="value-prop-text">Whether you're a <strong>player</strong> looking for a match, a
+                <strong>club</strong> managing brackets, or an <strong>owner</strong> listing courts—secure your spot
+                instantly with local GCash checkout.
+            </p>
+            <a href="{{ url_for('auth.signup') }}" class="value-prop-cta">Sign Up for Free <i
+                    class="ph ph-arrow-right"></i></a>
+        </div>
+    </section>
 
-            <div class="auth-toggle">
-                <button class="toggle-btn" id="btn-login" data-url="{{ url_for('auth.login') }}"
-                    onclick="window.location.href=this.dataset.url">Login</button>
-                <button class="toggle-btn active" id="btn-signup" data-url="{{ url_for('auth.signup') }}"
-                    onclick="window.location.href=this.dataset.url">Sign Up</button>
+    <!-- Unified Brand Footer -->
+    <footer class="brand-footer">
+        <div class="footer-container">
+            <div class="footer-brand-col">
+                <div class="footer-logo">
+                    <img src="{{ url_for('static', filename='images/logo-icon.png') }}" alt="Logo Icon"
+                        class="logo-icon">
+                    <span class="logo-text">PickleballHub</span>
+                </div>
+                <p class="footer-tagline">The ultimate pickleball community platform. Connect, compete, and elevate your
+                    game.</p>
+                <div class="footer-socials">
+                    <a href="#"><i class="ph-fill ph-facebook-logo"></i></a>
+                    <a href="#"><i class="ph-fill ph-instagram-logo"></i></a>
+                    <a href="#"><i class="ph-fill ph-twitter-logo"></i></a>
+                    <a href="#"><i class="ph-fill ph-youtube-logo"></i></a>
+                </div>
             </div>
 
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-            <div class="alerts">
-                {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            </div>
-            {% endif %}
-            {% endwith %}
-
-            <div class="stepper-container" id="signup-stepper">
-                <div class="step-indicator active" id="step-ind-1">1</div>
-                <div class="step-indicator" id="step-ind-2">2</div>
-                <div class="step-indicator" id="step-ind-3">3</div>
+            <div class="footer-links-col">
+                <h4>Community</h4>
+                <ul>
+                    <li><a href="{{ url_for('main.index') }}#players">Find Players</a></li>
+                    <li><a href="{{ url_for('main.index') }}#clubs">Clubs</a></li>
+                    <li><a href="{{ url_for('main.index') }}#events">Events</a></li>
+                    <li><a href="{{ url_for('main.index') }}#forum">Forum</a></li>
+                </ul>
             </div>
 
-            <!-- Signup Form wrapper -->
-            <div id="forms-wrapper" style="position: relative; overflow: visible;">
-                <form id="form-signup" class="auth-form active" action="{{ url_for('auth.signup') }}" method="POST">
+            <div class="footer-links-col">
+                <h4>Play</h4>
+                <ul>
+                    <li><a href="{{ url_for('main.courts_listing') }}">Book Courts</a></li>
+                    <li><a href="{{ url_for('main.tournaments') }}">Tournaments</a></li>
+                    <li><a href="{{ url_for('main.index') }}#leagues">Leagues</a></li>
+                    <li><a href="{{ url_for('main.index') }}#rankings">Rankings</a></li>
+                </ul>
+            </div>
 
-                    <!-- STEP 1: ROLE -->
-                    <div class="signup-step active" id="signup-step-1">
-                        <div class="form-group" style="margin-bottom: 4px;">
-                            <label>I AM A...</label>
-                        </div>
-                        <div class="role-selection-group">
-                            <div class="role-choice-card active" id="role-card-player"
-                                onclick="selectRoleGrid('player')">
-                                <i class="ph ph-game-controller"></i>
-                                <div class="role-info">
-                                    <span>Player</span>
-                                    <small>Reserve courts, join events, connect with community</small>
-                                </div>
-                            </div>
-                            <div class="role-choice-card" id="role-card-administrator"
-                                onclick="selectRoleGrid('clubadmin')">
-                                <i class="ph ph-shield"></i>
-                                <div class="role-info">
-                                    <span>Club Administrator</span>
-                                    <small>Manage courts, users, queue, analytics & settings</small>
-                                </div>
-                            </div>
-                            <div class="role-choice-card" id="role-card-owner" onclick="selectRoleGrid('owner')">
-                                <i class="ph ph-buildings"></i>
-                                <div class="role-info">
-                                    <span>Pickleball Facility Owner</span>
-                                    <small>Manage facility, revenue, events & analytics</small>
-                                </div>
-                            </div>
-                        </div>
-                        <input type="hidden" name="role" id="selected-role" value="player">
+            <div class="footer-links-col">
+                <h4>Academy</h4>
+                <ul>
+                    <li><a href="{{ url_for('main.clinics') }}">Tips &amp; Guides</a></li>
+                    <li><a href="{{ url_for('main.clinics') }}">Video Tutorials</a></li>
+                    <li><a href="{{ url_for('main.clinics') }}">Coaching</a></li>
+                    <li><a href="{{ url_for('main.clinics') }}">Training Plans</a></li>
+                </ul>
+            </div>
 
-                        <div class="button-group">
-                            <button type="button" class="submit-btn primary-orange" onclick="nextSignupStep(1)">Next
-                                Step <i class="ph ph-arrow-right"></i></button>
-                        </div>
-                    </div>
+            <div class="footer-links-col">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="#about">About Us</a></li>
+                    <li><a href="#careers">Careers</a></li>
+                    <li><a href="#press">Press</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
 
-                    <!-- STEP 2: PERSONAL -->
-                    <div class="signup-step" id="signup-step-2">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>First Name</label>
-                                <div class="input-wrapper">
-                                    <i class="ph ph-user"></i>
-                                    <input type="text" name="first_name" placeholder="John" required>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Last Name</label>
-                                <div class="input-wrapper">
-                                    <i class="ph ph-user"></i>
-                                    <input type="text" name="last_name" placeholder="Doe" required>
-                                </div>
-                            </div>
-                        </div>
+            <div class="footer-links-col">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="#help">Help Center</a></li>
+                    <li><a href="#safety">Safety</a></li>
+                    <li><a href="#terms">Terms of Service</a></li>
+                    <li><a href="#privacy">Privacy Policy</a></li>
+                </ul>
+            </div>
 
-                        <div class="form-group" id="proficiency-group">
-                            <label>Proficiency</label>
-                            <div class="input-wrapper">
-                                <i class="ph ph-trophy"></i>
-                                <select name="proficiency" id="proficiency-input" class="select-input" required>
-                                    <option value="beginner" selected>Beginner</option>
-                                    <option value="intermediate">Intermediate</option>
-                                    <option value="advanced">Advanced</option>
-                                    <option value="pro">Pro</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Cellphone Number</label>
-                                <div class="input-wrapper">
-                                    <i class="ph ph-phone"></i>
-                                    <input type="tel" name="phone" placeholder="e.g. 123-456-7890" required>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="button-group">
-                            <button type="button" class="btn-secondary" onclick="prevSignupStep(2)"><i
-                                    class="ph ph-arrow-left"></i> Back</button>
-                            <button type="button" class="submit-btn primary-orange" onclick="nextSignupStep(2)">Next
-                                Step <i class="ph ph-arrow-right"></i></button>
-                        </div>
-                    </div>
-
-                    <!-- STEP 3: CREDENTIALS -->
-                    <div class="signup-step" id="signup-step-3">
-                        <div class="form-group">
-                            <label>Email Address</label>
-                            <div class="input-wrapper">
-                                <i class="ph ph-envelope"></i>
-                                <input type="email" name="email" placeholder="john@example.com" required>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Password</label>
-                            <div class="input-wrapper">
-                                <i class="ph ph-lock-key"></i>
-                                <input type="password" name="password" id="signup-password"
-                                    placeholder="Create a strong password" required>
-                                <i class="ph ph-eye hover-icon" onclick="togglePassword('signup-password')"></i>
-                            </div>
-                        </div>
-
-                        <div class="button-group">
-                            <button type="button" class="btn-secondary" onclick="prevSignupStep(3)"><i
-                                    class="ph ph-arrow-left"></i> Back</button>
-                            <button type="submit" class="submit-btn primary-orange"
-                                onclick="return validateFinalStep()">Create Account <i class="ph ph-check"></i></button>
-                        </div>
-                        <div class="terms-text">By creating an account, you agree to our Terms of Service and Privacy
-                            Policy.
-                        </div>
-                    </div>
-
+            <div class="footer-newsletter-col">
+                <h4>Stay Updated</h4>
+                <p>Get the latest news and updates from PickleballHub.</p>
+                <form class="footer-newsletter-form" onsubmit="event.preventDefault(); alert('Subscribed!');">
+                    <input type="email" placeholder="Enter your email" required>
+                    <button type="submit" class="newsletter-submit-btn">Subscribe</button>
                 </form>
             </div>
         </div>
-    </main>
-
-    <footer class="stats-footer">
-        <div class="stat-item">
-            <h3>500+</h3>
-            <p>Active Players</p>
-        </div>
-        <div class="stat-item">
-            <h3>50+</h3>
-            <p>Premium Courts</p>
-        </div>
-        <div class="stat-item">
-            <h3>10k+</h3>
-            <p>Matches Played</p>
-        </div>
-        <div class="stat-item">
-            <h3>100%</h3>
-            <p>Satisfaction</p>
+        <div class="footer-bottom">
+            <p>&copy; 2026 PickleballHub. All rights reserved.</p>
+            <p>Made with <i class="ph-fill ph-heart" style="color: #ff5252;"></i> for the pickleball community</p>
         </div>
     </footer>
 
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+    <!-- GSAP Page Animations -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof gsap !== 'undefined') {
+                // Gentle load animations for hero and signup card
+                gsap.from('.hero-info', { duration: 0.8, x: -20, opacity: 0, ease: 'power2.out' });
+                gsap.from('.auth-card', { duration: 0.8, y: 20, opacity: 0, ease: 'power2.out', delay: 0.1 });
+            }
+        });
+    </script>
 </body>
 
 </html>

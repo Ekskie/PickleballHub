@@ -1,16 +1,16 @@
-# Graph Report - PickleballHub  (2026-06-22)
+# Graph Report - PickleballHub  (2026-07-10)
 
 ## Corpus Check
-- 78 files · ~250,679 words
+- 76 files · ~282,360 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 862 nodes · 1300 edges · 106 communities (60 shown, 46 thin omitted)
+- 884 nodes · 1329 edges · 107 communities (61 shown, 46 thin omitted)
 - Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 23 edges (avg confidence: 0.9)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `eba1fc2e`
+- Built from commit: `1ae57ba4`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -25,11 +25,11 @@
 - [[_COMMUNITY_Community 7|Community 7]]
 - [[_COMMUNITY_Community 8|Community 8]]
 - [[_COMMUNITY_Community 9|Community 9]]
-- [[_COMMUNITY_Community 10|Community 10]]
 - [[_COMMUNITY_Community 11|Community 11]]
 - [[_COMMUNITY_Community 13|Community 13]]
 - [[_COMMUNITY_Community 14|Community 14]]
 - [[_COMMUNITY_Community 15|Community 15]]
+- [[_COMMUNITY_Community 16|Community 16]]
 - [[_COMMUNITY_Community 17|Community 17]]
 - [[_COMMUNITY_Community 18|Community 18]]
 - [[_COMMUNITY_Community 19|Community 19]]
@@ -96,10 +96,12 @@
 - [[_COMMUNITY_Community 99|Community 99]]
 - [[_COMMUNITY_Community 100|Community 100]]
 - [[_COMMUNITY_Community 103|Community 103]]
+- [[_COMMUNITY_Community 104|Community 104]]
 - [[_COMMUNITY_Community 106|Community 106]]
+- [[_COMMUNITY_Community 107|Community 107]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `community()` - 55 edges
+1. `community()` - 56 edges
 2. `get_admin_db()` - 50 edges
 3. `get_db()` - 45 edges
 4. `get_db()` - 34 edges
@@ -122,27 +124,27 @@
 - `Flask Blueprint Pattern` --references--> `auth Blueprint`  [INFERRED]
   README.md → app/auth/routes.py
 
-## Communities (106 total, 46 thin omitted)
+## Communities (107 total, 46 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.05
 Nodes (41): allConversations, capitalise(), chatBackBtn, chatHeader, chatHeaderAvatar, chatHeaderName, chatHeaderRole, chatInputWrap (+33 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.10
-Nodes (35): api_reservation_courts(), book_reservation(), cancel_reservation(), club_detail(), club_payment(), clubs(), confirm_payment(), delete_notification() (+27 more)
+Cohesion: 0.09
+Nodes (36): api_reservation_courts(), book_reservation(), cancel_reservation(), club_detail(), club_payment(), clubs(), confirm_payment(), delete_notification() (+28 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.08
-Nodes (53): allPosts, bindFeedEvents(), closeBanner, closeShare, closeShareModal(), copiedToast, currentAvatarEl, escapeHTML() (+45 more)
+Nodes (54): allPosts, bindFeedEvents(), closeBanner, closeShare, closeShareModal(), copiedToast, currentAvatarEl, escapeHTML() (+46 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.08
-Nodes (39): add_court(), add_facility(), add_staff(), _advance_bracket(), api_courts_by_facility(), bracket_generate(), change_event_status(), courts() (+31 more)
+Nodes (40): add_court(), add_facility(), add_staff(), _advance_bracket(), api_courts_by_facility(), bracket_generate(), change_event_status(), courts() (+32 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.05
-Nodes (56): adjust_profile_stats(), elo_to_dupr(), ensure_initial_history(), get_initial_rating(), init_player_rating(), Lazy initialization of a player's profile Elo/DUPR if columns are null., Create a baseline history record if the player has no rating history logs., Linearly map Elo rating to DUPR scale (2.00 to 8.00). (+48 more)
+Cohesion: 0.06
+Nodes (55): adjust_profile_stats(), elo_to_dupr(), ensure_initial_history(), get_initial_rating(), init_player_rating(), Lazy initialization of a player's profile Elo/DUPR if columns are null., Create a baseline history record if the player has no rating history logs., Linearly map Elo rating to DUPR scale (2.00 to 8.00). (+47 more)
 
 ### Community 5 - "Community 5"
 Cohesion: 0.13
@@ -162,11 +164,7 @@ Nodes (11): auth Blueprint, logo.png (PickleballHub Logo), create_app Factory, m
 
 ### Community 9 - "Community 9"
 Cohesion: 0.06
-Nodes (46): Sends an automated message from sender_id to recipient_id.     If a 1-to-1 conve, Triggers automated chats from the facility owner and assigned staff to the playe, send_auto_message(), trigger_booking_autochat(), get_admin_db(), Get an admin/service-role scoped Supabase client that bypasses Row Level Securit, Get an admin/service-role scoped Supabase client that bypasses Row Level Securit, Uploads an avatar file to Supabase storage and returns public URL, or None. (+38 more)
-
-### Community 10 - "Community 10"
-Cohesion: 0.08
-Nodes (20): create_app(), clear_settings_cache(), get_db_client(), load_platform_settings(), Returns a Supabase client for querying platform_settings.     Prefers the reques, api_courts_search(), clinics(), courts_listing() (+12 more)
+Nodes (45): Sends an automated message from sender_id to recipient_id.     If a 1-to-1 conve, Triggers automated chats from the facility owner and assigned staff to the playe, send_auto_message(), trigger_booking_autochat(), get_admin_db(), Get an admin/service-role scoped Supabase client that bypasses Row Level Securit, Get an admin/service-role scoped Supabase client that bypasses Row Level Securit, Uploads an avatar file to Supabase storage and returns public URL, or None. (+37 more)
 
 ### Community 11 - "Community 11"
 Cohesion: 0.07
@@ -183,6 +181,10 @@ Nodes (11): approve_member Route, Flask g for Request-scoped Club Data, load_clu
 ### Community 15 - "Community 15"
 Cohesion: 0.25
 Nodes (8): Facility Verifications (Adminstaff), club_setup Route (Onboarding), Owner Courts CRUD, Owner Facilities CRUD, KYC Document Upload (Owner), Supabase Storage (Images & KYC Docs), KYC Verification Workflow, update_kyc_status (Superadmin)
+
+### Community 16 - "Community 16"
+Cohesion: 0.14
+Nodes (10): btn, nextSlide(), prevSlide(), resetSliderTimer(), roleParam, setSlide(), showSlide(), slides (+2 more)
 
 ### Community 17 - "Community 17"
 Cohesion: 0.20
@@ -209,8 +211,8 @@ Cohesion: 0.67
 Nodes (3): tutorials Table (Supabase), clinics Route, _extract_yt_id (YouTube URL Parser)
 
 ### Community 65 - "Community 65"
-Cohesion: 0.10
-Nodes (21): HTMX Partial Queue Refresh Pattern, get_processed_queues Helper, PH_TZ (Philippine Timezone UTC+8), Queue Monitoring Route, dashboard(), get_processed_queues(), queue(), queue_partial() (+13 more)
+Cohesion: 0.15
+Nodes (13): dashboard(), get_processed_queues(), Fetch queues for today, process wait times, and auto-complete games 15 mins past, Fetch queues for today, process wait times, and auto-complete games 15 mins past, Fetch queues for today, process wait times, and auto-complete games 15 mins past, Fetch queues for today, process wait times, and auto-complete games 15 mins past, Fetch queues for today, process wait times, and auto-complete games 15 mins past, Fetch queues for today, process wait times, and auto-complete games 15 mins past (+5 more)
 
 ### Community 66 - "Community 66"
 Cohesion: 0.29
@@ -229,8 +231,8 @@ Cohesion: 0.06
 Nodes (20): generate_safe_filename(), Centralized file upload validation for all storage uploads.  Usage:     from app, Validate and upload a file to Supabase Storage in one call.      Args:         d, Validate a file upload for extension, MIME type, and size.      Args:         fi, Generate a safe, unique filename that never uses client-provided names.      Arg, validate_and_upload(), validate_upload(), add_facility() (+12 more)
 
 ### Community 82 - "Community 82"
-Cohesion: 0.08
-Nodes (35): Adminstaff Dashboard (Support KPIs), Disputes Management, resolve_ticket Route, dashboard(), disputes(), get_db(), mark_notifications_read(), notifications() (+27 more)
+Cohesion: 0.05
+Nodes (42): Adminstaff Dashboard (Support KPIs), Disputes Management, resolve_ticket Route, dashboard(), disputes(), get_db(), mark_notifications_read(), notifications() (+34 more)
 
 ### Community 88 - "Community 88"
 Cohesion: 0.36
@@ -268,8 +270,16 @@ Nodes (4): get_processed_queues(), queue(), queue_partial(), Fetch queues for to
 Cohesion: 0.22
 Nodes (4): Decorator to protect routes by role.     Usage: @require_role('superadmin', 'own, Decorator to protect routes by role, supporting role hierarchies.     Usage: @re, Decorator to protect routes by role, supporting role hierarchies.     Usage: @re, require_role()
 
+### Community 104 - "Community 104"
+Cohesion: 0.11
+Nodes (20): api_courts_search(), clinics(), courts_listing(), _extract_yt_id(), get_db(), index(), Extract a YouTube video ID from a full or short URL., Render the public tournaments page with real DB tournaments. (+12 more)
+
+### Community 107 - "Community 107"
+Cohesion: 0.25
+Nodes (8): HTMX Partial Queue Refresh Pattern, get_processed_queues Helper, PH_TZ (Philippine Timezone UTC+8), Queue Monitoring Route, queue(), queue_partial(), Fetch queues for today, process wait times, and auto-complete games 15 mins past, player/queue_monitoring.html Template
+
 ## Knowledge Gaps
-- **128 isolated node(s):** `version`, `builds`, `routes`, `headers`, `style` (+123 more)
+- **132 isolated node(s):** `version`, `builds`, `routes`, `headers`, `style` (+127 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **46 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -277,16 +287,16 @@ Nodes (4): Decorator to protect routes by role.     Usage: @require_role('supera
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `tutorials()` connect `Community 5` to `Community 0`, `Community 1`, `Community 82`?**
-  _High betweenness centrality (0.141) - this node is a cross-community bridge._
-- **Why does `get_processed_queues Helper` connect `Community 65` to `Community 1`, `Community 6`, `Community 9`?**
-  _High betweenness centrality (0.130) - this node is a cross-community bridge._
-- **Why does `get_db()` connect `Community 98` to `Community 1`, `Community 3`, `Community 4`, `Community 9`, `Community 10`, `Community 11`, `Community 66`, `Community 70`, `Community 71`, `Community 82`, `Community 89`, `Community 93`, `Community 96`, `Community 99`, `Community 100`, `Community 102`, `Community 103`, `Community 105`, `Community 106`?**
-  _High betweenness centrality (0.120) - this node is a cross-community bridge._
+  _High betweenness centrality (0.137) - this node is a cross-community bridge._
+- **Why does `get_processed_queues Helper` connect `Community 107` to `Community 1`, `Community 6`, `Community 9`?**
+  _High betweenness centrality (0.126) - this node is a cross-community bridge._
+- **Why does `court_queues Table` connect `Community 6` to `Community 107`?**
+  _High betweenness centrality (0.115) - this node is a cross-community bridge._
 - **What connects `version`, `builds`, `routes` to the rest of the system?**
-  _257 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _268 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
   _Cohesion score 0.05357142857142857 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.09716599190283401 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.09487179487179487 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.08080808080808081 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07857142857142857 - nodes in this community are weakly interconnected._

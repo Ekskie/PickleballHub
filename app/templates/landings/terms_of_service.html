@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service | {{ platform_settings.platform_name or 'PickleballHub' }}</title>
+    {% include 'seo_tags.html' %}
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+    <!-- Base CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Landing CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing/landing.css') }}">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+
+    <style>
+        body {
+            background: var(--bg-color);
+            color: var(--text-primary);
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .legal-section {
+            padding: 80px 48px;
+            position: relative;
+            z-index: 2;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .legal-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .legal-header h1 {
+            font-family: 'Lora', Georgia, serif;
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        .legal-header p {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .legal-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 48px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 40px;
+        }
+
+        .legal-toc {
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .legal-toc h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px 24px;
+        }
+
+        .toc-list a {
+            color: var(--primary-orange);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        .toc-list a:hover {
+            color: var(--primary-orange-hover);
+            padding-left: 4px;
+        }
+
+        .legal-content h2 {
+            font-family: 'Lora', Georgia, serif;
+            font-size: 1.8rem;
+            color: var(--text-primary);
+            margin-top: 40px;
+            margin-bottom: 20px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--card-border);
+            font-weight: 800;
+        }
+
+        .legal-content h2:first-of-type {
+            margin-top: 0;
+        }
+
+        .legal-content h3 {
+            font-size: 1.2rem;
+            color: var(--text-primary);
+            margin-top: 24px;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .legal-content p {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .legal-content ul, .legal-content ol {
+            margin-bottom: 24px;
+            padding-left: 24px;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .legal-content li {
+            margin-bottom: 10px;
+        }
+
+        .legal-content li strong {
+            color: var(--text-primary);
+        }
+
+        .rule-sublist {
+            list-style-type: circle;
+            margin-top: 8px;
+            padding-left: 20px;
+        }
+
+        .rule-sublist li {
+            margin-bottom: 6px;
+        }
+
+        .warning-notice {
+            background: rgba(230, 74, 25, 0.05);
+            border-left: 4px solid var(--primary-orange);
+            padding: 20px;
+            border-radius: 0 12px 12px 0;
+            margin: 24px 0;
+        }
+
+        .warning-notice p {
+            margin-bottom: 0;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        @media (max-width: 768px) {
+            .legal-section {
+                padding: 40px 20px;
+            }
+
+            .legal-header h1 {
+                font-size: 2.5rem;
+            }
+
+            .legal-card {
+                padding: 24px;
+            }
+
+            .toc-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="background-wrap">
+        <div class="overlay"></div>
+    </div>
+
+    <!-- Navigation -->
+    {% include 'landings/navigation.html' %}
+
+    <div class="legal-page-wrap">
+        <section class="legal-section">
+            <div class="legal-header">
+                <h1>Terms of Service</h1>
+                <p>Last updated: July 10, 2026</p>
+            </div>
+
+            <div class="legal-card">
+                <div class="legal-toc">
+                    <h3>Table of Contents</h3>
+                    <ul class="toc-list">
+                        <li><a href="#court-reservation">1. Court Reservation Rules</a></li>
+                        <li><a href="#payment-confirmation">2. Payment & Confirmation Policies</a></li>
+                        <li><a href="#cancellation-rescheduling">3. Cancellation & Rescheduling</a></li>
+                        <li><a href="#usage-policy">4. Court Usage Policies</a></li>
+                        <li><a href="#penalties">5. Penalty Guidelines</a></li>
+                        <li><a href="#events-tournaments">6. Event & Tournament Rules</a></li>
+                    </ul>
+                </div>
+
+                <div class="legal-content">
+                    <p>Welcome to <strong>{{ platform_settings.platform_name or 'PickleballHub' }}</strong>. By accessing our platform and reserving courts, you agree to comply with the rules, guidelines, and terms outlines below. These policies are designed to maintain court standards, ensure fair game distribution, and protect player safety.</p>
+
+                    <h2 id="court-reservation">1. Court Reservation Rules</h2>
+                    <p>Our centralized booking directory governs reservations across all affiliated locations. The following guidelines apply to all scheduled hours:</p>
+                    <ul>
+                        <li><strong>Advance Booking Required:</strong> All court reservations must be submitted in advance through our online web application or in-person with facility coordinators.</li>
+                        <li><strong>Duration Restrictions:</strong> To ensure that playing slots remain accessible to the wider community, reservations are limited to a minimum of <strong>1 hour</strong> and a maximum of <strong>5 hours</strong> per playing group per day.</li>
+                        <li><strong>Punctuality Policy:</strong> Players must arrive on time for their reserved hour. If a group is late, the session will not be extended. Late arrivals exceeding 15 minutes may lose their slot to waiting walk-ins.</li>
+                        <li><strong>Walk-in Openings:</strong> Walk-in players are permitted to play only if there are active unreserved courts available on site. Priority is always given to confirmed online bookings.</li>
+                    </ul>
+
+                    <h2 id="payment-confirmation">2. Payment & Confirmation Policies</h2>
+                    <p>To secure slots and prevent fraudulent bookings, reservation fees are processed according to these payment parameters:</p>
+                    <ul>
+                        <li><strong>Deposit Option:</strong> Players can secure a court slot by paying a partial deposit of at least <strong>50% (half)</strong> of the total reservation cost at the time of online check-out.</li>
+                        <li><strong>Confirmation Threshold:</strong> A slot booking is officially locked and marked as confirmed inside the platform database only when a verified transaction between <strong>30% to 50%</strong> of the booking value is cleared.</li>
+                        <li><strong>Final Settlement:</strong> The remaining unpaid balance of the reservation fee must be settled in full before or at the absolute start of play. Failure to complete payment will result in gate denial.</li>
+                        <li><strong>Proof of Booking:</strong> Players must retain their digital confirmation receipt, transaction SMS message, or booking QR code to show site check-in staff upon arrival.</li>
+                        <li><strong>Dynamic Rates:</strong> Court pricing varies based on time slots (peak versus off-peak hours) and municipal location. Current rates are visible dynamically inside the court search page.</li>
+                    </ul>
+
+                    <h2 id="cancellation-rescheduling">3. Cancellation & Rescheduling</h2>
+                    <p>If you need to change your playing schedule, our cancellation module enforces the following conditions:</p>
+                    <ul>
+                        <li><strong>24-Hour Notice:</strong> Cancellations or rescheduling requests must be submitted at least <strong>24 hours before</strong> the start of the scheduled slot.</li>
+                        <li><strong>Late Cancellations:</strong> Cancellations made within the 24-hour window before the booking starts will not be eligible for a refund, and the deposit will be forfeited to cover facility vacancy costs.</li>
+                        <li><strong>Availability-Based Rescheduling:</strong> Rescheduling requests are subject to court availability. If no open slots match your new request, original booking terms stand.</li>
+                    </ul>
+
+                    <h2 id="usage-policy">4. Court Usage Policies</h2>
+                    <p>Maintain the standard of our courts and respect the players following your session by observing the following guidelines:</p>
+                    <ul>
+                        <li><strong>Strict Boundaries:</strong> Players must not exceed their reserved playing hour. Please exit the court zone promptly when your session ends so the next group can begin without delays.</li>
+                        <li><strong>Peak Hour Sharing:</strong> During periods of high traffic, players are encouraged to share court space and play doubles matches to maximize community participation.</li>
+                        <li><strong>Equipment Care:</strong> Players are expected to use court nets, posts, and dividers responsibly. Any deliberate abuse or negligence leading to structural damage will be penalized.</li>
+                    </ul>
+
+                    <h2 id="penalties">5. Penalty Guidelines</h2>
+                    <p>Violations of reservation limits, court care guidelines, or operator policies are subject to a structured warning system:</p>
+                    <ul>
+                        <li><strong>Minor Violations & Warning Stages:</strong> For minor policy infractions (such as exceeding slot times, noise complaints, or light trash clutter), players are allowed up to <strong>2 to 3 warnings</strong> before suspension:
+                            <ol class="rule-sublist">
+                                <li><strong>1st Offense:</strong> Verbal Warning issued by court operators and logged in the profile history.</li>
+                                <li><strong>2nd Offense:</strong> Final Warning issued in writing/email warning of suspension risks.</li>
+                                <li><strong>3rd Offense:</strong> Temporary Suspension of reservation privileges or removal from the court facilities.</li>
+                            </ol>
+                        </li>
+                        <li><strong>No-Show Blacklisting:</strong> Confirmed reservations that result in a no-show without prior 24-hour notification may result in the user profile being blacklisted from future online reservations.</li>
+                        <li><strong>Liability for Damage:</strong> Any structural damage caused to net fixtures, fencing, surfaces, or rental paddles will be billed directly to the reserving player's account.</li>
+                    </ul>
+
+                    <div class="warning-notice">
+                        <p><i class="ph-fill ph-warning-octagon"></i> IMPORTANT: Following the delivery of a written Final Warning, court staff and platform administrators will apply stricter restrictions, up to permanent banishment from all PickleballHub municipal locations.</p>
+                    </div>
+
+                    <h2 id="events-tournaments">6. Event & Tournament Rules</h2>
+                    <p>For organized leagues, bracket tournaments, or special community events, the following tournament engine codes apply:</p>
+                    <ul>
+                        <li><strong>Check-in Deadline:</strong> Participating teams and singles seeds must check in at the coordinator deck at least <strong>15 minutes</strong> before their designated match time.</li>
+                        <li><strong>Default/DQ Threshold:</strong> Failure to report for check-in within 15 minutes of the match start time will result in an automatic default and disqualification (DQ) from the tournament flight.</li>
+                        <li><strong>Schedule Adjustments:</strong> Tournament directors and head referees reserve the right to modify seeds, match lengths, or court distribution in response to weather anomalies or scheduling backlogs.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer include -->
+    {% include 'landings/footer.html' %}
+
+</body>
+
+</html>

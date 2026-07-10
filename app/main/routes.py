@@ -24,8 +24,65 @@ def get_db():
 
 @main_bp.route('/')
 def index():
-    """Render the public landing page."""
-    return render_template('landings/landing.html')
+    """Render the public landing page with courts, events, and tutorials."""
+    courts = []
+    events = []
+    tutorials = []
+    try:
+        client = get_db()
+        if client:
+            # 1. Fetch active courts with facility info (limit to 3)
+            courts_resp = client.table('courts').select(
+                'id, name, type, hourly_rate, status, '
+                'facility_id, facilities(id, name, location, image_url, description)'
+            ).eq('status', 'active').limit(3).execute()
+            if courts_resp.data:
+                for c in courts_resp.data:
+                    fac = c.get('facilities') or {}
+                    courts.append({
+                        'id': c['id'],
+                        'name': c.get('name', 'Court'),
+                        'type': c.get('type', 'indoor').capitalize(),
+                        'hourly_rate': float(c.get('hourly_rate', 0)),
+                        'facility_name': fac.get('name', 'Facility'),
+                        'facility_location': fac.get('location', 'Laguna'),
+                        'facility_image_url': fac.get('image_url') or '',
+                        'facility_description': fac.get('description') or '',
+                    })
+
+            # 2. Fetch tournaments (limit to 3)
+            events_resp = client.table('events').select(
+                'id, title, type, format, prize_pool, image_url, event_date, entry_fee, description, '
+                'facilities(name)'
+            ).eq('type', 'tournament').order('event_date', desc=False).limit(3).execute()
+            if events_resp.data:
+                events = events_resp.data
+
+            # 3. Fetch tutorials (limit to 3)
+            t_resp = client.table('tutorials').select(
+                'id, title, description, youtube_url, level'
+            ).limit(3).execute()
+            if t_resp.data:
+                for t in t_resp.data:
+                    url = t.get('youtube_url', '')
+                    vid = _extract_yt_id(url)
+                    tutorials.append({
+                        'title': t['title'],
+                        'description': t.get('description') or '',
+                        'level': t.get('level', 'Beginner'),
+                        'youtube_url': url,
+                        'embed_url': f'https://www.youtube.com/embed/{vid}?rel=0' if vid else '',
+                        'thumb_url': f'https://img.youtube.com/vi/{vid}/hqdefault.jpg' if vid else '',
+                    })
+    except Exception as e:
+        print(f'[landing index] DB error: {e}')
+
+    return render_template(
+        'landings/landing.html',
+        featured_courts=courts,
+        upcoming_tournaments=events,
+        featured_tutorials=tutorials
+    )
 
 @main_bp.route('/clinics')
 def clinics():
@@ -254,3 +311,145 @@ def api_courts_search():
         print(f'[api_courts_search] DB error: {e}')
     
     return jsonify(suggestions[:5])  # Limit to 5 suggestions
+
+
+@main_bp.route('/article/<int:article_id>')
+def view_article(article_id):
+    """Render a full-width journalist article page."""
+    articles_db = {
+        1: {
+            "id": 1,
+            "title": "Laguna Court Directory Reaches All-Time Booking Record",
+            "category": "Reserve Court",
+            "author": "Marcus Aurelius, Editor-in-Chief",
+            "date": "Thursday, July 9, 2026",
+            "read_time": "4 min read",
+            "image_filename": "court-hero.jpg",
+            "content": """
+                <p class="lead-text">In a dramatic development for local recreational sports, the PickleballHub scheduling directory has reported an unprecedented booking spike across several municipalities in Laguna.</p>
+                <p>According to peak-hour reservation logs, court rentals in Paete, Pakil, and Pangil have grown by over 120% quarter-over-quarter. Both indoor hall venues and scenic outdoor grounds are seeing heavy double-booking schedules, driving the need for automated slot reservations.</p>
+                <h2>Local Hubs Report Surge in Registrations</h2>
+                <p>Facility managers are noting that pickleball has rapidly transitioned from a niche sport into a central community hobby. "We are seeing entire families sign up for morning play, and competitive clubs renting court zones for evening league qualifiers," says Coach Arnold, a prominent player coordinator in Pakil.</p>
+                <p>The centralized booking model has eliminated the friction of local scheduling. Instead of trading manual phone texts or facing calendar conflicts at arrival, players now browse open court availability in real-time, matching slots directly with their calendar availability.</p>
+                <div class="article-pullquote">
+                    <p>"Centralized digital booking has completely eliminated scheduling disputes, allowing our facilities to serve twice the volume of active court play."</p>
+                </div>
+                <h2>GCash Simplifies Transaction Speed</h2>
+                <p>A major contributor to the reservation volume is the native checkout option. By integrating direct GCash mobile wallet checkouts, reservation confirmations are cleared within 30 seconds. This has allowed municipal courts to run completely self-sufficient gates, freeing up facility staff from manual collections and verifying entries instantly via mobile notifications.</p>
+                <p>As the network expands, more towns in Laguna are preparing to list their facilities, promising a unified digital playing corridor for court players regionwide.</p>
+            """
+        },
+        2: {
+            "id": 2,
+            "title": "Unified Tournament Engine Introduces Automated Match Brackets",
+            "category": "Tournament Cup",
+            "author": "Sandra Park, Tournament Director",
+            "date": "Wednesday, July 8, 2026",
+            "read_time": "5 min read",
+            "image_filename": "background.jpg",
+            "content": """
+                <p class="lead-text">Coordinating bracket tournaments across districts has historically been a scheduling nightmare. Today, PickleballHub launched its unified Tournament Engine, automating tournament brackets and player queues.</p>
+                <p>The new software module enables club administrators to build custom tournaments (Singles, Doubles, or Mixed brackets) with automated seeding, DUPR rating checks, and dynamic match queues. Organizer dashboards now construct single-elimination or round-robin brackets instantly, removing manual spreadsheet work.</p>
+                <h2>Automating Local Brackets &amp; Seeding</h2>
+                <p>Seeding matchups has always been a point of contention among local leagues. To solve this, the engine imports a player's official matchmaking ELO score to rank seeds. By grouping players into balanced skill flights (Beginner, Intermediate, Advanced, and Pro), tournaments guarantee competitive match play while preventing unranked mismatches.</p>
+                <p>"The bracket software saved us six hours of manual alignment during the Paete District Open last weekend," notes Sandra Park, Tournament Director. "As matches conclude, players input scores directly on their dashboard, which instantly updates the bracket and moves the next seed into the active queue."</p>
+                <div class="article-pullquote">
+                    <p>"By using live ELO points for brackets, every match is balanced, leading to closer games and higher tournament entries."</p>
+                </div>
+                <h2>Live Queue Standings on Mobile</h2>
+                <p>Spectators and players can track bracket advancement directly on their mobile devices. The live queue keeps waiting players notified when a court becomes open and automatically assigns next-up matches. This real-time visibility prevents players from missing call times and speeds up tournament execution by over 30%.</p>
+                <p>Local sports associations in Laguna are already registering upcoming events on the platform, establishing a shared league schedule that connects players across municipal boundaries.</p>
+            """
+        },
+        3: {
+            "id": 3,
+            "title": "Expert Academy Insights: How Spin &amp; Position Controls the Court",
+            "category": "Academy Training",
+            "author": "Coach Arnold, Head Instructor",
+            "date": "Tuesday, July 7, 2026",
+            "read_time": "3 min read",
+            "image_filename": "bg.png",
+            "content": """
+                <p class="lead-text">Pickleball is often described as a chess match played at high speed. While power serves look impressive, players who master spin and kitchen line positioning consistently control the court.</p>
+                <p>In our latest Academy installment, Coach Arnold breaks down the mechanics of the soft game, highlighting why the dink shot remains the most lethal weapon in competitive play. Players who learn to neutralize power drives by dropshotting into the kitchen can force opponents into high-risk errors.</p>
+                <h2>The Art of the Kitchen Dink</h2>
+                <p>The kitchen (non-volley zone) is the most critical area on the court. Winning rallies requires getting to the kitchen line as quickly as possible. Once there, the objective shifts from striking power drives to placing low, spinning dinks that force the opponent to strike the ball upward.</p>
+                <p>"Newer players make the mistake of attempting power drives from the baseline," Coach Arnold explains. "Advanced play is about patience. You dink softly until your opponent leaves a ball high enough for a smash."</p>
+                <div class="article-pullquote">
+                    <p>"Patience beats power in the kitchen. The player who dinks with better spin and lower clearance will force the error."</p>
+                </div>
+                <h2>Paddle Angle and Spin Mechanics</h2>
+                <p>Controlling spin requires subtle adjustments to the paddle face. For under-spin (slice), open the paddle face and brush under the ball. For top-spin, close the face slightly and swing low-to-high. Practicing these drills turns defensive drop shots into offensive dinks that slide away from opponents upon landing.</p>
+                <p>The PickleballHub Academy is now accepting video uploads from registered players. Basic members can post gameplay clips to the community feed, allowing certified coaches to provide personalized technique critiques and ELO boost tips.</p>
+            """
+        },
+        4: {
+            "id": 4,
+            "title": "Network Database Registers Over 500 Active Players in Laguna",
+            "category": "Just In",
+            "author": "Dev Team Bulletin",
+            "date": "Thursday, July 9, 2026",
+            "read_time": "3 min read",
+            "image_filename": "logo.png",
+            "content": """
+                <p class="lead-text">PickleballHub is thrilled to announce that our active player directory has crossed the 500-member milestone. This represents a massive sports community expanding across Laguna's municipalities.</p>
+                <p>Our centralized database connects players of all skill backgrounds, matching singles and doubles games through rating ELO metrics. The growth demonstrates the strong demand for a unified sports scheduler and social networking tool in local towns.</p>
+                <h2>Connecting Local Athletes</h2>
+                <p>Our matchmaking engine allows players to create open match lobbies. When a player books a court, they can designate it as a "Public Match" and set a skill bracket (e.g. 3.0 to 4.0 ELO). Other players matching this rating receive automated notifications and can join the slot, splitting court rental fees via GCash.</p>
+                <p>This social matching prevents players from showing up alone and helps newcomers integrate into local groups seamlessly. As registrations continue to climb, we are preparing to roll out player forums, group chats, and town leaderboards.</p>
+            """
+        },
+        5: {
+            "id": 5,
+            "title": "GCash Integration Speeds Checkouts Under 30 Seconds",
+            "category": "Booking Alert",
+            "author": "Billing Operations Team",
+            "date": "Thursday, July 9, 2026",
+            "read_time": "2 min read",
+            "image_filename": "gcash_qr.png",
+            "content": """
+                <p class="lead-text">Say goodbye to manual bank transfers and verification wait times. PickleballHub's GCash mobile wallet checkout integration is now fully live, letting players secure court slots in under 30 seconds.</p>
+                <p>By automating transaction clearing, the reservation system issues booking receipts instantly, verifying court slot availability in real-time. This eliminates double-bookings and provides court operators with transparent ledger bookkeeping.</p>
+                <h2>Automating Transaction Ledgers</h2>
+                <p>Previously, facility staff had to reconcile cash boxes and manual GCash screenshot uploads, leading to booking errors and delayed confirmations. With direct API integration, the system handles booking checks automatically. If a payment completes, the court scheduler locks the hour and notifies both player and facility staff instantly.</p>
+                <p>This automated flow keeps schedules clear and ensures that booking cancellation refunds are credited back to player accounts without manual administrative overhead.</p>
+            """
+        },
+        6: {
+            "id": 6,
+            "title": "District Brackets Report 40% Growth in Participant Entries",
+            "category": "Tournament Bulletin",
+            "author": "League Organizer Team",
+            "date": "Wednesday, July 8, 2026",
+            "read_time": "3 min read",
+            "image_filename": "court-hero.jpg",
+            "content": """
+                <p class="lead-text">Competitive interest is hitting record heights. League organizers report a 40% increase in tournament signups for our upcoming district championships.</p>
+                <p>Both Singles and Doubles divisions are seeing rapid registration fill-up times. Players are rushing to secure slots and claim a share of the community-sponsored prize pools, promising highly competitive games.</p>
+                <h2>Increasing Competitive Interest</h2>
+                <p>Organizers attribute the signup surge to the platform's transparent division brackets. By letting players preview registered rosters and matching ELO scores, competitors feel confident entering fair brackets.</p>
+                <p>Automated match reminders and digitized scoring ensure tournaments run smoothly without delays, setting a new benchmark for competitive amateur sports events in the region.</p>
+            """
+        }
+    }
+
+    article = articles_db.get(article_id)
+    if not article:
+        return render_template('errors/404.html'), 404
+
+    return render_template('landings/article.html', article=article)
+
+
+@main_bp.route('/terms-of-service')
+def terms_of_service():
+    return render_template('landings/terms_of_service.html')
+
+
+@main_bp.route('/privacy-policy')
+def privacy_policy():
+    return render_template('landings/privacy_policy.html')
+
+
+@main_bp.route('/about-us')
+def about_us():
+    return render_template('landings/about_us.html')

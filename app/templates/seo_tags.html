@@ -1,3 +1,16 @@
+<!-- Theme Initialization (prevents flickering) -->
+<script>
+  (function() {
+    const theme = localStorage.getItem('theme') || 'light';
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark-mode');
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark-mode');
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  })();
+</script>
 <!-- Dynamic Platform SEO & Meta Configurations -->
 <meta name="description" content="{% block seo_description %}{{ platform_settings.seo_meta_description }}{% endblock %}">
 <meta name="keywords" content="{% block seo_keywords %}{{ platform_settings.seo_meta_keywords }}{% endblock %}">

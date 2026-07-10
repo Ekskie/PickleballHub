@@ -12,8 +12,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing/landing.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/landing/login.css') }}">
 
+    <!-- GSAP for page animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <!-- Phosphor Icons (for standard UI icons) -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
@@ -41,136 +44,255 @@
         <div class="overlay"></div>
     </div>
 
-    <nav class="landing-nav">
-        <a href="{{ url_for('main.index') }}">
-            <div class="logo">
-                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="{{ platform_settings.platform_name }} Logo">
-                {{ platform_settings.platform_name }}
-            </div>
-        </a>
-        <div class="nav-links">
-            <a href="{{ url_for('main.index') }}">Find Courts</a>
-            <a href="{{ url_for('main.tournaments') }}">Tournaments</a>
-            <a href="{{ url_for('main.clinics') }}">Clinics &amp; Tutorials</a>
-            <a href="{{ url_for('main.community') }}">Community</a>
-        </div>
-        <div class="nav-auth-btns">
-            <a href="{{ url_for('auth.signup') }}" class="btn-solid"
-                style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.2);">Sign Up</a>
-        </div>
-        <i class="ph ph-list mobile-toggle" onclick="this.parentElement.classList.toggle('nav-open')"></i>
-    </nav>
+    <!-- Navigation & Masthead -->
+    {% set hide_editorial_nav = true %}
+    {% include 'landings/navigation.html' %}
 
-
-    <main class="auth-container">
-        <!-- Left Side content (Hero info) -->
-        <div class="hero-info">
-            <div class="pill">PREMIUM PICKLEBALL EXPERIENCE</div>
-            <h1>Where Players Meet Excellence</h1>
-            <p>Join the fastest growing community of elite pickleball players. Book courts, find matches, and track your
-                progress in real-time.</p>
-        </div>
-
-        <!-- Right Side content (Auth Card) -->
-        <div class="auth-card">
-
-            <div class="auth-toggle">
-                <button class="toggle-btn active" id="btn-login" data-url="{{ url_for('auth.login') }}"
-                    onclick="window.location.href=this.dataset.url">Login</button>
-                <button class="toggle-btn" id="btn-signup" data-url="{{ url_for('auth.signup') }}"
-                    onclick="window.location.href=this.dataset.url">Sign Up</button>
+    <section class="premium-hero-container" style="flex: 1; display: flex; align-items: center;">
+        <div class="hero-grid">
+            <!-- Column 1: Marketing -->
+            <div class="hero-marketing-col">
+                <span class="hero-tag">PREMIUM PICKLEBALL EXPERIENCE</span>
+                <h1 class="hero-heading">Where Players<br>Meet Excellence</h1>
+                <p class="hero-text">Join the fastest growing community of elite pickleball players. Book courts, find
+                    matches, and track your progress in real-time.</p>
+                <div class="hero-ctas">
+                    <a href="{{ url_for('auth.signup') }}" class="btn-solid hero-btn-join">Join Today <i
+                            class="ph ph-arrow-right"></i></a>
+                    <a href="#demo" class="btn-outline hero-btn-demo"><i class="ph ph-play-circle"></i> Watch Demo</a>
+                </div>
             </div>
 
-            <!-- ── "Check your inbox" banner (shown after signup) ── -->
-            {% if request.args.get('pending_verification') %}
-            <div class="verify-banner" id="verify-banner">
-                <div class="verify-banner-top">
-                    <div class="verify-banner-icon">
-                        <i class="ph ph-envelope-simple-open"></i>
+            <!-- Column 2: Live Dashboard Stats Widget -->
+            <div class="hero-stats-col">
+                <div class="stats-dashboard-card">
+                    <div class="widget-title-sec">
+                        <i class="ph ph-activity"></i>
+                        <span>Live Dashboard</span>
                     </div>
-                    <div class="verify-banner-text">
-                        <h4>Check your inbox!</h4>
-                        <p>
-                            We sent a verification link to
-                            {% if session.get('pending_email') %}
-                            <strong>{{ session.get('pending_email') }}</strong>
-                            {% else %}
-                            your email address
-                            {% endif %}.
-                            Click the link to activate your account.
-                        </p>
+                    <div class="widget-row">
+                        <span class="widget-label">DUPR Rating</span>
+                        <span class="widget-value">1,532 <span class="rating-pill"><i class="ph ph-trend-up"></i>
+                                +24</span></span>
+                    </div>
+                    <div class="widget-row">
+                        <span class="widget-label">Win Streak</span>
+                        <span class="widget-value"><span class="win-streak-badge">7 <i
+                                    class="ph ph-fire-simple"></i></span></span>
+                    </div>
+                    <div class="widget-row">
+                        <span class="widget-label">Upcoming Match</span>
+                        <span class="widget-value" style="font-size: 0.95rem; font-weight: 600;">7:30 PM vs. Laguna
+                            Smashers</span>
+                    </div>
+                    <div>
+                        <div class="widget-row" style="margin-bottom: 4px;">
+                            <span class="widget-label">Court Occupancy</span>
+                            <span class="widget-value" style="font-size: 0.9rem; font-weight: 600;">85%</span>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-fill"></div>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Resend form -->
-                <form class="resend-form" action="{{ url_for('auth.resend_verification') }}" method="POST">
-                    <input type="email" name="email" placeholder="Confirm your email to resend…"
-                        value="{{ session.get('pending_email', '') }}" required>
-                    <button type="submit" class="resend-btn">
-                        <i class="ph ph-paper-plane-tilt"></i>
-                        Resend
-                    </button>
+            <!-- Column 3: Active Sign In Card -->
+            <div class="hero-auth-col">
+                <div class="hero-auth-card">
+                    <h2 class="auth-card-title">Sign In</h2>
+                    <p class="auth-card-subtitle">Enter your credentials to access your dashboard.</p>
+
+                    <!-- ── "Check your inbox" banner (shown after signup) ── -->
+                    {% if request.args.get('pending_verification') %}
+                    <div class="verify-banner" id="verify-banner"
+                        style="background: rgba(230, 74, 25, 0.15); border: 1px solid rgba(230, 74, 25, 0.3); border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+                        <div class="verify-banner-top"
+                            style="display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px;">
+                            <div class="verify-banner-icon" style="color: var(--primary-orange); font-size: 1.5rem;">
+                                <i class="ph ph-envelope-simple-open"></i>
+                            </div>
+                            <div class="verify-banner-text"
+                                style="color: #cbd5e1; font-size: 0.85rem; line-height: 1.4;">
+                                <h4 style="color: #ffffff; font-weight: 600; margin-bottom: 4px; font-size: 0.95rem;">
+                                    Check your inbox!</h4>
+                                <p>
+                                    We sent a verification link to
+                                    {% if session.get('pending_email') %}
+                                    <strong>{{ session.get('pending_email') }}</strong>
+                                    {% else %}
+                                    your email address
+                                    {% endif %}.
+                                    Click the link to activate your account.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Resend form -->
+                        <form class="resend-form" action="{{ url_for('auth.resend_verification') }}" method="POST"
+                            style="display: flex; gap: 8px;">
+                            <input type="email" name="email" placeholder="Confirm your email to resend…"
+                                value="{{ session.get('pending_email', '') }}" required
+                                style="flex: 1; padding: 8px 12px; background: rgba(15, 17, 21, 0.4); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: #ffffff; font-size: 0.85rem;">
+                            <button type="submit" class="resend-btn"
+                                style="background: var(--primary-orange); border: none; color: #ffffff; padding: 8px 14px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                <i class="ph ph-paper-plane-tilt"></i>
+                                Resend
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                    <div class="alerts" style="margin-bottom: 20px;">
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}"
+                            style="padding: 12px; border-radius: 8px; font-size: 0.88rem; margin-bottom: 8px;">{{
+                            message }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+
+                    <!-- Login Form -->
+                    <div id="forms-wrapper" style="position: relative; overflow: visible;">
+                        <form id="form-login" class="auth-form active" action="{{ url_for('auth.login') }}"
+                            method="POST" style="display: flex; flex-direction: column; gap: 16px;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label style="margin-bottom: 6px; display: block;">Email Address</label>
+                                <div class="input-wrapper">
+                                    <i class="ph ph-envelope"></i>
+                                    <input type="email" name="email" placeholder="player@email.com" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label style="margin-bottom: 6px; display: block;">Password</label>
+                                <div class="input-wrapper">
+                                    <i class="ph ph-lock-key"></i>
+                                    <input type="password" name="password" id="login-password" placeholder="••••••••"
+                                        required>
+                                    <i class="ph ph-eye hover-icon" onclick="togglePassword('login-password')"></i>
+                                </div>
+                            </div>
+
+                            <div class="forgot-password" style="text-align: right; font-size: 0.85rem;">
+                                <a href="{{ url_for('auth.forgot_password') }}"
+                                    style="color: var(--primary-orange); text-decoration: none; font-weight: 500;">Forgot
+                                    password?</a>
+                            </div>
+
+                            <button type="submit" class="submit-btn primary-orange"
+                                style="margin-top: 4px; padding: 12px; font-size: 0.95rem; border-radius: 8px;">Sign In
+                                to Dashboard <i class="ph ph-arrow-right"></i></button>
+                        </form>
+                    </div>
+                    <div class="auth-alternative">
+                        <span>Don't have an account?</span>
+                        <a href="{{ url_for('auth.signup') }}">Sign up here</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Value Proposition Lead-In -->
+    <section class="value-prop-banner">
+        <div class="value-prop-inner">
+            <p class="value-prop-kicker">Letters to the Editor · Join the Movement</p>
+            <h2 class="value-prop-headline">The definitive platform for Laguna pickleball.</h2>
+            <p class="value-prop-text">Whether you're a <strong>player</strong> looking for a match, a
+                <strong>club</strong> managing brackets, or an <strong>owner</strong> listing courts—secure your spot
+                instantly with local GCash checkout.
+            </p>
+            <a href="{{ url_for('auth.signup') }}" class="value-prop-cta">Sign Up for Free <i
+                    class="ph ph-arrow-right"></i></a>
+        </div>
+    </section>
+
+    <!-- Unified Brand Footer -->
+    <footer class="brand-footer">
+        <div class="footer-container">
+            <div class="footer-brand-col">
+                <div class="footer-logo">
+                    <img src="{{ url_for('static', filename='images/logo-icon.png') }}" alt="Logo Icon"
+                        class="logo-icon">
+                    <span class="logo-text">PickleballHub</span>
+                </div>
+                <p class="footer-tagline">The ultimate pickleball community platform. Connect, compete, and elevate your
+                    game.</p>
+                <div class="footer-socials">
+                    <a href="#"><i class="ph-fill ph-facebook-logo"></i></a>
+                    <a href="#"><i class="ph-fill ph-instagram-logo"></i></a>
+                    <a href="#"><i class="ph-fill ph-twitter-logo"></i></a>
+                    <a href="#"><i class="ph-fill ph-youtube-logo"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-links-col">
+                <h4>Community</h4>
+                <ul>
+                    <li><a href="{{ url_for('main.index') }}#players">Find Players</a></li>
+                    <li><a href="{{ url_for('main.index') }}#clubs">Clubs</a></li>
+                    <li><a href="{{ url_for('main.index') }}#events">Events</a></li>
+                    <li><a href="{{ url_for('main.index') }}#forum">Forum</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-links-col">
+                <h4>Play</h4>
+                <ul>
+                    <li><a href="{{ url_for('main.courts_listing') }}">Book Courts</a></li>
+                    <li><a href="{{ url_for('main.tournaments') }}">Tournaments</a></li>
+                    <li><a href="{{ url_for('main.index') }}#leagues">Leagues</a></li>
+                    <li><a href="{{ url_for('main.index') }}#rankings">Rankings</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-links-col">
+                <h4>Academy</h4>
+                <ul>
+                    <li><a href="{{ url_for('main.clinics') }}">Tips &amp; Guides</a></li>
+                    <li><a href="{{ url_for('main.clinics') }}">Video Tutorials</a></li>
+                    <li><a href="{{ url_for('main.clinics') }}">Coaching</a></li>
+                    <li><a href="{{ url_for('main.clinics') }}">Training Plans</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-links-col">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="#about">About Us</a></li>
+                    <li><a href="#careers">Careers</a></li>
+                    <li><a href="#press">Press</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-links-col">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="#help">Help Center</a></li>
+                    <li><a href="#safety">Safety</a></li>
+                    <li><a href="#terms">Terms of Service</a></li>
+                    <li><a href="#privacy">Privacy Policy</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-newsletter-col">
+                <h4>Stay Updated</h4>
+                <p>Get the latest news and updates from PickleballHub.</p>
+                <form class="footer-newsletter-form" onsubmit="event.preventDefault(); alert('Subscribed!');">
+                    <input type="email" placeholder="Enter your email" required>
+                    <button type="submit" class="newsletter-submit-btn">Subscribe</button>
                 </form>
             </div>
-            {% endif %}
-
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-            <div class="alerts">
-                {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            </div>
-            {% endif %}
-            {% endwith %}
-
-            <!-- Login Form -->
-            <div id="forms-wrapper" style="position: relative; overflow: visible;">
-                <form id="form-login" class="auth-form active" action="{{ url_for('auth.login') }}" method="POST">
-                    <div class="form-group">
-                        <label>Email Address</label>
-                        <div class="input-wrapper">
-                            <i class="ph ph-envelope"></i>
-                            <input type="email" name="email" placeholder="player@email.com" required>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Password</label>
-                        <div class="input-wrapper">
-                            <i class="ph ph-lock-key"></i>
-                            <input type="password" name="password" id="login-password" placeholder="••••••••" required>
-                            <i class="ph ph-eye hover-icon" onclick="togglePassword('login-password')"></i>
-                        </div>
-                    </div>
-
-                    <div class="forgot-password">
-                        <a href="{{ url_for('auth.forgot_password') }}">Forgot password?</a>
-                    </div>
-
-                    <button type="submit" class="submit-btn primary-orange">Sign In to Dashboard <i
-                            class="ph ph-arrow-right"></i></button>
-                </form>
-            </div>
         </div>
-    </main>
-
-    <footer class="stats-footer">
-        <div class="stat-item">
-            <h3>500+</h3>
-            <p>Active Players</p>
-        </div>
-        <div class="stat-item">
-            <h3>50+</h3>
-            <p>Premium Courts</p>
-        </div>
-        <div class="stat-item">
-            <h3>10k+</h3>
-            <p>Matches Played</p>
-        </div>
-        <div class="stat-item">
-            <h3>100%</h3>
-            <p>Satisfaction</p>
+        <div class="footer-bottom">
+            <p>&copy; 2026 PickleballHub. All rights reserved.</p>
+            <p>Made with <i class="ph-fill ph-heart" style="color: #ff5252;"></i> for the pickleball community</p>
         </div>
     </footer>
 
@@ -257,6 +379,17 @@
 
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+    <!-- GSAP Page Animations -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof gsap !== 'undefined') {
+                // Gentle load animations for hero and login card
+                gsap.from('.hero-info', { duration: 0.8, x: -20, opacity: 0, ease: 'power2.out' });
+                gsap.from('.auth-card', { duration: 0.8, y: 20, opacity: 0, ease: 'power2.out', delay: 0.1 });
+            }
+        });
+    </script>
 </body>
 
 </html>

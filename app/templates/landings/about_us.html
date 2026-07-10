@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us | {{ platform_settings.platform_name or 'PickleballHub' }}</title>
+    {% include 'seo_tags.html' %}
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap"
+        rel="stylesheet">
+    <!-- Base CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Landing CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing/landing.css') }}">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+
+    <style>
+        body {
+            background: var(--bg-color);
+            color: var(--text-primary);
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .about-section {
+            padding: 80px 48px;
+            position: relative;
+            z-index: 2;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .about-header {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        .about-header h1 {
+            font-family: 'Lora', Georgia, serif;
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        .about-header p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto;
+            font-weight: 400;
+            line-height: 1.5;
+        }
+
+        /* Grid sections */
+        .story-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 60px;
+            align-items: center;
+            margin-bottom: 80px;
+        }
+
+        .story-text h2 {
+            font-family: 'Lora', Georgia, serif;
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 24px;
+        }
+
+        .story-text p {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .story-img-wrap {
+            border-radius: 24px;
+            overflow: hidden;
+            border: 1px solid var(--card-border);
+            box-shadow: var(--card-shadow);
+            aspect-ratio: 4 / 3;
+            background: #eaeaea;
+        }
+
+        .story-img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Core Values */
+        .values-section {
+            margin-bottom: 80px;
+        }
+
+        .values-section h2 {
+            font-family: 'Lora', Georgia, serif;
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+        }
+
+        .value-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 36px;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+        }
+
+        .value-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--primary-orange);
+            box-shadow: var(--card-shadow-hover);
+        }
+
+        .value-icon {
+            font-size: 2.5rem;
+            color: var(--primary-orange);
+            margin-bottom: 20px;
+        }
+
+        .value-card h3 {
+            font-family: 'Lora', Georgia, serif;
+            font-size: 1.35rem;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            font-weight: 800;
+        }
+
+        .value-card p {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--text-secondary);
+        }
+
+        /* Meet the team */
+        .team-section {
+            margin-bottom: 60px;
+        }
+
+        .team-section h2 {
+            font-family: 'Lora', Georgia, serif;
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+        }
+
+        .team-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+        }
+
+        .team-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--primary-orange);
+            box-shadow: var(--card-shadow-hover);
+        }
+
+        .team-img-wrapper {
+            height: 220px;
+            background: #eaeaea;
+            overflow: hidden;
+        }
+
+        .team-img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .team-info {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .team-info h3 {
+            font-family: 'Lora', Georgia, serif;
+            font-size: 1.15rem;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            font-weight: 800;
+        }
+
+        .team-info p {
+            font-size: 0.85rem;
+            color: var(--primary-orange);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        @media (max-width: 1024px) {
+            .values-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .team-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .about-section {
+                padding: 40px 20px;
+            }
+
+            .about-header h1 {
+                font-size: 2.5rem;
+            }
+
+            .story-grid {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .values-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="background-wrap">
+        <div class="overlay"></div>
+    </div>
+
+    <!-- Navigation -->
+    {% include 'landings/navigation.html' %}
+
+    <div class="about-page-wrap">
+        <section class="about-section">
+            <div class="about-header">
+                <h1>Connecting Pickleball Communities</h1>
+                <p>We build automated digital bridges between court owners, tournament organizers, and competitive
+                    players across Laguna.</p>
+            </div>
+
+            <!-- Story Section -->
+            <div class="story-grid">
+                <div class="story-text">
+                    <h2>Our Story</h2>
+                    <p>What started as a simple local scheduling tool for municipal pickleball courts in Paete has
+                        evolved into a region-wide community platform. Founded in 2026, <strong>{{
+                            platform_settings.platform_name or 'PickleballHub' }}</strong> is built to resolve the
+                        friction that players face when booking courts, managing tournament flights, and verifying
+                        player ratings.</p>
+                    <p>By integrating direct coordinates, online GCash transactions, and dynamic Leaflet maps, we
+                        empower court owners to open their gates to players securely, while giving competitors instant
+                        visibility into local court listings and matchmaking lobbies.</p>
+                </div>
+                <div class="story-img-wrap">
+                    <img src="{{ url_for('static', filename='images/court-hero.jpg') }}" alt="Pickleball Court Setup">
+                </div>
+            </div>
+
+            <!-- Core Values -->
+            <div class="values-section">
+                <h2>Our Core Values</h2>
+                <div class="values-grid">
+                    <div class="value-card">
+                        <div class="value-icon"><i class="ph ph-handshake"></i></div>
+                        <h3>Community Unity</h3>
+                        <p>We believe sports thrive when they are shared. Our platform bridges age groups and divisions,
+                            creating a unified arena for physical play.</p>
+                    </div>
+                    <div class="value-card">
+                        <div class="value-icon"><i class="ph ph-shield-check"></i></div>
+                        <h3>Fair Play & Integrity</h3>
+                        <p>From automated queue warnings to ELO-based tournament brackets, we enforce clear rules that
+                            ensure healthy competition and respect.</p>
+                    </div>
+                    <div class="value-card">
+                        <div class="value-icon"><i class="ph ph-lightning"></i></div>
+                        <h3>Seamless Automation</h3>
+                        <p>We replace manual bank slips and messaging lists with direct GCash checkout APIs, making
+                            schedules clear and instant.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team Section -->
+            <div class="team-section">
+                <h2>Meet the Team</h2>
+                <div class="team-grid">
+                    <div class="team-card">
+                        <div class="team-img-wrapper">
+                            <img src="/static/images/Ryza.jpg" alt="Ryzajoice">
+                        </div>
+                        <div class="team-info">
+                            <h3>Ryzajoice Batol</h3>
+                            <p>Founder & CEO</p>
+                        </div>
+                    </div>
+                    <div class="team-card">
+                        <div class="team-img-wrapper">
+                            <img src="/static/images/matt.jpg" alt="Gagalang Mattandrew">
+                        </div>
+                        <div class="team-info">
+                            <h3>Gagalang Mattandrew</h3>
+                            <p>Head of Operations</p>
+                        </div>
+                    </div>
+                    <div class="team-card">
+                        <div class="team-img-wrapper">
+                            <img src="/static/images/nat.jpg" alt="Nathan Ruzol">
+                        </div>
+                        <div class="team-info">
+                            <h3>Nathan Ruzol</h3>
+                            <p>Editor-in-Chief</p>
+                        </div>
+                    </div>
+                    <div class="team-card">
+                        <div class="team-img-wrapper">
+                            <img src="/static/images/nat.jpg" alt="Nathan Ruzol">
+                        </div>
+                        <div class="team-info">
+                            <h3>Nathan Ruzol</h3>
+                            <p>Editor-in-Chief</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer include -->
+    {% include 'landings/footer.html' %}
+
+</body>
+
+</html>

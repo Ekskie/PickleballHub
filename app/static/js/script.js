@@ -144,3 +144,106 @@ function validateFinalStep() {
     }
     return true;
 }
+
+/* Redesign Theme Toggling */
+function toggleTheme() {
+    const html = document.documentElement;
+    const icon = document.getElementById('themeToggleIcon');
+    if (html.classList.contains('dark-mode')) {
+        html.classList.remove('dark-mode');
+        html.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+        if (icon) icon.className = 'ph ph-moon';
+    } else {
+        html.classList.add('dark-mode');
+        html.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+        if (icon) icon.className = 'ph ph-sun';
+    }
+}
+
+/* Editorial Hero Slider */
+let currentSlide = 0;
+let sliderInterval;
+
+function showSlide(index) {
+    const slides = document.querySelectorAll('.editorial-slide');
+    const dots = document.querySelectorAll('.slider-dot');
+    if (slides.length === 0) return;
+    
+    if (index >= slides.length) currentSlide = 0;
+    else if (index < 0) currentSlide = slides.length - 1;
+    else currentSlide = index;
+
+    slides.forEach((slide, i) => {
+        slide.classList.toggle('active', i === currentSlide);
+    });
+    dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentSlide);
+    });
+}
+
+function nextSlide() {
+    showSlide(currentSlide + 1);
+}
+
+function prevSlide() {
+    showSlide(currentSlide - 1);
+}
+
+function setSlide(index) {
+    showSlide(index);
+    resetSliderTimer();
+}
+
+function startSliderTimer() {
+    sliderInterval = setInterval(nextSlide, 6000); // Rotate every 6s
+}
+
+function resetSliderTimer() {
+    clearInterval(sliderInterval);
+    startSliderTimer();
+}
+
+/* Page Initialization */
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Initialize Hero Slider if present
+    const slides = document.querySelectorAll('.editorial-slide');
+    if (slides.length > 0) {
+        showSlide(0);
+        startSliderTimer();
+    }
+
+    // 2. Pre-select Signup Role from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const roleParam = urlParams.get('role');
+    if (roleParam && (roleParam === 'player' || roleParam === 'clubadmin' || roleParam === 'owner')) {
+        selectRoleGrid(roleParam);
+    }
+
+    // 3. Initialize Scroll to Top Button
+    (function() {
+        if (document.getElementById('scrollToTopBtn')) return;
+        const btn = document.createElement('button');
+        btn.id = 'scrollToTopBtn';
+        btn.className = 'scroll-to-top-btn';
+        btn.setAttribute('aria-label', 'Scroll to top');
+        btn.innerHTML = '<i class="ph ph-arrow-up"></i>';
+        document.body.appendChild(btn);
+
+        btn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                btn.classList.add('visible');
+            } else {
+                btn.classList.remove('visible');
+            }
+        });
+    })();
+});

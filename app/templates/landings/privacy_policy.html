@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy | {{ platform_settings.platform_name or 'PickleballHub' }}</title>
+    {% include 'seo_tags.html' %}
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+    <!-- Base CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Landing CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing/landing.css') }}">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+
+    <style>
+        body {
+            background: var(--bg-color);
+            color: var(--text-primary);
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .legal-section {
+            padding: 80px 48px;
+            position: relative;
+            z-index: 2;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .legal-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .legal-header h1 {
+            font-family: 'Lora', Georgia, serif;
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        .legal-header p {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .legal-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 48px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 40px;
+        }
+
+        .legal-toc {
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .legal-toc h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px 24px;
+        }
+
+        .toc-list a {
+            color: var(--primary-orange);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        .toc-list a:hover {
+            color: var(--primary-orange-hover);
+            padding-left: 4px;
+        }
+
+        .legal-content h2 {
+            font-family: 'Lora', Georgia, serif;
+            font-size: 1.8rem;
+            color: var(--text-primary);
+            margin-top: 40px;
+            margin-bottom: 20px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--card-border);
+            font-weight: 800;
+        }
+
+        .legal-content h2:first-of-type {
+            margin-top: 0;
+        }
+
+        .legal-content h3 {
+            font-size: 1.2rem;
+            color: var(--text-primary);
+            margin-top: 24px;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .legal-content p {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .legal-content ul, .legal-content ol {
+            margin-bottom: 24px;
+            padding-left: 24px;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .legal-content li {
+            margin-bottom: 10px;
+        }
+
+        .legal-content li strong {
+            color: var(--text-primary);
+        }
+
+        .info-box {
+            background: rgba(0, 198, 255, 0.05);
+            border-left: 4px solid var(--primary-orange);
+            padding: 20px;
+            border-radius: 0 12px 12px 0;
+            margin: 24px 0;
+        }
+
+        .info-box p {
+            margin-bottom: 0;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        @media (max-width: 768px) {
+            .legal-section {
+                padding: 40px 20px;
+            }
+
+            .legal-header h1 {
+                font-size: 2.5rem;
+            }
+
+            .legal-card {
+                padding: 24px;
+            }
+
+            .toc-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="background-wrap">
+        <div class="overlay"></div>
+    </div>
+
+    <!-- Navigation -->
+    {% include 'landings/navigation.html' %}
+
+    <div class="legal-page-wrap">
+        <section class="legal-section">
+            <div class="legal-header">
+                <h1>Privacy Policy</h1>
+                <p>Last updated: July 10, 2026</p>
+            </div>
+
+            <div class="legal-card">
+                <div class="legal-toc">
+                    <h3>Table of Contents</h3>
+                    <ul class="toc-list">
+                        <li><a href="#information-collection">1. Information We Collect</a></li>
+                        <li><a href="#how-we-use">2. How We Use Your Information</a></li>
+                        <li><a href="#data-sharing">3. Data Sharing & Security</a></li>
+                        <li><a href="#cookies-tracking">4. Cookies & Session Tracking</a></li>
+                        <li><a href="#your-rights">5. Your Privacy Rights</a></li>
+                        <li><a href="#contact-us">6. Contacting Support</a></li>
+                    </ul>
+                </div>
+
+                <div class="legal-content">
+                    <p>At <strong>{{ platform_settings.platform_name or 'PickleballHub' }}</strong>, accessible from our municipal court directories, player privacy is a primary priority. This Privacy Policy documents the types of data that we collect, record, and process when you manage an account or book courts on our platform.</p>
+
+                    <h2 id="information-collection">1. Information We Collect</h2>
+                    <p>To provide automated court booking, coordinate tournament matchmaking brackets, and find facilities close to you, we collect data in several categories:</p>
+                    <ul>
+                        <li><strong>Personal Identification Data:</strong> When creating an account, we collect credentials including your full name, email address, contact phone number, and account passwords.</li>
+                        <li><strong>Facility & Location Info:</strong> When searching for available courts, our web application reads location parameters to calculate the nearest facilities in Laguna. This helps display courts close to your current location.</li>
+                        <li><strong>Transaction Logs:</strong> For confirmed reservations, the system logs checkout IDs, payment status (deposit versus full payment), and transaction timestamps. We do not store raw GCash PINs or credit card credentials.</li>
+                        <li><strong>Tournament Profile Details:</strong> If you compete in tournaments, we display your flight registration name, ELO standings, and DUPR verification ratings publicly on live tournament bracket boards.</li>
+                    </ul>
+
+                    <h2 id="how-we-use">2. How We Use Your Information</h2>
+                    <p>We process collected data to run the platform efficiently, secure reservations, and maintain safety standards:</p>
+                    <ul>
+                        <li><strong>To Confirm Bookings:</strong> Reconciling reservation records to guarantee that paid court slots are secured and preventing double-booking overlaps.</li>
+                        <li><strong>To Calculate Proximity:</strong> Processing search terms to find the nearest courts to your region, ensuring that players match with courts within reasonable travel boundaries.</li>
+                        <li><strong>To Enforce Warnings:</strong> Maintaining historical warning counts (1st verbal warning, 2nd written warning) and blocklists for no-shows to ensure fair court distribution.</li>
+                        <li><strong>Customer Support:</strong> Verifying receipt logs and GCash confirmations to assist in cancellations, rescheduling, or refund settlements.</li>
+                    </ul>
+
+                    <div class="info-box">
+                        <p><i class="ph-fill ph-info"></i> Note: We will never sell, lease, or rent your player profile directories or location history logs to third-party advertiser groups.</p>
+                    </div>
+
+                    <h2 id="data-sharing">3. Data Sharing & Security</h2>
+                    <p>We implement a variety of security measures to keep player profiles and transactions safe:</p>
+                    <ul>
+                        <li><strong>Affiliated Venues:</strong> When booking a slot, the facility administrators at the selected court receive your reservation name and phone number to verify gate check-in and contact you for schedule changes.</li>
+                        <li><strong>Data Encryption:</strong> All password databases are hashed using industry-standard cryptography, and payment checkout redirects are secured through end-to-end SSL layers.</li>
+                        <li><strong>Legal Enforcement:</strong> We may share necessary details with local municipal authorities if required by law or to investigate severe vandalism to facility assets.</li>
+                    </ul>
+
+                    <h2 id="cookies-tracking">4. Cookies & Session Tracking</h2>
+                    <p>Like most modern interactive websites, our platform uses cookie identifiers to elevate the user experience:</p>
+                    <ul>
+                        <li><strong>Session Management:</strong> Remembering your logged-in credentials so you can navigate between courts, tournaments, and your dashboard without entering details repeatedly.</li>
+                        <li><strong>Preferences:</strong> Retaining your selected light or dark mode theme toggle settings across different subpages.</li>
+                        <li><strong>Analytics:</strong> Tracking anonymous usage patterns to optimize page load speeds, map search responsiveness, and layout layouts.</li>
+                    </ul>
+
+                    <h2 id="your-rights">5. Your Privacy Rights</h2>
+                    <p>As a player on our platform, you hold control over your personal data files:</p>
+                    <ul>
+                        <li><strong>Data Correction:</strong> You can edit your profile name, contact details, and account password directly inside the user dashboard settings.</li>
+                        <li><strong>Profile Deletion:</strong> If you wish to permanently terminate your account and wipe all matching booking ledgers, you can submit a deletion ticket to our support deck.</li>
+                        <li><strong>Opt-Out Options:</strong> You can disable GPS location access in your browser settings, though this will limit the map's ability to display the nearest courts automatically.</li>
+                    </ul>
+
+                    <h2 id="contact-us">6. Contacting Support</h2>
+                    <p>If you have additional questions regarding our privacy rules, data collection policies, or would like to report a security hazard, please contact our administrator team through the support desk in your profile dashboard.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer include -->
+    {% include 'landings/footer.html' %}
+
+</body>
+
+</html>

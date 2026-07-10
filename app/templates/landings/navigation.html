@@ -1,47 +1,82 @@
-<nav class="landing-nav">
-    <a href="{{ url_for('main.index') }}">
-        <div class="logo">
+<!-- Top Utility Bar -->
+<div class="editorial-utility-bar">
+    <div class="utility-left">
+        <a href="/" class="utility-logo">
             <img src="{{ url_for('static', filename='images/logo.png') }}" alt="{{ platform_settings.platform_name }} Logo">
-            {{ platform_settings.platform_name }}
-        </div>
-    </a>
-    <div class="nav-links">
-        <a href="{{ url_for('main.index') }}" {% if request.endpoint=='main.index' or request.endpoint=='main.courts_listing' %}class="active"
-            style="color: var(--primary-orange); font-weight: 600;" {% endif %}>Find Courts</a>
-        <a href="{{ url_for('main.tournaments') }}" {% if request.endpoint=='main.tournaments' %}class="active"
-            style="color: var(--primary-orange); font-weight: 600;" {% endif %}>Tournaments</a>
-        <a href="{{ url_for('main.clinics') }}" {% if request.endpoint=='main.clinics' %}class="active"
-            style="color: var(--primary-orange); font-weight: 600;" {% endif %}>Clinics &amp; Tutorials</a>
-        <a href="{{ url_for('main.community') }}" {% if request.endpoint=='main.community' %}class="active"
-            style="color: var(--primary-orange); font-weight: 600;" {% endif %}>Community</a>
+            <span>{{ platform_settings.platform_name }}</span>
+        </a>
     </div>
-    <div class="nav-auth-btns">
+    <div class="utility-right">
         {% if current_user.is_logged_in %}
+            <a href="{{ url_for('auth.logout') }}" class="utility-logout-btn" style="margin-right: 16px; color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500;">Log Out</a>
             {% if current_user.role_raw == 'player' %}
-                <a href="{{ url_for('player.dashboard') }}" class="btn-solid">Dashboard</a>
+                <a href="{{ url_for('player.dashboard') }}" class="btn-solid" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;">Dashboard</a>
             {% elif current_user.role_raw == 'owner' %}
-                <a href="{{ url_for('owner.dashboard') }}" class="btn-solid">Dashboard</a>
+                <a href="{{ url_for('owner.dashboard') }}" class="btn-solid" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;">Dashboard</a>
             {% elif current_user.role_raw == 'superadmin' %}
-                <a href="{{ url_for('superadmin.dashboard') }}" class="btn-solid">Dashboard</a>
+                <a href="{{ url_for('superadmin.dashboard') }}" class="btn-solid" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;">Dashboard</a>
             {% elif current_user.role_raw == 'clubadmin' %}
-                <a href="{{ url_for('clubadmin.dashboard') }}" class="btn-solid">Dashboard</a>
+                <a href="{{ url_for('clubadmin.dashboard') }}" class="btn-solid" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;">Dashboard</a>
             {% elif current_user.role_raw == 'facilitystaff' %}
-                <a href="{{ url_for('facilitystaff.dashboard') }}" class="btn-solid">Dashboard</a>
+                <a href="{{ url_for('facilitystaff.dashboard') }}" class="btn-solid" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;">Dashboard</a>
             {% elif current_user.role_raw == 'adminstaff' %}
-                <a href="{{ url_for('adminstaff.dashboard') }}" class="btn-solid">Dashboard</a>
+                <a href="{{ url_for('adminstaff.dashboard') }}" class="btn-solid" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;">Dashboard</a>
             {% else %}
-                <a href="{{ url_for('auth.login') }}" class="btn-solid">Dashboard</a>
+                <a href="{{ url_for('auth.login') }}" class="btn-solid" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;">Dashboard</a>
             {% endif %}
         {% else %}
-            {% if request.endpoint == 'auth.login' %}
-            <a href="{{ url_for('auth.signup') }}" class="btn-solid"
-                style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.2);">Sign Up</a>
-            {% elif request.endpoint == 'auth.signup' %}
-            <a href="{{ url_for('auth.login') }}" class="btn-outline">Log In</a>
-            {% else %}
-            <a href="{{ url_for('auth.login') }}" class="btn-outline">Log In</a>
-            {% endif %}
+            <a href="{{ url_for('auth.login') }}" class="btn-outline" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px; margin-right: 8px;">Log In</a>
+            <a href="{{ url_for('auth.signup') }}" class="btn-solid" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px; margin-right: 8px;">Sign Up</a>
         {% endif %}
+        
+        <!-- Theme Toggle Switch -->
+        <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" aria-label="Toggle Theme" style="margin-left: 8px; width: 34px; height: 34px; font-size: 1.1rem;">
+            <i class="ph ph-moon" id="themeToggleIcon"></i>
+        </button>
     </div>
-    <i class="ph ph-list mobile-toggle" onclick="this.parentElement.classList.toggle('nav-open')"></i>
+</div>
+
+<!-- Main Masthead Title -->
+<header class="masthead-container">
+    <div class="masthead-meta">
+        <div>Laguna, Philippines</div>
+        <div id="masthead-date">Thursday, July 9, 2026</div>
+        <div>Issue No. 4 · Vol. I</div>
+    </div>
+    <a href="/" style="text-decoration: none;"><h1 class="masthead-title">Pickleball Hub Daily</h1></a>
+</header>
+
+<!-- Double-bordered centered Editorial Navigation Bar -->
+{% if not hide_editorial_nav %}
+<nav class="editorial-nav-menu">
+    <div class="editorial-nav-links">
+        <a href="/#courts-listing" class="nav-item">Court Reports</a>
+        <a href="/#tournaments-listing" class="nav-item">Tournament Bulletins</a>
+        <a href="/#clinics-listing" class="nav-item">Academy Insights</a>
+        <a href="/#subscription-pricing" class="nav-item">Memberships</a>
+        <a href="/#faq" class="nav-item">Help Desk</a>
+    </div>
 </nav>
+{% endif %}
+
+<script>
+    (function() {
+        // Sync Date
+        const dateEl = document.getElementById('masthead-date');
+        if (dateEl) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            dateEl.textContent = new Date().toLocaleDateString('en-US', options);
+        }
+        
+        // Sync Theme Toggle Icon
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        const icon = document.getElementById('themeToggleIcon');
+        if (icon) {
+            if (currentTheme === 'dark') {
+                icon.className = 'ph ph-sun';
+            } else {
+                icon.className = 'ph ph-moon';
+            }
+        }
+    })();
+</script>

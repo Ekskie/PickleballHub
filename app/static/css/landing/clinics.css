@@ -22,13 +22,11 @@
 }
 
 .section-title h2 {
+    font-family: 'Lora', Georgia, serif;
     font-size: 3rem;
     margin-bottom: 16px;
-    color: white;
-    background: linear-gradient(to right, #ffffff, #ff5722);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--text-primary);
+    font-weight: 800;
 }
 
 .section-title p {
@@ -46,8 +44,10 @@
 }
 
 .showcase-header h3 {
+    font-family: 'Lora', Georgia, serif;
     font-size: 1.75rem;
-    color: white;
+    color: var(--text-primary);
+    font-weight: 800;
 }
 
 .view-all {
@@ -80,7 +80,7 @@
 
 .video-card:hover {
     transform: translateY(-5px);
-    border-color: rgba(255, 87, 34, 0.4);
+    border-color: var(--primary-orange);
 }
 
 .video-thumbnail {
@@ -163,10 +163,12 @@
 }
 
 .video-info h4 {
+    font-family: 'Lora', Georgia, serif;
     font-size: 1.25rem;
-    color: white;
+    color: var(--text-primary);
     margin-bottom: 8px;
     line-height: 1.4;
+    font-weight: 800;
 }
 
 .video-info p {
@@ -189,12 +191,12 @@
     border: 1px solid var(--card-border);
     border-radius: 16px;
     padding: 20px;
-    transition: background 0.3s;
+    transition: background 0.3s, border-color 0.3s;
 }
 
 .clinic-item:hover {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(255, 255, 255, 0.1);
+    background: var(--card-bg-hover);
+    border-color: var(--primary-orange);
 }
 
 .clinic-date {
@@ -227,9 +229,11 @@
 }
 
 .clinic-details h4 {
+    font-family: 'Lora', Georgia, serif;
     font-size: 1.1rem;
-    color: white;
+    color: var(--text-primary);
     margin-bottom: 6px;
+    font-weight: 800;
 }
 
 .clinic-details p {
