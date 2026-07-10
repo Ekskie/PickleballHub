@@ -294,6 +294,50 @@ def create_app():
         except Exception:
             return str(iso_str)[:16] if iso_str else ''
 
+    @app.template_filter('format_currency')
+    def format_currency(val, hourly=False):
+        """Convert float or decimal values into clean Philippine Peso formats.
+        E.g. 50.0/hourly -> ₱50/hr, 12000.0 -> ₱12,000, 0.0 -> Free.
+        """
+        if val is None:
+            return "Free"
+        try:
+            num = float(val)
+        except (ValueError, TypeError):
+            return val
+        
+        if num == 0:
+            return "Free"
+            
+        if num % 1 == 0:
+            formatted = f"₱{int(num):,}"
+        else:
+            formatted = f"₱{num:,.2f}"
+            
+        if hourly:
+            return f"{formatted}/hr"
+        return formatted
+
+    @app.template_filter('format_date')
+    def format_date(val):
+        """Format ISO date strings (e.g., 2026-05-04) into user-friendly formats like May 4, 2026."""
+        import datetime
+        if not val:
+            return ""
+        if isinstance(val, (datetime.datetime, datetime.date)):
+            dt = val
+        else:
+            try:
+                val_str = str(val).strip()
+                if "T" in val_str:
+                    dt = datetime.datetime.fromisoformat(val_str.split("T")[0])
+                else:
+                    dt = datetime.datetime.strptime(val_str, "%Y-%m-%d")
+            except Exception:
+                return val
+        day = dt.day
+        return f"{dt.strftime('%B')} {day}, {dt.year}"
+
     # ── Error Handlers ────────────────────────────────────────────────────────
     @app.errorhandler(404)
     def page_not_found(e):

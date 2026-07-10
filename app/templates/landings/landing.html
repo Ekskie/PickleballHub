@@ -42,10 +42,10 @@
                     <img src="{{ url_for('static', filename='images/court-hero.jpg') }}" alt="Pickleball Court Reservation">
                 </div>
                 <div class="slide-content">
-                    <a href="/article/1" class="slide-title">Laguna Court Directory Reaches All-Time Booking Record</a>
+                    <a href="{{ url_for('main.courts_listing') }}" class="slide-title">Laguna Court Directory Reaches All-Time Booking Record</a>
                     <p class="slide-desc">The definitive platform for Laguna pickleball. Whether you're a player looking for a match, a club managing brackets, or an owner listing courts—secure your spot instantly with local GCash checkout.</p>
                     <div class="slide-meta">
-                        <a href="/article/1" class="slide-read-more">Read Full Report <i class="ph ph-arrow-right"></i></a>
+                        <a href="{{ url_for('main.courts_listing') }}" class="slide-read-more">Book a Court <i class="ph ph-arrow-right"></i></a>
                     </div>
                 </div>
             </div>
@@ -57,10 +57,10 @@
                     <img src="{{ url_for('static', filename='images/background.jpg') }}" alt="Laguna Tournaments">
                 </div>
                 <div class="slide-content">
-                    <a href="/article/2" class="slide-title">Unified Tournament Engine Introduces Automated Match Brackets</a>
+                    <a href="{{ url_for('main.tournaments') }}" class="slide-title">Unified Tournament Engine Introduces Automated Match Brackets</a>
                     <p class="slide-desc">Club organizers can now launch tournaments seamlessly. Features automated bracket construction for Singles or Doubles matchups with live queue standings.</p>
                     <div class="slide-meta">
-                        <a href="/article/2" class="slide-read-more">Read Full Report <i class="ph ph-arrow-right"></i></a>
+                        <a href="{{ url_for('main.tournaments') }}" class="slide-read-more">Find Tournaments <i class="ph ph-arrow-right"></i></a>
                     </div>
                 </div>
             </div>
@@ -72,10 +72,10 @@
                     <img src="{{ url_for('static', filename='images/bg.png') }}" alt="Pickleball Clinics">
                 </div>
                 <div class="slide-content">
-                    <a href="/article/3" class="slide-title">Expert Academy Insights: How Spin &amp; Position Controls the Court</a>
+                    <a href="{{ url_for('main.clinics') }}" class="slide-title">Expert Academy Insights: How Spin &amp; Position Controls the Court</a>
                     <p class="slide-desc">Top DUPR-certified coaches upload training courses. Study court navigation, check local clinic events, or upload gameplay footage to get professional player feedback.</p>
                     <div class="slide-meta">
-                        <a href="/article/3" class="slide-read-more">Read Full Report <i class="ph ph-arrow-right"></i></a>
+                        <a href="{{ url_for('main.clinics') }}" class="slide-read-more">View Clinics <i class="ph ph-arrow-right"></i></a>
                     </div>
                 </div>
             </div>
@@ -115,15 +115,29 @@
     <!-- Value Proposition Lead-In -->
     <section class="value-prop-banner">
         <div class="value-prop-inner">
-            <p class="value-prop-kicker">Letters to the Editor · Join the Movement</p>
+            <p class="value-prop-kicker">Join Laguna's Fastest-Growing Pickleball Community</p>
             <h2 class="value-prop-headline">The definitive platform for Laguna pickleball.</h2>
             <p class="value-prop-text">Whether you're a <strong>player</strong> looking for a match, a <strong>club</strong> managing brackets, or an <strong>owner</strong> listing courts—secure your spot instantly with local GCash checkout.</p>
             <a href="{{ url_for('auth.signup') }}" class="value-prop-cta">Sign Up for Free <i class="ph ph-arrow-right"></i></a>
+            
+            <!-- Payment Trust Badges -->
+            <div class="payment-trust-badges" style="margin-top: 24px; display: flex; align-items: center; justify-content: center; gap: 16px; opacity: 0.85;">
+                <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); font-weight: 600;">Secured Checkouts Via:</span>
+                <div style="display: inline-flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.06); padding: 6px 16px; border-radius: 30px; border: 1px solid var(--card-border);">
+                    <span style="font-weight: 800; color: #0056B3; font-size: 0.9rem; display: flex; align-items: center; gap: 4px;">
+                        <i class="ph-fill ph-wallet"></i> GCash
+                    </span>
+                    <span style="color: var(--card-border); font-size: 0.8rem;">|</span>
+                    <span style="font-weight: 800; color: #00E676; font-size: 0.9rem; display: flex; align-items: center; gap: 4px;">
+                        <i class="ph-fill ph-shield-check"></i> Maya
+                    </span>
+                </div>
+            </div>
         </div>
     </section>
 
     <!-- SECTION A: COURT REPORTS -->
-    <div class="newspaper-divider-container" id="courts-listing">
+    <div class="newspaper-divider-container">
         <div class="newspaper-section-divider">
             <span>Section A</span>
             <span>Court Reports</span>
@@ -131,7 +145,7 @@
         </div>
     </div>
 
-    <section class="editorial-section">
+    <section class="editorial-section" id="courts-listing">
         <h2 class="editorial-section-title">Verified Facilities Available</h2>
         <p class="editorial-section-subtitle">Read detailed facility reviews and schedule your next match reservation instantly.</p>
         
@@ -152,7 +166,7 @@
                             <p class="card-desc">{{ court.facility_description or 'Well-maintained facility in the heart of Laguna. Professional nets, bright court lighting, and comfortable spectator seating.' }}</p>
                             <ul class="card-details-list">
                                 <li><i class="ph ph-map-pin"></i> {{ court.facility_location }}</li>
-                                <li><i class="ph ph-currency-circle-dollar"></i> ₱{{ court.hourly_rate }}/hour</li>
+                                <li><i class="ph ph-currency-circle-dollar"></i> {{ court.hourly_rate|format_currency(hourly=True) }}</li>
                                 <li><i class="ph ph-buildings"></i> {{ court.facility_name }}</li>
                             </ul>
                             <div class="card-footer">
@@ -174,7 +188,7 @@
                         <p class="card-desc">State of the art indoor court facilities featuring premium cushioning. Equipped with high-visibility lighting and professional nets.</p>
                         <ul class="card-details-list">
                             <li><i class="ph ph-map-pin"></i> Paete, Laguna</li>
-                            <li><i class="ph ph-currency-circle-dollar"></i> ₱250.00/hour</li>
+                            <li><i class="ph ph-currency-circle-dollar"></i> {{ 250|format_currency(hourly=True) }}</li>
                             <li><i class="ph ph-buildings"></i> Paete Sports Center</li>
                         </ul>
                         <div class="card-footer">
@@ -193,7 +207,7 @@
                         <p class="card-desc">Beautiful open-air courts with scenic mountain views. Clean wind-breakers installed on all tournament zones.</p>
                         <ul class="card-details-list">
                             <li><i class="ph ph-map-pin"></i> Pakil, Laguna</li>
-                            <li><i class="ph ph-currency-circle-dollar"></i> ₱180.00/hour</li>
+                            <li><i class="ph ph-currency-circle-dollar"></i> {{ 180|format_currency(hourly=True) }}</li>
                             <li><i class="ph ph-buildings"></i> Pakil Municipal Park</li>
                         </ul>
                         <div class="card-footer">
@@ -212,7 +226,7 @@
                         <p class="card-desc">Perfect indoor playing conditions. Fully air-conditioned lounge and spectator seats make it ideal for family gatherings.</p>
                         <ul class="card-details-list">
                             <li><i class="ph ph-map-pin"></i> Pangil, Laguna</li>
-                            <li><i class="ph ph-currency-circle-dollar"></i> ₱300.00/hour</li>
+                            <li><i class="ph ph-currency-circle-dollar"></i> {{ 300|format_currency(hourly=True) }}</li>
                             <li><i class="ph ph-buildings"></i> Pangil Central Hall</li>
                         </ul>
                         <div class="card-footer">
@@ -226,7 +240,7 @@
     </section>
 
     <!-- SECTION B: TOURNAMENT BULLETINS -->
-    <div class="newspaper-divider-container" id="tournaments-listing">
+    <div class="newspaper-divider-container">
         <div class="newspaper-section-divider">
             <span>Section B</span>
             <span>Tournament Bulletins</span>
@@ -234,7 +248,7 @@
         </div>
     </div>
 
-    <section class="editorial-section">
+    <section class="editorial-section" id="tournaments-listing">
         <h2 class="editorial-section-title">Laguna League Tournaments</h2>
         <p class="editorial-section-subtitle">Track upcoming events, register brackets, and compete for prize pools.</p>
         
@@ -254,9 +268,9 @@
                             <h3 class="card-title">{{ event.title }}</h3>
                             <p class="card-desc">{{ event.description or 'Participate in this official league event. Register today and test your skills.' }}</p>
                             <ul class="card-details-list">
-                                <li><i class="ph ph-calendar"></i> Date: {{ event.event_date }}</li>
-                                <li><i class="ph ph-trophy"></i> Prize Pool: ₱{{ event.prize_pool or '0.00' }}</li>
-                                <li><i class="ph ph-ticket"></i> Entry Fee: ₱{{ event.entry_fee or '0.00' }}</li>
+                                <li><i class="ph ph-calendar"></i> Date: {{ event.event_date|format_date }}</li>
+                                <li><i class="ph ph-trophy"></i> Prize Pool: {{ event.prize_pool|format_currency }}</li>
+                                <li><i class="ph ph-ticket"></i> Entry Fee: {{ event.entry_fee|format_currency }}</li>
                             </ul>
                             <div class="card-footer">
                                 <span>Organized by {{ event.facilities.name if event.facilities else 'PickleballHub' }}</span>
@@ -277,7 +291,7 @@
                         <p class="card-desc">The grandest singles tournament of the year. Featuring local champions competing for bragging rights and cash prizes.</p>
                         <ul class="card-details-list">
                             <li><i class="ph ph-calendar"></i> Date: August 15, 2026</li>
-                            <li><i class="ph ph-trophy"></i> Prize Pool: ₱10,000.00</li>
+                            <li><i class="ph ph-trophy"></i> Prize Pool: {{ 10000|format_currency }}</li>
                         </ul>
                         <div class="card-footer">
                           <span>Open for Entries</span>
@@ -295,7 +309,7 @@
                         <p class="card-desc">Bring your partner and compete in our balanced doubles divisions. Structured brackets with DUPR score trackers.</p>
                         <ul class="card-details-list">
                             <li><i class="ph ph-calendar"></i> Date: September 5, 2026</li>
-                            <li><i class="ph ph-trophy"></i> Prize Pool: ₱15,000.00</li>
+                            <li><i class="ph ph-trophy"></i> Prize Pool: {{ 15000|format_currency }}</li>
                         </ul>
                         <div class="card-footer">
                             <span>Open for Entries</span>
@@ -308,7 +322,7 @@
     </section>
 
     <!-- SECTION C: ACADEMY INSIGHTS -->
-    <div class="newspaper-divider-container" id="clinics-listing">
+    <div class="newspaper-divider-container">
         <div class="newspaper-section-divider">
             <span>Section C</span>
             <span>Academy Insights</span>
@@ -316,7 +330,7 @@
         </div>
     </div>
 
-    <section class="editorial-section">
+    <section class="editorial-section" id="clinics-listing">
         <h2 class="editorial-section-title">Clinics &amp; Tutorials</h2>
         <p class="editorial-section-subtitle">Enhance your game with custom tutorial articles and embedded instructional videos.</p>
         
@@ -377,7 +391,7 @@
     </section>
 
     <!-- SECTION D: SUBSCRIPTION AND CIRCULATION -->
-    <div class="newspaper-divider-container" id="subscription-pricing">
+    <div class="newspaper-divider-container">
         <div class="newspaper-section-divider">
             <span>Section D</span>
             <span>Memberships &amp; Circulation</span>
@@ -385,7 +399,7 @@
         </div>
     </div>
 
-    <section class="subscription-section">
+    <section class="subscription-section" id="subscription-pricing">
         <div class="subscription-container">
             <div class="section-title" style="margin-bottom: 24px;">
                 <h2 class="editorial-section-title" style="text-align: center;">Choose Your Circulation Plan</h2>
@@ -397,7 +411,7 @@
                 <div class="sub-card">
                     <h3>Player Membership</h3>
                     <p>Designed for individuals looking to reserve courts, join tournaments, and find community matches.</p>
-                    <div class="sub-price">₱0.00 <span>/ Free</span></div>
+                    <div class="sub-price">{{ 0|format_currency }}</div>
                     <ul class="sub-features">
                         <li><i class="ph ph-check-circle"></i> Reserve verified courts online</li>
                         <li><i class="ph ph-check-circle"></i> GCash checkout integration</li>
@@ -413,7 +427,7 @@
                     <span class="sub-popular-badge">Highly Engaged</span>
                     <h3>Club Administrator</h3>
                     <p>For tournament organizers and local club coordinators seeking advanced bracket engines.</p>
-                    <div class="sub-price">₱0.00 <span>/ Free</span></div>
+                    <div class="sub-price">{{ 0|format_currency }}</div>
                     <ul class="sub-features">
                         <li><i class="ph ph-check-circle"></i> <strong>Everything in Player Access</strong></li>
                         <li><i class="ph ph-check-circle"></i> Build bracket tournament engines</li>
@@ -429,7 +443,7 @@
                 <div class="sub-card">
                     <h3>Facility Owner</h3>
                     <p>Enterprise layout for facility operators looking to list courts, track utilization, and manage operations.</p>
-                    <div class="sub-price">₱0.00 <span>/ Free</span></div>
+                    <div class="sub-price">{{ 0|format_currency }}</div>
                     <ul class="sub-features">
                         <li><i class="ph ph-check-circle"></i> <strong>Everything in Administrator</strong></li>
                         <li><i class="ph ph-check-circle"></i> List multiple facilities &amp; courts</li>
@@ -491,7 +505,7 @@
     </section>
 
     <!-- SECTION F: HELPDESK FAQ -->
-    <div class="newspaper-divider-container" id="faq">
+    <div class="newspaper-divider-container">
         <div class="newspaper-section-divider">
             <span>Section F</span>
             <span>Frequently Asked Questions</span>
@@ -499,7 +513,7 @@
         </div>
     </div>
 
-    <section class="faq-section">
+    <section class="faq-section" id="faq">
         <div class="faq-grid">
             <div class="faq-item">
                 <h3>How do I make a reservation on PickleballHub?</h3>
