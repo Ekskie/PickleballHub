@@ -63,7 +63,7 @@
 /* Tournament Grid */
 .tournaments-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
     gap: 32px;
 }
 
@@ -217,16 +217,30 @@
 }
 
 @media (max-width: 768px) {
+    .tournaments-section {
+        padding: 24px 16px 40px;
+    }
+
+    .section-title {
+        margin-bottom: 24px;
+    }
+
     .section-title h2 {
-        font-size: 2.5rem;
+        font-size: 2rem;
     }
 
     .tournaments-nav {
         flex-direction: column;
         gap: 12px;
+        margin-bottom: 24px;
     }
 
     .tournament-details {
         grid-template-columns: 1fr;
+        margin-bottom: 20px;
+    }
+
+    .tournament-content {
+        padding: 20px;
     }
 }

@@ -3,6 +3,13 @@ html {
     scroll-behavior: smooth;
 }
 
+/* Editorial Header Wrapper */
+.editorial-header-wrapper {
+    position: relative;
+    width: 100%;
+    z-index: 1050;
+}
+
 /* Utility Bar styles */
 .editorial-utility-bar {
     display: flex;
@@ -37,6 +44,11 @@ html {
     gap: 12px;
 }
 
+.desktop-auth-group {
+    display: inline-flex;
+    align-items: center;
+}
+
 .theme-toggle-btn {
     background: var(--accent-bg);
     border: 1px solid var(--card-border);
@@ -53,6 +65,86 @@ html {
     background: var(--primary-orange);
     color: white;
     border-color: var(--primary-orange);
+}
+
+.mobile-nav-toggle {
+    display: none;
+    background: var(--accent-bg);
+    border: 1px solid var(--card-border);
+    color: var(--text-primary);
+    cursor: pointer;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    font-size: 1.1rem;
+    transition: var(--transition);
+    margin-left: 8px;
+}
+
+.mobile-nav-toggle:hover {
+    background: var(--primary-orange);
+    color: white;
+    border-color: var(--primary-orange);
+}
+
+/* Mobile Dropdown Navigation Menu */
+.editorial-mobile-menu {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--navbar-bg);
+    border-bottom: 2px solid var(--text-primary);
+    padding: 20px 4%;
+    z-index: 1040;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.editorial-mobile-menu.active {
+    display: flex;
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.mobile-menu-links {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-newspaper);
+    padding-bottom: 20px;
+}
+
+.mobile-nav-item {
+    font-family: 'Lora', Georgia, serif;
+    font-size: 1.1rem;
+    text-decoration: none;
+    color: var(--text-primary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: color 0.2s;
+}
+
+.mobile-nav-item:hover {
+    color: var(--primary-orange);
+}
+
+.mobile-menu-auth {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 /* Editorial Centered Nav Menu */
@@ -139,6 +231,111 @@ html {
         flex-direction: column;
         gap: 8px;
         text-align: center;
+    }
+
+    /* Hide desktop nav menu and large masthead on mobile */
+    .editorial-nav-menu {
+        display: none !important;
+    }
+    .masthead-container {
+        display: none !important;
+    }
+    
+    /* Make header wrapper sticky on mobile */
+    .editorial-header-wrapper {
+        position: sticky;
+        top: 0;
+        z-index: 1100;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Hide desktop auth group in utility bar on mobile */
+    .desktop-auth-group {
+        display: none !important;
+    }
+    
+    /* Show mobile hamburger toggle */
+    .mobile-nav-toggle {
+        display: flex !important;
+    }
+
+    /* Reduce spacing for sections to make them compact on mobile */
+    .editorial-section {
+        padding: 24px 4% 32px !important;
+    }
+    
+    .subscription-section {
+        padding: 32px 4% !important;
+    }
+    
+    .testimonials-section {
+        padding: 32px 4% !important;
+    }
+    
+    .faq-section {
+        padding: 32px 4% !important;
+    }
+    
+    .newspaper-divider-container {
+        margin: 24px auto 12px !important;
+    }
+    
+    .final-cta-section {
+        padding: 32px 4% !important;
+    }
+
+    /* Stats footer responsive adjustment */
+    .stats-footer {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 20px !important;
+        padding: 24px 5% !important;
+    }
+
+    /* Hero slider mobile compact styling */
+    .lead-story-slider {
+        min-height: 380px !important;
+    }
+    .slide-img-wrapper {
+        height: 180px !important;
+    }
+    .slide-title {
+        font-size: 1.3rem !important;
+        margin-bottom: 8px !important;
+        line-height: 1.3 !important;
+    }
+    .slide-desc {
+        font-size: 0.85rem !important;
+        line-height: 1.4 !important;
+        margin-bottom: 12px !important;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .slide-content {
+        padding: 16px !important;
+    }
+    .slider-controls {
+        bottom: 16px !important;
+        right: 16px !important;
+    }
+
+    /* Responsive newspaper section divider */
+    .newspaper-section-divider {
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        font-size: 0.7rem !important;
+        gap: 8px !important;
+    }
+    
+    .newspaper-section-divider span {
+        white-space: normal !important;
+        text-align: center !important;
+    }
+    
+    .newspaper-section-divider span:not(:last-child)::after {
+        content: "" !important;
+        margin-left: 0 !important;
     }
 }
 
@@ -431,7 +628,7 @@ html {
 
 .editorial-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
     gap: 32px;
 }
 
@@ -582,7 +779,7 @@ html {
 
 .subscription-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
     gap: 32px;
     margin-top: 40px;
 }
@@ -713,7 +910,7 @@ html {
 
 .testimonials-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
     gap: 32px;
     max-width: 100%;
     margin: 0 auto;
@@ -756,7 +953,7 @@ html {
 
 .faq-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
     gap: 32px;
     max-width: 100%;
     margin: 0 auto;
