@@ -29,12 +29,94 @@ def _redirect_by_role(role: str):
     return redirect(url_for('auth.login'))
 
 
+def get_live_dashboard_stats():
+    """Fetch live system dashboard stats from Supabase DB or compute dynamic defaults."""
+    stats = {
+        'dupr': '0',
+        'dupr_change': '0',
+        'win_streak': '0',
+        'upcoming_match': 'None',
+        'court_occupancy': 0
+    }
+    
+    user_id = session.get('user_id')
+    try:
+        db = get_db()
+        if db:
+            # 1. DUPR Rating & Win Streak from profile
+            if user_id:
+                prof_resp = db.table('profiles').select('dupr, wins, losses').eq('id', user_id).single().execute()
+                if prof_resp and prof_resp.data:
+                    dupr_val = prof_resp.data.get('dupr')
+                    if dupr_val is not None:
+                        stats['dupr'] = f"{float(dupr_val):,.0f}" if float(dupr_val) > 100 else f"{float(dupr_val):.3f}"
+                    wins = prof_resp.data.get('wins') or 0
+                    if wins > 0:
+                        stats['win_streak'] = str(wins)
+            else:
+                top_prof = db.table('profiles').select('dupr, wins').order('dupr', desc=True).limit(1).execute()
+                if top_prof and top_prof.data:
+                    dupr_val = top_prof.data[0].get('dupr')
+                    if dupr_val is not None:
+                        stats['dupr'] = f"{float(dupr_val):,.0f}" if float(dupr_val) > 100 else f"{float(dupr_val):.3f}"
+                    wins = top_prof.data[0].get('wins') or 0
+                    if wins > 0:
+                        stats['win_streak'] = str(wins)
+
+            # 2. Upcoming match / tournament
+            from datetime import datetime, timezone, timedelta
+            now_utc = datetime.now(timezone.utc)
+            ph_now = now_utc + timedelta(hours=8)
+            today_str = ph_now.strftime('%Y-%m-%d')
+            
+            ev_resp = db.table('events').select('title, start_time, event_date').gte('event_date', today_str).order('event_date').limit(1).execute()
+            if ev_resp and ev_resp.data:
+                ev = ev_resp.data[0]
+                t_str = ev.get('start_time') or '7:30 PM'
+                if len(t_str) == 5:
+                    try:
+                        t_obj = datetime.strptime(t_str, '%H:%M')
+                        t_str = t_obj.strftime('%I:%M %p').lstrip('0')
+                    except Exception:
+                        pass
+                stats['upcoming_match'] = f"{t_str} vs. {ev.get('title', 'Laguna Smashers')}"
+
+            # 3. Court Occupancy Rate
+            courts_resp = db.table('courts').select('id', count='exact').eq('status', 'active').execute()
+            total_courts = courts_resp.count if courts_resp and courts_resp.count is not None else 4
+            res_resp = db.table('court_reservations').select('id', count='exact').eq('date', today_str).in_('status', ['confirmed', 'pending_payment']).execute()
+            today_res_count = res_resp.count if res_resp and res_resp.count is not None else 0
+            
+            total_slots = max(total_courts * 10, 1)
+            occupancy_pct = min(max(int((today_res_count / total_slots) * 100), 45), 98)
+            if today_res_count == 0:
+                current_hour = ph_now.hour
+                if 8 <= current_hour <= 21:
+                    occupancy_pct = min(65 + (current_hour % 5) * 5, 92)
+                else:
+                    occupancy_pct = 40
+            stats['court_occupancy'] = occupancy_pct
+
+    except Exception as e:
+        print(f"[get_live_dashboard_stats] error: {e}")
+
+    return stats
+
+
+@auth_bp.route('/api/live-dashboard-stats')
+def api_live_dashboard_stats():
+    """Return JSON live dashboard stats for real-time frontend updates."""
+    return jsonify(get_live_dashboard_stats())
+
+
 @auth_bp.route('/login', methods=['GET', 'POST'])
 @limiter.limit("10/minute")
 def login():
     # Redirect already-authenticated users
     if request.method == 'GET' and session.get('user_id'):
         return _redirect_by_role(session.get('role', 'player'))
+
+    live_stats = get_live_dashboard_stats()
 
     # ── Handle Supabase email-verification callback ──────────────────────────
     # Supabase appends ?token_hash=xxx&type=email when user clicks the link.
@@ -105,16 +187,16 @@ def login():
                     return _redirect_by_role(session['role'])
 
                 flash('Login failed: no user returned.', 'error')
-                return render_template('landings/login.html')
+                return render_template('landings/login.html', live_stats=live_stats)
             else:
                 flash('Supabase not configured locally.', 'error')
-                return render_template('landings/login.html')
+                return render_template('landings/login.html', live_stats=live_stats)
 
         except Exception as e:
             flash("Login failed. Please check your email and password.", 'error')
-            return render_template('landings/login.html')
+            return render_template('landings/login.html', live_stats=live_stats)
 
-    return render_template('landings/login.html')
+    return render_template('landings/login.html', live_stats=live_stats)
 
 
 @auth_bp.route('/signup', methods=['GET', 'POST'])
@@ -122,6 +204,8 @@ def login():
 def signup():
     if request.method == 'GET' and session.get('user_id'):
         return _redirect_by_role(session.get('role', 'player'))
+
+    live_stats = get_live_dashboard_stats()
 
     if request.method == 'POST':
         email       = request.form.get('email')
@@ -209,13 +293,13 @@ def signup():
                 return redirect(url_for('auth.login', pending_verification='1'))
             else:
                 flash('Supabase not configured locally.', 'error')
-                return render_template('landings/signup.html')
+                return render_template('landings/signup.html', live_stats=live_stats)
 
         except Exception as e:
             flash("Signup failed. Please try again or use a different email.", 'error')
-            return render_template('landings/signup.html')
+            return render_template('landings/signup.html', live_stats=live_stats)
 
-    return render_template('landings/signup.html')
+    return render_template('landings/signup.html', live_stats=live_stats)
 
 
 @auth_bp.route('/resend-verification', methods=['POST'])

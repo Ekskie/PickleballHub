@@ -9,7 +9,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Base CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <!-- Landing Page CSS -->
@@ -40,73 +40,155 @@
             z-index: 2;
         }
 
-        .courts-header {
+        .editorial-page-header {
             text-align: center;
-            margin-bottom: 50px;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
+            padding: 24px 0 32px;
+            border-bottom: 1px solid var(--border-newspaper);
+            margin-bottom: 36px;
         }
 
-        .courts-header h1 {
+        .editorial-kicker {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--primary-orange);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .editorial-main-title {
             font-family: 'Lora', Georgia, serif;
-            font-size: 3rem;
-            margin-bottom: 12px;
-            color: var(--text-primary);
+            font-size: 3.2rem;
             font-weight: 800;
+            color: var(--text-primary);
+            margin: 0 0 12px 0;
+            line-height: 1.1;
+            letter-spacing: -0.5px;
         }
 
-        .courts-header p {
+        .editorial-lead-desc {
+            font-family: 'Outfit', sans-serif;
             font-size: 1.1rem;
             color: var(--text-secondary);
-            font-weight: 400;
+            max-width: 680px;
+            margin: 0 auto;
+            line-height: 1.5;
         }
 
         .search-filter {
             display: flex;
-            gap: 15px;
-            margin-bottom: 40px;
-            flex-wrap: wrap;
-            max-width: 800px;
+            gap: 12px;
+            margin-bottom: 36px;
+            max-width: 720px;
             margin-left: auto;
             margin-right: auto;
         }
 
-        .search-filter input {
+        .search-input-wrap {
             flex: 1;
-            min-width: 300px;
-            padding: 14px 18px;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-input-wrap i {
+            position: absolute;
+            left: 18px;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+        }
+
+        .search-input-wrap input {
+            width: 100%;
+            padding: 14px 18px 14px 48px;
             border: 1px solid var(--card-border);
-            border-radius: 12px;
+            border-radius: 30px;
             background: var(--card-bg);
             color: var(--text-primary);
-            font-size: 1rem;
-            font-family: inherit;
-            transition: var(--transition);
-            box-shadow: var(--card-shadow);
+            font-size: 0.95rem;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
         }
 
-        .search-filter input:focus {
+        .search-input-wrap input:focus {
             outline: none;
             border-color: var(--primary-orange);
-            box-shadow: 0 0 0 3px rgba(230, 74, 25, 0.15);
+            box-shadow: 0 0 0 3px rgba(224, 86, 56, 0.15);
         }
 
-        .search-filter input::placeholder {
-            color: var(--text-muted);
+        .facility-select-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            min-width: 240px;
+        }
+
+        .facility-select-wrap i {
+            position: absolute;
+            left: 18px;
+            color: var(--primary-orange);
+            font-size: 1.2rem;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .facility-select {
+            width: 100%;
+            padding: 14px 38px 14px 48px;
+            border: 1px solid var(--card-border);
+            border-radius: 30px;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2394a3b8' viewBox='0 0 256 256'%3E%3Cpath d='M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+        }
+
+        .facility-select:focus {
+            outline: none;
+            border-color: var(--primary-orange);
+            box-shadow: 0 0 0 3px rgba(224, 86, 56, 0.15);
+        }
+
+        .facility-select option {
+            background: var(--bg-color);
+            color: var(--text-primary);
+            padding: 8px;
         }
 
         .search-filter button {
-            padding: 14px 36px;
+            padding: 14px 28px;
+            border-radius: 30px;
             background: var(--primary-orange);
-            color: white;
+            color: #ffffff;
             border: none;
-            border-radius: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
             cursor: pointer;
-            font-weight: 600;
-            font-size: 1rem;
-            transition: var(--transition);
-            box-shadow: 0 4px 12px rgba(230, 74, 25, 0.2);
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-filter button:hover {
+            background: var(--primary-orange-hover);
+            transform: translateY(-1px);
         }
 
         .search-filter button:hover {
@@ -485,7 +567,235 @@
             z-index: 5;
         }
 
-        .popup-body {
+        /* ── Facility Group Card & Collapsible Courts Dropdown ── */
+        .facility-group-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            margin-bottom: 24px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        }
+
+        .facility-group-card:hover {
+            border-color: var(--primary-orange);
+            transform: translateY(-2px);
+        }
+
+        .facility-card-header {
+            padding: 24px;
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            background: var(--card-bg);
+            cursor: pointer;
+        }
+
+        .facility-thumb-img {
+            width: 140px;
+            height: 105px;
+            border-radius: 14px;
+            object-fit: cover;
+            flex-shrink: 0;
+            border: 1px solid var(--card-border);
+        }
+
+        .facility-info-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .facility-name-title {
+            font-family: 'Lora', Georgia, serif;
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin: 0 0 4px 0;
+        }
+
+        .facility-location-tag {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.82rem;
+            color: var(--primary-orange);
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .facility-description-text {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.45;
+            margin: 0 0 14px 0;
+        }
+
+        .facility-bottom-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .facility-badge-counter {
+            background: rgba(224, 86, 56, 0.1);
+            color: var(--primary-orange);
+            border: 1px solid rgba(224, 86, 56, 0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-toggle-courts {
+            background: var(--navbar-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-toggle-courts:hover, .btn-toggle-courts.expanded {
+            background: var(--primary-orange);
+            color: #ffffff;
+            border-color: var(--primary-orange);
+        }
+
+        .btn-toggle-courts .toggle-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .btn-toggle-courts.expanded .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        /* Collapsible Dropdown Container */
+        .facility-courts-dropdown {
+            display: none;
+            background: var(--navbar-bg);
+            border-top: 1px solid var(--border-newspaper);
+            padding: 20px 24px 24px;
+        }
+
+        .facility-courts-dropdown.active {
+            display: block;
+            animation: fadeInDropdown 0.3s ease;
+        }
+
+        @keyframes fadeInDropdown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dropdown-section-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Courts Subgrid */
+        .courts-subgrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 14px;
+        }
+
+        .court-subcard {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .court-subcard:hover {
+            border-color: var(--primary-orange);
+            transform: translateY(-2px);
+        }
+
+        .court-subcard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .court-sub-name {
+            font-family: 'Lora', Georgia, serif;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .court-sub-type {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-secondary);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .court-sub-rate {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #10B981;
+        }
+
+        .btn-book-sub {
+            background: var(--primary-orange);
+            color: #ffffff !important;
+            padding: 8px 16px;
+            border-radius: 18px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .btn-book-sub:hover {
+            background: var(--primary-orange-hover);
+        }
             padding: 16px;
             background: rgba(15, 20, 25, 0.95);
         }
@@ -566,43 +876,113 @@
             bottom: 24px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 999;
-            background: #ff5722;
-            color: #fff;
+            z-index: 9999;
+            background: var(--primary-orange);
+            color: #ffffff;
             border: none;
-            padding: 12px 24px;
+            padding: 12px 26px;
             border-radius: 30px;
             font-size: 0.92rem;
             font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 4px 20px rgba(255, 87, 34, 0.4);
+            box-shadow: 0 6px 24px rgba(224, 86, 56, 0.45);
             align-items: center;
             gap: 8px;
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            font-family: inherit;
+            font-family: 'Outfit', sans-serif;
         }
 
         .mobile-toggle-btn:hover {
-            background: #f4511e;
+            background: var(--primary-orange-hover);
             transform: translateX(-50%) translateY(-2px);
-            box-shadow: 0 6px 24px rgba(255, 87, 34, 0.6);
+            box-shadow: 0 8px 28px rgba(224, 86, 56, 0.6);
         }
 
         @media (max-width: 991px) {
+            .courts-container {
+                padding: 16px 16px 80px;
+                width: 100%;
+                box-sizing: border-box;
+                overflow-x: hidden;
+            }
+
+            .editorial-page-header {
+                padding: 16px 0 20px;
+                margin-bottom: 20px;
+            }
+
+            .editorial-main-title {
+                font-size: 2.1rem;
+            }
+
+            .editorial-lead-desc {
+                font-size: 0.95rem;
+            }
+
+            .search-filter {
+                flex-direction: column;
+                width: 100%;
+                gap: 10px;
+                margin-bottom: 20px;
+                box-sizing: border-box;
+            }
+
+            .search-input-wrap {
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .search-input-wrap input {
+                width: 100%;
+                box-sizing: border-box;
+                font-size: 0.9rem;
+                padding: 12px 16px 12px 44px;
+            }
+
+            .facility-select-wrap {
+                width: 100%;
+                min-width: 0;
+                box-sizing: border-box;
+            }
+
+            .facility-select {
+                width: 100%;
+                box-sizing: border-box;
+                font-size: 0.9rem;
+                padding: 12px 38px 12px 44px;
+            }
+
+            .search-filter button {
+                width: 100%;
+                box-sizing: border-box;
+                justify-content: center;
+                padding: 12px 20px;
+            }
+
             .mobile-toggle-btn {
                 display: flex;
             }
 
             .courts-layout-wrap {
+                display: block;
                 position: relative;
                 overflow: hidden;
                 width: 100%;
-                min-height: 500px;
+                min-height: 480px;
+                margin-top: 20px;
             }
 
             .courts-list-pane {
                 width: 100%;
+                flex: none;
                 transition: transform 0.4s cubic-bezier(0.77, 0, 0.175, 1);
+                box-sizing: border-box;
+            }
+
+            .courts-grid {
+                grid-template-columns: 1fr !important;
+                gap: 16px;
+                width: 100%;
             }
 
             .courts-map-pane {
@@ -610,11 +990,14 @@
                 top: 0;
                 left: 0;
                 width: 100%;
-                height: 500px;
-                border-radius: 12px;
+                height: 100%;
+                min-height: 480px;
+                border-radius: 16px;
                 transform: translateX(100%);
                 transition: transform 0.4s cubic-bezier(0.77, 0, 0.175, 1);
                 z-index: 10;
+                flex: none;
+                box-sizing: border-box;
             }
 
             .courts-layout-wrap.show-map-view .courts-list-pane {
@@ -622,13 +1005,22 @@
                 pointer-events: none;
                 height: 0;
                 overflow: hidden;
+                opacity: 0;
             }
 
             .courts-layout-wrap.show-map-view .courts-map-pane {
                 transform: translateX(0);
                 position: relative;
-                height: calc(100vh - 160px);
-                min-height: 450px;
+                height: calc(100vh - 200px);
+                min-height: 480px;
+                width: 100%;
+                flex: none;
+                opacity: 1;
+            }
+
+            #courts-map {
+                width: 100% !important;
+                height: 100% !important;
             }
         }
     </style>
@@ -645,16 +1037,37 @@
     <!-- Courts Listing Section -->
     <section class="courts-container">
 
-        <div class="courts-header">
-            <h1>Available Courts</h1>
-            <p>Browse and book courts across multiple facilities in Laguna</p>
-        </div>
+        <!-- Editorial Page Title Header -->
+        <header class="editorial-page-header">
+            <span class="editorial-kicker"><i class="ph-fill ph-map-pin"></i> LAGUNA DISTRICT COURT FACILITIES</span>
+            <h1 class="editorial-main-title">Available Courts &amp; Venues</h1>
+            <p class="editorial-lead-desc">Browse and book courts across multiple facilities in Laguna. Real-time availability, indoor &amp; outdoor courts, and interactive district map.</p>
+        </header>
 
-        <!-- Search Filter -->
-        <form method="GET" class="search-filter">
-            <input type="text" name="search" placeholder="Search courts, facilities, or locations..."
-                value="{{ search_query }}">
-            <button type="submit">Search</button>
+        <!-- Search & Facility Filter Bar -->
+        <form method="GET" class="search-filter" id="courtsFilterForm">
+            <div class="search-input-wrap">
+                <i class="ph ph-magnifying-glass"></i>
+                <input type="text" name="search" placeholder="Search courts, facilities, or locations..." value="{{ search_query }}">
+            </div>
+            
+            <div class="facility-select-wrap">
+                <i class="ph ph-buildings"></i>
+                <select name="facility" class="facility-select" onchange="this.form.submit()" aria-label="Filter by Facility">
+                    <option value="">All Facilities</option>
+                    {% if facilities %}
+                        {% for fac in facilities %}
+                            <option value="{{ fac }}" {% if selected_facility == fac %}selected{% endif %}>{{ fac }}</option>
+                        {% endfor %}
+                    {% else %}
+                        <option value="Paete Sports Center" {% if selected_facility == 'Paete Sports Center' %}selected{% endif %}>Paete Sports Center</option>
+                        <option value="Pakil Arena" {% if selected_facility == 'Pakil Arena' %}selected{% endif %}>Pakil Arena</option>
+                        <option value="Pangil Central Hall" {% if selected_facility == 'Pangil Central Hall' %}selected{% endif %}>Pangil Central Hall</option>
+                    {% endif %}
+                </select>
+            </div>
+
+            <button type="submit">Filter <i class="ph ph-funnel"></i></button>
         </form>
 
         <!-- Courts Layout Split Pane -->
@@ -662,70 +1075,137 @@
 
             <!-- Left Pane: Listings -->
             <div class="courts-list-pane">
-                <!-- Courts Count -->
-                {% if courts %}
-                <div class="courts-count">Found {{ courts_count }} available court{% if courts_count != 1 %}s{% endif %}
+                <!-- Facilities Count -->
+                {% if facilities %}
+                <div class="courts-count">
+                    Found {{ facilities_count }} Facility Hub{% if facilities_count != 1 %}s{% endif %} ({{ courts_count }} Total Courts Available)
                 </div>
                 {% endif %}
 
-                <!-- Courts Grid -->
-                {% if courts %}
-                <div class="courts-grid">
-                    {% for court in courts %}
-                    <div class="editorial-card court-card" data-court-id="{{ court.id }}" data-facility-id="{{ court.facility_id }}"
-                        onmouseenter="highlightMarker('{{ court.facility_id }}')"
-                        onmouseleave="unhighlightMarker('{{ court.facility_id }}')">
-                        <div class="card-img-wrapper" style="height: 180px;">
-                            <span class="card-tag">{{ court.type }}</span>
-                            {% if court.facility_image_url %}
-                                <img src="{{ court.facility_image_url }}" alt="{{ court.name }}">
-                            {% else %}
-                                <img src="{{ url_for('static', filename='images/court-hero.jpg') }}" alt="{{ court.name }}">
-                            {% endif %}
+                <!-- Facilities List with Dropdown Collapsible Courts -->
+                {% if facilities %}
+                    <div class="facilities-list">
+                        {% for fac in facilities %}
+                            <div class="facility-group-card" data-facility-id="{{ fac.id }}"
+                                 onmouseenter="highlightMarker('{{ fac.id }}')"
+                                 onmouseleave="unhighlightMarker('{{ fac.id }}')">
+                                <div class="facility-card-header" onclick="toggleFacilityCourts('fac-dropdown-{{ loop.index }}', this.querySelector('.btn-toggle-courts'))">
+                                    <img src="{{ fac.image_url if fac.image_url else url_for('static', filename='images/court-hero.jpg') }}" alt="{{ fac.name }}" class="facility-thumb-img">
+                                    
+                                    <div class="facility-info-body">
+                                        <span class="facility-location-tag"><i class="ph-fill ph-map-pin"></i> {{ fac.location or 'Laguna District' }}</span>
+                                        <h3 class="facility-name-title">{{ fac.name }}</h3>
+                                        <p class="facility-description-text">{{ fac.description or 'Premium court facility in Laguna equipped with professional nets, lighting, and spectator areas.' }}</p>
+                                        
+                                        <div class="facility-bottom-bar">
+                                            <span class="facility-badge-counter">
+                                                <i class="ph ph-racket"></i> {{ fac.courts|length }} Court{% if fac.courts|length != 1 %}s{% endif %} Available
+                                            </span>
+                                            <button type="button" class="btn-toggle-courts" onclick="event.stopPropagation(); toggleFacilityCourts('fac-dropdown-{{ loop.index }}', this)">
+                                                <span class="toggle-label">View Courts</span> <i class="ph ph-caret-down toggle-icon"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Collapsible Courts Dropdown Container -->
+                                <div class="facility-courts-dropdown" id="fac-dropdown-{{ loop.index }}">
+                                    <div class="dropdown-section-title"><i class="ph ph-squares-four"></i> Available Courts at {{ fac.name }}</div>
+                                    <div class="courts-subgrid">
+                                        {% for court in fac.courts %}
+                                            <div class="court-subcard">
+                                                <div class="court-subcard-header">
+                                                    <h4 class="court-sub-name">{{ court.name }}</h4>
+                                                    <span class="court-sub-type">{{ court.type }}</span>
+                                                </div>
+                                                <div class="court-sub-rate">₱{{ "%.2f"|format(court.hourly_rate) }} / hr</div>
+                                                <a href="{{ url_for('auth.login') }}" class="btn-book-sub">Book Court <i class="ph ph-arrow-right"></i></a>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <!-- Demo Fallback Facilities with Collapsible Courts if Empty Database -->
+                    <div class="facilities-list">
+                        <div class="facility-group-card">
+                            <div class="facility-card-header" onclick="toggleFacilityCourts('fac-demo-1', this.querySelector('.btn-toggle-courts'))">
+                                <img src="{{ url_for('static', filename='images/background.jpg') }}" alt="Paete Sports Center" class="facility-thumb-img">
+                                <div class="facility-info-body">
+                                    <span class="facility-location-tag"><i class="ph-fill ph-map-pin"></i> Paete, Laguna</span>
+                                    <h3 class="facility-name-title">Paete Sports Center</h3>
+                                    <p class="facility-description-text">Premier indoor sports facility featuring covered hardwood courts, LED lighting, and locker facilities.</p>
+                                    <div class="facility-bottom-bar">
+                                        <span class="facility-badge-counter"><i class="ph ph-racket"></i> 2 Courts Available</span>
+                                        <button type="button" class="btn-toggle-courts" onclick="event.stopPropagation(); toggleFacilityCourts('fac-demo-1', this)">
+                                            <span class="toggle-label">View Courts</span> <i class="ph ph-caret-down toggle-icon"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="facility-courts-dropdown" id="fac-demo-1">
+                                <div class="dropdown-section-title"><i class="ph ph-squares-four"></i> Available Courts at Paete Sports Center</div>
+                                <div class="courts-subgrid">
+                                    <div class="court-subcard">
+                                        <div class="court-subcard-header">
+                                            <h4 class="court-sub-name">Court 1 (Indoor)</h4>
+                                            <span class="court-sub-type">Indoor</span>
+                                        </div>
+                                        <div class="court-sub-rate">₱350.00 / hr</div>
+                                        <a href="{{ url_for('auth.login') }}" class="btn-book-sub">Book Court <i class="ph ph-arrow-right"></i></a>
+                                    </div>
+                                    <div class="court-subcard">
+                                        <div class="court-subcard-header">
+                                            <h4 class="court-sub-name">Court 2 (Indoor)</h4>
+                                            <span class="court-sub-type">Indoor</span>
+                                        </div>
+                                        <div class="court-sub-rate">₱350.00 / hr</div>
+                                        <a href="{{ url_for('auth.login') }}" class="btn-book-sub">Book Court <i class="ph ph-arrow-right"></i></a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="card-content">
-                            <h3 class="card-title">{{ court.name }}</h3>
-                            <p class="card-desc">{{ court.facility_description or 'Well-maintained facility in the heart of Laguna. Professional nets, bright court lighting, and comfortable spectator seating.' }}</p>
-                            
-                            <ul class="card-details-list">
-                                <li><i class="ph ph-buildings"></i> {{ court.facility_name }}</li>
-                                <li><i class="ph ph-map-pin"></i> {{ court.facility_location }}</li>
-                                <li><i class="ph ph-currency-circle-dollar"></i> ₱{{ "%.2f"|format(court.hourly_rate) }}/hour</li>
-                            </ul>
-                            
-                            <div class="card-footer" style="margin-top: auto; border-top: 1px solid var(--card-border); padding-top: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-                                <a href="{{ url_for('auth.login') }}" class="card-action" style="font-weight: 600; color: var(--primary-orange); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; font-size: 0.85rem;">
-                                    Book Now <i class="ph ph-calendar-check"></i>
-                                </a>
-                                {% if session.get('user_id') %}
-                                <a href="#" class="card-action" onclick="viewCourtDetails('{{ court.id }}')" style="font-weight: 500; color: var(--text-secondary); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; font-size: 0.85rem;">
-                                    Details <i class="ph ph-info"></i>
-                                </a>
-                                {% else %}
-                                <a href="{{ url_for('auth.login') }}" class="card-action" style="font-weight: 500; color: var(--text-secondary); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; font-size: 0.85rem;">
-                                    Sign In <i class="ph ph-sign-in"></i>
-                                </a>
-                                {% endif %}
+
+                        <div class="facility-group-card">
+                            <div class="facility-card-header" onclick="toggleFacilityCourts('fac-demo-2', this.querySelector('.btn-toggle-courts'))">
+                                <img src="{{ url_for('static', filename='images/bg.png') }}" alt="Pakil Arena" class="facility-thumb-img">
+                                <div class="facility-info-body">
+                                    <span class="facility-location-tag"><i class="ph-fill ph-map-pin"></i> Pakil, Laguna</span>
+                                    <h3 class="facility-name-title">Pakil Pickleball Arena</h3>
+                                    <p class="facility-description-text">Outdoor championship court complex surrounded by lush greenery. Night playing lights available.</p>
+                                    <div class="facility-bottom-bar">
+                                        <span class="facility-badge-counter"><i class="ph ph-racket"></i> 2 Courts Available</span>
+                                        <button type="button" class="btn-toggle-courts" onclick="event.stopPropagation(); toggleFacilityCourts('fac-demo-2', this)">
+                                            <span class="toggle-label">View Courts</span> <i class="ph ph-caret-down toggle-icon"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="facility-courts-dropdown" id="fac-demo-2">
+                                <div class="dropdown-section-title"><i class="ph ph-squares-four"></i> Available Courts at Pakil Pickleball Arena</div>
+                                <div class="courts-subgrid">
+                                    <div class="court-subcard">
+                                        <div class="court-subcard-header">
+                                            <h4 class="court-sub-name">Main Center Court</h4>
+                                            <span class="court-sub-type">Outdoor</span>
+                                        </div>
+                                        <div class="court-sub-rate">₱400.00 / hr</div>
+                                        <a href="{{ url_for('auth.login') }}" class="btn-book-sub">Book Court <i class="ph ph-arrow-right"></i></a>
+                                    </div>
+                                    <div class="court-subcard">
+                                        <div class="court-subcard-header">
+                                            <h4 class="court-sub-name">Court B</h4>
+                                            <span class="court-sub-type">Outdoor</span>
+                                        </div>
+                                        <div class="court-sub-rate">₱300.00 / hr</div>
+                                        <a href="{{ url_for('auth.login') }}" class="btn-book-sub">Book Court <i class="ph ph-arrow-right"></i></a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <div class="empty-state">
-                    <div class="empty-icon">
-                        <i class="ph ph-magnifying-glass"></i>
-                    </div>
-                    <h2>No Courts Found</h2>
-                    <p>{% if search_query %}No courts match "{{ search_query }}". Try a different search term.{% else
-                        %}No courts available at the moment.{% endif %}</p>
-                    {% if search_query %}
-                    <a href="{{ url_for('main.courts_listing') }}" class="btn-view"
-                        style="display: inline-flex; margin-top: 20px;">
-                        <i class="ph ph-arrow-left"></i> Clear Search
-                    </a>
-                    {% endif %}
-                </div>
                 {% endif %}
             </div>
 
@@ -936,6 +1416,29 @@
             }
         });
 
+        // ── Facility Accordion Toggle ──
+        function toggleFacilityCourts(dropdownId, btnEl) {
+            const dropdown = document.getElementById(dropdownId);
+            if (!dropdown) return;
+            
+            const isExpanded = dropdown.classList.contains('active');
+            if (isExpanded) {
+                dropdown.classList.remove('active');
+                if (btnEl) {
+                    btnEl.classList.remove('expanded');
+                    const label = btnEl.querySelector('.toggle-label');
+                    if (label) label.innerText = 'View Courts';
+                }
+            } else {
+                dropdown.classList.add('active');
+                if (btnEl) {
+                    btnEl.classList.add('expanded');
+                    const label = btnEl.querySelector('.toggle-label');
+                    if (label) label.innerText = 'Hide Courts';
+                }
+            }
+        }
+
         // ── Two-Way Highlight Logic ──
         function highlightMarker(facilityId) {
             const marker = markers[facilityId];
@@ -969,24 +1472,27 @@
                 }
             }
 
-            // Find first card belonging to facility
-            const cards = document.querySelectorAll(`.court-card[data-facility-id="${facilityId}"]`);
-            if (cards.length > 0) {
-                const firstCard = cards[0];
-                firstCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Find facility card belonging to facility
+            const card = document.querySelector(`.facility-group-card[data-facility-id="${facilityId}"]`);
+            if (card) {
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Automatically open dropdown courts
+                const dropdown = card.querySelector('.facility-courts-dropdown');
+                const btn = card.querySelector('.btn-toggle-courts');
+                if (dropdown && !dropdown.classList.contains('active')) {
+                    toggleFacilityCourts(dropdown.id, btn);
+                }
 
-                // Trigger quick bounce highlight animation
-                cards.forEach(card => {
-                    card.classList.add('highlight');
-                    setTimeout(() => {
-                        card.classList.remove('highlight');
-                    }, 2000);
-                });
+                // Trigger quick highlight border animation
+                card.style.borderColor = 'var(--primary-orange)';
+                setTimeout(() => {
+                    card.style.borderColor = '';
+                }, 2000);
             }
         }
 
         function viewCourtDetails(courtId) {
-            // Detail logic placeholder
             alert('Court details view coming soon!');
         }
     </script>

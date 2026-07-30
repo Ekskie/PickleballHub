@@ -217,9 +217,11 @@ def community():
 
 @main_bp.route('/courts')
 def courts_listing():
-    """Display available courts for browsing and booking."""
+    """Display facilities with grouped expandable courts for browsing and booking."""
     search_query = request.args.get('search', '')
-    courts = []
+    selected_facility = request.args.get('facility', '')
+    facilities_dict = {}
+    
     try:
         client = get_db()
         if client:
@@ -230,43 +232,87 @@ def courts_listing():
             ).eq('status', 'active').execute()
 
             if resp.data:
-                courts_data = resp.data
-                
-                # Filter by search query if provided
-                if search_query.strip():
-                    search_lower = search_query.lower()
-                    courts_data = [
-                        c for c in courts_data
-                        if (search_lower in c.get('name', '').lower() or 
-                            search_lower in c.get('facilities', {}).get('name', '').lower() or
-                            search_lower in c.get('facilities', {}).get('location', '').lower())
-                    ]
-                
-                # Format courts for display
-                for court in courts_data:
+                for court in resp.data:
                     facility = court.get('facilities') or {}
-                    courts.append({
+                    f_id = str(facility.get('id') or court.get('facility_id') or 'unknown')
+                    fac_name = facility.get('name', 'Unknown Facility')
+                    
+                    if f_id not in facilities_dict:
+                        facilities_dict[f_id] = {
+                            'id': f_id,
+                            'name': fac_name,
+                            'location': facility.get('location', 'Laguna'),
+                            'image_url': facility.get('image_url'),
+                            'description': facility.get('description'),
+                            'latitude': float(facility.get('latitude')) if facility.get('latitude') is not None else None,
+                            'longitude': float(facility.get('longitude')) if facility.get('longitude') is not None else None,
+                            'courts': []
+                        }
+                    
+                    facilities_dict[f_id]['courts'].append({
                         'id': court['id'],
-                        'name': court.get('name', 'Unknown Court'),
+                        'name': court.get('name', 'Court'),
                         'type': court.get('type', 'indoor').capitalize(),
                         'hourly_rate': float(court.get('hourly_rate', 0)),
-                        'facility_name': facility.get('name', 'Unknown Facility'),
-                        'facility_location': facility.get('location', 'Laguna'),
-                        'facility_id': facility.get('id'),
-                        'facility_latitude': float(facility.get('latitude')) if facility.get('latitude') is not None else None,
-                        'facility_longitude': float(facility.get('longitude')) if facility.get('longitude') is not None else None,
-                        'facility_kyc_status': facility.get('kyc_status', 'pending'),
-                        'facility_image_url': facility.get('image_url'),
-                        'facility_description': facility.get('description'),
+                        'facility_id': f_id,
+                        'facility_name': fac_name,
+                        'facility_location': facility.get('location', 'Laguna')
                     })
+                    
+        facilities = list(facilities_dict.values())
+        facilities_list = sorted(list({f['name'] for f in facilities if f.get('name')}))
+
+        # Filter by selected facility if provided
+        if selected_facility.strip():
+            facilities = [f for f in facilities if f['name'].lower() == selected_facility.lower()]
+
+        # Filter by search query if provided
+        if search_query.strip():
+            search_lower = search_query.lower()
+            filtered_facilities = []
+            for fac in facilities:
+                match_fac = (search_lower in fac['name'].lower() or search_lower in fac['location'].lower())
+                matching_courts = [c for c in fac['courts'] if search_lower in c['name'].lower() or match_fac]
+                if match_fac or matching_courts:
+                    fac_copy = dict(fac)
+                    if matching_courts:
+                        fac_copy['courts'] = matching_courts
+                    filtered_facilities.append(fac_copy)
+            facilities = filtered_facilities
+
     except Exception as e:
         print(f'[courts_listing] DB error: {e}')
+        facilities = []
+
+    total_courts_count = sum(len(f['courts']) for f in facilities)
+
+    # Flat list for Leaflet map compatibility
+    flat_courts = []
+    for f in facilities:
+        for c in f['courts']:
+            flat_courts.append({
+                'id': c['id'],
+                'name': c['name'],
+                'type': c['type'],
+                'hourly_rate': c['hourly_rate'],
+                'facility_id': f['id'],
+                'facility_name': f['name'],
+                'facility_location': f['location'],
+                'facility_latitude': f['latitude'],
+                'facility_longitude': f['longitude'],
+                'facility_image_url': f['image_url'],
+                'facility_description': f['description']
+            })
 
     return render_template(
         'landings/courts.html',
-        courts=courts,
+        facilities=facilities,
+        courts=flat_courts,
+        facilities_list=facilities_list,
+        selected_facility=selected_facility,
         search_query=search_query,
-        courts_count=len(courts)
+        facilities_count=len(facilities),
+        courts_count=total_courts_count
     )
 
 

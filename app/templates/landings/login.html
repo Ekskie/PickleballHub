@@ -68,30 +68,38 @@
                 <div class="stats-dashboard-card">
                     <div class="widget-title-sec">
                         <i class="ph ph-activity"></i>
+                        <span class="live-pulse-dot"></span>
                         <span>Live Dashboard</span>
                     </div>
                     <div class="widget-row">
                         <span class="widget-label">DUPR Rating</span>
-                        <span class="widget-value">1,532 <span class="rating-pill"><i class="ph ph-trend-up"></i>
-                                +24</span></span>
+                        <span class="widget-value"><span id="live-dupr">{{ (live_stats.dupr if live_stats else '1,532')
+                                }}</span> <span class="rating-pill"><i class="ph ph-trend-up"></i> <span
+                                    id="live-dupr-change">{{ (live_stats.dupr_change if live_stats else '+24')
+                                    }}</span></span></span>
                     </div>
                     <div class="widget-row">
                         <span class="widget-label">Win Streak</span>
-                        <span class="widget-value"><span class="win-streak-badge">7 <i
+                        <span class="widget-value"><span class="win-streak-badge"><span id="live-win-streak">{{
+                                    (live_stats.win_streak if live_stats else '0') }}</span> <i
                                     class="ph ph-fire-simple"></i></span></span>
                     </div>
                     <div class="widget-row">
                         <span class="widget-label">Upcoming Match</span>
-                        <span class="widget-value" style="font-size: 0.95rem; font-weight: 600;">7:30 PM vs. Laguna
-                            Smashers</span>
+                        <span class="widget-value" id="live-upcoming-match"
+                            style="font-size: 0.95rem; font-weight: 600;">{{ (live_stats.upcoming_match if live_stats
+                            else 'None') }}</span>
                     </div>
                     <div>
                         <div class="widget-row" style="margin-bottom: 4px;">
                             <span class="widget-label">Court Occupancy</span>
-                            <span class="widget-value" style="font-size: 0.9rem; font-weight: 600;">85%</span>
+                            <span class="widget-value" id="live-occupancy-val"
+                                style="font-size: 0.9rem; font-weight: 600;">{{ (live_stats.court_occupancy if
+                                live_stats else 85) }}%</span>
                         </div>
                         <div class="progress-track">
-                            <div class="progress-fill"></div>
+                            <div class="progress-fill" id="live-occupancy-fill"
+                                style="width: {{ (live_stats.court_occupancy if live_stats else 85) }}%;"></div>
                         </div>
                     </div>
                 </div>
@@ -211,90 +219,8 @@
                     class="ph ph-arrow-right"></i></a>
         </div>
     </section>
-
-    <!-- Unified Brand Footer -->
-    <footer class="brand-footer">
-        <div class="footer-container">
-            <div class="footer-brand-col">
-                <div class="footer-logo">
-                    <img src="{{ url_for('static', filename='images/logo-icon.png') }}" alt="Logo Icon"
-                        class="logo-icon">
-                    <span class="logo-text">PickleballHub</span>
-                </div>
-                <p class="footer-tagline">The ultimate pickleball community platform. Connect, compete, and elevate your
-                    game.</p>
-                <div class="footer-socials">
-                    <a href="#"><i class="ph-fill ph-facebook-logo"></i></a>
-                    <a href="#"><i class="ph-fill ph-instagram-logo"></i></a>
-                    <a href="#"><i class="ph-fill ph-twitter-logo"></i></a>
-                    <a href="#"><i class="ph-fill ph-youtube-logo"></i></a>
-                </div>
-            </div>
-
-            <div class="footer-links-col">
-                <h4>Community</h4>
-                <ul>
-                    <li><a href="{{ url_for('main.index') }}#players">Find Players</a></li>
-                    <li><a href="{{ url_for('main.index') }}#clubs">Clubs</a></li>
-                    <li><a href="{{ url_for('main.index') }}#events">Events</a></li>
-                    <li><a href="{{ url_for('main.index') }}#forum">Forum</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-links-col">
-                <h4>Play</h4>
-                <ul>
-                    <li><a href="{{ url_for('main.courts_listing') }}">Book Courts</a></li>
-                    <li><a href="{{ url_for('main.tournaments') }}">Tournaments</a></li>
-                    <li><a href="{{ url_for('main.index') }}#leagues">Leagues</a></li>
-                    <li><a href="{{ url_for('main.index') }}#rankings">Rankings</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-links-col">
-                <h4>Academy</h4>
-                <ul>
-                    <li><a href="{{ url_for('main.clinics') }}">Tips &amp; Guides</a></li>
-                    <li><a href="{{ url_for('main.clinics') }}">Video Tutorials</a></li>
-                    <li><a href="{{ url_for('main.clinics') }}">Coaching</a></li>
-                    <li><a href="{{ url_for('main.clinics') }}">Training Plans</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-links-col">
-                <h4>Company</h4>
-                <ul>
-                    <li><a href="#about">About Us</a></li>
-                    <li><a href="#careers">Careers</a></li>
-                    <li><a href="#press">Press</a></li>
-                    <li><a href="#contact">Contact</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-links-col">
-                <h4>Support</h4>
-                <ul>
-                    <li><a href="#help">Help Center</a></li>
-                    <li><a href="#safety">Safety</a></li>
-                    <li><a href="#terms">Terms of Service</a></li>
-                    <li><a href="#privacy">Privacy Policy</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-newsletter-col">
-                <h4>Stay Updated</h4>
-                <p>Get the latest news and updates from PickleballHub.</p>
-                <form class="footer-newsletter-form" onsubmit="event.preventDefault(); alert('Subscribed!');">
-                    <input type="email" placeholder="Enter your email" required>
-                    <button type="submit" class="newsletter-submit-btn">Subscribe</button>
-                </form>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2026 PickleballHub. All rights reserved.</p>
-            <p>Made with <i class="ph-fill ph-heart" style="color: #ff5252;"></i> for the pickleball community</p>
-        </div>
-    </footer>
+    <!-- Footer include -->
+    {% include 'landings/footer.html' %}
 
     <!-- ── Verification Confirmed Modal ───────────────────────────────────── -->
     {% if request.args.get('verified') == '1' %}
@@ -380,7 +306,7 @@
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 
-    <!-- GSAP Page Animations -->
+    <!-- GSAP Page Animations & Live Stats Polling -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof gsap !== 'undefined') {
@@ -389,6 +315,29 @@
                 gsap.from('.auth-card', { duration: 0.8, y: 20, opacity: 0, ease: 'power2.out', delay: 0.1 });
             }
         });
+
+        function updateLiveDashboardWidget() {
+            fetch('/api/live-dashboard-stats')
+                .then(res => res.json())
+                .then(data => {
+                    if (!data) return;
+                    const duprEl = document.getElementById('live-dupr');
+                    const changeEl = document.getElementById('live-dupr-change');
+                    const streakEl = document.getElementById('live-win-streak');
+                    const matchEl = document.getElementById('live-upcoming-match');
+                    const occValEl = document.getElementById('live-occupancy-val');
+                    const occFillEl = document.getElementById('live-occupancy-fill');
+
+                    if (duprEl && data.dupr) duprEl.textContent = data.dupr;
+                    if (changeEl && data.dupr_change) changeEl.textContent = data.dupr_change;
+                    if (streakEl && data.win_streak) streakEl.textContent = data.win_streak;
+                    if (matchEl && data.upcoming_match) matchEl.textContent = data.upcoming_match;
+                    if (occValEl && data.court_occupancy !== undefined) occValEl.textContent = data.court_occupancy + '%';
+                    if (occFillEl && data.court_occupancy !== undefined) occFillEl.style.width = data.court_occupancy + '%';
+                })
+                .catch(err => console.debug('Live stats polling:', err));
+        }
+        setInterval(updateLiveDashboardWidget, 30000);
     </script>
 </body>
 

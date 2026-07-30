@@ -9,7 +9,7 @@
       "source_file": "run.py",
       "source_location": "L1",
       "id": "run_py",
-      "community": 82,
+      "community": 10,
       "norm_label": "run.py"
     },
     {
@@ -234,7 +234,7 @@
       "source_file": "app/decorators.py",
       "source_location": "L113",
       "id": "app_decorators_upload_avatar",
-      "community": 9,
+      "community": 82,
       "norm_label": "upload_avatar()"
     },
     {
@@ -279,7 +279,7 @@
       "source_file": "app/decorators.py",
       "source_location": "L114",
       "id": "app_decorators_rationale_114",
-      "community": 9,
+      "community": 82,
       "norm_label": "uploads an avatar file to supabase storage and returns public url, or none."
     },
     {
@@ -423,7 +423,7 @@
       "source_file": "app/settings_helper.py",
       "source_location": "L1",
       "id": "app_settings_helper_py",
-      "community": 82,
+      "community": 10,
       "norm_label": "settings_helper.py"
     },
     {
@@ -432,7 +432,7 @@
       "source_file": "app/settings_helper.py",
       "source_location": "L11",
       "id": "app_settings_helper_get_db_client",
-      "community": 82,
+      "community": 10,
       "norm_label": "get_db_client()"
     },
     {
@@ -441,7 +441,7 @@
       "source_file": "app/settings_helper.py",
       "source_location": "L42",
       "id": "app_settings_helper_load_platform_settings",
-      "community": 82,
+      "community": 10,
       "norm_label": "load_platform_settings()"
     },
     {
@@ -450,7 +450,7 @@
       "source_file": "app/settings_helper.py",
       "source_location": "L76",
       "id": "app_settings_helper_clear_settings_cache",
-      "community": 82,
+      "community": 10,
       "norm_label": "clear_settings_cache()"
     },
     {
@@ -459,7 +459,7 @@
       "source_file": "app/settings_helper.py",
       "source_location": "L12",
       "id": "app_settings_helper_rationale_12",
-      "community": 82,
+      "community": 10,
       "norm_label": "returns a supabase client for querying platform_settings.     prefers the reques"
     },
     {
@@ -540,7 +540,7 @@
       "source_file": "app/__init__.py",
       "source_location": "L1",
       "id": "app_init_py",
-      "community": 82,
+      "community": 10,
       "norm_label": "__init__.py"
     },
     {
@@ -549,7 +549,7 @@
       "source_file": "app/__init__.py",
       "source_location": "L25",
       "id": "app_init_create_app",
-      "community": 82,
+      "community": 10,
       "norm_label": "create_app()"
     },
     {
@@ -697,10 +697,28 @@
       "norm_label": "_redirect_by_role()"
     },
     {
+      "label": "get_live_dashboard_stats()",
+      "file_type": "code",
+      "source_file": "app/auth/routes.py",
+      "source_location": "L32",
+      "id": "auth_routes_get_live_dashboard_stats",
+      "community": 11,
+      "norm_label": "get_live_dashboard_stats()"
+    },
+    {
+      "label": "api_live_dashboard_stats()",
+      "file_type": "code",
+      "source_file": "app/auth/routes.py",
+      "source_location": "L107",
+      "id": "auth_routes_api_live_dashboard_stats",
+      "community": 11,
+      "norm_label": "api_live_dashboard_stats()"
+    },
+    {
       "label": "login()",
       "file_type": "code",
       "source_file": "app/auth/routes.py",
-      "source_location": "L34",
+      "source_location": "L114",
       "id": "auth_routes_login",
       "community": 11,
       "norm_label": "login()"
@@ -709,7 +727,7 @@
       "label": "signup()",
       "file_type": "code",
       "source_file": "app/auth/routes.py",
-      "source_location": "L122",
+      "source_location": "L204",
       "id": "auth_routes_signup",
       "community": 11,
       "norm_label": "signup()"
@@ -718,7 +736,7 @@
       "label": "resend_verification()",
       "file_type": "code",
       "source_file": "app/auth/routes.py",
-      "source_location": "L223",
+      "source_location": "L307",
       "id": "auth_routes_resend_verification",
       "community": 11,
       "norm_label": "resend_verification()"
@@ -727,7 +745,7 @@
       "label": "forgot_password()",
       "file_type": "code",
       "source_file": "app/auth/routes.py",
-      "source_location": "L253",
+      "source_location": "L337",
       "id": "auth_routes_forgot_password",
       "community": 11,
       "norm_label": "forgot_password()"
@@ -736,7 +754,7 @@
       "label": "reset_password()",
       "file_type": "code",
       "source_file": "app/auth/routes.py",
-      "source_location": "L279",
+      "source_location": "L363",
       "id": "auth_routes_reset_password",
       "community": 11,
       "norm_label": "reset_password()"
@@ -745,7 +763,7 @@
       "label": "supabase_token()",
       "file_type": "code",
       "source_file": "app/auth/routes.py",
-      "source_location": "L384",
+      "source_location": "L468",
       "id": "auth_routes_supabase_token",
       "community": 11,
       "norm_label": "supabase_token()"
@@ -754,7 +772,7 @@
       "label": "logout()",
       "file_type": "code",
       "source_file": "app/auth/routes.py",
-      "source_location": "L396",
+      "source_location": "L480",
       "id": "auth_routes_logout",
       "community": 11,
       "norm_label": "logout()"
@@ -769,11 +787,29 @@
       "norm_label": "return the correct dashboard redirect for a given role string.     unknown/lega"
     },
     {
+      "label": "Fetch live system dashboard stats from Supabase DB or compute dynamic defaults.",
+      "file_type": "rationale",
+      "source_file": "app/auth/routes.py",
+      "source_location": "L33",
+      "id": "auth_routes_rationale_33",
+      "community": 11,
+      "norm_label": "fetch live system dashboard stats from supabase db or compute dynamic defaults."
+    },
+    {
+      "label": "Return JSON live dashboard stats for real-time frontend updates.",
+      "file_type": "rationale",
+      "source_file": "app/auth/routes.py",
+      "source_location": "L108",
+      "id": "auth_routes_rationale_108",
+      "community": 11,
+      "norm_label": "return json live dashboard stats for real-time frontend updates."
+    },
+    {
       "label": "Resend the email verification link to the given address.",
       "file_type": "rationale",
       "source_file": "app/auth/routes.py",
-      "source_location": "L224",
-      "id": "auth_routes_rationale_224",
+      "source_location": "L308",
+      "id": "auth_routes_rationale_308",
       "community": 11,
       "norm_label": "resend the email verification link to the given address."
     },
@@ -781,8 +817,8 @@
       "label": "Step 1: user enters email \u2192 Supabase sends reset link.",
       "file_type": "rationale",
       "source_file": "app/auth/routes.py",
-      "source_location": "L254",
-      "id": "auth_routes_rationale_254",
+      "source_location": "L338",
+      "id": "auth_routes_rationale_338",
       "community": 11,
       "norm_label": "step 1: user enters email \u2192 supabase sends reset link."
     },
@@ -790,8 +826,8 @@
       "label": "Step 2: user lands here from the email link, sets a new password.",
       "file_type": "rationale",
       "source_file": "app/auth/routes.py",
-      "source_location": "L280",
-      "id": "auth_routes_rationale_280",
+      "source_location": "L364",
+      "id": "auth_routes_rationale_364",
       "community": 11,
       "norm_label": "step 2: user lands here from the email link, sets a new password."
     },
@@ -799,8 +835,8 @@
       "label": "Return the current user's Supabase access token via a secure JSON endpoint.",
       "file_type": "rationale",
       "source_file": "app/auth/routes.py",
-      "source_location": "L385",
-      "id": "auth_routes_rationale_385",
+      "source_location": "L469",
+      "id": "auth_routes_rationale_469",
       "community": 11,
       "norm_label": "return the current user's supabase access token via a secure json endpoint."
     },
@@ -1152,7 +1188,7 @@
       "source_file": "app/clubadmin/__init__.py",
       "source_location": "L1",
       "id": "app_clubadmin_init_py",
-      "community": 82,
+      "community": 10,
       "norm_label": "__init__.py"
     },
     {
@@ -1260,7 +1296,7 @@
       "source_file": "app/facilitystaff/routes.py",
       "source_location": "L606",
       "id": "facilitystaff_routes_profile",
-      "community": 9,
+      "community": 82,
       "norm_label": "profile()"
     },
     {
@@ -1420,7 +1456,7 @@
       "label": "api_courts_search()",
       "file_type": "code",
       "source_file": "app/main/routes.py",
-      "source_location": "L274",
+      "source_location": "L320",
       "id": "main_routes_api_courts_search",
       "community": 104,
       "norm_label": "api_courts_search()"
@@ -1429,7 +1465,7 @@
       "label": "view_article()",
       "file_type": "code",
       "source_file": "app/main/routes.py",
-      "source_location": "L317",
+      "source_location": "L363",
       "id": "main_routes_view_article",
       "community": 104,
       "norm_label": "view_article()"
@@ -1438,7 +1474,7 @@
       "label": "terms_of_service()",
       "file_type": "code",
       "source_file": "app/main/routes.py",
-      "source_location": "L444",
+      "source_location": "L490",
       "id": "main_routes_terms_of_service",
       "community": 104,
       "norm_label": "terms_of_service()"
@@ -1447,7 +1483,7 @@
       "label": "privacy_policy()",
       "file_type": "code",
       "source_file": "app/main/routes.py",
-      "source_location": "L449",
+      "source_location": "L495",
       "id": "main_routes_privacy_policy",
       "community": 104,
       "norm_label": "privacy_policy()"
@@ -1456,7 +1492,7 @@
       "label": "about_us()",
       "file_type": "code",
       "source_file": "app/main/routes.py",
-      "source_location": "L454",
+      "source_location": "L500",
       "id": "main_routes_about_us",
       "community": 104,
       "norm_label": "about_us()"
@@ -1507,20 +1543,20 @@
       "norm_label": "render the public community page with real posts from the db."
     },
     {
-      "label": "Display available courts for browsing and booking.",
+      "label": "Display facilities with grouped expandable courts for browsing and booking.",
       "file_type": "rationale",
       "source_file": "app/main/routes.py",
       "source_location": "L220",
       "id": "main_routes_rationale_220",
       "community": 104,
-      "norm_label": "display available courts for browsing and booking."
+      "norm_label": "display facilities with grouped expandable courts for browsing and booking."
     },
     {
       "label": "API endpoint for court search suggestions (autocomplete).",
       "file_type": "rationale",
       "source_file": "app/main/routes.py",
-      "source_location": "L275",
-      "id": "main_routes_rationale_275",
+      "source_location": "L321",
+      "id": "main_routes_rationale_321",
       "community": 104,
       "norm_label": "api endpoint for court search suggestions (autocomplete)."
     },
@@ -1528,8 +1564,8 @@
       "label": "Render a full-width journalist article page.",
       "file_type": "rationale",
       "source_file": "app/main/routes.py",
-      "source_location": "L318",
-      "id": "main_routes_rationale_318",
+      "source_location": "L364",
+      "id": "main_routes_rationale_364",
       "community": 104,
       "norm_label": "render a full-width journalist article page."
     },
@@ -1926,7 +1962,7 @@
       "source_file": "app/owner/staff.py",
       "source_location": "L1",
       "id": "app_owner_staff_py",
-      "community": 100,
+      "community": 9,
       "norm_label": "staff.py"
     },
     {
@@ -1935,7 +1971,7 @@
       "source_file": "app/owner/staff.py",
       "source_location": "L9",
       "id": "owner_staff_staff",
-      "community": 100,
+      "community": 9,
       "norm_label": "staff()"
     },
     {
@@ -1944,7 +1980,7 @@
       "source_file": "app/owner/staff.py",
       "source_location": "L37",
       "id": "owner_staff_add_staff",
-      "community": 100,
+      "community": 9,
       "norm_label": "add_staff()"
     },
     {
@@ -1953,7 +1989,7 @@
       "source_file": "app/owner/staff.py",
       "source_location": "L95",
       "id": "owner_staff_remove_staff_assignment",
-      "community": 100,
+      "community": 9,
       "norm_label": "remove_staff_assignment()"
     },
     {
@@ -1962,7 +1998,7 @@
       "source_file": "app/owner/staff.py",
       "source_location": "L119",
       "id": "owner_staff_edit_staff_assignment",
-      "community": 100,
+      "community": 9,
       "norm_label": "edit_staff_assignment()"
     },
     {
@@ -1971,7 +2007,7 @@
       "source_file": "app/owner/__init__.py",
       "source_location": "L1",
       "id": "app_owner_init_py",
-      "community": 82,
+      "community": 10,
       "norm_label": "__init__.py"
     },
     {
@@ -2556,7 +2592,7 @@
       "source_file": "app/player/__init__.py",
       "source_location": "L1",
       "id": "app_player_init_py",
-      "community": 82,
+      "community": 10,
       "norm_label": "__init__.py"
     },
     {
@@ -3051,7 +3087,7 @@
       "source_file": "app/support/routes.py",
       "source_location": "L1",
       "id": "app_support_routes_py",
-      "community": 82,
+      "community": 10,
       "norm_label": "routes.py"
     },
     {
@@ -3060,7 +3096,7 @@
       "source_file": "app/support/routes.py",
       "source_location": "L9",
       "id": "support_routes_submit_ticket",
-      "community": 82,
+      "community": 10,
       "norm_label": "submit_ticket()"
     },
     {
@@ -3368,6 +3404,78 @@
       "id": "docs_paymongo_setup_guide_next_steps_for_development",
       "community": 18,
       "norm_label": "next steps for development"
+    },
+    {
+      "label": "Resend the email verification link to the given address.",
+      "file_type": "rationale",
+      "source_file": "app/auth/routes.py",
+      "source_location": "L224",
+      "community": 11,
+      "norm_label": "resend the email verification link to the given address.",
+      "id": "auth_routes_rationale_224"
+    },
+    {
+      "label": "Step 1: user enters email \u2192 Supabase sends reset link.",
+      "file_type": "rationale",
+      "source_file": "app/auth/routes.py",
+      "source_location": "L254",
+      "community": 11,
+      "norm_label": "step 1: user enters email \u2192 supabase sends reset link.",
+      "id": "auth_routes_rationale_254"
+    },
+    {
+      "label": "Step 2: user lands here from the email link, sets a new password.",
+      "file_type": "rationale",
+      "source_file": "app/auth/routes.py",
+      "source_location": "L280",
+      "community": 11,
+      "norm_label": "step 2: user lands here from the email link, sets a new password.",
+      "id": "auth_routes_rationale_280"
+    },
+    {
+      "label": "Return the current user's Supabase access token via a secure JSON endpoint.",
+      "file_type": "rationale",
+      "source_file": "app/auth/routes.py",
+      "source_location": "L385",
+      "community": 11,
+      "norm_label": "return the current user's supabase access token via a secure json endpoint.",
+      "id": "auth_routes_rationale_385"
+    },
+    {
+      "label": "API endpoint for court search suggestions (autocomplete).",
+      "file_type": "rationale",
+      "source_file": "app/main/routes.py",
+      "source_location": "L287",
+      "community": 104,
+      "norm_label": "api endpoint for court search suggestions (autocomplete).",
+      "id": "main_routes_rationale_287"
+    },
+    {
+      "label": "Render a full-width journalist article page.",
+      "file_type": "rationale",
+      "source_file": "app/main/routes.py",
+      "source_location": "L330",
+      "community": 104,
+      "norm_label": "render a full-width journalist article page.",
+      "id": "main_routes_rationale_330"
+    },
+    {
+      "label": "API endpoint for court search suggestions (autocomplete).",
+      "file_type": "rationale",
+      "source_file": "app/main/routes.py",
+      "source_location": "L275",
+      "community": 104,
+      "norm_label": "api endpoint for court search suggestions (autocomplete).",
+      "id": "main_routes_rationale_275"
+    },
+    {
+      "label": "Render a full-width journalist article page.",
+      "file_type": "rationale",
+      "source_file": "app/main/routes.py",
+      "source_location": "L318",
+      "community": 104,
+      "norm_label": "render a full-width journalist article page.",
+      "id": "main_routes_rationale_318"
     },
     {
       "label": "sanitize_flash.py",
@@ -3968,7 +4076,7 @@
       "file_type": "code",
       "source_file": "app/owner/routes.py",
       "source_location": "L842",
-      "community": 3,
+      "community": 4,
       "norm_label": "create_event()",
       "id": "owner_routes_create_event"
     },
@@ -4139,7 +4247,7 @@
       "file_type": "rationale",
       "source_file": "app/decorators.py",
       "source_location": "L111",
-      "community": 9,
+      "community": 82,
       "norm_label": "uploads an avatar file to supabase storage and returns public url, or none.",
       "id": "app_decorators_rationale_111"
     },
@@ -5903,7 +6011,7 @@
       "file_type": "rationale",
       "source_file": "app/decorators.py",
       "source_location": "L62",
-      "community": 9,
+      "community": 82,
       "norm_label": "uploads an avatar file to supabase storage and returns public url, or none.",
       "id": "app_decorators_rationale_62"
     },
@@ -6065,7 +6173,7 @@
       "file_type": "code",
       "source_file": "app/support/routes.py",
       "source_location": "L10",
-      "community": 82,
+      "community": 10,
       "norm_label": "get_db()",
       "id": "support_routes_get_db"
     },
@@ -6083,7 +6191,7 @@
       "file_type": "code",
       "source_file": "scratch/test_adminstaff_pages.py",
       "source_location": "L1",
-      "community": 82,
+      "community": 10,
       "norm_label": "test_adminstaff_pages.py",
       "id": "scratch_test_adminstaff_pages_py"
     },
@@ -6101,7 +6209,7 @@
       "file_type": "code",
       "source_file": "scratch/test_dashboard.py",
       "source_location": "L1",
-      "community": 82,
+      "community": 10,
       "norm_label": "test_dashboard.py",
       "id": "scratch_test_dashboard_py"
     },
@@ -6128,7 +6236,7 @@
       "file_type": "code",
       "source_file": "scratch/test_settings_caching.py",
       "source_location": "L1",
-      "community": 82,
+      "community": 10,
       "norm_label": "test_settings_caching.py",
       "id": "scratch_test_settings_caching_py"
     },
@@ -6137,7 +6245,7 @@
       "file_type": "code",
       "source_file": "scratch/test_superadmin_pages.py",
       "source_location": "L1",
-      "community": 82,
+      "community": 10,
       "norm_label": "test_superadmin_pages.py",
       "id": "scratch_test_superadmin_pages_py"
     },
@@ -9185,6 +9293,17 @@
       "target": "app_db_get_db"
     },
     {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "app/auth/routes.py",
+      "source_location": "L44",
+      "weight": 1.0,
+      "source": "auth_routes_get_live_dashboard_stats",
+      "target": "app_db_get_db",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "app/db.py",
@@ -12001,6 +12120,26 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "app/auth/routes.py",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "app_auth_routes_py",
+      "target": "auth_routes_get_live_dashboard_stats",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/auth/routes.py",
+      "source_location": "L107",
+      "weight": 1.0,
+      "source": "app_auth_routes_py",
+      "target": "auth_routes_api_live_dashboard_stats",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/auth/routes.py",
       "source_location": "L48",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -12164,6 +12303,59 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "app/auth/routes.py",
+      "source_location": "L109",
+      "weight": 1.0,
+      "source": "auth_routes_api_live_dashboard_stats",
+      "target": "auth_routes_get_live_dashboard_stats",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "app/auth/routes.py",
+      "source_location": "L119",
+      "weight": 1.0,
+      "source": "auth_routes_login",
+      "target": "auth_routes_get_live_dashboard_stats",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "app/auth/routes.py",
+      "source_location": "L208",
+      "weight": 1.0,
+      "source": "auth_routes_signup",
+      "target": "auth_routes_get_live_dashboard_stats",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "app/auth/routes.py",
+      "source_location": "L33",
+      "weight": 1.0,
+      "source": "auth_routes_rationale_33",
+      "target": "auth_routes_get_live_dashboard_stats",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "app/auth/routes.py",
+      "source_location": "L108",
+      "weight": 1.0,
+      "source": "auth_routes_rationale_108",
+      "target": "auth_routes_api_live_dashboard_stats",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "app/auth/routes.py",
       "source_location": "L61",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -12180,6 +12372,16 @@
       "confidence_score": 1.0,
       "source": "auth_routes_get_db",
       "target": "auth_routes_signup"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "app/auth/routes.py",
+      "source_location": "L308",
+      "weight": 1.0,
+      "source": "auth_routes_rationale_308",
+      "target": "auth_routes_resend_verification",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
@@ -12256,6 +12458,16 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "app/auth/routes.py",
+      "source_location": "L338",
+      "weight": 1.0,
+      "source": "auth_routes_rationale_338",
+      "target": "auth_routes_forgot_password",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "app/auth/routes.py",
       "source_location": "L254",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -12327,6 +12539,16 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "app/auth/routes.py",
+      "source_location": "L364",
+      "weight": 1.0,
+      "source": "auth_routes_rationale_364",
+      "target": "auth_routes_reset_password",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "app/auth/routes.py",
       "source_location": "L280",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -12393,6 +12615,16 @@
       "confidence_score": 1.0,
       "source": "auth_routes_reset_password",
       "target": "auth_routes_rationale_252"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "app/auth/routes.py",
+      "source_location": "L469",
+      "weight": 1.0,
+      "source": "auth_routes_rationale_469",
+      "target": "auth_routes_supabase_token",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
@@ -13619,9 +13851,9 @@
       "source_file": "app/main/routes.py",
       "source_location": "L454",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "app_main_routes_py",
-      "target": "main_routes_about_us",
-      "confidence_score": 1.0
+      "target": "main_routes_about_us"
     },
     {
       "relation": "calls",
@@ -14335,6 +14567,26 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "app/main/routes.py",
+      "source_location": "L321",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_routes_rationale_321",
+      "target": "main_routes_api_courts_search"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "app/main/routes.py",
+      "source_location": "L287",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_routes_rationale_287",
+      "target": "main_routes_api_courts_search"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "app/main/routes.py",
       "source_location": "L275",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -14350,6 +14602,26 @@
       "confidence_score": 1.0,
       "source": "main_routes_api_courts_search",
       "target": "main_routes_rationale_218"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "app/main/routes.py",
+      "source_location": "L364",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_routes_rationale_364",
+      "target": "main_routes_view_article"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "app/main/routes.py",
+      "source_location": "L330",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "main_routes_rationale_330",
+      "target": "main_routes_view_article"
     },
     {
       "relation": "rationale_for",
@@ -22357,5 +22629,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "1ae57ba4fe681db9a0a6a5cd0dfbe763b720d59f"
+  "built_at_commit": "537e7dfbeea4e0e1aedd0ce775bc239732211748"
 }

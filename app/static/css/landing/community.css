@@ -1,53 +1,66 @@
-body {
-    min-height: 100vh;
-}
-
-.community-section {
-    padding: 60px 48px 100px;
-    position: relative;
-    z-index: 2;
-    flex: 1;
-    max-width: 1200px;
+/* Editorial Community Page Wrapper */
+.community-page-wrap {
+    max-width: 1320px;
     margin: 0 auto;
+    padding: 0 4% 80px;
     width: 100%;
 }
 
-.section-title {
+/* Page Header */
+.editorial-page-header {
     text-align: center;
-    margin-bottom: 64px;
+    padding: 24px 0 32px;
+    border-bottom: 1px solid var(--border-newspaper);
+    margin-bottom: 36px;
 }
 
-.section-title h2 {
+.editorial-kicker {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--primary-orange);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.editorial-main-title {
     font-family: 'Lora', Georgia, serif;
-    font-size: 3rem;
-    margin-bottom: 16px;
-    color: var(--text-primary);
+    font-size: 3.2rem;
     font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 12px 0;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
 }
 
-.section-title p {
+.editorial-lead-desc {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.1rem;
     color: var(--text-secondary);
-    font-size: 1.15rem;
-    max-width: 600px;
+    max-width: 680px;
     margin: 0 auto;
+    line-height: 1.5;
 }
 
+/* Community Grid */
 .community-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 48px;
+    gap: 36px;
+    align-items: start;
 }
 
-/* Feed panel block */
-.feed-panel {
+/* Panel Containers */
+.feed-panel, .clubs-panel {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
-    border-radius: 24px;
-    padding: 32px;
-    display: flex;
-    flex-direction: column;
-    box-shadow: var(--card-shadow);
-    height: fit-content;
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
 }
 
 .panel-header {
@@ -55,283 +68,299 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 24px;
-    border-bottom: 1px solid var(--card-border);
+    border-bottom: 1px solid var(--border-newspaper);
     padding-bottom: 16px;
 }
 
 .panel-header h3 {
-    font-size: 1.5rem;
+    font-family: 'Lora', Georgia, serif;
+    font-size: 1.4rem;
+    font-weight: 800;
     color: var(--text-primary);
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
+    margin: 0;
 }
 
 .panel-header h3 i {
     color: var(--primary-orange);
+    font-size: 1.5rem;
 }
 
+.panel-login-link {
+    font-family: 'Outfit', sans-serif;
+    color: var(--primary-orange);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: transform 0.2s ease;
+}
+
+.panel-login-link:hover {
+    transform: translateX(2px);
+}
+
+/* Feed List & Items */
 .feed-list {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 20px;
 }
 
 .feed-item {
-    background: var(--card-bg);
+    background: var(--navbar-bg);
     border: 1px solid var(--card-border);
     border-radius: 16px;
-    padding: 24px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    transition: transform 0.2s, border-color 0.2s;
+    gap: 14px;
+    transition: border-color 0.2s ease, transform 0.2s ease;
 }
 
 .feed-item:hover {
     border-color: var(--primary-orange);
+    transform: translateY(-2px);
 }
 
 .feed-header {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 14px;
 }
 
-.feed-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-/* Initials avatar for real DB posts (no photo) */
 .feed-avatar-init {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary-orange), #e15623);
-    color: white;
+    background: linear-gradient(135deg, var(--primary-orange), #c84124);
+    color: #ffffff;
+    font-family: 'Outfit', sans-serif;
     font-size: 0.85rem;
-    font-weight: 700;
+    font-weight: 800;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
     letter-spacing: 0.5px;
-}
-
-.feed-user-info {
-    display: flex;
-    flex-direction: column;
+    box-shadow: 0 4px 10px rgba(224, 86, 56, 0.2);
 }
 
 .feed-user-info h4 {
+    font-family: 'Outfit', sans-serif;
     color: var(--text-primary);
-    font-size: 1.1rem;
-    margin-bottom: 2px;
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0 0 2px 0;
 }
 
 .feed-user-info span {
+    font-family: 'Outfit', sans-serif;
     color: var(--text-secondary);
-    font-size: 0.85rem;
+    font-size: 0.8rem;
 }
 
 .feed-body p {
+    font-family: 'Outfit', sans-serif;
     color: var(--text-primary);
-    font-size: 1rem;
-    line-height: 1.6;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    margin: 0;
 }
 
-/* ── Post image (when a community post includes an uploaded photo) ── */
 .feed-post-img-wrap {
     border-radius: 12px;
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    max-height: 300px;
-    cursor: zoom-in;
+    max-height: 280px;
+    border: 1px solid var(--card-border);
 }
 
 .feed-post-img {
     width: 100%;
-    max-height: 300px;
+    height: 100%;
     object-fit: cover;
     display: block;
-    transition: transform 0.3s ease;
-}
-
-.feed-post-img-wrap:hover .feed-post-img {
-    transform: scale(1.02);
-}
-
-.feed-attachment {
-    margin-top: 16px;
-    height: 200px;
-    border-radius: 12px;
-    background-size: cover;
-    background-position: center;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.play-overlay {
-    background: rgba(0, 0, 0, 0.4);
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s;
-}
-
-.play-overlay:hover {
-    background: rgba(0, 0, 0, 0.2);
-}
-
-.play-overlay i {
-    font-size: 3.5rem;
-    color: white;
-    opacity: 0.9;
-    transition: opacity 0.2s, transform 0.2s;
-    cursor: pointer;
-}
-
-.play-overlay i:hover {
-    opacity: 1;
-    transform: scale(1.1);
 }
 
 .feed-footer {
     display: flex;
-    gap: 24px;
-    border-top: 1px solid var(--card-border);
-    padding-top: 16px;
+    gap: 20px;
+    border-top: 1px solid var(--border-newspaper);
+    padding-top: 12px;
 }
 
-.feed-footer button,
 .feed-action-btn {
     background: transparent;
     border: none;
     color: var(--text-secondary);
-    font-size: 0.95rem;
-    font-weight: 500;
-    display: flex;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-flex;
     align-items: center;
     gap: 6px;
     cursor: pointer;
-    transition: color 0.2s;
-    font-family: inherit;
     text-decoration: none;
+    transition: color 0.2s ease;
 }
 
-.feed-footer button:hover,
 .feed-action-btn:hover {
     color: var(--primary-orange);
 }
 
-.feed-footer button i,
-.feed-action-btn i {
-    font-size: 1.25rem;
-}
-
-/* Clubs Block */
-.clubs-panel {
+/* Clubs Panel & Cards */
+.clubs-list {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 20px;
 }
 
 .club-card {
-    background: var(--card-bg);
+    background: var(--navbar-bg);
     border: 1px solid var(--card-border);
-    border-radius: 20px;
+    border-radius: 16px;
     overflow: hidden;
-    transition: border-color 0.3s;
+    transition: border-color 0.2s ease, transform 0.2s ease;
     display: flex;
     flex-direction: row;
 }
 
 .club-card:hover {
     border-color: var(--primary-orange);
+    transform: translateY(-2px);
 }
 
 .club-image {
-    width: 160px;
+    width: 150px;
     background-size: cover;
     background-position: center;
     position: relative;
+    flex-shrink: 0;
+}
+
+.club-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(16, 185, 129, 0.9);
+    color: #ffffff;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 12px;
+    letter-spacing: 0.5px;
 }
 
 .club-content {
-    padding: 24px;
+    padding: 20px;
     flex: 1;
     display: flex;
     flex-direction: column;
 }
 
 .club-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
 }
 
 .club-title {
     font-family: 'Lora', Georgia, serif;
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     color: var(--text-primary);
     font-weight: 800;
+    margin: 0 0 4px 0;
 }
 
 .club-location {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    display: flex;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.8rem;
+    color: var(--primary-orange);
+    font-weight: 600;
+    display: inline-flex;
     align-items: center;
     gap: 4px;
 }
 
 .club-stats {
     display: flex;
-    gap: 16px;
-    margin-bottom: 16px;
+    gap: 10px;
+    margin-bottom: 10px;
 }
 
 .club-stat {
-    font-size: 0.85rem;
-    color: var(--text-primary);
-    background: var(--card-bg-hover);
-    padding: 4px 10px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    background: var(--card-bg);
+    padding: 3px 8px;
     border-radius: 6px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
     border: 1px solid var(--card-border);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 
-.btn-join {
+.club-desc {
+    font-family: 'Outfit', sans-serif;
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+    line-height: 1.45;
+    margin: 0 0 16px 0;
+}
+
+.btn-join-club {
     margin-top: auto;
-    background: transparent;
-    color: var(--text-primary);
-    border: 1px solid var(--card-border);
-    padding: 8px 16px;
-    border-radius: 100px;
-    font-size: 0.9rem;
-    font-weight: 500;
+    background: var(--primary-orange);
+    color: #ffffff !important;
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
     text-align: center;
     text-decoration: none;
-    transition: all 0.3s;
-    display: inline-block;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    align-self: flex-start;
 }
 
-.btn-join:hover {
-    background: var(--primary-orange);
-    color: white;
-    border-color: var(--primary-orange);
+.btn-join-club:hover {
+    background: var(--primary-orange-hover);
+    transform: translateX(2px);
+}
+
+/* Empty States */
+.empty-feed-box, .empty-clubs-box {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
+}
+
+.empty-feed-box i, .empty-clubs-box i {
+    font-size: 2.8rem;
+    opacity: 0.4;
+    margin-bottom: 12px;
+    display: block;
+}
+
+.empty-feed-box h3, .empty-clubs-box h3 {
+    font-family: 'Lora', serif;
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+
+.empty-feed-box p, .empty-clubs-box p {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.9rem;
+    margin: 0;
 }
 
 @media (max-width: 992px) {
@@ -341,30 +370,20 @@ body {
 }
 
 @media (max-width: 768px) {
-    .community-section {
-        padding: 24px 16px 40px;
+    .editorial-main-title {
+        font-size: 2.2rem;
     }
-    .section-title {
-        margin-bottom: 24px;
-    }
-    .section-title h2 {
-        font-size: 2rem;
-    }
-    .community-grid {
-        gap: 24px;
-    }
-    .feed-panel {
+    .feed-panel, .clubs-panel {
         padding: 20px;
     }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 576px) {
     .club-card {
         flex-direction: column;
     }
-
     .club-image {
         width: 100%;
-        height: 180px;
+        height: 160px;
     }
 }

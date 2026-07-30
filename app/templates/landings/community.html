@@ -4,22 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Community | {{ platform_settings.platform_name }}</title>
+    <title>Community Feed &amp; Clubs | {{ platform_settings.platform_name or 'PickleballHub' }}</title>
     {% include 'seo_tags.html' %}
-    <!-- Google Fonts -->
+    <!-- Google Fonts: Lora for Serif Titles and Outfit for UI Elements -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Base CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <!-- Landing CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/landing/landing.css') }}">
+    <!-- Community CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/landing/community.css') }}">
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
-
-
 </head>
 
 <body>
@@ -28,124 +27,117 @@
         <div class="overlay"></div>
     </div>
 
-    <!-- Navigation -->
+    <!-- Navigation & Masthead -->
     {% include 'landings/navigation.html' %}
 
-    <div class="community-page-wrap">
-        <section class="community-section">
-            <div class="section-title">
-                <h2>Join The Movement</h2>
-                <p>Connect with local clubs, find hitting partners, and climb the district leaderboards. Pickleball is
-                    better together.</p>
-            </div>
+    <main class="community-page-wrap">
+        
+        <!-- Editorial Page Title Header -->
+        <header class="editorial-page-header">
+            <span class="editorial-kicker"><i class="ph-fill ph-users-three"></i> LAGUNA COMMUNITY NETWORK</span>
+            <h1 class="editorial-main-title">Join The Movement</h1>
+            <p class="editorial-lead-desc">Connect with local clubs, find hitting partners, and climb the district leaderboards. Pickleball is better together.</p>
+        </header>
 
+        <!-- Community Section Grid -->
+        <section class="community-grid-container">
             <div class="community-grid">
+                
                 <!-- Community Feed Column -->
                 <div class="feed-panel">
                     <div class="panel-header">
                         <h3><i class="ph-fill ph-chat-circle-text"></i> Community Feed</h3>
-                        <a href="{{ url_for('auth.login') }}"
-                            style="color: var(--primary-orange); text-decoration: none; font-size: 0.9rem;">Login to
-                            Post</a>
+                        <a href="{{ url_for('auth.login') }}" class="panel-login-link">Login to Post <i class="ph ph-arrow-right"></i></a>
                     </div>
 
                     <div class="feed-list">
-
                         {% if posts %}
-                        {% for post in posts %}
-                        {# ── Time-ago helper ────────────────────────────── #}
-                        {% set now_ts = now() if now is defined else none %}
-                        <div class="feed-item">
-                            <div class="feed-header">
-                                <div class="feed-avatar-init">{{ post.author_init }}</div>
-                                <div class="feed-user-info">
-                                    <h4>{{ post.author_name }}</h4>
-                                    <span>{{ post.author_role }} &bull;
-                                        {{ post.created_at | community_timeago }}
-                                    </span>
+                            {% for post in posts %}
+                                <div class="feed-item">
+                                    <div class="feed-header">
+                                        <div class="feed-avatar-init">{{ post.author_init }}</div>
+                                        <div class="feed-user-info">
+                                            <h4>{{ post.author_name }}</h4>
+                                            <span>{{ post.author_role }} &bull; {{ post.created_at | community_timeago }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="feed-body">
+                                        <p>{{ post.content }}</p>
+                                    </div>
+                                    {% if post.image_url %}
+                                        <div class="feed-post-img-wrap">
+                                            <img src="{{ post.image_url }}" alt="Post image" class="feed-post-img" loading="lazy" />
+                                        </div>
+                                    {% endif %}
+                                    <div class="feed-footer">
+                                        <a href="{{ url_for('auth.login') }}" class="feed-action-btn">
+                                            <i class="ph ph-heart"></i> {{ post.likes }} Like{{ 's' if post.likes != 1 }}
+                                        </a>
+                                        <a href="{{ url_for('auth.login') }}" class="feed-action-btn">
+                                            <i class="ph ph-chat-circle"></i> {{ post.comments }} Comment{{ 's' if post.comments != 1 }}
+                                        </a>
+                                        <a href="{{ url_for('auth.login') }}" class="feed-action-btn">
+                                            <i class="ph ph-share-network"></i> Share
+                                        </a>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="feed-body">
-                                <p>{{ post.content }}</p>
-                            </div>
-                            {% if post.image_url %}
-                            <div class="feed-post-img-wrap">
-                                <img src="{{ post.image_url }}" alt="Post image" class="feed-post-img" loading="lazy" />
-                            </div>
-                            {% endif %}
-                            <div class="feed-footer">
-                                <a href="{{ url_for('auth.login') }}" class="feed-action-btn">
-                                    <i class="ph ph-heart"></i> {{ post.likes }} Like{{ 's' if post.likes != 1 }}
-                                </a>
-                                <a href="{{ url_for('auth.login') }}" class="feed-action-btn">
-                                    <i class="ph ph-chat-circle"></i> {{ post.comments }} Comment{{ 's' if post.comments
-                                    != 1 }}
-                                </a>
-                                <a href="{{ url_for('auth.login') }}" class="feed-action-btn">
-                                    <i class="ph ph-share-network"></i> Share
-                                </a>
-                            </div>
-
-                        </div>
-                        {% endfor %}
+                            {% endfor %}
                         {% else %}
-                        <div class="feed-item" style="text-align:center; padding: 2rem;">
-                            <i class="ph ph-chats"
-                                style="font-size:2.5rem; opacity:0.3; display:block; margin-bottom:12px;"></i>
-                            <p style="color: var(--text-secondary);">Be the first to post! <a
-                                    href="{{ url_for('auth.login') }}" style="color:var(--primary-orange);">Join the
-                                    community</a></p>
-                        </div>
+                            <div class="empty-feed-box">
+                                <i class="ph ph-chats"></i>
+                                <h3>No posts yet</h3>
+                                <p>Be the first to share an update with the Laguna pickleball community! <a href="{{ url_for('auth.login') }}">Log in to post</a></p>
+                            </div>
                         {% endif %}
-
                     </div>
-
                 </div>
 
-                <!-- Local Clubs Column -->
+                <!-- Featured Clubs Column -->
                 <div class="clubs-panel">
-                    <div class="panel-header" style="margin-bottom: 0;">
-                        <h3 style="color: white; font-size: 1.5rem;"><i class="ph-fill ph-users-three"
-                                style="color: #00C6ff;"></i> Featured Local Clubs</h3>
+                    <div class="panel-header">
+                        <h3><i class="ph-fill ph-shield-check"></i> Featured Local Clubs</h3>
                     </div>
 
-                    {% if clubs %}
-                    {% for club in clubs %}
-                    <div class="club-card">
-                        <div class="club-image"
-                            style="background-image: url('{{ club.logo_url or 'https://images.unsplash.com/photo-1554068865-24cecd4e34f8?q=80&w=400&auto=format&fit=crop' }}');">
-                        </div>
-                        <div class="club-content">
-                            <div class="club-header">
-                                <div>
-                                    <h4 class="club-title">{{ club.name }}</h4>
-                                    <span class="club-location"><i class="ph-fill ph-map-pin"></i> Local Club</span>
+                    <div class="clubs-list">
+                        {% if clubs %}
+                            {% for club in clubs %}
+                                <div class="club-card">
+                                    <div class="club-image" style="background-image: url('{{ club.logo_url or url_for('static', filename='images/background.jpg') }}');">
+                                        <span class="club-badge">VERIFIED</span>
+                                    </div>
+                                    <div class="club-content">
+                                        <div class="club-header">
+                                            <h4 class="club-title">{{ club.name }}</h4>
+                                            <span class="club-location"><i class="ph-fill ph-map-pin"></i> Laguna District</span>
+                                        </div>
+                                        <div class="club-stats">
+                                            <span class="club-stat"><i class="ph-fill ph-users"></i> Member Hub</span>
+                                            <span class="club-stat"><i class="ph-fill ph-seal-check"></i> Active</span>
+                                        </div>
+                                        <p class="club-desc">
+                                            {{ club.description or 'A vibrant local pickleball club hosting weekly matches and social events.' }}
+                                        </p>
+                                        <a href="{{ url_for('auth.login') }}" class="btn-join-club">Join Group <i class="ph ph-arrow-right"></i></a>
+                                    </div>
                                 </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-clubs-box">
+                                <i class="ph ph-users-three"></i>
+                                <h3>No featured clubs listed</h3>
+                                <p>Check back soon for new club registrations in Laguna.</p>
                             </div>
-                            <div class="club-stats">
-                                <span class="club-stat"><i class="ph-fill ph-users"></i> Member Community</span>
-                                <span class="club-stat"><i class="ph-fill ph-star"></i> Verified</span>
-                            </div>
-                            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 16px;">
-                                {{ club.description or 'A local pickleball community.' }}
-                            </p>
-                            <a href="{{ url_for('auth.login') }}" class="btn-join">Join Group</a>
-                        </div>
+                        {% endif %}
                     </div>
-                    {% endfor %}
-                    {% else %}
-                    <div style="text-align:center; padding: 2rem;">
-                        <i class="ph ph-users-three"
-                            style="font-size:2.5rem; opacity:0.3; display:block; margin-bottom:12px;"></i>
-                        <p style="color: var(--text-secondary);">No featured clubs right now. Check back soon!</p>
-                    </div>
-                    {% endif %}
                 </div>
+
             </div>
         </section>
 
-    </div>
+    </main>
+
     {% include 'landings/footer.html' %}
+
 </body>
 
 </html>

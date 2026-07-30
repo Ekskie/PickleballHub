@@ -9,7 +9,9 @@
     <!-- Google Fonts: Lora for Serif Titles and Outfit for UI Elements -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <!-- Base CSS (Reusing your auth style variables) -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <!-- Landing Page CSS (Reusing your landing page style variables) -->
@@ -39,13 +41,18 @@
             <div class="editorial-slide active">
                 <div class="slide-img-wrapper">
                     <span class="slide-category">Reserve Court</span>
-                    <img src="{{ url_for('static', filename='images/court-hero.jpg') }}" alt="Pickleball Court Reservation">
+                    <img src="{{ url_for('static', filename='images/court-hero.jpg') }}"
+                        alt="Pickleball Court Reservation">
                 </div>
                 <div class="slide-content">
-                    <a href="{{ url_for('main.courts_listing') }}" class="slide-title">Laguna Court Directory Reaches All-Time Booking Record</a>
-                    <p class="slide-desc">The definitive platform for Laguna pickleball. Whether you're a player looking for a match, a club managing brackets, or an owner listing courts—secure your spot instantly with local GCash checkout.</p>
+                    <a href="{{ url_for('main.courts_listing') }}" class="slide-title">Laguna Court Directory Reaches
+                        All-Time Booking Record</a>
+                    <p class="slide-desc">The definitive platform for Laguna pickleball. Whether you're a player looking
+                        for a match, a club managing brackets, or an owner listing courts—secure your spot instantly
+                        with local GCash checkout.</p>
                     <div class="slide-meta">
-                        <a href="{{ url_for('main.courts_listing') }}" class="slide-read-more">Book a Court <i class="ph ph-arrow-right"></i></a>
+                        <a href="{{ url_for('main.courts_listing') }}" class="slide-read-more">Book a Court <i
+                                class="ph ph-arrow-right"></i></a>
                     </div>
                 </div>
             </div>
@@ -57,10 +64,13 @@
                     <img src="{{ url_for('static', filename='images/background.jpg') }}" alt="Laguna Tournaments">
                 </div>
                 <div class="slide-content">
-                    <a href="{{ url_for('main.tournaments') }}" class="slide-title">Unified Tournament Engine Introduces Automated Match Brackets</a>
-                    <p class="slide-desc">Club organizers can now launch tournaments seamlessly. Features automated bracket construction for Singles or Doubles matchups with live queue standings.</p>
+                    <a href="{{ url_for('main.tournaments') }}" class="slide-title">Unified Tournament Engine Introduces
+                        Automated Match Brackets</a>
+                    <p class="slide-desc">Club organizers can now launch tournaments seamlessly. Features automated
+                        bracket construction for Singles or Doubles matchups with live queue standings.</p>
                     <div class="slide-meta">
-                        <a href="{{ url_for('main.tournaments') }}" class="slide-read-more">Find Tournaments <i class="ph ph-arrow-right"></i></a>
+                        <a href="{{ url_for('main.tournaments') }}" class="slide-read-more">Find Tournaments <i
+                                class="ph ph-arrow-right"></i></a>
                     </div>
                 </div>
             </div>
@@ -68,14 +78,17 @@
             <!-- Slide 3: Academy & Clinics -->
             <div class="editorial-slide">
                 <div class="slide-img-wrapper">
-                    <span class="slide-category">Academy Training</span>
+                    <span class="slide-category">Tutorial</span>
                     <img src="{{ url_for('static', filename='images/bg.png') }}" alt="Pickleball Clinics">
                 </div>
                 <div class="slide-content">
-                    <a href="{{ url_for('main.clinics') }}" class="slide-title">Expert Academy Insights: How Spin &amp; Position Controls the Court</a>
-                    <p class="slide-desc">Top DUPR-certified coaches upload training courses. Study court navigation, check local clinic events, or upload gameplay footage to get professional player feedback.</p>
+                    <a href="{{ url_for('main.clinics') }}" class="slide-title">Expert Academy Insights: How Spin &amp;
+                        Position Controls the Court</a>
+                    <p class="slide-desc">Top DUPR-certified coaches upload training courses. Study court navigation,
+                        check local clinic events, or upload gameplay footage to get professional player feedback.</p>
                     <div class="slide-meta">
-                        <a href="{{ url_for('main.clinics') }}" class="slide-read-more">View Clinics <i class="ph ph-arrow-right"></i></a>
+                        <a href="{{ url_for('main.clinics') }}" class="slide-read-more">View Clinics <i
+                                class="ph ph-arrow-right"></i></a>
                     </div>
                 </div>
             </div>
@@ -91,11 +104,13 @@
         <!-- 1/3 Column: Latest Bulletins sidebar -->
         <div class="bulletin-sidebar">
             <h2 class="sidebar-header">Latest Bulletins</h2>
-            
+
             <div class="bulletin-item">
                 <span class="bulletin-time">Just In</span>
-                <a href="/article/4" class="bulletin-title">Network Database registers over 500 active players in Laguna</a>
-                <p class="bulletin-desc">Community matchmaking matches players of identical skill scores automatically.</p>
+                <a href="/article/4" class="bulletin-title">Network Database registers over 500 active players in
+                    Laguna</a>
+                <p class="bulletin-desc">Community matchmaking matches players of identical skill scores automatically.
+                </p>
             </div>
 
             <div class="bulletin-item">
@@ -106,7 +121,8 @@
 
             <div class="bulletin-item">
                 <span class="bulletin-time">Tournament</span>
-                <a href="/article/6" class="bulletin-title">District brackets report 40% growth in participant entries</a>
+                <a href="/article/6" class="bulletin-title">District brackets report 40% growth in participant
+                    entries</a>
                 <p class="bulletin-desc">Singles and Doubles brackets are filling up across local towns.</p>
             </div>
         </div>
@@ -117,18 +133,28 @@
         <div class="value-prop-inner">
             <p class="value-prop-kicker">Join Laguna's Fastest-Growing Pickleball Community</p>
             <h2 class="value-prop-headline">The definitive platform for Laguna pickleball.</h2>
-            <p class="value-prop-text">Whether you're a <strong>player</strong> looking for a match, a <strong>club</strong> managing brackets, or an <strong>owner</strong> listing courts—secure your spot instantly with local GCash checkout.</p>
-            <a href="{{ url_for('auth.signup') }}" class="value-prop-cta">Sign Up for Free <i class="ph ph-arrow-right"></i></a>
-            
+            <p class="value-prop-text">Whether you're a <strong>player</strong> looking for a match, a
+                <strong>club</strong> managing brackets, or an <strong>owner</strong> listing courts—secure your spot
+                instantly with local GCash checkout.
+            </p>
+            <a href="{{ url_for('auth.signup') }}" class="value-prop-cta">Sign Up for Free <i
+                    class="ph ph-arrow-right"></i></a>
+
             <!-- Payment Trust Badges -->
-            <div class="payment-trust-badges" style="margin-top: 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 16px; opacity: 0.85; text-align: center;">
-                <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); font-weight: 600;">Secured Checkouts Via:</span>
-                <div style="display: inline-flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.06); padding: 6px 16px; border-radius: 30px; border: 1px solid var(--card-border);">
-                    <span style="font-weight: 800; color: #0056B3; font-size: 0.9rem; display: flex; align-items: center; gap: 4px;">
+            <div class="payment-trust-badges"
+                style="margin-top: 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 16px; opacity: 0.85; text-align: center;">
+                <span
+                    style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); font-weight: 600;">Secured
+                    Checkouts Via:</span>
+                <div
+                    style="display: inline-flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.06); padding: 6px 16px; border-radius: 30px; border: 1px solid var(--card-border);">
+                    <span
+                        style="font-weight: 800; color: #0056B3; font-size: 0.9rem; display: flex; align-items: center; gap: 4px;">
                         <i class="ph-fill ph-wallet"></i> GCash
                     </span>
                     <span style="color: var(--card-border); font-size: 0.8rem;">|</span>
-                    <span style="font-weight: 800; color: #00E676; font-size: 0.9rem; display: flex; align-items: center; gap: 4px;">
+                    <span
+                        style="font-weight: 800; color: #00E676; font-size: 0.9rem; display: flex; align-items: center; gap: 4px;">
                         <i class="ph-fill ph-shield-check"></i> Maya
                     </span>
                 </div>
@@ -147,94 +173,104 @@
 
     <section class="editorial-section" id="courts-listing">
         <h2 class="editorial-section-title">Verified Facilities Available</h2>
-        <p class="editorial-section-subtitle">Read detailed facility reviews and schedule your next match reservation instantly.</p>
-        
+        <p class="editorial-section-subtitle">Read detailed facility reviews and schedule your next match reservation
+            instantly.</p>
+
         <div class="editorial-grid">
             {% if featured_courts %}
-                {% for court in featured_courts %}
-                    <div class="editorial-card">
-                        <div class="card-img-wrapper">
-                            <span class="card-tag">{{ court.type }}</span>
-                            {% if court.facility_image_url %}
-                                <img src="{{ court.facility_image_url }}" alt="{{ court.name }}">
-                            {% else %}
-                                <img src="{{ url_for('static', filename='images/court-hero.jpg') }}" alt="{{ court.name }}">
-                            {% endif %}
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">{{ court.name }}</h3>
-                            <p class="card-desc">{{ court.facility_description or 'Well-maintained facility in the heart of Laguna. Professional nets, bright court lighting, and comfortable spectator seating.' }}</p>
-                            <ul class="card-details-list">
-                                <li><i class="ph ph-map-pin"></i> {{ court.facility_location }}</li>
-                                <li><i class="ph ph-currency-circle-dollar"></i> {{ court.hourly_rate|format_currency(hourly=True) }}</li>
-                                <li><i class="ph ph-buildings"></i> {{ court.facility_name }}</li>
-                            </ul>
-                            <div class="card-footer">
-                                <span>Verified Spot</span>
-                                <a href="{{ url_for('main.courts_listing') }}" class="card-action">Book Slot <i class="ph ph-arrow-right"></i></a>
-                            </div>
-                        </div>
+            {% for court in featured_courts %}
+            <div class="editorial-card">
+                <div class="card-img-wrapper">
+                    <span class="card-tag">{{ court.type }}</span>
+                    {% if court.facility_image_url %}
+                    <img src="{{ court.facility_image_url }}" alt="{{ court.name }}">
+                    {% else %}
+                    <img src="{{ url_for('static', filename='images/court-hero.jpg') }}" alt="{{ court.name }}">
+                    {% endif %}
+                </div>
+                <div class="card-content">
+                    <h3 class="card-title">{{ court.name }}</h3>
+                    <p class="card-desc">{{ court.facility_description or 'Well-maintained facility in the heart of
+                        Laguna. Professional nets, bright court lighting, and comfortable spectator seating.' }}</p>
+                    <ul class="card-details-list">
+                        <li><i class="ph ph-map-pin"></i> {{ court.facility_location }}</li>
+                        <li><i class="ph ph-currency-circle-dollar"></i> {{
+                            court.hourly_rate|format_currency(hourly=True) }}</li>
+                        <li><i class="ph ph-buildings"></i> {{ court.facility_name }}</li>
+                    </ul>
+                    <div class="card-footer">
+                        <span>Verified Spot</span>
+                        <a href="{{ url_for('main.courts_listing') }}" class="card-action">Book Slot <i
+                                class="ph ph-arrow-right"></i></a>
                     </div>
-                {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
             {% else %}
-                <!-- Fallback cards if empty database -->
-                <div class="editorial-card">
-                    <div class="card-img-wrapper">
-                        <span class="card-tag">Indoor</span>
-                        <img src="{{ url_for('static', filename='images/court-hero.jpg') }}" alt="Paete Court">
-                    </div>
-                    <div class="card-content">
-                        <h3 class="card-title">Paete Premier Arena</h3>
-                        <p class="card-desc">State of the art indoor court facilities featuring premium cushioning. Equipped with high-visibility lighting and professional nets.</p>
-                        <ul class="card-details-list">
-                            <li><i class="ph ph-map-pin"></i> Paete, Laguna</li>
-                            <li><i class="ph ph-currency-circle-dollar"></i> {{ 250|format_currency(hourly=True) }}</li>
-                            <li><i class="ph ph-buildings"></i> Paete Sports Center</li>
-                        </ul>
-                        <div class="card-footer">
-                            <span>Featured Facility</span>
-                            <a href="{{ url_for('main.courts_listing') }}" class="card-action">Book Court <i class="ph ph-arrow-right"></i></a>
-                        </div>
+            <!-- Fallback cards if empty database -->
+            <div class="editorial-card">
+                <div class="card-img-wrapper">
+                    <span class="card-tag">Indoor</span>
+                    <img src="{{ url_for('static', filename='images/court-hero.jpg') }}" alt="Paete Court">
+                </div>
+                <div class="card-content">
+                    <h3 class="card-title">Paete Premier Arena</h3>
+                    <p class="card-desc">State of the art indoor court facilities featuring premium cushioning. Equipped
+                        with high-visibility lighting and professional nets.</p>
+                    <ul class="card-details-list">
+                        <li><i class="ph ph-map-pin"></i> Paete, Laguna</li>
+                        <li><i class="ph ph-currency-circle-dollar"></i> {{ 250|format_currency(hourly=True) }}</li>
+                        <li><i class="ph ph-buildings"></i> Paete Sports Center</li>
+                    </ul>
+                    <div class="card-footer">
+                        <span>Featured Facility</span>
+                        <a href="{{ url_for('main.courts_listing') }}" class="card-action">Book Court <i
+                                class="ph ph-arrow-right"></i></a>
                     </div>
                 </div>
-                <div class="editorial-card">
-                    <div class="card-img-wrapper">
-                        <span class="card-tag">Outdoor</span>
-                        <img src="{{ url_for('static', filename='images/background.jpg') }}" alt="Pakil Court">
-                    </div>
-                    <div class="card-content">
-                        <h3 class="card-title">Pakil Club Grounds</h3>
-                        <p class="card-desc">Beautiful open-air courts with scenic mountain views. Clean wind-breakers installed on all tournament zones.</p>
-                        <ul class="card-details-list">
-                            <li><i class="ph ph-map-pin"></i> Pakil, Laguna</li>
-                            <li><i class="ph ph-currency-circle-dollar"></i> {{ 180|format_currency(hourly=True) }}</li>
-                            <li><i class="ph ph-buildings"></i> Pakil Municipal Park</li>
-                        </ul>
-                        <div class="card-footer">
-                            <span>Featured Facility</span>
-                            <a href="{{ url_for('main.courts_listing') }}" class="card-action">Book Court <i class="ph ph-arrow-right"></i></a>
-                        </div>
+            </div>
+            <div class="editorial-card">
+                <div class="card-img-wrapper">
+                    <span class="card-tag">Outdoor</span>
+                    <img src="{{ url_for('static', filename='images/background.jpg') }}" alt="Pakil Court">
+                </div>
+                <div class="card-content">
+                    <h3 class="card-title">Pakil Club Grounds</h3>
+                    <p class="card-desc">Beautiful open-air courts with scenic mountain views. Clean wind-breakers
+                        installed on all tournament zones.</p>
+                    <ul class="card-details-list">
+                        <li><i class="ph ph-map-pin"></i> Pakil, Laguna</li>
+                        <li><i class="ph ph-currency-circle-dollar"></i> {{ 180|format_currency(hourly=True) }}</li>
+                        <li><i class="ph ph-buildings"></i> Pakil Municipal Park</li>
+                    </ul>
+                    <div class="card-footer">
+                        <span>Featured Facility</span>
+                        <a href="{{ url_for('main.courts_listing') }}" class="card-action">Book Court <i
+                                class="ph ph-arrow-right"></i></a>
                     </div>
                 </div>
-                <div class="editorial-card">
-                    <div class="card-img-wrapper">
-                        <span class="card-tag">Indoor</span>
-                        <img src="{{ url_for('static', filename='images/bg.png') }}" alt="Pangil Court">
-                    </div>
-                    <div class="card-content">
-                        <h3 class="card-title">Pangil Center Court</h3>
-                        <p class="card-desc">Perfect indoor playing conditions. Fully air-conditioned lounge and spectator seats make it ideal for family gatherings.</p>
-                        <ul class="card-details-list">
-                            <li><i class="ph ph-map-pin"></i> Pangil, Laguna</li>
-                            <li><i class="ph ph-currency-circle-dollar"></i> {{ 300|format_currency(hourly=True) }}</li>
-                            <li><i class="ph ph-buildings"></i> Pangil Central Hall</li>
-                        </ul>
-                        <div class="card-footer">
-                            <span>Featured Facility</span>
-                            <a href="{{ url_for('main.courts_listing') }}" class="card-action">Book Court <i class="ph ph-arrow-right"></i></a>
-                        </div>
+            </div>
+            <div class="editorial-card">
+                <div class="card-img-wrapper">
+                    <span class="card-tag">Indoor</span>
+                    <img src="{{ url_for('static', filename='images/bg.png') }}" alt="Pangil Court">
+                </div>
+                <div class="card-content">
+                    <h3 class="card-title">Pangil Center Court</h3>
+                    <p class="card-desc">Perfect indoor playing conditions. Fully air-conditioned lounge and spectator
+                        seats make it ideal for family gatherings.</p>
+                    <ul class="card-details-list">
+                        <li><i class="ph ph-map-pin"></i> Pangil, Laguna</li>
+                        <li><i class="ph ph-currency-circle-dollar"></i> {{ 300|format_currency(hourly=True) }}</li>
+                        <li><i class="ph ph-buildings"></i> Pangil Central Hall</li>
+                    </ul>
+                    <div class="card-footer">
+                        <span>Featured Facility</span>
+                        <a href="{{ url_for('main.courts_listing') }}" class="card-action">Book Court <i
+                                class="ph ph-arrow-right"></i></a>
                     </div>
                 </div>
+            </div>
             {% endif %}
         </div>
     </section>
@@ -251,141 +287,156 @@
     <section class="editorial-section" id="tournaments-listing">
         <h2 class="editorial-section-title">Laguna League Tournaments</h2>
         <p class="editorial-section-subtitle">Track upcoming events, register brackets, and compete for prize pools.</p>
-        
+
         <div class="editorial-grid">
             {% if upcoming_tournaments %}
-                {% for event in upcoming_tournaments %}
-                    <div class="editorial-card">
-                        <div class="card-img-wrapper">
-                            <span class="card-tag">{{ event.format | capitalize }}</span>
-                            {% if event.image_url %}
-                                <img src="{{ event.image_url }}" alt="{{ event.title }}">
-                            {% else %}
-                                <img src="{{ url_for('static', filename='images/background.jpg') }}" alt="{{ event.title }}">
-                            {% endif %}
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">{{ event.title }}</h3>
-                            <p class="card-desc">{{ event.description or 'Participate in this official league event. Register today and test your skills.' }}</p>
-                            <ul class="card-details-list">
-                                <li><i class="ph ph-calendar"></i> Date: {{ event.event_date|format_date }}</li>
-                                <li><i class="ph ph-trophy"></i> Prize Pool: {{ event.prize_pool|format_currency }}</li>
-                                <li><i class="ph ph-ticket"></i> Entry Fee: {{ event.entry_fee|format_currency }}</li>
-                            </ul>
-                            <div class="card-footer">
-                                <span>Organized by {{ event.facilities.name if event.facilities else 'PickleballHub' }}</span>
-                                <a href="{{ url_for('main.tournaments') }}" class="card-action">Register Brackets <i class="ph ph-arrow-right"></i></a>
-                            </div>
-                        </div>
+            {% for event in upcoming_tournaments %}
+            <div class="editorial-card">
+                <div class="card-img-wrapper">
+                    <span class="card-tag">{{ event.format | capitalize }}</span>
+                    {% if event.image_url %}
+                    <img src="{{ event.image_url }}" alt="{{ event.title }}">
+                    {% else %}
+                    <img src="{{ url_for('static', filename='images/background.jpg') }}" alt="{{ event.title }}">
+                    {% endif %}
+                </div>
+                <div class="card-content">
+                    <h3 class="card-title">{{ event.title }}</h3>
+                    <p class="card-desc">{{ event.description or 'Participate in this official league event. Register
+                        today and test your skills.' }}</p>
+                    <ul class="card-details-list">
+                        <li><i class="ph ph-calendar"></i> Date: {{ event.event_date|format_date }}</li>
+                        <li><i class="ph ph-trophy"></i> Prize Pool: {{ event.prize_pool|format_currency }}</li>
+                        <li><i class="ph ph-ticket"></i> Entry Fee: {{ event.entry_fee|format_currency }}</li>
+                    </ul>
+                    <div class="card-footer">
+                        <span>Organized by {{ event.facilities.name if event.facilities else 'PickleballHub' }}</span>
+                        <a href="{{ url_for('main.tournaments') }}" class="card-action">Register Brackets <i
+                                class="ph ph-arrow-right"></i></a>
                     </div>
-                {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
             {% else %}
-                <!-- Fallback cards if empty database -->
-                <div class="editorial-card">
-                    <div class="card-img-wrapper">
-                        <span class="card-tag">Singles</span>
-                        <img src="{{ url_for('static', filename='images/background.jpg') }}" alt="Paete Open">
-                    </div>
-                    <div class="card-content">
-                        <h3 class="card-title">Annual Paete District Open</h3>
-                        <p class="card-desc">The grandest singles tournament of the year. Featuring local champions competing for bragging rights and cash prizes.</p>
-                        <ul class="card-details-list">
-                            <li><i class="ph ph-calendar"></i> Date: August 15, 2026</li>
-                            <li><i class="ph ph-trophy"></i> Prize Pool: {{ 10000|format_currency }}</li>
-                        </ul>
-                        <div class="card-footer">
-                          <span>Open for Entries</span>
-                          <a href="{{ url_for('main.tournaments') }}" class="card-action">View Details <i class="ph ph-arrow-right"></i></a>
-                        </div>
+            <!-- Fallback cards if empty database -->
+            <div class="editorial-card">
+                <div class="card-img-wrapper">
+                    <span class="card-tag">Singles</span>
+                    <img src="{{ url_for('static', filename='images/background.jpg') }}" alt="Paete Open">
+                </div>
+                <div class="card-content">
+                    <h3 class="card-title">Annual Paete District Open</h3>
+                    <p class="card-desc">The grandest singles tournament of the year. Featuring local champions
+                        competing for bragging rights and cash prizes.</p>
+                    <ul class="card-details-list">
+                        <li><i class="ph ph-calendar"></i> Date: August 15, 2026</li>
+                        <li><i class="ph ph-trophy"></i> Prize Pool: {{ 10000|format_currency }}</li>
+                    </ul>
+                    <div class="card-footer">
+                        <span>Open for Entries</span>
+                        <a href="{{ url_for('main.tournaments') }}" class="card-action">View Details <i
+                                class="ph ph-arrow-right"></i></a>
                     </div>
                 </div>
-                <div class="editorial-card">
-                    <div class="card-img-wrapper">
-                        <span class="card-tag">Doubles</span>
-                        <img src="{{ url_for('static', filename='images/bg.png') }}" alt="Pakil Cup">
-                    </div>
-                    <div class="card-content">
-                        <h3 class="card-title">Pakil Doubles Cup</h3>
-                        <p class="card-desc">Bring your partner and compete in our balanced doubles divisions. Structured brackets with DUPR score trackers.</p>
-                        <ul class="card-details-list">
-                            <li><i class="ph ph-calendar"></i> Date: September 5, 2026</li>
-                            <li><i class="ph ph-trophy"></i> Prize Pool: {{ 15000|format_currency }}</li>
-                        </ul>
-                        <div class="card-footer">
-                            <span>Open for Entries</span>
-                            <a href="{{ url_for('main.tournaments') }}" class="card-action">View Details <i class="ph ph-arrow-right"></i></a>
-                        </div>
+            </div>
+            <div class="editorial-card">
+                <div class="card-img-wrapper">
+                    <span class="card-tag">Doubles</span>
+                    <img src="{{ url_for('static', filename='images/bg.png') }}" alt="Pakil Cup">
+                </div>
+                <div class="card-content">
+                    <h3 class="card-title">Pakil Doubles Cup</h3>
+                    <p class="card-desc">Bring your partner and compete in our balanced doubles divisions. Structured
+                        brackets with DUPR score trackers.</p>
+                    <ul class="card-details-list">
+                        <li><i class="ph ph-calendar"></i> Date: September 5, 2026</li>
+                        <li><i class="ph ph-trophy"></i> Prize Pool: {{ 15000|format_currency }}</li>
+                    </ul>
+                    <div class="card-footer">
+                        <span>Open for Entries</span>
+                        <a href="{{ url_for('main.tournaments') }}" class="card-action">View Details <i
+                                class="ph ph-arrow-right"></i></a>
                     </div>
                 </div>
+            </div>
             {% endif %}
         </div>
     </section>
 
-    <!-- SECTION C: ACADEMY INSIGHTS -->
+    <!-- SECTION C: TUTORIALS -->
     <div class="newspaper-divider-container">
         <div class="newspaper-section-divider">
             <span>Section C</span>
-            <span>Academy Insights</span>
+            <span>Tutorials</span>
             <span>Training &amp; Clinics</span>
         </div>
     </div>
 
     <section class="editorial-section" id="clinics-listing">
         <h2 class="editorial-section-title">Clinics &amp; Tutorials</h2>
-        <p class="editorial-section-subtitle">Enhance your game with custom tutorial articles and embedded instructional videos.</p>
-        
+        <p class="editorial-section-subtitle">Enhance your game with custom tutorial articles and embedded instructional
+            videos.</p>
+
         <div class="editorial-grid">
             {% if featured_tutorials %}
-                {% for tutorial in featured_tutorials %}
-                    <div class="editorial-card">
-                        {% if tutorial.embed_url %}
-                            <div class="card-video-wrapper">
-                                <iframe src="{{ tutorial.embed_url }}" title="{{ tutorial.title }}" allowfullscreen></iframe>
-                            </div>
-                        {% else %}
-                            <div class="card-img-wrapper">
-                                <span class="card-tag">{{ tutorial.level }}</span>
-                                <img src="{{ url_for('static', filename='images/bg.png') }}" alt="{{ tutorial.title }}">
-                            </div>
-                        {% endif %}
-                        <div class="card-content">
-                            <h3 class="card-title">{{ tutorial.title }}</h3>
-                            <p class="card-desc">{{ tutorial.description or 'Learn tips, tricks, and strategies from certified professionals to boost your court ELO.' }}</p>
-                            <div class="card-footer">
-                                <span>Skill Level: {{ tutorial.level }}</span>
-                                <a href="{{ url_for('main.clinics') }}" class="card-action">Watch Academy <i class="ph ph-arrow-right"></i></a>
-                            </div>
-                        </div>
+            {% for tutorial in featured_tutorials %}
+            <div class="editorial-card">
+                {% if tutorial.embed_url %}
+                <div class="card-video-wrapper">
+                    <iframe src="{{ tutorial.embed_url }}" title="{{ tutorial.title }}" allowfullscreen></iframe>
+                </div>
+                {% else %}
+                <div class="card-img-wrapper">
+                    <span class="card-tag">{{ tutorial.level }}</span>
+                    <img src="{{ url_for('static', filename='images/bg.png') }}" alt="{{ tutorial.title }}">
+                </div>
+                {% endif %}
+                <div class="card-content">
+                    <h3 class="card-title">{{ tutorial.title }}</h3>
+                    <p class="card-desc">{{ tutorial.description or 'Learn tips, tricks, and strategies from certified
+                        professionals to boost your court ELO.' }}</p>
+                    <div class="card-footer">
+                        <span>Skill Level: {{ tutorial.level }}</span>
+                        <a href="{{ url_for('main.clinics') }}" class="card-action">Watch Tutorial <i
+                                class="ph ph-arrow-right"></i></a>
                     </div>
-                {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
             {% else %}
-                <!-- Fallback cards if empty database -->
-                <div class="editorial-card">
-                    <div class="card-video-wrapper">
-                        <iframe src="https://www.youtube.com/embed/d38D7YFp-fU?rel=0" title="Pickleball Basics" allowfullscreen></iframe>
-                    </div>
-                    <div class="card-content">
-                        <h3 class="card-title">Fundamental Positioning &amp; Rules</h3>
-                        <p class="card-desc">Master the core concepts of serving, kitchen line rules, and basic volley placement to quickly jumpstart your pickleball game.</p>
-                        <div class="card-footer">
-                            <span>Beginner Masterclass</span>
-                            <a href="{{ url_for('main.clinics') }}" class="card-action">Academy Corner <i class="ph ph-arrow-right"></i></a>
-                        </div>
+            <!-- Fallback cards if empty database -->
+            <div class="editorial-card">
+                <div class="card-video-wrapper">
+                    <iframe src="https://www.youtube.com/embed/d38D7YFp-fU?rel=0" title="Pickleball Basics"
+                        allowfullscreen></iframe>
+                </div>
+                <div class="card-content">
+                    <h3 class="card-title">Fundamental Positioning &amp; Rules</h3>
+                    <p class="card-desc">Master the core concepts of serving, kitchen line rules, and basic volley
+                        placement to quickly jumpstart your pickleball game.</p>
+                    <div class="card-footer">
+                        <span>Beginner Masterclass</span>
+                        <a href="{{ url_for('main.clinics') }}" class="card-action">Academy Corner <i
+                                class="ph ph-arrow-right"></i></a>
                     </div>
                 </div>
-                <div class="editorial-card">
-                    <div class="card-video-wrapper">
-                        <iframe src="https://www.youtube.com/embed/5U7x4289aCo?rel=0" title="Advanced Dinks" allowfullscreen></iframe>
-                    </div>
-                    <div class="card-content">
-                        <h3 class="card-title">Advanced Dinking Strategies</h3>
-                        <p class="card-desc">Learn the physics of dinking, spin adjustments, and tactical drills to control the tempo of long kitchen exchanges.</p>
-                        <div class="card-footer">
-                            <span>Intermediate Masterclass</span>
-                            <a href="{{ url_for('main.clinics') }}" class="card-action">Academy Corner <i class="ph ph-arrow-right"></i></a>
-                        </div>
+            </div>
+            <div class="editorial-card">
+                <div class="card-video-wrapper">
+                    <iframe src="https://www.youtube.com/embed/5U7x4289aCo?rel=0" title="Advanced Dinks"
+                        allowfullscreen></iframe>
+                </div>
+                <div class="card-content">
+                    <h3 class="card-title">Advanced Dinking Strategies</h3>
+                    <p class="card-desc">Learn the physics of dinking, spin adjustments, and tactical drills to control
+                        the tempo of long kitchen exchanges.</p>
+                    <div class="card-footer">
+                        <span>Intermediate Masterclass</span>
+                        <a href="{{ url_for('main.clinics') }}" class="card-action">Academy Corner <i
+                                class="ph ph-arrow-right"></i></a>
                     </div>
                 </div>
+            </div>
             {% endif %}
         </div>
     </section>
@@ -403,14 +454,17 @@
         <div class="subscription-container">
             <div class="section-title" style="margin-bottom: 24px;">
                 <h2 class="editorial-section-title" style="text-align: center;">Choose Your Circulation Plan</h2>
-                <p class="editorial-section-subtitle" style="text-align: center; max-width: 600px; margin: 0 auto 32px;">Pick a membership model tailored to your style of play. Start reserving courts, managing leagues, or listing facilities today.</p>
+                <p class="editorial-section-subtitle"
+                    style="text-align: center; max-width: 600px; margin: 0 auto 32px;">Pick a membership model tailored
+                    to your style of play. Start reserving courts, managing leagues, or listing facilities today.</p>
             </div>
-            
+
             <div class="subscription-grid">
                 <!-- Tier 1: Player -->
                 <div class="sub-card">
                     <h3>Player Membership</h3>
-                    <p>Designed for individuals looking to reserve courts, join tournaments, and find community matches.</p>
+                    <p>Designed for individuals looking to reserve courts, join tournaments, and find community matches.
+                    </p>
                     <div class="sub-price">{{ 0|format_currency }}</div>
                     <ul class="sub-features">
                         <li><i class="ph ph-check-circle"></i> Reserve verified courts online</li>
@@ -442,7 +496,8 @@
                 <!-- Tier 3: Owner -->
                 <div class="sub-card">
                     <h3>Facility Owner</h3>
-                    <p>Enterprise layout for facility operators looking to list courts, track utilization, and manage operations.</p>
+                    <p>Enterprise layout for facility operators looking to list courts, track utilization, and manage
+                        operations.</p>
                     <div class="sub-price">{{ 0|format_currency }}</div>
                     <ul class="sub-features">
                         <li><i class="ph ph-check-circle"></i> <strong>Everything in Administrator</strong></li>
@@ -477,7 +532,8 @@
                     <i class="ph-fill ph-star" style="color: #ffb300;"></i>
                     <i class="ph-fill ph-star" style="color: #ffb300;"></i>
                 </div>
-                <p class="testimonial-text">"Booking a court in Paete used to take 5 text messages. Now I just make a reservation here and pay via GCash in under 30 seconds."</p>
+                <p class="testimonial-text">"Booking a court in Paete used to take 5 text messages. Now I just make a
+                    reservation here and pay via GCash in under 30 seconds."</p>
                 <div class="testimonial-author" style="display: flex; align-items: center; gap: 12px;">
                     <div class="author-info">
                         <h4>Mark T.</h4>
@@ -493,7 +549,8 @@
                     <i class="ph-fill ph-star" style="color: #ffb300;"></i>
                     <i class="ph-fill ph-star" style="color: #ffb300;"></i>
                 </div>
-                <p class="testimonial-text">"We've seen a 40% increase in court utilization since listing our Pakil facility on PickleballHub. The real-time booking has completely eliminated schedule conflicts."</p>
+                <p class="testimonial-text">"We've seen a 40% increase in court utilization since listing our Pakil
+                    facility on PickleballHub. The real-time booking has completely eliminated schedule conflicts."</p>
                 <div class="testimonial-author" style="display: flex; align-items: center; gap: 12px;">
                     <div class="author-info">
                         <h4>Coach Arnold</h4>
@@ -517,15 +574,18 @@
         <div class="faq-grid">
             <div class="faq-item">
                 <h3>How do I make a reservation on PickleballHub?</h3>
-                <p>Simply scroll up to search for courts or click "Find Courts" in the menu. Browse the available times, select your slot, and secure it with integrated GCash payments.</p>
+                <p>Simply scroll up to search for courts or click "Find Courts" in the menu. Browse the available times,
+                    select your slot, and secure it with integrated GCash payments.</p>
             </div>
             <div class="faq-item">
                 <h3>How does player matchmaking work?</h3>
-                <p>When you sign up, you specify your experience level. You can search the community feed for matches or create public court bookings that other players of similar ratings can join.</p>
+                <p>When you sign up, you specify your experience level. You can search the community feed for matches or
+                    create public court bookings that other players of similar ratings can join.</p>
             </div>
             <div class="faq-item">
                 <h3>What is the weather refund policy?</h3>
-                <p>If you make a reservation at an outdoor court and it rains, you can request a booking cancellation. Our system automatically processes refunds or credits to your account.</p>
+                <p>If you make a reservation at an outdoor court and it rains, you can request a booking cancellation.
+                    Our system automatically processes refunds or credits to your account.</p>
             </div>
         </div>
     </section>
@@ -535,7 +595,7 @@
 
     <!-- Render Masthead Date inline -->
     <script>
-        (function() {
+        (function () {
             const dateEl = document.getElementById('masthead-date');
             if (dateEl) {
                 const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };

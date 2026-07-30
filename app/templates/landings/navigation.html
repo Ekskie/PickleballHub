@@ -3,7 +3,8 @@
     <div class="editorial-utility-bar">
         <div class="utility-left">
             <a href="/" class="utility-logo">
-                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="{{ platform_settings.platform_name }} Logo">
+                <img src="{{ url_for('static', filename='images/logo.png') }}"
+                    alt="{{ platform_settings.platform_name }} Logo">
                 <span>{{ platform_settings.platform_name }}</span>
             </a>
         </div>
@@ -11,35 +12,48 @@
             <!-- Desktop Auth Buttons (Hidden on mobile) -->
             <div class="desktop-auth-group">
                 {% if current_user.is_logged_in %}
-                    <a href="{{ url_for('auth.logout') }}" class="utility-logout-btn" style="margin-right: 16px; color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500;">Log Out</a>
-                    {% if current_user.role_raw == 'player' %}
-                        <a href="{{ url_for('player.dashboard') }}" class="btn-solid" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;">Dashboard</a>
-                    {% elif current_user.role_raw == 'owner' %}
-                        <a href="{{ url_for('owner.dashboard') }}" class="btn-solid" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;">Dashboard</a>
-                    {% elif current_user.role_raw == 'superadmin' %}
-                        <a href="{{ url_for('superadmin.dashboard') }}" class="btn-solid" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;">Dashboard</a>
-                    {% elif current_user.role_raw == 'clubadmin' %}
-                        <a href="{{ url_for('clubadmin.dashboard') }}" class="btn-solid" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;">Dashboard</a>
-                    {% elif current_user.role_raw == 'facilitystaff' %}
-                        <a href="{{ url_for('facilitystaff.dashboard') }}" class="btn-solid" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;">Dashboard</a>
-                    {% elif current_user.role_raw == 'adminstaff' %}
-                        <a href="{{ url_for('adminstaff.dashboard') }}" class="btn-solid" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;">Dashboard</a>
-                    {% else %}
-                        <a href="{{ url_for('auth.login') }}" class="btn-solid" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;">Dashboard</a>
-                    {% endif %}
+                <a href="{{ url_for('auth.logout') }}" class="utility-logout-btn"
+                    style="margin-right: 16px; color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500;">Log
+                    Out</a>
+                {% if current_user.role_raw == 'player' %}
+                <a href="{{ url_for('player.dashboard') }}" class="btn-solid"
+                    style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;">Dashboard</a>
+                {% elif current_user.role_raw == 'owner' %}
+                <a href="{{ url_for('owner.dashboard') }}" class="btn-solid"
+                    style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;">Dashboard</a>
+                {% elif current_user.role_raw == 'superadmin' %}
+                <a href="{{ url_for('superadmin.dashboard') }}" class="btn-solid"
+                    style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;">Dashboard</a>
+                {% elif current_user.role_raw == 'clubadmin' %}
+                <a href="{{ url_for('clubadmin.dashboard') }}" class="btn-solid"
+                    style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;">Dashboard</a>
+                {% elif current_user.role_raw == 'facilitystaff' %}
+                <a href="{{ url_for('facilitystaff.dashboard') }}" class="btn-solid"
+                    style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;">Dashboard</a>
+                {% elif current_user.role_raw == 'adminstaff' %}
+                <a href="{{ url_for('adminstaff.dashboard') }}" class="btn-solid"
+                    style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;">Dashboard</a>
                 {% else %}
-                    <a href="{{ url_for('auth.login') }}" class="btn-outline" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px; margin-right: 8px;">Log In</a>
-                    <a href="{{ url_for('auth.signup') }}" class="btn-solid" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px; margin-right: 8px;">Sign Up</a>
+                <a href="{{ url_for('auth.login') }}" class="btn-solid"
+                    style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;">Dashboard</a>
+                {% endif %}
+                {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn-outline"
+                    style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px; margin-right: 8px;">Log In</a>
+                <a href="{{ url_for('auth.signup') }}" class="btn-solid"
+                    style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px; margin-right: 8px;">Sign Up</a>
                 {% endif %}
             </div>
-            
+
             <!-- Theme Toggle Switch -->
-            <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" aria-label="Toggle Theme" style="margin-left: 8px; width: 34px; height: 34px; font-size: 1.1rem;">
+            <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" aria-label="Toggle Theme"
+                style="margin-left: 8px; width: 34px; height: 34px; font-size: 1.1rem;">
                 <i class="ph ph-moon" id="themeToggleIcon"></i>
             </button>
 
             <!-- Mobile Navigation Burger Toggle -->
-            <button class="mobile-nav-toggle" id="mobileNavToggleBtn" onclick="toggleMobileMenu()" aria-label="Toggle Navigation">
+            <button class="mobile-nav-toggle" id="mobileNavToggleBtn" onclick="toggleMobileMenu()"
+                aria-label="Toggle Navigation">
                 <i class="ph ph-list" id="mobileNavToggleIcon"></i>
             </button>
         </div>
@@ -49,70 +63,137 @@
     <div class="editorial-mobile-menu" id="editorialMobileMenu">
         <div class="mobile-menu-links">
             <a href="/#courts-listing" class="mobile-nav-item" onclick="toggleMobileMenu(false)">Court Reports</a>
-            <a href="/#tournaments-listing" class="mobile-nav-item" onclick="toggleMobileMenu(false)">Tournament Bulletins</a>
+            <a href="/#tournaments-listing" class="mobile-nav-item" onclick="toggleMobileMenu(false)">Tournament
+                Bulletins</a>
             <a href="/#clinics-listing" class="mobile-nav-item" onclick="toggleMobileMenu(false)">Academy Insights</a>
             <a href="/#subscription-pricing" class="mobile-nav-item" onclick="toggleMobileMenu(false)">Memberships</a>
             <a href="/#faq" class="mobile-nav-item" onclick="toggleMobileMenu(false)">Help Desk</a>
         </div>
         <div class="mobile-menu-auth">
             {% if current_user.is_logged_in %}
-                <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Logged in as: <strong style="color: var(--text-primary);">{{ current_user.first_name }}</strong></div>
-                {% if current_user.role_raw == 'player' %}
-                    <a href="{{ url_for('player.dashboard') }}" class="btn-solid" style="padding: 10px 16px; font-size: 0.95rem; border-radius: 6px; display: block; text-align: center; margin-bottom: 10px; text-decoration: none; font-weight: 600; width: 100%;">Dashboard</a>
-                {% elif current_user.role_raw == 'owner' %}
-                    <a href="{{ url_for('owner.dashboard') }}" class="btn-solid" style="padding: 10px 16px; font-size: 0.95rem; border-radius: 6px; display: block; text-align: center; margin-bottom: 10px; text-decoration: none; font-weight: 600; width: 100%;">Dashboard</a>
-                {% elif current_user.role_raw == 'superadmin' %}
-                    <a href="{{ url_for('superadmin.dashboard') }}" class="btn-solid" style="padding: 10px 16px; font-size: 0.95rem; border-radius: 6px; display: block; text-align: center; margin-bottom: 10px; text-decoration: none; font-weight: 600; width: 100%;">Dashboard</a>
-                {% elif current_user.role_raw == 'clubadmin' %}
-                    <a href="{{ url_for('clubadmin.dashboard') }}" class="btn-solid" style="padding: 10px 16px; font-size: 0.95rem; border-radius: 6px; display: block; text-align: center; margin-bottom: 10px; text-decoration: none; font-weight: 600; width: 100%;">Dashboard</a>
-                {% elif current_user.role_raw == 'facilitystaff' %}
-                    <a href="{{ url_for('facilitystaff.dashboard') }}" class="btn-solid" style="padding: 10px 16px; font-size: 0.95rem; border-radius: 6px; display: block; text-align: center; margin-bottom: 10px; text-decoration: none; font-weight: 600; width: 100%;">Dashboard</a>
-                {% elif current_user.role_raw == 'adminstaff' %}
-                    <a href="{{ url_for('adminstaff.dashboard') }}" class="btn-solid" style="padding: 10px 16px; font-size: 0.95rem; border-radius: 6px; display: block; text-align: center; margin-bottom: 10px; text-decoration: none; font-weight: 600; width: 100%;">Dashboard</a>
-                {% else %}
-                    <a href="{{ url_for('auth.login') }}" class="btn-solid" style="padding: 10px 16px; font-size: 0.95rem; border-radius: 6px; display: block; text-align: center; margin-bottom: 10px; text-decoration: none; font-weight: 600; width: 100%;">Dashboard</a>
-                {% endif %}
-                <a href="{{ url_for('auth.logout') }}" class="btn-outline" style="padding: 10px 16px; font-size: 0.95rem; border-radius: 6px; display: block; text-align: center; text-decoration: none; font-weight: 600; width: 100%;">Log Out</a>
+            <div
+                style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">
+                Logged in as: <strong style="color: var(--text-primary);">{{ current_user.first_name }}</strong></div>
+            {% if current_user.role_raw == 'player' %}
+            <a href="{{ url_for('player.dashboard') }}" class="btn-solid"
+                style="padding: 10px 16px; font-size: 0.95rem; border-radius: 6px; display: block; text-align: center; margin-bottom: 10px; text-decoration: none; font-weight: 600; width: 100%;">Dashboard</a>
+            {% elif current_user.role_raw == 'owner' %}
+            <a href="{{ url_for('owner.dashboard') }}" class="btn-solid"
+                style="padding: 10px 16px; font-size: 0.95rem; border-radius: 6px; display: block; text-align: center; margin-bottom: 10px; text-decoration: none; font-weight: 600; width: 100%;">Dashboard</a>
+            {% elif current_user.role_raw == 'superadmin' %}
+            <a href="{{ url_for('superadmin.dashboard') }}" class="btn-solid"
+                style="padding: 10px 16px; font-size: 0.95rem; border-radius: 6px; display: block; text-align: center; margin-bottom: 10px; text-decoration: none; font-weight: 600; width: 100%;">Dashboard</a>
+            {% elif current_user.role_raw == 'clubadmin' %}
+            <a href="{{ url_for('clubadmin.dashboard') }}" class="btn-solid"
+                style="padding: 10px 16px; font-size: 0.95rem; border-radius: 6px; display: block; text-align: center; margin-bottom: 10px; text-decoration: none; font-weight: 600; width: 100%;">Dashboard</a>
+            {% elif current_user.role_raw == 'facilitystaff' %}
+            <a href="{{ url_for('facilitystaff.dashboard') }}" class="btn-solid"
+                style="padding: 10px 16px; font-size: 0.95rem; border-radius: 6px; display: block; text-align: center; margin-bottom: 10px; text-decoration: none; font-weight: 600; width: 100%;">Dashboard</a>
+            {% elif current_user.role_raw == 'adminstaff' %}
+            <a href="{{ url_for('adminstaff.dashboard') }}" class="btn-solid"
+                style="padding: 10px 16px; font-size: 0.95rem; border-radius: 6px; display: block; text-align: center; margin-bottom: 10px; text-decoration: none; font-weight: 600; width: 100%;">Dashboard</a>
             {% else %}
-                <a href="{{ url_for('auth.login') }}" class="btn-outline" style="padding: 10px 16px; font-size: 0.95rem; border-radius: 6px; display: block; text-align: center; margin-bottom: 10px; text-decoration: none; font-weight: 600; width: 100%;">Log In</a>
-                <a href="{{ url_for('auth.signup') }}" class="btn-solid" style="padding: 10px 16px; font-size: 0.95rem; border-radius: 6px; display: block; text-align: center; text-decoration: none; font-weight: 600; width: 100%;">Sign Up</a>
+            <a href="{{ url_for('auth.login') }}" class="btn-solid"
+                style="padding: 10px 16px; font-size: 0.95rem; border-radius: 6px; display: block; text-align: center; margin-bottom: 10px; text-decoration: none; font-weight: 600; width: 100%;">Dashboard</a>
+            {% endif %}
+            <a href="{{ url_for('auth.logout') }}" class="btn-outline"
+                style="padding: 10px 16px; font-size: 0.95rem; border-radius: 6px; display: block; text-align: center; text-decoration: none; font-weight: 600; width: 100%;">Log
+                Out</a>
+            {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn-outline"
+                style="padding: 10px 16px; font-size: 0.95rem; border-radius: 6px; display: block; text-align: center; margin-bottom: 10px; text-decoration: none; font-weight: 600; width: 100%;">Log
+                In</a>
+            <a href="{{ url_for('auth.signup') }}" class="btn-solid"
+                style="padding: 10px 16px; font-size: 0.95rem; border-radius: 6px; display: block; text-align: center; text-decoration: none; font-weight: 600; width: 100%;">Sign
+                Up</a>
             {% endif %}
         </div>
     </div>
 </div>
 
-<!-- Main Masthead Title -->
+<!-- Main Masthead & Hero Slideshow Banner -->
+{% if not hide_editorial_nav %}
 <header class="masthead-container">
     <div class="masthead-meta">
-        <div>Laguna, Philippines</div>
-        <div id="masthead-date">Thursday, July 9, 2026</div>
-        <div>Issue No. 4 · Vol. I</div>
+        <div>LAGUNA, PHILIPPINES</div>
+        <div id="masthead-date">TUESDAY, JULY 28, 2026</div>
     </div>
-    <a href="/" style="text-decoration: none;"><h1 class="masthead-title">Pickleball Hub Daily</h1></a>
+
+    <!-- Hero Slideshow Banner -->
+    <div class="hero-slideshow-banner" id="mastheadSlideshow">
+        <!-- Slide 1 -->
+        <div class="hero-slide active">
+            <img src="{{ url_for('static', filename='images/pickleball-slider-1.png') }}" alt="Play. Connect. Grow.">
+            <div class="hero-slide-overlay">
+                <h2 class="hero-slide-title">PLAY. CONNECT. GROW.</h2>
+                <p class="hero-slide-subtitle">Your hub for pickleball in Laguna.</p>
+            </div>
+        </div>
+
+        <!-- Slide 2 -->
+        <div class="hero-slide">
+            <img src="{{ url_for('static', filename='images/Agarao.jfif') }}" alt="Reserve Court">
+            <div class="hero-slide-overlay">
+                <h2 class="hero-slide-title">RESERVE YOUR COURT.</h2>
+                <p class="hero-slide-subtitle">Instant bookings with local GCash checkout.</p>
+            </div>
+        </div>
+
+        <!-- Slide 3 -->
+        <div class="hero-slide">
+            <img src="{{ url_for('static', filename='images/court-topdown.png') }}" alt="Join Tournament">
+            <div class="hero-slide-overlay">
+                <h2 class="hero-slide-title">JOIN THE LEAGUE.</h2>
+                <p class="hero-slide-subtitle">Compete in premier tournaments across Laguna.</p>
+            </div>
+        </div>
+
+        <!-- Navigation Arrows -->
+        <button class="slideshow-arrow arrow-left" onclick="prevMastheadSlide()" aria-label="Previous Slide">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256">
+                <path
+                    d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z">
+                </path>
+            </svg>
+        </button>
+        <button class="slideshow-arrow arrow-right" onclick="nextMastheadSlide()" aria-label="Next Slide">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256">
+                <path
+                    d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z">
+                </path>
+            </svg>
+        </button>
+
+        <!-- Pagination Dots -->
+        <div class="slideshow-dots-wrapper">
+            <span class="slideshow-dot active" onclick="setMastheadSlide(0)"></span>
+            <span class="slideshow-dot" onclick="setMastheadSlide(1)"></span>
+            <span class="slideshow-dot" onclick="setMastheadSlide(2)"></span>
+        </div>
+    </div>
 </header>
 
-<!-- Double-bordered centered Editorial Navigation Bar -->
-{% if not hide_editorial_nav %}
+<!-- Editorial Navigation Bar -->
 <nav class="editorial-nav-menu">
     <div class="editorial-nav-links">
-        <a href="/#courts-listing" class="nav-item">Court Reports</a>
-        <a href="/#tournaments-listing" class="nav-item">Tournament Bulletins</a>
-        <a href="/#clinics-listing" class="nav-item">Academy Insights</a>
-        <a href="/#subscription-pricing" class="nav-item">Memberships</a>
-        <a href="/#faq" class="nav-item">Help Desk</a>
+        <a href="/#courts-listing" class="nav-item">COURT FACILITIES</a>
+        <a href="/#tournaments-listing" class="nav-item">TOURNAMENT BULLETINS</a>
+        <a href="/#clinics-listing" class="nav-item">TUTORIAL</a>
+        <a href="/#subscription-pricing" class="nav-item">MEMBERSHIPS</a>
+        <a href="/#faq" class="nav-item">HELP DESK</a>
     </div>
 </nav>
 {% endif %}
 
 <script>
-    (function() {
+    (function () {
         // Sync Date
         const dateEl = document.getElementById('masthead-date');
         if (dateEl) {
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            dateEl.textContent = new Date().toLocaleDateString('en-US', options);
+            dateEl.textContent = new Date().toLocaleDateString('en-US', options).toUpperCase();
         }
-        
+
         // Sync Theme Toggle Icon
         const currentTheme = localStorage.getItem('theme') || 'light';
         const icon = document.getElementById('themeToggleIcon');
@@ -125,13 +206,63 @@
         }
     })();
 
+    // Masthead Slideshow Controller
+    let mastheadSlideIdx = 0;
+    let mastheadSlideTimer = null;
+
+    function showMastheadSlide(n) {
+        const slides = document.querySelectorAll('#mastheadSlideshow .hero-slide');
+        const dots = document.querySelectorAll('#mastheadSlideshow .slideshow-dot');
+        if (!slides || slides.length === 0) return;
+
+        if (n >= slides.length) mastheadSlideIdx = 0;
+        else if (n < 0) mastheadSlideIdx = slides.length - 1;
+        else mastheadSlideIdx = n;
+
+        slides.forEach((slide, i) => {
+            slide.classList.toggle('active', i === mastheadSlideIdx);
+        });
+        dots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === mastheadSlideIdx);
+        });
+    }
+
+    function nextMastheadSlide() {
+        showMastheadSlide(mastheadSlideIdx + 1);
+    }
+
+    function prevMastheadSlide() {
+        showMastheadSlide(mastheadSlideIdx - 1);
+    }
+
+    function setMastheadSlide(n) {
+        showMastheadSlide(n);
+        resetMastheadTimer();
+    }
+
+    function startMastheadTimer() {
+        if (mastheadSlideTimer) clearInterval(mastheadSlideTimer);
+        mastheadSlideTimer = setInterval(nextMastheadSlide, 5000);
+    }
+
+    function resetMastheadTimer() {
+        startMastheadTimer();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (document.querySelector('#mastheadSlideshow .hero-slide')) {
+            showMastheadSlide(0);
+            startMastheadTimer();
+        }
+    });
+
     function toggleMobileMenu(forceState) {
         const menu = document.getElementById('editorialMobileMenu');
         const icon = document.getElementById('mobileNavToggleIcon');
         if (!menu || !icon) return;
 
         const isExpanding = forceState !== undefined ? forceState : !menu.classList.contains('active');
-        
+
         if (isExpanding) {
             menu.classList.add('active');
             icon.className = 'ph ph-x';

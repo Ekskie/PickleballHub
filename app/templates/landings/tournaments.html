@@ -4,22 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tournaments | {{ platform_settings.platform_name }}</title>
+    <title>Tournament Bulletins | {{ platform_settings.platform_name or 'PickleballHub' }}</title>
     {% include 'seo_tags.html' %}
-    <!-- Google Fonts -->
+    <!-- Google Fonts: Lora for Serif Titles and Outfit for UI Elements -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Base CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <!-- Landing CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/landing/landing.css') }}">
+    <!-- Tournaments CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/landing/tournaments.css') }}">
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
-
-
 </head>
 
 <body>
@@ -28,123 +27,210 @@
         <div class="overlay"></div>
     </div>
 
-    <!-- Navigation -->
+    <!-- Navigation & Masthead -->
     {% include 'landings/navigation.html' %}
 
-    <div class="tournaments-page-wrap">
-        <section class="tournaments-section">
-            <div class="section-title">
-                <h2>District Tournaments</h2>
-                <p>Compete against the best in Laguna. Join open brackets or restricted skill-level tournaments to test
-                    your limits and win prizes.</p>
-            </div>
+    <main class="tournaments-page-wrap">
+        
+        <!-- Editorial Page Title Header -->
+        <header class="editorial-page-header">
+            <span class="editorial-kicker"><i class="ph-fill ph-trophy"></i> OFFICIAL LEAGUE COMPETITIONS</span>
+            <h1 class="editorial-main-title">Laguna District Tournaments</h1>
+            <p class="editorial-lead-desc">Compete against the top players in Laguna. Register for open brackets, view live prize pools, and advance your rating.</p>
+        </header>
 
-            <div class="tournaments-nav">
-                <button class="tab-btn active">Registration Open</button>
-                <button class="tab-btn">Upcoming</button>
-                <button class="tab-btn">Past Results</button>
-            </div>
+        <!-- Filter Tabs Navigation -->
+        <nav class="tournaments-filter-nav">
+            <button class="editorial-tab-btn active" onclick="filterTournaments('all', this)">
+                <i class="ph ph-squares-four"></i> All Events
+            </button>
+            <button class="editorial-tab-btn" onclick="filterTournaments('open', this)">
+                <i class="ph ph-check-circle"></i> Registration Open
+            </button>
+            <button class="editorial-tab-btn" onclick="filterTournaments('upcoming', this)">
+                <i class="ph ph-clock"></i> Upcoming
+            </button>
+        </nav>
 
-            <div class="tournaments-grid">
+        <!-- Tournaments Editorial Grid -->
+        <section class="tournaments-grid-container">
+            <div class="editorial-grid" id="tournamentsGrid">
                 {% if events %}
-                {% for event in events %}
-                <div class="tournament-card">
-                    <div class="tournament-banner"
-                        style="background-image: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(22,25,33,1) 100%), url('{{ event.image_url if event.image_url else 'https://plus.unsplash.com/premium_photo-1709048991290-1d36455a2895?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' }}');">
-                        {% if event.status == 'registration_open' %}
-                        <div class="badge-status registration-open">
-                            <i class="ph-fill ph-check-circle"></i> Registration Open
-                        </div>
-                        {% else %}
-                        <div class="badge-status upcoming">
-                            <i class="ph-fill ph-clock"></i> {{ event.status | replace('_', ' ') | title }}
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="tournament-content">
-                        <div class="tournament-header">
-                            <h3 class="tournament-title">{{ event.title }}</h3>
-                            <span class="tournament-org">
-                                Hosted by
-                                {% if event.facilities %}{{ event.facilities.name }}{% else %}{{
-                                event.profiles.first_name }} {{ event.profiles.last_name }}{% endif %}
-                            </span>
-                        </div>
-                        <div class="tournament-details">
-                            <div class="detail-item">
-                                <i class="ph ph-calendar"></i>
-                                <div class="detail-text">
-                                    <h5>Date</h5>
-                                    <p>{{ event.event_date }}</p>
-                                </div>
-                            </div>
-                            <div class="detail-item">
-                                <i class="ph ph-map-pin"></i>
-                                <div class="detail-text">
-                                    <h5>Location</h5>
-                                    <p>{{ event.location_label or 'TBA' }}</p>
-                                </div>
-                            </div>
-                            <div class="detail-item">
-                                <i class="ph ph-users"></i>
-                                <div class="detail-text">
-                                    <h5>Format</h5>
-                                    <p>{{ event.format if event.format else (event.type | title) }}</p>
-                                </div>
-                            </div>
-                            <div class="detail-item">
-                                <i class="ph ph-medal"></i>
-                                <div class="detail-text">
-                                    <h5>Players</h5>
-                                    <p>Max {{ event.max_players }}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="tournament-footer">
-                            <div class="prize-pool">
-                                {% if event.prize_pool and event.prize_pool > 0 %}
-                                <span class="prize-label">Prize Pool</span>
-                                <span class="prize-amount" style="color: #4ade80;">₱{{
-                                    "{:,.2f}".format(event.prize_pool) }}</span>
+                    {% for event in events %}
+                        {% set is_open = (event.status == 'registration_open') %}
+                        <div class="editorial-card tournament-card-item" data-status="{{ 'open' if is_open else 'upcoming' }}">
+                            <div class="card-img-wrapper">
+                                <span class="card-tag">{{ event.format | capitalize if event.format else (event.type | capitalize) }}</span>
+                                {% if is_open %}
+                                    <span class="tournament-status-badge status-open">
+                                        <span class="pulse-dot"></span> Open
+                                    </span>
                                 {% else %}
-                                <span class="prize-label">Entry Fee</span>
-                                {% if event.entry_fee and event.entry_fee > 0 %}
-                                <span class="prize-amount">₱{{ "{:,.2f}".format(event.entry_fee) }}</span>
-                                {% else %}
-                                <span class="prize-amount" style="color:var(--text-secondary)">Free</span>
+                                    <span class="tournament-status-badge status-upcoming">
+                                        <i class="ph ph-clock"></i> {{ event.status | replace('_', ' ') | capitalize if event.status else 'Upcoming' }}
+                                    </span>
                                 {% endif %}
-                                {% endif %}
+                                <img src="{{ event.image_url if event.image_url else url_for('static', filename='images/background.jpg') }}" alt="{{ event.title }}">
                             </div>
-                            {% if event.status == 'registration_open' %}
-                            <a href="{{ url_for('auth.login') }}" class="btn-register">Register</a>
-                            {% else %}
-                            <a href="#" class="btn-register"
-                                style="background: rgba(255,255,255,0.1); color: var(--text-secondary); cursor: not-allowed; pointer-events: none;">Coming
-                                Soon</a>
-                            {% endif %}
+                            <div class="card-content">
+                                <div class="tournament-org-label">
+                                    <i class="ph ph-buildings"></i>
+                                    {% if event.facilities and event.facilities.name %}
+                                        {{ event.facilities.name }}
+                                    {% elif event.profiles and event.profiles.first_name %}
+                                        {{ event.profiles.first_name }} {{ event.profiles.last_name }}
+                                    {% else %}
+                                        PickleballHub Laguna
+                                    {% endif %}
+                                </div>
+                                <h3 class="card-title">{{ event.title }}</h3>
+                                <p class="card-desc">{{ event.description or 'Official Laguna League tournament. Test your skills, win prize money, and elevate your rating.' }}</p>
+                                
+                                <ul class="card-details-list">
+                                    <li><i class="ph ph-calendar"></i> {{ event.event_date }}</li>
+                                    <li><i class="ph ph-map-pin"></i> {{ event.location_label or 'Laguna Court Hub' }}</li>
+                                    <li><i class="ph ph-users"></i> Max {{ event.max_players or 32 }} Entries</li>
+                                    <li>
+                                        <i class="ph ph-trophy"></i> 
+                                        {% if event.prize_pool and event.prize_pool > 0 %}
+                                            Prize Pool: <strong style="color: #10B981;">₱{{ "{:,.2f}".format(event.prize_pool) }}</strong>
+                                        {% else %}
+                                            Prize Pool: <strong style="color: var(--text-primary);">TBA</strong>
+                                        {% endif %}
+                                    </li>
+                                </ul>
+
+                                <div class="card-footer">
+                                    <div class="entry-fee-box">
+                                        <span class="fee-label">Entry Fee</span>
+                                        <span class="fee-amount">
+                                            {% if event.entry_fee and event.entry_fee > 0 %}
+                                                ₱{{ "{:,.2f}".format(event.entry_fee) }}
+                                            {% else %}
+                                                Free
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    {% if is_open %}
+                                        <a href="{{ url_for('auth.login') }}" class="card-action btn-editorial-cta">Register <i class="ph ph-arrow-right"></i></a>
+                                    {% else %}
+                                        <span class="btn-editorial-disabled">Coming Soon</span>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                {% endfor %}
+                    {% endfor %}
                 {% else %}
-                <div
-                    style="grid-column: 1 / -1; text-align: center; padding: 60px 40px; background: rgba(255,255,255,0.03); border-radius: 16px; border: 1px solid var(--border-color);">
-                    <div
-                        style="width: 64px; height: 64px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto;">
-                        <i class="ph ph-calendar-blank" style="font-size: 2rem; color: var(--text-secondary);"></i>
+                    <!-- Fallback Editorial Cards if Empty Database -->
+                    <div class="editorial-card tournament-card-item" data-status="open">
+                        <div class="card-img-wrapper">
+                            <span class="card-tag">Singles</span>
+                            <span class="tournament-status-badge status-open">
+                                <span class="pulse-dot"></span> Open
+                            </span>
+                            <img src="{{ url_for('static', filename='images/background.jpg') }}" alt="Paete District Open">
+                        </div>
+                        <div class="card-content">
+                            <div class="tournament-org-label"><i class="ph ph-buildings"></i> Paete Sports Center</div>
+                            <h3 class="card-title">Annual Paete District Open</h3>
+                            <p class="card-desc">The grandest singles tournament of the season. Compete against top Laguna players for cash prizes and regional bragging rights.</p>
+                            <ul class="card-details-list">
+                                <li><i class="ph ph-calendar"></i> August 15, 2026</li>
+                                <li><i class="ph ph-map-pin"></i> Paete Premier Arena, Laguna</li>
+                                <li><i class="ph ph-users"></i> Max 32 Players</li>
+                                <li><i class="ph ph-trophy"></i> Prize Pool: <strong style="color: #10B981;">₱10,000.00</strong></li>
+                            </ul>
+                            <div class="card-footer">
+                                <div class="entry-fee-box">
+                                    <span class="fee-label">Entry Fee</span>
+                                    <span class="fee-amount">₱250.00</span>
+                                </div>
+                                <a href="{{ url_for('auth.login') }}" class="card-action btn-editorial-cta">Register <i class="ph ph-arrow-right"></i></a>
+                            </div>
+                        </div>
                     </div>
-                    <h3 style="color: var(--text-primary); margin-bottom: 12px; font-size: 1.25rem;">No Tournaments
-                        Currently Open</h3>
-                    <p
-                        style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6; max-width: 400px; margin: 0 auto;">
-                        Check back later for upcoming district tournaments and competitive events in Laguna.</p>
-                </div>
+
+                    <div class="editorial-card tournament-card-item" data-status="open">
+                        <div class="card-img-wrapper">
+                            <span class="card-tag">Doubles</span>
+                            <span class="tournament-status-badge status-open">
+                                <span class="pulse-dot"></span> Open
+                            </span>
+                            <img src="{{ url_for('static', filename='images/bg.png') }}" alt="Pakil Doubles Cup">
+                        </div>
+                        <div class="card-content">
+                            <div class="tournament-org-label"><i class="ph ph-buildings"></i> Pakil Arena</div>
+                            <h3 class="card-title">Pakil Doubles Championship</h3>
+                            <p class="card-desc">Bring your doubles partner and compete in balanced rating flights. Automated brackets and live queue standings included.</p>
+                            <ul class="card-details-list">
+                                <li><i class="ph ph-calendar"></i> September 5, 2026</li>
+                                <li><i class="ph ph-map-pin"></i> Pakil Club Grounds, Laguna</li>
+                                <li><i class="ph ph-users"></i> Max 24 Teams</li>
+                                <li><i class="ph ph-trophy"></i> Prize Pool: <strong style="color: #10B981;">₱15,000.00</strong></li>
+                            </ul>
+                            <div class="card-footer">
+                                <div class="entry-fee-box">
+                                    <span class="fee-label">Entry Fee</span>
+                                    <span class="fee-amount">₱500.00</span>
+                                </div>
+                                <a href="{{ url_for('auth.login') }}" class="card-action btn-editorial-cta">Register <i class="ph ph-arrow-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="editorial-card tournament-card-item" data-status="upcoming">
+                        <div class="card-img-wrapper">
+                            <span class="card-tag">Mixed Doubles</span>
+                            <span class="tournament-status-badge status-upcoming">
+                                <i class="ph ph-clock"></i> Upcoming
+                            </span>
+                            <img src="{{ url_for('static', filename='images/court-hero.jpg') }}" alt="Pangil Invitational">
+                        </div>
+                        <div class="card-content">
+                            <div class="tournament-org-label"><i class="ph ph-buildings"></i> Pangil Central Hall</div>
+                            <h3 class="card-title">Pangil Mixed Doubles Invitational</h3>
+                            <p class="card-desc">High-paced mixed doubles action under indoor air-conditioned courts. Spectator lounge and live stream coverage.</p>
+                            <ul class="card-details-list">
+                                <li><i class="ph ph-calendar"></i> October 12, 2026</li>
+                                <li><i class="ph ph-map-pin"></i> Pangil Center Court, Laguna</li>
+                                <li><i class="ph ph-users"></i> Max 16 Teams</li>
+                                <li><i class="ph ph-trophy"></i> Prize Pool: <strong style="color: #10B981;">₱20,000.00</strong></li>
+                            </ul>
+                            <div class="card-footer">
+                                <div class="entry-fee-box">
+                                    <span class="fee-label">Entry Fee</span>
+                                    <span class="fee-amount">₱600.00</span>
+                                </div>
+                                <span class="btn-editorial-disabled">Coming Soon</span>
+                            </div>
+                        </div>
+                    </div>
                 {% endif %}
             </div>
         </section>
 
-    </div>
+    </main>
+
     {% include 'landings/footer.html' %}
+
+    <!-- Filter JS -->
+    <script>
+        function filterTournaments(filter, btnEl) {
+            const tabs = document.querySelectorAll('.editorial-tab-btn');
+            tabs.forEach(t => t.classList.remove('active'));
+            if (btnEl) btnEl.classList.add('active');
+
+            const cards = document.querySelectorAll('.tournament-card-item');
+            cards.forEach(card => {
+                const status = card.getAttribute('data-status');
+                if (filter === 'all' || status === filter) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    </script>
 </body>
 
 </html>

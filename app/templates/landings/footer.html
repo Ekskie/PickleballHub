@@ -1,3 +1,4 @@
+{% if not hide_editorial_nav and not hide_footer_cta %}
 <!-- Unified Stats Footer -->
 <footer class="stats-footer">
     <div class="stat-item" style="text-align: center;">
@@ -27,6 +28,7 @@
         <a href="{{ url_for('auth.signup') }}" class="final-cta-btn">Sign Up for Free <i class="ph ph-arrow-right"></i></a>
     </div>
 </section>
+{% endif %}
 
 <!-- Main Brand Footer -->
 <footer class="main-footer">
@@ -50,10 +52,10 @@
         <div class="footer-links-col">
             <h4>Community</h4>
             <ul>
-                <li><a href="/#courts-listing">Find Players</a></li>
-                <li><a href="/#courts-listing">Clubs</a></li>
-                <li><a href="/#tournaments-listing">Events</a></li>
-                <li><a href="/#faq">Forum</a></li>
+                <li><a href="{{ url_for('main.community') }}">Find Players</a></li>
+                <li><a href="{{ url_for('main.community') }}">Clubs</a></li>
+                <li><a href="{{ url_for('main.tournaments') }}">Events</a></li>
+                <li><a href="{{ url_for('main.community') }}">Forum</a></li>
             </ul>
         </div>
         
@@ -68,7 +70,7 @@
         </div>
         
         <div class="footer-links-col">
-            <h4>Academy</h4>
+            <h4>Tutorial</h4>
             <ul>
                 <li><a href="{{ url_for('main.clinics') }}">Tips & Guides</a></li>
                 <li><a href="{{ url_for('main.clinics') }}">Video Tutorials</a></li>
@@ -81,8 +83,8 @@
             <h4>Company</h4>
             <ul>
                 <li><a href="{{ url_for('main.about_us') }}">About Us</a></li>
-                <li><a href="{{ url_for('auth.signup') }}">Careers</a></li>
-                <li><a href="{{ url_for('auth.signup') }}">Press</a></li>
+                <li><a href="{{ url_for('main.about_us') }}">Careers</a></li>
+                <li><a href="{{ url_for('main.about_us') }}">Press</a></li>
                 <li><a href="mailto:support@pickleballhub.com">Contact</a></li>
             </ul>
         </div>
@@ -91,7 +93,7 @@
             <h4>Support</h4>
             <ul>
                 <li><a href="/#faq">Help Center</a></li>
-                <li><a href="/#faq">Safety</a></li>
+                <li><a href="{{ url_for('main.privacy_policy') }}">Safety</a></li>
                 <li><a href="{{ url_for('main.terms_of_service') }}">Terms of Service</a></li>
                 <li><a href="{{ url_for('main.privacy_policy') }}">Privacy Policy</a></li>
             </ul>
@@ -101,10 +103,13 @@
         <div class="footer-subscribe-col">
             <h4>Stay Updated</h4>
             <p>Get the latest news and updates from PickleballHub.</p>
-            <form class="footer-subscribe-form" action="#" method="POST" onsubmit="event.preventDefault(); alert('Thank you for subscribing!');">
-                <input type="email" placeholder="Enter your email" required aria-label="Email Address">
+            <form class="footer-subscribe-form" id="footerSubscribeForm" action="#" method="POST" onsubmit="handleFooterSubscribe(event)">
+                <input type="email" id="footerSubscribeEmail" placeholder="Enter your email" required aria-label="Email Address">
                 <button type="submit">Subscribe</button>
             </form>
+            <div id="footerSubscribeSuccess" style="display: none; color: #10B981; font-size: 0.85rem; margin-top: 8px; font-weight: 600;">
+                <i class="ph ph-check-circle"></i> Subscribed! Thank you for joining our newsletter.
+            </div>
         </div>
     </div>
     
@@ -118,3 +123,19 @@
 
 <!-- Floating Scroll to Top button setup -->
 <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+<script>
+    function handleFooterSubscribe(event) {
+        event.preventDefault();
+        const input = document.getElementById('footerSubscribeEmail');
+        const successMsg = document.getElementById('footerSubscribeSuccess');
+        if (input && input.value.trim() !== '') {
+            input.value = '';
+            if (successMsg) {
+                successMsg.style.display = 'block';
+                setTimeout(() => {
+                    successMsg.style.display = 'none';
+                }, 4000);
+            }
+        }
+    }
+</script>
