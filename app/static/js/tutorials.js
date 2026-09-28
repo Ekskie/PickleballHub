@@ -221,7 +221,11 @@ function initTutorials() {
         submitBtn && (submitBtn.textContent = 'Add Tutorial');
 
         if (error) {
-            alert('Error adding tutorial: ' + error.message);
+            if (typeof showToast === 'function') {
+                showToast('Tutorial Error', 'Error adding tutorial: ' + error.message, 'error');
+            } else {
+                alert('Error adding tutorial: ' + error.message);
+            }
             return;
         }
 
@@ -233,6 +237,10 @@ function initTutorials() {
                 target_resource: 'tutorials',
                 details: { id: data[0].id, title, level, youtube_url: url }
             });
+        }
+
+        if (typeof showToast === 'function') {
+            showToast('Tutorial Added', 'The tutorial has been published.', 'success');
         }
 
         addForm.reset();
@@ -251,7 +259,11 @@ function initTutorials() {
             .single();
             
         if (error) {
-            alert('Could not fetch tutorial details: ' + error.message);
+            if (typeof showToast === 'function') {
+                showToast('Fetch Error', 'Could not fetch tutorial details: ' + error.message, 'error');
+            } else {
+                alert('Could not fetch tutorial details: ' + error.message);
+            }
             return;
         }
         
@@ -287,7 +299,11 @@ function initTutorials() {
         submitEditBtn && (submitEditBtn.innerHTML = '<i class="ph ph-check"></i> Save Changes');
 
         if (error) {
-            alert('Error updating tutorial: ' + error.message);
+            if (typeof showToast === 'function') {
+                showToast('Update Error', 'Error updating tutorial: ' + error.message, 'error');
+            } else {
+                alert('Error updating tutorial: ' + error.message);
+            }
             return;
         }
 
@@ -301,6 +317,10 @@ function initTutorials() {
             });
         }
 
+        if (typeof showToast === 'function') {
+            showToast('Changes Saved', 'Tutorial has been successfully updated.', 'success');
+        }
+
         editForm.reset();
         editModal?.classList.remove('open');
         loadTutorials();
@@ -311,19 +331,43 @@ function initTutorials() {
 
     /* ── Delete tutorial (admin) ──────────────────────── */
     async function deleteTutorial(id) {
-        if (!confirm('Remove this tutorial?')) return;
-        const { error } = await supabaseClient.from('tutorials').delete().eq('id', id);
-        if (error) { alert('Could not delete tutorial: ' + error.message); return; }
-        
-        // Insert Audit Log on Delete
-        await supabaseClient.from('audit_logs').insert({
-            actor_id: currentUserId || null,
-            action: 'DELETE_TUTORIAL',
-            target_resource: 'tutorials',
-            details: { id }
-        });
+        const proceedTutorialDelete = async () => {
+            const { error } = await supabaseClient.from('tutorials').delete().eq('id', id);
+            if (error) {
+                if (typeof showToast === 'function') {
+                    showToast('Delete Error', 'Could not delete tutorial: ' + error.message, 'error');
+                } else {
+                    alert('Could not delete tutorial: ' + error.message);
+                }
+                return;
+            }
+            
+            // Insert Audit Log on Delete
+            await supabaseClient.from('audit_logs').insert({
+                actor_id: currentUserId || null,
+                action: 'DELETE_TUTORIAL',
+                target_resource: 'tutorials',
+                details: { id }
+            });
 
-        loadTutorials();
+            if (typeof showToast === 'function') {
+                showToast('Tutorial Removed', 'The tutorial has been deleted.', 'success');
+            }
+
+            loadTutorials();
+        };
+
+        if (typeof showConfirmModal === 'function') {
+            showConfirmModal({
+                title: 'Delete Tutorial',
+                message: 'Remove this tutorial? This action cannot be undone.',
+                confirmText: 'Delete',
+                danger: true,
+                onConfirm: proceedTutorialDelete
+            });
+        } else {
+            if (confirm('Remove this tutorial?')) proceedTutorialDelete();
+        }
     }
 
     /* ── Search & filter ──────────────────────────────── */

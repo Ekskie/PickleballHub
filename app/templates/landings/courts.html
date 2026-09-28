@@ -1493,7 +1493,31 @@
         }
 
         function viewCourtDetails(courtId) {
-            alert('Court details view coming soon!');
+            showLandingToast('Facility Preview', 'Detailed amenities & court walkthrough coming soon! You can book time slots directly below.', 'info');
+        }
+
+        function showLandingToast(title, message, type) {
+            let container = document.getElementById('landing-toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'landing-toast-container';
+                container.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:99999;display:flex;flex-direction:column;gap:10px;pointer-events:none;';
+                document.body.appendChild(container);
+            }
+            const el = document.createElement('div');
+            el.style.cssText = 'background:var(--card-bg, #1e2430);color:var(--text-primary, #fff);border:1px solid var(--primary-orange);padding:14px 20px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.3);pointer-events:auto;display:flex;align-items:center;gap:12px;max-width:360px;font-family:Outfit,sans-serif;font-size:0.9rem;transition:opacity 0.3s ease;';
+            el.innerHTML = `
+                <i class="ph ph-info" style="font-size:1.4rem;color:var(--primary-orange);flex-shrink:0;"></i>
+                <div>
+                    <div style="font-weight:700;font-size:0.92rem;margin-bottom:2px;">${title}</div>
+                    <div style="font-size:0.82rem;color:var(--text-secondary);line-height:1.4;">${message}</div>
+                </div>
+            `;
+            container.appendChild(el);
+            setTimeout(() => {
+                el.style.opacity = '0';
+                setTimeout(() => el.remove(), 300);
+            }, 4000);
         }
     </script>
 

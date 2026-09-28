@@ -455,60 +455,311 @@
             <div class="section-title" style="margin-bottom: 24px;">
                 <h2 class="editorial-section-title" style="text-align: center;">Choose Your Circulation Plan</h2>
                 <p class="editorial-section-subtitle"
-                    style="text-align: center; max-width: 600px; margin: 0 auto 32px;">Pick a membership model tailored
-                    to your style of play. Start reserving courts, managing leagues, or listing facilities today.</p>
+                    style="text-align: center; max-width: 680px; margin: 0 auto 28px;">
+                    Transparent membership models tailored for facility operators, tournament organizers, and competitive athletes. Start free or unlock commercial-grade platform tools.
+                </p>
             </div>
 
-            <div class="subscription-grid">
-                <!-- Tier 1: Player -->
-                <div class="sub-card">
-                    <h3>Player Membership</h3>
-                    <p>Designed for individuals looking to reserve courts, join tournaments, and find community matches.
-                    </p>
-                    <div class="sub-price">{{ 0|format_currency }}</div>
-                    <ul class="sub-features">
-                        <li><i class="ph ph-check-circle"></i> Reserve verified courts online</li>
-                        <li><i class="ph ph-check-circle"></i> GCash checkout integration</li>
-                        <li><i class="ph ph-check-circle"></i> Join public matchmaker lobbies</li>
-                        <li><i class="ph ph-check-circle"></i> Standard ELO &amp; DUPR tracking</li>
-                        <li><i class="ph ph-check-circle"></i> Community discussion board</li>
-                    </ul>
-                    <a href="{{ url_for('auth.signup') }}?role=player" class="sub-btn outline">Create Player Profile</a>
-                </div>
+            <!-- 1. Interactive Persona Switcher -->
+            <div class="pricing-persona-switcher" role="tablist">
+                <button type="button" class="persona-tab active" id="tab-owner" onclick="switchPricingPersona('owner')" role="tab" aria-selected="true">
+                    <i class="ph ph-buildings"></i>
+                    <span>Facility Owners</span>
+                    <span class="persona-tag">B2B SaaS</span>
+                </button>
+                <button type="button" class="persona-tab" id="tab-clubadmin" onclick="switchPricingPersona('clubadmin')" role="tab" aria-selected="false">
+                    <i class="ph ph-shield-check"></i>
+                    <span>Club Organizers</span>
+                    <span class="persona-tag">League Pass</span>
+                </button>
+                <button type="button" class="persona-tab" id="tab-player" onclick="switchPricingPersona('player')" role="tab" aria-selected="false">
+                    <i class="ph ph-user"></i>
+                    <span>Players</span>
+                    <span class="persona-tag">Pro Pass</span>
+                </button>
+            </div>
 
-                <!-- Tier 2: Club Admin -->
-                <div class="sub-card popular">
-                    <span class="sub-popular-badge">Highly Engaged</span>
-                    <h3>Club Administrator</h3>
-                    <p>For tournament organizers and local club coordinators seeking advanced bracket engines.</p>
-                    <div class="sub-price">{{ 0|format_currency }}</div>
-                    <ul class="sub-features">
-                        <li><i class="ph ph-check-circle"></i> <strong>Everything in Player Access</strong></li>
-                        <li><i class="ph ph-check-circle"></i> Build bracket tournament engines</li>
-                        <li><i class="ph ph-check-circle"></i> Manage court reservation schedules</li>
-                        <li><i class="ph ph-check-circle"></i> Organise private/public match queues</li>
-                        <li><i class="ph ph-check-circle"></i> Sync member listings &amp; rosters</li>
-                        <li><i class="ph ph-check-circle"></i> Basic revenue analytics reports</li>
-                    </ul>
-                    <a href="{{ url_for('auth.signup') }}?role=clubadmin" class="sub-btn">Launch My Club Hub</a>
-                </div>
+            <!-- 2. Billing Cycle Switcher (Monthly vs Annual with Savings Badge) -->
+            <div class="pricing-billing-toggle-wrap">
+                <span class="billing-label active" id="label-monthly" onclick="setBillingToggle(false)">Monthly Billing</span>
+                <label class="billing-toggle-switch">
+                    <input type="checkbox" id="pricing-billing-checkbox" onchange="toggleBillingCycle(this.checked)">
+                    <span class="billing-slider"></span>
+                </label>
+                <span class="billing-label" id="label-annual" onclick="setBillingToggle(true)">
+                    Annual Billing <span class="discount-pill">Save 20%</span>
+                </span>
+            </div>
 
-                <!-- Tier 3: Owner -->
-                <div class="sub-card">
-                    <h3>Facility Owner</h3>
-                    <p>Enterprise layout for facility operators looking to list courts, track utilization, and manage
-                        operations.</p>
-                    <div class="sub-price">{{ 0|format_currency }}</div>
-                    <ul class="sub-features">
-                        <li><i class="ph ph-check-circle"></i> <strong>Everything in Administrator</strong></li>
-                        <li><i class="ph ph-check-circle"></i> List multiple facilities &amp; courts</li>
-                        <li><i class="ph ph-check-circle"></i> Set automated reservations schedules</li>
-                        <li><i class="ph ph-check-circle"></i> Advanced peak-hour analytics</li>
-                        <li><i class="ph ph-check-circle"></i> Custom transaction &amp; fee tracking</li>
-                        <li><i class="ph ph-check-circle"></i> Direct support &amp; KYC onboarding</li>
-                    </ul>
-                    <a href="{{ url_for('auth.signup') }}?role=owner" class="sub-btn outline">List My Courts Now</a>
+            <!-- ═══════════════════════════════════════════════════════════
+                 PANE 1: FACILITY OWNERS (Commercial Court Operators)
+                 ═══════════════════════════════════════════════════════════ -->
+            <div class="pricing-pane active" id="pane-owner">
+                <div class="subscription-grid">
+                    <!-- Starter Operator (Free) -->
+                    <div class="sub-card">
+                        <span class="sub-card-tag">Starter Tier</span>
+                        <h3>Starter Operator</h3>
+                        <p>For independent venue hosts wanting to accept automated reservations online.</p>
+                        <div class="sub-price-wrap">
+                            <div class="sub-price">₱0 <span class="period">/ month</span></div>
+                            <span class="sub-annual-note">Free forever · No credit card required</span>
+                        </div>
+                        <ul class="sub-features">
+                            <li><i class="ph ph-check-circle"></i> <span><strong>1 Facility Venue</strong> listing</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span>Up to <strong>2 Active Courts</strong></span></li>
+                            <li><i class="ph ph-check-circle"></i> <span>Standard search listing placement</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span>7-day player advance booking window</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span>Basic 7-day revenue &amp; booking log</span></li>
+                            <li class="disabled"><i class="ph ph-x-circle"></i> <span>8% platform booking fee per reservation</span></li>
+                            <li class="disabled"><i class="ph ph-x-circle"></i> <span>Peak vs. Off-Peak dynamic pricing</span></li>
+                            <li class="disabled"><i class="ph ph-x-circle"></i> <span>Staff account delegation</span></li>
+                            <li class="disabled"><i class="ph ph-x-circle"></i> <span>Exportable financial CSV/PDF reports</span></li>
+                        </ul>
+                        <a href="{{ url_for('auth.signup') }}?role=owner" class="sub-btn outline">Start Free Operator</a>
+                    </div>
+
+                    <!-- Pro Facility (Most Popular) -->
+                    <div class="sub-card popular">
+                        <span class="sub-popular-badge">Most Popular · Commercial</span>
+                        <span class="sub-card-tag" style="color: var(--primary-orange);">Pro Commercial</span>
+                        <h3>Pro Facility Pass</h3>
+                        <p>For growing pickleball clubs seeking lower transaction fees, multi-court capacity, and staff tools.</p>
+                        <div class="sub-price-wrap">
+                            <div class="sub-price">
+                                <span class="val-price" data-monthly="1299" data-annual="1049">₱1,299</span>
+                                <span class="period">/ mo</span>
+                            </div>
+                            <span class="sub-annual-note" data-monthly="" data-annual="Billed ₱12,588/yr (Save ₱3,000)"></span>
+                        </div>
+                        <ul class="sub-features">
+                            <li><i class="ph ph-check-circle"></i> <span>Up to <strong>3 Facilities &amp; 8 Courts</strong></span></li>
+                            <li><i class="ph ph-check-circle"></i> <span><strong>Low 3% Platform Fee</strong> (Keep 97% of court revenue)</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span><strong>"Verified Partner"</strong> trust badge on cards</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span><strong>30-Day</strong> player advance booking calendar</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span><strong>Peak vs. Off-Peak</strong> hourly rate configuration</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span>Up to <strong>3 Facility Staff Accounts</strong></span></li>
+                            <li><i class="ph ph-check-circle"></i> <span>30-day analytics with exportable CSV financial reports</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span>Fast-track KYC approval &amp; live support</span></li>
+                        </ul>
+                        <a href="{{ url_for('auth.signup') }}?role=owner&plan=pro" class="sub-btn">Launch Pro Facility</a>
+                    </div>
+
+                    <!-- Elite Enterprise -->
+                    <div class="sub-card elite">
+                        <span class="sub-elite-badge">Enterprise Multi-Venue</span>
+                        <span class="sub-card-tag" style="color: #6366f1;">Enterprise Scale</span>
+                        <h3>Elite Enterprise</h3>
+                        <p>Flagship package for commercial sports arenas, municipal facilities, and multi-venue franchises.</p>
+                        <div class="sub-price-wrap">
+                            <div class="sub-price">
+                                <span class="val-price" data-monthly="2999" data-annual="2399">₱2,999</span>
+                                <span class="period">/ mo</span>
+                            </div>
+                            <span class="sub-annual-note" data-monthly="" data-annual="Billed ₱28,788/yr (Save ₱7,200)"></span>
+                        </div>
+                        <ul class="sub-features">
+                            <li><i class="ph ph-check-circle"></i> <span><strong>Unlimited Facilities &amp; Courts</strong></span></li>
+                            <li><i class="ph ph-check-circle"></i> <span><strong>0% Platform Booking Fee</strong> (Keep 100% of revenue)</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span><strong>Top "Featured Venue" Pin</strong> on homepage &amp; map</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span><strong>90-Day</strong> booking window for seasonal leagues</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span><strong>Unlimited Staff Accounts</strong> with role-based access</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span>Peak-hour utilization heatmaps &amp; PDF reports</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span>Custom blackout maintenance &amp; recurring clinic blocks</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span>Dedicated account manager &amp; VIP onboarding</span></li>
+                        </ul>
+                        <a href="{{ url_for('auth.signup') }}?role=owner&plan=elite" class="sub-btn elite-btn">Get Enterprise Access</a>
+                    </div>
                 </div>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════════
+                 PANE 2: CLUB ADMINISTRATORS (Leagues & Communities)
+                 ═══════════════════════════════════════════════════════════ -->
+            <div class="pricing-pane" id="pane-clubadmin">
+                <div class="subscription-grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); max-width: 900px; margin: 0 auto;">
+                    <!-- Community Organizer (Free) -->
+                    <div class="sub-card">
+                        <span class="sub-card-tag">Community Free</span>
+                        <h3>Community Organizer</h3>
+                        <p>Essential bracket generation and roster tools for local neighborhood clubs.</p>
+                        <div class="sub-price-wrap">
+                            <div class="sub-price">₱0 <span class="period">/ month</span></div>
+                            <span class="sub-annual-note">Free community tier</span>
+                        </div>
+                        <ul class="sub-features">
+                            <li><i class="ph ph-check-circle"></i> <span><strong>1 Active Club Hub</strong></span></li>
+                            <li><i class="ph ph-check-circle"></i> <span>Up to <strong>25 Club Members</strong></span></li>
+                            <li><i class="ph ph-check-circle"></i> <span><strong>1 Tournament / Month</strong> (up to 8-player bracket)</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span>Single Elimination tournament format</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span>Standard community discussion board</span></li>
+                            <li class="disabled"><i class="ph ph-x-circle"></i> <span>Automated GCash entry fee collection</span></li>
+                            <li class="disabled"><i class="ph ph-x-circle"></i> <span>Double Elimination, Round Robin &amp; Swiss</span></li>
+                            <li class="disabled"><i class="ph ph-x-circle"></i> <span>Exportable roster &amp; match sheets</span></li>
+                        </ul>
+                        <a href="{{ url_for('auth.signup') }}?role=clubadmin" class="sub-btn outline">Create Free Club</a>
+                    </div>
+
+                    <!-- Pro Club Pass (Popular) -->
+                    <div class="sub-card popular">
+                        <span class="sub-popular-badge">Highly Engaged</span>
+                        <span class="sub-card-tag" style="color: var(--primary-orange);">League Builder</span>
+                        <h3>Pro Club Pass</h3>
+                        <p>For serious tournament directors, circuit coordinators, and sanctioned club networks.</p>
+                        <div class="sub-price-wrap">
+                            <div class="sub-price">
+                                <span class="val-price" data-monthly="599" data-annual="479">₱599</span>
+                                <span class="period">/ mo</span>
+                            </div>
+                            <span class="sub-annual-note" data-monthly="" data-annual="Billed ₱5,748/yr (Save ₱1,440)"></span>
+                        </div>
+                        <ul class="sub-features">
+                            <li><i class="ph ph-check-circle"></i> <span><strong>Up to 5 Active Clubs</strong></span></li>
+                            <li><i class="ph ph-check-circle"></i> <span><strong>Unlimited Club Members</strong></span></li>
+                            <li><i class="ph ph-check-circle"></i> <span><strong>Unlimited Tournaments</strong> (Up to 64 Brackets)</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span><strong>Double Elimination, Round Robin &amp; Swiss</strong></span></li>
+                            <li><i class="ph ph-check-circle"></i> <span><strong>Automated GCash Entry Fee Collection</strong></span></li>
+                            <li><i class="ph ph-check-circle"></i> <span>Private club queues &amp; rating cap restrictions</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span>Export member rosters &amp; printable bracket sheets</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span>Priority tournament listing on platform feed</span></li>
+                        </ul>
+                        <a href="{{ url_for('auth.signup') }}?role=clubadmin&plan=pro" class="sub-btn">Start Pro Club Pass</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════════
+                 PANE 3: PLAYERS (Athletes & Community Members)
+                 ═══════════════════════════════════════════════════════════ -->
+            <div class="pricing-pane" id="pane-player">
+                <div class="subscription-grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); max-width: 900px; margin: 0 auto;">
+                    <!-- Free Player Pass -->
+                    <div class="sub-card">
+                        <span class="sub-card-tag">Standard Access</span>
+                        <h3>Player Membership</h3>
+                        <p>Standard profile to reserve courts, join open play queues, and find local matches.</p>
+                        <div class="sub-price-wrap">
+                            <div class="sub-price">₱0 <span class="period">/ month</span></div>
+                            <span class="sub-annual-note">Free standard play</span>
+                        </div>
+                        <ul class="sub-features">
+                            <li><i class="ph ph-check-circle"></i> <span>Reserve verified courts online (3 days ahead)</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span>Max <strong>2 Active Bookings</strong> simultaneously</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span>Standard ELO &amp; DUPR rating tracking</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span>Join public community matchmaker lobbies</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span>Participate in open club discussions</span></li>
+                            <li class="disabled"><i class="ph ph-x-circle"></i> <span>Standard ₱25 platform convenience fee per booking</span></li>
+                            <li class="disabled"><i class="ph ph-x-circle"></i> <span>14-day early access peak slot booking</span></li>
+                            <li class="disabled"><i class="ph ph-x-circle"></i> <span>Priority matchmaker queue speed</span></li>
+                            <li class="disabled"><i class="ph ph-x-circle"></i> <span>Gold "PRO" Paddle Profile Badge &amp; analytics</span></li>
+                        </ul>
+                        <a href="{{ url_for('auth.signup') }}?role=player" class="sub-btn outline">Create Player Profile</a>
+                    </div>
+
+                    <!-- Pro Player Pass (Popular) -->
+                    <div class="sub-card popular">
+                        <span class="sub-popular-badge">Competitive Edge</span>
+                        <span class="sub-card-tag" style="color: var(--primary-orange);">Pro Athlete</span>
+                        <h3>Pickleball Pro Pass</h3>
+                        <p>For active athletes who play multiple times a week and want peak court slots before anyone else.</p>
+                        <div class="sub-price-wrap">
+                            <div class="sub-price">
+                                <span class="val-price" data-monthly="199" data-annual="149">₱199</span>
+                                <span class="period">/ mo</span>
+                            </div>
+                            <span class="sub-annual-note" data-monthly="" data-annual="Billed ₱1,788/yr (Save ₱600)"></span>
+                        </div>
+                        <ul class="sub-features">
+                            <li><i class="ph ph-check-circle"></i> <span><strong>14-Day Early Court Booking</strong> (Lock peak weekend slots)</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span><strong>₱0 Platform Convenience Fees</strong> (Unlimited free bookings)</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span><strong>Unlimited Active Bookings</strong> at any time</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span><strong>Priority Matchmaker Queue</strong> (Instant lobby pairing)</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span><strong>Gold "PRO" Paddle Badge</strong> on profile, rosters &amp; chats</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span><strong>Pro Rating Analytics</strong> (Head-to-head records &amp; win trends)</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span><strong>10% Tournament Discount</strong> on official entry fees</span></li>
+                            <li><i class="ph ph-check-circle"></i> <span>Exclusive Pro community leaderboards</span></li>
+                        </ul>
+                        <a href="{{ url_for('auth.signup') }}?role=player&plan=pro" class="sub-btn">Upgrade to Pro Player</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Collapsible Full Limits & Comparison Matrix -->
+            <div class="pricing-matrix-toggle-wrap">
+                <button type="button" class="pricing-matrix-toggle-btn" id="btn-matrix-toggle" onclick="togglePricingMatrix()">
+                    <i class="ph ph-table"></i>
+                    <span>Compare All Limits &amp; Feature Details</span>
+                    <i class="ph ph-caret-down" id="caret-matrix"></i>
+                </button>
+            </div>
+
+            <div class="pricing-matrix-card" id="pricing-matrix-card">
+                <table class="pricing-matrix-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 32%;">Feature &amp; Operational Limit</th>
+                            <th style="width: 22%;">Free Tier</th>
+                            <th style="width: 23%; color: var(--primary-orange);">Pro Tier (Recommended)</th>
+                            <th style="width: 23%; color: #6366f1;">Elite / Enterprise</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Facility Owner Courts</strong></td>
+                            <td>Max 2 Courts</td>
+                            <td><strong>Up to 8 Courts</strong></td>
+                            <td><strong>Unlimited Courts</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Facility Listings</strong></td>
+                            <td>1 Venue</td>
+                            <td>Up to 3 Venues</td>
+                            <td><strong>Unlimited Venues</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Platform Booking Commission</strong></td>
+                            <td>8% fee per booking</td>
+                            <td><strong>3% fee per booking</strong></td>
+                            <td><strong>0% Fee (Keep 100%)</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Player Advance Booking Window</strong></td>
+                            <td>3 days ahead</td>
+                            <td><strong>14 days (Early Access)</strong></td>
+                            <td>90 days (League calendar)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Staff Account Access</strong></td>
+                            <td>0 accounts</td>
+                            <td>Up to 3 Staff Members</td>
+                            <td><strong>Unlimited Staff</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Club Members Limit</strong></td>
+                            <td>25 members</td>
+                            <td><strong>Unlimited Members</strong></td>
+                            <td>Unlimited Members</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tournament Bracket Sizes</strong></td>
+                            <td>Max 8-bracket (Single Elim)</td>
+                            <td><strong>Up to 64 (Single, Double, Round Robin)</strong></td>
+                            <td>Multi-stage circuit brackets</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Financial Analytics &amp; Reports</strong></td>
+                            <td>7-day basic log</td>
+                            <td><strong>30-day graphs + CSV export</strong></td>
+                            <td><strong>Annual PDF reports &amp; heatmaps</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Search &amp; Homepage Placement</strong></td>
+                            <td>Standard directory</td>
+                            <td><strong>"Verified Partner" Badge</strong></td>
+                            <td><strong>Top "Featured Venue" Pin</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </section>
@@ -605,11 +856,77 @@
     </script>
 
 
+    <!-- Interactive Circulation Plan Switcher Script -->
+    <script>
+        function switchPricingPersona(persona) {
+            // Update active tab button
+            document.querySelectorAll('.persona-tab').forEach(tab => {
+                tab.classList.remove('active');
+                tab.setAttribute('aria-selected', 'false');
+            });
+            const activeTab = document.getElementById('tab-' + persona);
+            if (activeTab) {
+                activeTab.classList.add('active');
+                activeTab.setAttribute('aria-selected', 'true');
+            }
+
+            // Update active pane
+            document.querySelectorAll('.pricing-pane').forEach(pane => {
+                pane.classList.remove('active');
+            });
+            const activePane = document.getElementById('pane-' + persona);
+            if (activePane) {
+                activePane.classList.add('active');
+            }
+        }
+
+        function setBillingToggle(isAnnual) {
+            const checkbox = document.getElementById('pricing-billing-checkbox');
+            if (checkbox) {
+                checkbox.checked = isAnnual;
+                toggleBillingCycle(isAnnual);
+            }
+        }
+
+        function toggleBillingCycle(isAnnual) {
+            const labelMonthly = document.getElementById('label-monthly');
+            const labelAnnual = document.getElementById('label-annual');
+            if (labelMonthly) labelMonthly.classList.toggle('active', !isAnnual);
+            if (labelAnnual) labelAnnual.classList.toggle('active', isAnnual);
+
+            // Update all price numbers and annual notes
+            document.querySelectorAll('.val-price').forEach(el => {
+                const val = isAnnual ? el.getAttribute('data-annual') : el.getAttribute('data-monthly');
+                if (val) {
+                    el.textContent = '₱' + parseInt(val).toLocaleString();
+                }
+            });
+
+            document.querySelectorAll('.sub-annual-note').forEach(el => {
+                const note = isAnnual ? el.getAttribute('data-annual') : el.getAttribute('data-monthly');
+                if (note !== null) {
+                    el.textContent = note;
+                }
+            });
+        }
+
+        function togglePricingMatrix() {
+            const card = document.getElementById('pricing-matrix-card');
+            const caret = document.getElementById('caret-matrix');
+            if (card) {
+                const isOpen = card.classList.contains('open');
+                card.classList.toggle('open', !isOpen);
+                if (caret) {
+                    caret.className = isOpen ? 'ph ph-caret-down' : 'ph ph-caret-up';
+                }
+            }
+        }
+    </script>
+
     <!-- GSAP Page Animations -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof gsap !== 'undefined') {
-                // Subtle fade-in of the header/nav and hero section on load
                 gsap.from('.masthead-container, .editorial-nav-menu', { duration: 0.8, opacity: 0, ease: 'power2.out' });
                 gsap.from('.editorial-lead-section', { duration: 0.8, y: 15, opacity: 0, ease: 'power2.out', delay: 0.15 });
             }

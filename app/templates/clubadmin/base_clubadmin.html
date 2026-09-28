@@ -1,30 +1,97 @@
 {% extends "base.html" %}
 
 {% block sidebar_menu %}
-<li class="{% if request.endpoint == 'clubadmin.dashboard' %}active{% endif %}"><a
-        href="{{ url_for('clubadmin.dashboard') }}"><i class="ph ph-squares-four"></i> Club Overview</a></li>
-<li class="{% if request.endpoint == 'clubadmin.members' %}active{% endif %}"><a
-        href="{{ url_for('clubadmin.members') }}"><i class="ph ph-users"></i> Members</a></li>
-<li class="{% if request.endpoint == 'clubadmin.ledger' %}active{% endif %}"><a
-        href="{{ url_for('clubadmin.ledger') }}"><i class="ph ph-receipt"></i> Payment Ledger</a></li>
-<li class="{% if request.endpoint == 'clubadmin.events' %}active{% endif %}"><a
-        href="{{ url_for('clubadmin.events') }}"><i class="ph ph-calendar-star"></i> Club Events</a></li>
-<li class="{% if request.endpoint == 'clubadmin.tournaments' %}active{% endif %}"><a
-        href="{{ url_for('clubadmin.tournaments') }}"><i class="ph ph-sword"></i> Tournaments</a></li>
-<li class="{% if request.endpoint == 'clubadmin.leaderboard' %}active{% endif %}"><a
-        href="{{ url_for('clubadmin.leaderboard') }}"><i class="ph ph-medal"></i> Leaderboard</a></li>
-<li class="{% if request.endpoint == 'clubadmin.community' %}active{% endif %}"><a
-        href="{{ url_for('clubadmin.community') }}"><i class="ph ph-users-three"></i> Community</a></li>
-<li class="{% if request.endpoint == 'clubadmin.tutorials' %}active{% endif %}"><a
-        href="{{ url_for('clubadmin.tutorials') }}"><i class="ph ph-video"></i> Tutorials</a></li>
-<li class="{% if request.endpoint == 'clubadmin.messages' %}active{% endif %}"><a
-        href="{{ url_for('clubadmin.messages') }}"><i class="ph ph-chat-circle-dots"></i> Messages</a></li>
-        
-<div style="margin: 20px 0; border-top: 1px solid var(--border-color);"></div>
+<li class="{% if request.endpoint == 'clubadmin.dashboard' %}active{% endif %}">
+    <a href="{{ url_for('clubadmin.dashboard') }}">
+        <i class="ph ph-squares-four"></i>
+        <span>Club Overview</span>
+    </a>
+</li>
 
-<li class="{% if request.endpoint == 'clubadmin.club_setup' %}active{% endif %}"><a
-        href="{{ url_for('clubadmin.club_setup') }}"><i class="ph ph-gear"></i> Club Setup</a></li>
-<script src="{{ url_for('static', filename='js/clubadmin_common.js') }}" defer></script>
+<!-- Management Dropdown -->
+{% set is_mgmt_active = request.endpoint in ['clubadmin.members', 'clubadmin.ledger'] %}
+<li class="sidebar-dropdown-group {% if is_mgmt_active %}open active-group{% endif %}" data-group="club-mgmt">
+    <button type="button" class="sidebar-dropdown-btn" onclick="toggleSidebarDropdown(this)">
+        <span class="dropdown-btn-label">
+            <i class="ph ph-users group-icon"></i>
+            <span>Management</span>
+        </span>
+        <i class="ph ph-caret-down dropdown-arrow"></i>
+    </button>
+    <ul class="sidebar-subnav">
+        <li class="{% if request.endpoint == 'clubadmin.members' %}active{% endif %}">
+            <a href="{{ url_for('clubadmin.members') }}"><i class="ph ph-user-list"></i> <span>Members</span></a>
+        </li>
+        <li class="{% if request.endpoint == 'clubadmin.ledger' %}active{% endif %}">
+            <a href="{{ url_for('clubadmin.ledger') }}"><i class="ph ph-receipt"></i> <span>Payment Ledger</span></a>
+        </li>
+    </ul>
+</li>
+
+<!-- Competition Dropdown -->
+{% set is_comp_active = request.endpoint in ['clubadmin.events', 'clubadmin.tournaments', 'clubadmin.leaderboard'] %}
+<li class="sidebar-dropdown-group {% if is_comp_active %}open active-group{% endif %}" data-group="club-comp">
+    <button type="button" class="sidebar-dropdown-btn" onclick="toggleSidebarDropdown(this)">
+        <span class="dropdown-btn-label">
+            <i class="ph ph-trophy group-icon"></i>
+            <span>Competition</span>
+        </span>
+        <i class="ph ph-caret-down dropdown-arrow"></i>
+    </button>
+    <ul class="sidebar-subnav">
+        <li class="{% if request.endpoint == 'clubadmin.events' %}active{% endif %}">
+            <a href="{{ url_for('clubadmin.events') }}"><i class="ph ph-calendar-star"></i> <span>Club Events</span></a>
+        </li>
+        <li class="{% if request.endpoint == 'clubadmin.tournaments' %}active{% endif %}">
+            <a href="{{ url_for('clubadmin.tournaments') }}"><i class="ph ph-sword"></i> <span>Tournaments</span></a>
+        </li>
+        <li class="{% if request.endpoint == 'clubadmin.leaderboard' %}active{% endif %}">
+            <a href="{{ url_for('clubadmin.leaderboard') }}"><i class="ph ph-medal"></i> <span>Leaderboard</span></a>
+        </li>
+    </ul>
+</li>
+
+<!-- Community & Learning Dropdown -->
+{% set is_social_active = request.endpoint in ['clubadmin.community', 'clubadmin.messages', 'clubadmin.tutorials'] %}
+<li class="sidebar-dropdown-group {% if is_social_active %}open active-group{% endif %}" data-group="club-social">
+    <button type="button" class="sidebar-dropdown-btn" onclick="toggleSidebarDropdown(this)">
+        <span class="dropdown-btn-label">
+            <i class="ph ph-users-three group-icon"></i>
+            <span>Community & Media</span>
+        </span>
+        <i class="ph ph-caret-down dropdown-arrow"></i>
+    </button>
+    <ul class="sidebar-subnav">
+        <li class="{% if request.endpoint == 'clubadmin.community' %}active{% endif %}">
+            <a href="{{ url_for('clubadmin.community') }}"><i class="ph ph-chats-circle"></i> <span>Community</span></a>
+        </li>
+        <li class="{% if request.endpoint == 'clubadmin.messages' %}active{% endif %}">
+            <a href="{{ url_for('clubadmin.messages') }}"><i class="ph ph-chat-circle-dots"></i> <span>Messages</span></a>
+        </li>
+        <li class="{% if request.endpoint == 'clubadmin.tutorials' %}active{% endif %}">
+            <a href="{{ url_for('clubadmin.tutorials') }}"><i class="ph ph-video"></i> <span>Tutorials</span></a>
+        </li>
+    </ul>
+</li>
+
+<li class="sidebar-nav-divider"></li>
+<li class="{% if request.endpoint == 'clubadmin.club_setup' %}active{% endif %}">
+    <a href="{{ url_for('clubadmin.club_setup') }}">
+        <i class="ph ph-gear"></i>
+        <span>Club Setup</span>
+    </a>
+</li>
+<li class="{% if request.endpoint and request.endpoint.startswith('billing.') %}active{% endif %}">
+    <a href="{{ url_for('billing.subscription_page') }}">
+        <i class="ph ph-crown-simple" style="color:#8b5cf6;"></i>
+        <span>Club Pass Subscription</span>
+        {% if current_user.is_pro %}
+        <span class="nav-tier-tag pro" style="background:#10b981; color:#fff; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:10px; margin-left:auto;">PRO</span>
+        {% else %}
+        <span class="nav-tier-tag upgrade" style="background:rgba(139,92,246,0.15); color:#8b5cf6; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:10px; margin-left:auto;">UPGRADE</span>
+        {% endif %}
+    </a>
+</li>
 {% endblock %}
 
 {% block custom_profile_name %}
@@ -32,4 +99,9 @@
     <span class="user-name">{{ g.club.name if g.club else current_user.full_name }}</span>
     <span class="user-role">{{ 'Club Admin' if g.club else current_user.role }}</span>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/clubadmin_common.js') }}" defer></script>
+{{ super() }}
 {% endblock %}

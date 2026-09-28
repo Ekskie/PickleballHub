@@ -73,9 +73,9 @@ def require_role(*allowed_roles):
             # to avoid a redundant DB round-trip.
             db = get_db()
             user_role = session.get('role', 'player')
-            cached = getattr(g, 'current_profile', None)
-            if cached:
-                # Reuse the profile already fetched by before_request
+            cached = getattr(g, 'current_profile', None) or session.get('cached_profile')
+            if cached and cached.get('id') == user_id:
+                # Reuse the profile already fetched by before_request or session
                 profile = cached
                 if profile.get('is_suspended'):
                     session.clear()
@@ -85,15 +85,17 @@ def require_role(*allowed_roles):
                 session['role'] = user_role
             else:
                 try:
-                    resp = db.table('profiles').select('role, is_suspended').eq('id', user_id).single().execute()
+                    resp = db.table('profiles').select('id, role, is_suspended, subscription_tier, subscription_status, subscription_expires_at').eq('id', user_id).single().execute()
                     if resp.data:
                         profile = resp.data
+                        g.current_profile = profile
                         if profile.get('is_suspended'):
                             session.clear()
                             flash('Your account has been suspended. Please contact support.', 'error')
                             return redirect(url_for('auth.login'))
                         user_role = (profile.get('role') or 'player').strip().lower()
                         session['role'] = user_role
+                        session['subscription_tier'] = profile.get('subscription_tier') or 'free'
                 except Exception as e:
                     current_app.logger.error(f"[require_role] Integrity check failed: {e}")
 

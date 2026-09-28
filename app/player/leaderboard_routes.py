@@ -11,6 +11,7 @@ def leaderboard():
     rankings = []
     search_query = request.args.get('search', '').strip()
     proficiency_filter = request.args.get('proficiency', '').strip()
+    sort_by = request.args.get('sort', 'dupr').strip()
 
     try:
         # Fetch all players, including wins and losses if they exist
@@ -95,20 +96,34 @@ def leaderboard():
                     'win_rate': win_rate
                 })
 
-        # Sort by DUPR rating descending, then Elo descending
-        rankings.sort(key=lambda x: (-x['dupr'], -x['elo']))
+        # Multi-option sorting
+        if sort_by == 'elo':
+            rankings.sort(key=lambda x: (-x['elo'], -x['dupr']))
+        elif sort_by == 'wins':
+            rankings.sort(key=lambda x: (-x['wins'], -x['win_rate'], -x['dupr']))
+        elif sort_by == 'win_rate':
+            rankings.sort(key=lambda x: (-x['win_rate'], -x['wins'], -x['dupr']))
+        else:
+            rankings.sort(key=lambda x: (-x['dupr'], -x['elo']))
 
+        user_rank_info = None
         for i, r in enumerate(rankings):
             r['rank'] = i + 1
+            if r['id'] == player_id:
+                user_rank_info = r
 
     except Exception as e:
         flash('An error occurred. Please try again.', 'error')
+        user_rank_info = None
 
     return render_template(
         'player/leaderboard.html',
         rankings=rankings,
         search_query=search_query,
-        selected_prof=proficiency_filter
+        selected_prof=proficiency_filter,
+        sort_by=sort_by,
+        user_rank_info=user_rank_info,
+        player_id=player_id
     )
 
 

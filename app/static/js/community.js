@@ -33,12 +33,19 @@ function initCommunity() {
     let allPosts = [];
     let currentSharePost = null;
     let currentUserName = '';
+    let currentCategoryFilter = 'all';
+    let currentSearchQuery = '';
 
     /* ── Helpers ─────────────────────────────────── */
     function escapeHTML(str = '') {
         return String(str).replace(/[&<>'"]/g, t => (
             { '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[t]
         ));
+    }
+
+    function formatPostContent(rawText = '') {
+        const escaped = escapeHTML(rawText);
+        return escaped.replace(/#([a-zA-Z0-9_]+)/g, '<span class="post-tag-pill" data-tag="#$1">#$1</span>');
     }
 
     function timeAgo(iso) {
@@ -91,7 +98,11 @@ function initCommunity() {
             const file = e.target.files[0];
             if (!file) return;
             if (file.size > 5 * 1024 * 1024) {
-                alert('Image must be under 5 MB.');
+                if (typeof showToast === 'function') {
+                    showToast('Upload Error', 'Image must be under 5 MB.', 'warning');
+                } else {
+                    alert('Image must be under 5 MB.');
+                }
                 imageInput.value = '';
                 return;
             }
@@ -127,8 +138,43 @@ function initCommunity() {
     }
 
     /* ══════════════════════════════════════════════
-       SMART NEWS FEED
+       SMART NEWS FEED & FILTERING
     ══════════════════════════════════════════════ */
+    function filterPosts() {
+        let filtered = allPosts;
+
+        // 1. Category Filter
+        if (currentCategoryFilter === 'announcements') {
+            filtered = filtered.filter(p => {
+                const role = (p.author?.role || '').toLowerCase();
+                const text = (p.content || '').toLowerCase();
+                return role === 'adminstaff' || role === 'clubadmin' || role === 'owner' || text.includes('announcement') || text.includes('official');
+            });
+        } else if (currentCategoryFilter === 'matchplay') {
+            filtered = filtered.filter(p => {
+                const text = (p.content || '').toLowerCase();
+                return text.includes('match') || text.includes('partner') || text.includes('game') || text.includes('league') || text.includes('open play') || text.includes('play') || text.includes('#openplay') || text.includes('#matchrecap');
+            });
+        } else if (currentCategoryFilter === 'drills') {
+            filtered = filtered.filter(p => {
+                const text = (p.content || '').toLowerCase();
+                return text.includes('drill') || text.includes('tip') || text.includes('drop') || text.includes('dink') || text.includes('paddle') || text.includes('serve') || text.includes('third shot') || text.includes('#drilltip') || text.includes('#thirdshotdrop');
+            });
+        }
+
+        // 2. Search Query Filter
+        if (currentSearchQuery) {
+            const q = currentSearchQuery.toLowerCase().trim();
+            filtered = filtered.filter(p => {
+                const author = `${p.author?.first_name || ''} ${p.author?.last_name || ''}`.toLowerCase();
+                const text = (p.content || '').toLowerCase();
+                return author.includes(q) || text.includes(q);
+            });
+        }
+
+        renderSmartFeed(filtered);
+    }
+
     async function loadPosts() {
         const { data: posts, error } = await supabaseClient
             .from('community_posts')
@@ -149,13 +195,15 @@ function initCommunity() {
 
         allPosts = posts || [];
         if (postsCountEl) {
-            postsCountEl.textContent = `${allPosts.length} post${allPosts.length !== 1 ? 's' : ''}`;
+            postsCountEl.innerHTML = `<i class="ph ph-chat-circle-dots"></i> ${allPosts.length} post${allPosts.length !== 1 ? 's' : ''}`;
         }
+        const filterAllBadge = document.getElementById('filter-all-count');
+        if (filterAllBadge) filterAllBadge.textContent = allPosts.length;
 
         // Mark all currently rendered posts as viewed
         allPosts.forEach(p => markViewed(p.id));
 
-        renderSmartFeed(allPosts);
+        filterPosts();
     }
 
     function renderSmartFeed(posts) {
@@ -163,7 +211,7 @@ function initCommunity() {
         if (!posts || posts.length === 0) {
             feedWrapper.innerHTML = `<div class="community-empty">
                 <i class="ph ph-chats-circle"></i>
-                <p>No posts yet — be the first to share something!</p></div>`;
+                <p>No discussions found matching your filter. Be the first to start a conversation!</p></div>`;
             return;
         }
         posts.forEach(post => renderPostCard(post));
@@ -184,15 +232,17 @@ function initCommunity() {
 
         allPosts = posts || [];
         if (postsCountEl) {
-            postsCountEl.textContent = `${allPosts.length} post${allPosts.length !== 1 ? 's' : ''}`;
+            postsCountEl.innerHTML = `<i class="ph ph-chat-circle-dots"></i> ${allPosts.length} post${allPosts.length !== 1 ? 's' : ''}`;
         }
+        const filterAllBadge = document.getElementById('filter-all-count');
+        if (filterAllBadge) filterAllBadge.textContent = allPosts.length;
 
         // Find unviewed posts not from current user
         const unviewed = allPosts.filter(p => !viewedPostIds.has(p.id) && p.author_id !== currentUserId);
 
         if (refreshBtn) {
             refreshBtn.disabled = false;
-            refreshBtn.innerHTML = '<i class="ph ph-arrow-clockwise"></i> Refresh';
+            refreshBtn.innerHTML = '<i class="ph ph-arrows-clockwise"></i> Refresh';
         }
 
         feedWrapper.innerHTML = '';
@@ -204,7 +254,7 @@ function initCommunity() {
 
             // Show banner
             if (smartBanner && smartMsg) {
-                smartMsg.textContent = `New post from the community you haven't seen yet!`;
+                smartMsg.textContent = `New discussion from the community you haven't seen yet!`;
                 smartBanner.style.display = 'flex';
             }
 
@@ -214,7 +264,7 @@ function initCommunity() {
         } else {
             // No unviewed — show most recent with info banner
             if (smartBanner && smartMsg) {
-                smartMsg.textContent = `You're all caught up! Showing the latest posts.`;
+                smartMsg.textContent = `You're all caught up! Showing the latest discussions.`;
                 smartBanner.style.display = 'flex';
             }
             allPosts.forEach(p => renderPostCard(p));
@@ -233,6 +283,7 @@ function initCommunity() {
         const author = post.author || {};
         const postInitials = initials(author.first_name, author.last_name);
         const fullName = `${author.first_name || 'Unknown'} ${author.last_name || ''}`.trim();
+        const rawRole = (author.role || '').toLowerCase();
         const role = author.role ? author.role.replace(/_/g, ' ') : '';
         const hasLiked = post.post_likes?.some(l => l.profile_id === currentUserId);
         const likesCount = post.post_likes?.length ?? 0;
@@ -243,21 +294,50 @@ function initCommunity() {
         const avatarColor = avatarColors[colorIdx];
         const authorAvatarUrl = author.avatar_url || null;
 
+        // Check if official announcement
+        const isAnnouncement = (
+            rawRole === 'adminstaff' ||
+            rawRole === 'clubadmin' ||
+            rawRole === 'owner' ||
+            (post.content && post.content.toLowerCase().includes('official announcement')) ||
+            (post.content && post.content.toLowerCase().includes('#announcement'))
+        );
+
+        // Role Badge HTML with crisp icons
+        let roleBadgeHtml = '';
+        if (rawRole === 'adminstaff' || rawRole === 'admin staff') {
+            roleBadgeHtml = `<span class="author-role-badge admin"><i class="ph ph-shield-check"></i> Admin Staff</span>`;
+        } else if (rawRole === 'clubadmin' || rawRole === 'club admin') {
+            roleBadgeHtml = `<span class="author-role-badge club"><i class="ph ph-crown"></i> Club Captain</span>`;
+        } else if (rawRole === 'facilitystaff' || rawRole === 'facility staff') {
+            roleBadgeHtml = `<span class="author-role-badge admin"><i class="ph ph-wrench"></i> Facility Staff</span>`;
+        } else if (rawRole === 'owner') {
+            roleBadgeHtml = `<span class="author-role-badge owner"><i class="ph ph-buildings"></i> Facility Owner</span>`;
+        } else if (rawRole === 'player') {
+            roleBadgeHtml = `<span class="author-role-badge player"><i class="ph ph-tennis-ball"></i> Player</span>`;
+        } else if (rawRole) {
+            roleBadgeHtml = `<span class="author-role-badge player">${escapeHTML(role)}</span>`;
+        }
+
         const feedAvatarHtml = authorAvatarUrl
             ? `<div class="feed-avatar" style="overflow:hidden;"><img src="${escapeHTML(authorAvatarUrl)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"></div>`
             : `<div class="feed-avatar" style="background:${avatarColor}">${escapeHTML(postInitials)}</div>`;
 
         const card = document.createElement('div');
-        card.className = `feed-post-card${featured ? ' feed-post-featured' : ''}`;
+        card.className = `feed-post-card${featured ? ' feed-post-featured' : ''}${isAnnouncement ? ' is-announcement' : ''}`;
         card.dataset.postId = post.id;
 
         card.innerHTML = `
-            ${featured ? `<div class="featured-badge"><i class="ph ph-sparkle"></i> New for you</div>` : ''}
+            ${isAnnouncement ? `<div class="post-announcement-ribbon"><i class="ph-fill ph-megaphone"></i> Official Announcement</div>` : ''}
+            ${featured && !isAnnouncement ? `<div class="featured-badge"><i class="ph ph-sparkle"></i> New for you</div>` : ''}
             <div class="feed-post-header">
                 ${feedAvatarHtml}
                 <div class="feed-post-meta">
-                    <h4>${escapeHTML(fullName)}${role ? `<span class="author-role">${escapeHTML(role)}</span>` : ''}</h4>
-                    <span class="post-time"><i class="ph ph-clock"></i>${timeAgo(post.created_at)}</span>
+                    <div class="feed-author-line">
+                        <h4 class="feed-author-name">${escapeHTML(fullName)}</h4>
+                        ${roleBadgeHtml}
+                    </div>
+                    <span class="post-time"><i class="ph ph-clock"></i> ${timeAgo(post.created_at)}</span>
                 </div>
                 ${isOwner ? `
                 <button class="delete-post-btn" title="Delete post" data-id="${post.id}">
@@ -265,7 +345,7 @@ function initCommunity() {
                 </button>` : ''}
             </div>
 
-            <p class="feed-post-body">${escapeHTML(post.content)}</p>
+            <p class="feed-post-body">${formatPostContent(post.content)}</p>
 
             ${post.image_url ? `
             <div class="feed-post-image-wrap">
@@ -275,20 +355,18 @@ function initCommunity() {
 
             <div class="feed-post-footer">
                 <button class="feed-action like-btn ${hasLiked ? 'liked' : ''}" data-id="${post.id}">
-                    <i class="ph ${hasLiked ? 'ph-fill ph-thumbs-up' : 'ph-thumbs-up'}"></i>
-                    <span class="like-count">${likesCount}</span>
-                    Like${likesCount !== 1 ? 's' : ''}
+                    <i class="ph ${hasLiked ? 'ph-fill ph-heart' : 'ph-heart'}"></i>
+                    <span class="like-count">${likesCount}</span> <span>${likesCount === 1 ? 'Like' : 'Likes'}</span>
                 </button>
                 <button class="feed-action comment-toggle-btn" data-id="${post.id}">
-                    <i class="ph ph-chat-circle"></i>
-                    <span class="comment-count">${commentsCount}</span>
-                    Comment${commentsCount !== 1 ? 's' : ''}
+                    <i class="ph ph-chat-circle-dots"></i>
+                    <span class="comment-count">${commentsCount}</span> <span>${commentsCount === 1 ? 'Comment' : 'Comments'}</span>
                 </button>
                 <button class="feed-action share-btn" data-id="${post.id}"
                     data-author="${escapeHTML(fullName)}"
                     data-content="${escapeHTML(post.content).substring(0, 200)}"
                     data-image="${post.image_url ? escapeHTML(post.image_url) : ''}">
-                    <i class="ph ph-share-network"></i> Share
+                    <i class="ph ph-share-network"></i> <span>Share</span>
                 </button>
             </div>
 
@@ -299,7 +377,7 @@ function initCommunity() {
                     <div class="comment-input-wrap">
                         <textarea class="comment-input" placeholder="Write a comment…" rows="1"
                             data-post-id="${post.id}"></textarea>
-                        <button class="btn-comment-send" data-post-id="${post.id}" title="Send">
+                        <button class="btn-comment-send" data-post-id="${post.id}" title="Send comment (Ctrl+Enter)">
                             <i class="ph ph-paper-plane-tilt"></i>
                         </button>
                     </div>
@@ -320,6 +398,18 @@ function initCommunity() {
         feedWrapper.querySelectorAll('.comment-toggle-btn').forEach(b => b.addEventListener('click', handleToggleComments));
         feedWrapper.querySelectorAll('.btn-comment-send').forEach(b => b.addEventListener('click', handlePostComment));
         feedWrapper.querySelectorAll('.share-btn').forEach(b => b.addEventListener('click', handleShare));
+        feedWrapper.querySelectorAll('.post-tag-pill').forEach(pill => {
+            pill.addEventListener('click', e => {
+                e.stopPropagation();
+                const tag = pill.dataset.tag;
+                if (!tag) return;
+                const searchInp = document.getElementById('community-search-input');
+                if (searchInp) searchInp.value = tag;
+                currentSearchQuery = tag;
+                filterPosts();
+                feedWrapper?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
         feedWrapper.querySelectorAll('.comment-input').forEach(ta => {
             ta.addEventListener('keydown', e => {
                 if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
@@ -402,12 +492,12 @@ function initCommunity() {
 
         if (liked) {
             btn.classList.remove('liked');
-            icon.className = 'ph ph-thumbs-up';
+            icon.className = 'ph ph-heart';
             countSpan.textContent = Math.max(0, current - 1);
             await supabaseClient.from('post_likes').delete().eq('post_id', postId).eq('profile_id', currentUserId);
         } else {
             btn.classList.add('liked');
-            icon.className = 'ph ph-fill ph-thumbs-up';
+            icon.className = 'ph ph-fill ph-heart';
             countSpan.textContent = current + 1;
             btn.classList.add('like-bounce');
             setTimeout(() => btn.classList.remove('like-bounce'), 400);
@@ -419,24 +509,45 @@ function initCommunity() {
        DELETE POST
     ══════════════════════════════════════════════ */
     async function handleDeletePost(e) {
-        if (!confirm('Delete this post and all its comments?')) return;
         const btn = e.currentTarget;
         const postId = btn.dataset.id;
         const card = btn.closest('.feed-post-card');
-        card.style.opacity = '0';
-        card.style.transform = 'scale(0.97)';
-        card.style.transition = 'opacity 0.2s, transform 0.2s';
-        const { error } = await supabaseClient.from('community_posts').delete().eq('id', postId);
-        if (error) {
-            alert('Could not delete: ' + error.message);
-            card.style.opacity = '';
-            card.style.transform = '';
-        } else {
-            setTimeout(() => card.remove(), 200);
-            if (postsCountEl) {
-                const n = Math.max(0, parseInt(postsCountEl.textContent) - 1);
-                postsCountEl.textContent = `${n} post${n !== 1 ? 's' : ''}`;
+
+        const proceedDelete = async () => {
+            card.style.opacity = '0';
+            card.style.transform = 'scale(0.97)';
+            card.style.transition = 'opacity 0.2s, transform 0.2s';
+            const { error } = await supabaseClient.from('community_posts').delete().eq('id', postId);
+            if (error) {
+                if (typeof showToast === 'function') {
+                    showToast('Delete Failed', error.message, 'error');
+                } else {
+                    alert('Could not delete: ' + error.message);
+                }
+                card.style.opacity = '';
+                card.style.transform = '';
+            } else {
+                setTimeout(() => card.remove(), 200);
+                if (typeof showToast === 'function') {
+                    showToast('Post Deleted', 'Your post has been removed.', 'success');
+                }
+                if (postsCountEl) {
+                    const n = Math.max(0, parseInt(postsCountEl.textContent) - 1);
+                    postsCountEl.textContent = `${n} post${n !== 1 ? 's' : ''}`;
+                }
             }
+        };
+
+        if (typeof showConfirmModal === 'function') {
+            showConfirmModal({
+                title: 'Delete Post',
+                message: 'Delete this post and all its comments? This action cannot be undone.',
+                confirmText: 'Delete',
+                danger: true,
+                onConfirm: proceedDelete
+            });
+        } else {
+            if (confirm('Delete this post and all its comments?')) proceedDelete();
         }
     }
 
@@ -521,8 +632,13 @@ function initCommunity() {
         const { error } = await supabaseClient.from('community_comments')
             .insert({ post_id: postId, author_id: currentUserId, content: text });
         btn.disabled = false; ta.disabled = false;
-        if (error) { alert('Could not post comment: ' + error.message); }
-        else {
+        if (error) {
+            if (typeof showToast === 'function') {
+                showToast('Comment Error', error.message, 'error');
+            } else {
+                alert('Could not post comment: ' + error.message);
+            }
+        } else {
             ta.value = '';
             await loadComments(postId);
             updateCommentCount(postId, 1);
@@ -530,21 +646,44 @@ function initCommunity() {
     }
 
     async function handleDeleteComment(e) {
-        if (!confirm('Delete this comment?')) return;
         const btn = e.currentTarget;
         const commentId = btn.dataset.id;
         const postId = btn.dataset.postId;
         const item = btn.closest('.comment-item');
-        item.style.opacity = '0'; item.style.transition = 'opacity 0.2s';
-        const { error } = await supabaseClient.from('community_comments').delete().eq('id', commentId);
-        if (error) { alert('Could not delete: ' + error.message); item.style.opacity = ''; }
-        else {
-            setTimeout(() => item.remove(), 200);
-            updateCommentCount(postId, -1);
-            const listEl = document.getElementById(`comments-list-${postId}`);
-            if (listEl && listEl.querySelectorAll('.comment-item').length === 0) {
-                listEl.innerHTML = '<p class="no-comments-msg">No comments yet. Be the first!</p>';
+
+        const proceedCommentDelete = async () => {
+            item.style.opacity = '0'; item.style.transition = 'opacity 0.2s';
+            const { error } = await supabaseClient.from('community_comments').delete().eq('id', commentId);
+            if (error) {
+                if (typeof showToast === 'function') {
+                    showToast('Delete Error', error.message, 'error');
+                } else {
+                    alert('Could not delete: ' + error.message);
+                }
+                item.style.opacity = '';
+            } else {
+                setTimeout(() => item.remove(), 200);
+                updateCommentCount(postId, -1);
+                const listEl = document.getElementById(`comments-list-${postId}`);
+                if (listEl && listEl.querySelectorAll('.comment-item').length === 0) {
+                    listEl.innerHTML = '<p class="no-comments-msg">No comments yet. Be the first!</p>';
+                }
+                if (typeof showToast === 'function') {
+                    showToast('Comment Removed', 'Your comment has been deleted.', 'success');
+                }
             }
+        };
+
+        if (typeof showConfirmModal === 'function') {
+            showConfirmModal({
+                title: 'Delete Comment',
+                message: 'Delete this comment? This action cannot be undone.',
+                confirmText: 'Delete',
+                danger: true,
+                onConfirm: proceedCommentDelete
+            });
+        } else {
+            if (confirm('Delete this comment?')) proceedCommentDelete();
         }
     }
 
@@ -571,7 +710,11 @@ function initCommunity() {
             try {
                 imageUrl = await uploadImage(selectedImageFile);
             } catch (err) {
-                alert('Image upload failed: ' + err.message);
+                if (typeof showToast === 'function') {
+                    showToast('Upload Error', 'Image upload failed: ' + err.message, 'error');
+                } else {
+                    alert('Image upload failed: ' + err.message);
+                }
                 postBtn.disabled = false;
                 postBtn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Post';
                 return;
@@ -587,13 +730,20 @@ function initCommunity() {
         postBtn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Post';
 
         if (error) {
-            alert('Failed to post: ' + error.message);
+            if (typeof showToast === 'function') {
+                showToast('Post Error', 'Failed to post: ' + error.message, 'error');
+            } else {
+                alert('Failed to post: ' + error.message);
+            }
         } else {
             postTextarea.value = '';
             selectedImageFile = null;
             imageInput.value = '';
             imagePreview.src = '';
             imagePreviewWrap.style.display = 'none';
+            if (typeof showToast === 'function') {
+                showToast('Post Shared', 'Your message has been published to the community!', 'success');
+            }
             loadPosts();
         }
     }
@@ -617,6 +767,49 @@ function initCommunity() {
             smartBanner.style.display = 'none';
         });
     }
+
+    /* ── Search & Filter Listeners ── */
+    const searchInput = document.getElementById('community-search-input');
+    if (searchInput) {
+        searchInput.addEventListener('input', e => {
+            currentSearchQuery = e.target.value;
+            filterPosts();
+        });
+    }
+
+    // Category filter tabs
+    document.querySelectorAll('.comm-filter-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.comm-filter-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            currentCategoryFilter = tab.dataset.filter || 'all';
+            filterPosts();
+        });
+    });
+
+    // Quick tag chips in composer
+    document.querySelectorAll('.quick-tag-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const tag = chip.dataset.tag;
+            if (!tag || !postTextarea) return;
+            const currentVal = postTextarea.value;
+            postTextarea.value = currentVal ? `${currentVal.trim()} ${tag} ` : `${tag} `;
+            postTextarea.focus();
+            postTextarea.style.height = 'auto';
+            postTextarea.style.height = postTextarea.scrollHeight + 'px';
+        });
+    });
+
+    // Trending topic chips in sidebar
+    document.querySelectorAll('.trending-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const term = chip.dataset.search || chip.textContent.trim();
+            if (searchInput) searchInput.value = term;
+            currentSearchQuery = term;
+            filterPosts();
+            feedWrapper?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
 
     /* ── Realtime subscriptions ──────────────────── */
     supabaseClient.channel('community_realtime')

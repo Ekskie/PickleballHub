@@ -1,147 +1,178 @@
 {% if facilities %}
-    {% for fac in facilities %}
-    <div class="glass-card queue-table-wrapper" style="margin-bottom: 30px;">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
-            <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; margin: 0;">
-                <i class="ph ph-users-three" style="color: var(--primary-orange); font-size: 1.5rem;"></i>
-                <span>{{ fac.facilities.name }} Queue</span>
-            </h2>
-            {% set fac_queues = queues | selectattr('facility_id', 'equalto', fac.facility_id) | list %}
-            <span class="queue-count-badge">{{ fac_queues | length }} Active</span>
-        </div>
-        
-        <div class="table-container" style="overflow-x: auto;">
-            <table class="data-grid premium-table">
-                <thead>
-                    <tr>
-                        <th style="width: 80px; text-align: center;">POSITION</th>
-                        <th>PLAYER</th>
-                        <th>STATUS</th>
-                        <th>ASSIGNED COURT</th>
-                        <th>WAIT TIME</th>
-                        <th style="text-align: right; padding-right: 15px;">ACTIONS</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if fac_queues %}
-                        {% for q in fac_queues %}
-                        <tr class="queue-row-item">
-                            <td class="bold" style="text-align: center;">
-                                {% if q.status == 'playing' %}
-                                    <span class="playing-dash">-</span>
-                                {% else %}
-                                    <span class="position-number">{{ loop.index }}</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div style="display: inline-flex; align-items: center; gap: 10px;">
-                                    {% if q.player_id %}
-                                        <div class="player-avatar-mini" onclick="openPlayerDetails('{{ q.player_id }}')" title="View profile & history">
-                                            {% if q.profiles.avatar_url %}
-                                                <img src="{{ q.profiles.avatar_url }}" alt="Avatar">
-                                            {% else %}
-                                                <div class="player-initials-mini">
-                                                    {{ ((q.profiles.first_name or 'P')[0] + (q.profiles.last_name or '')[0]).upper() }}
-                                                </div>
-                                            {% endif %}
-                                        </div>
-                                        <div style="display: flex; flex-direction: column;">
-                                            <span class="player-name-link" onclick="openPlayerDetails('{{ q.player_id }}')" title="View profile & history">
-                                                {{ q.profiles.first_name }} {{ q.profiles.last_name }}
-                                            </span>
-                                        </div>
-                                        <a href="{{ url_for('facilitystaff.messages') }}?chat_user={{ q.player_id }}" class="chat-shortcut-link" title="Chat with Player">
-                                            <i class="ph ph-chat-circle-dots"></i>
-                                        </a>
-                                    {% else %}
-                                        <div class="player-initials-mini walkin-avatar">
-                                            W
-                                        </div>
-                                        <div style="display: flex; flex-direction: column;">
-                                            <span class="guest-name-text">
-                                                {{ q.guest_name }}
-                                            </span>
-                                            <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 500;">Walk-in Guest</span>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </td>
-                            <td>
-                                {% if q.status == 'playing' %}
-                                    <span class="status-badge orange-glow"><span class="dot-indicator bg-orange"></span>Playing</span>
-                                {% elif q.status == 'next' %}
-                                    <span class="status-badge green-glow"><span class="dot-indicator bg-green"></span>Next Up</span>
-                                {% else %}
-                                    <span class="status-badge gray-glow"><span class="dot-indicator bg-gray"></span>Waiting</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div style="display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-weight: 500;">
-                                    <i class="ph ph-layout" style="font-size: 1.1rem; color: var(--text-muted);"></i>
-                                    <span>
-                                        {% set court = courts | selectattr('id', 'equalto', q.court_id) | first %}
-                                        {{ court.name if court else 'Any Available' }}
-                                    </span>
-                                </div>
-                            </td>
-                            <td>
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <i class="ph ph-clock" style="font-size: 1.1rem; color: var(--text-muted);"></i>
-                                    {% if q.status == 'playing' %}
-                                        <span class="wait-time-display font-bold" style="color: var(--primary-orange);" data-target-time="{{ q.target_time }}" data-time-type="Remaining">{{ q.estimated_wait_mins }} min left</span>
-                                    {% else %}
-                                        <span class="wait-time-display font-medium" style="color: var(--text-primary);" data-target-time="{{ q.target_time }}" data-time-type="Wait">~{{ q.estimated_wait_mins }} mins</span>
-                                    {% endif %}
-                                </div>
-                            </td>
-                            <td>
-                                <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                                    {% if q.status == 'waiting' %}
-                                        <button type="button" onclick="updateQueueStatus('{{ q.id }}', 'next', this)" class="btn-action green-btn" title="Call to Court">
-                                            <i class="ph ph-microphone-stage"></i> <span>Call Next</span>
-                                        </button>
-                                    {% endif %}
-                                    {% if q.status == 'next' %}
-                                        <button type="button" onclick="updateQueueStatus('{{ q.id }}', 'playing', this)" class="btn-action navy-btn" title="Start Match">
-                                            <i class="ph ph-play-circle"></i> <span>Start Game</span>
-                                        </button>
-                                        {% if q.player_id %}
-                                        <button type="button" onclick="nudgePlayer('{{ q.player_id }}', this)" class="btn-action-icon orange-btn" title="Nudge Player (Send alert notification)">
-                                            <i class="ph ph-bell"></i>
-                                        </button>
-                                        {% endif %}
-                                    {% endif %}
-                                    {% if q.status == 'playing' %}
-                                        <button type="button" onclick="updateQueueStatus('{{ q.id }}', 'completed', this)" class="btn-action completed-btn" title="Mark Game Completed">
-                                            <i class="ph ph-check-square"></i> <span>Complete</span>
-                                        </button>
-                                    {% endif %}
-                                    <button type="button" onclick="if(confirm('Remove player from queue?')) updateQueueStatus('{{ q.id }}', 'cancelled', this)" class="btn-action-icon red-btn" title="Remove Player">
-                                        <i class="ph ph-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">
-                                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                                    <i class="ph ph-user-list" style="font-size: 2.5rem; color: var(--border-color);"></i>
-                                    <p style="margin: 0; font-weight: 500;">No players in queue for this facility.</p>
-                                </div>
-                            </td>
-                        </tr>
-                    {% endif %}
-                </tbody>
-            </table>
-        </div>
+{% for fac in facilities %}
+<div class="glass-card queue-table-wrapper" style="margin-bottom: 30px;">
+    <div
+        style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
+        <h2
+            style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; margin: 0;">
+            <i class="ph ph-users-three" style="color: var(--primary-orange); font-size: 1.5rem;"></i>
+            <span>{{ fac.facilities.name }} Queue</span>
+        </h2>
+        {% set fac_queues = queues | selectattr('facility_id', 'equalto', fac.facility_id) | list %}
+        <span class="queue-count-badge">{{ fac_queues | length }} Active</span>
     </div>
-    {% endfor %}
+
+    <div class="table-container" style="overflow-x: auto;">
+        <table class="data-grid premium-table">
+            <thead>
+                <tr>
+                    <th style="width: 80px; text-align: center;">POSITION</th>
+                    <th>PLAYER</th>
+                    <th>STATUS</th>
+                    <th>ASSIGNED COURT</th>
+                    <th>WAIT TIME</th>
+                    <th style="text-align: right; padding-right: 15px;">ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if fac_queues %}
+                {% for q in fac_queues %}
+                <tr class="queue-row-item" data-status="{{ q.status }}">
+                    <td class="bold" style="text-align: center;">
+                        {% if q.status == 'playing' %}
+                        <span class="playing-dash">-</span>
+                        {% else %}
+                        <span class="position-number">{{ loop.index }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="display: inline-flex; align-items: center; gap: 10px;">
+                            {% if q.player_id %}
+                            <div class="player-avatar-mini" onclick="openPlayerDetails('{{ q.player_id }}')"
+                                title="View profile & history">
+                                {% if q.profiles.avatar_url %}
+                                <img src="{{ q.profiles.avatar_url }}" alt="Avatar">
+                                {% else %}
+                                <div class="player-initials-mini">
+                                    {{ ((q.profiles.first_name or 'P')[0] + (q.profiles.last_name or '')[0]).upper() }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div style="display: flex; flex-direction: column;">
+                                <span class="player-name-link" onclick="openPlayerDetails('{{ q.player_id }}')"
+                                    title="View profile & history">
+                                    {{ q.profiles.first_name }} {{ q.profiles.last_name }}
+                                </span>
+                            </div>
+                            <a href="{{ url_for('facilitystaff.messages') }}?chat_user={{ q.player_id }}"
+                                class="chat-shortcut-link" title="Chat with Player">
+                                <i class="ph ph-chat-circle-dots"></i>
+                            </a>
+                            {% else %}
+                            <div class="player-initials-mini walkin-avatar">
+                                W
+                            </div>
+                            <div style="display: flex; flex-direction: column;">
+                                <span class="guest-name-text">
+                                    {{ q.guest_name }}
+                                </span>
+                                <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 500;">Walk-in
+                                    Guest</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        {% if q.status == 'playing' %}
+                        <span class="status-badge orange-glow"><span
+                                class="dot-indicator bg-orange"></span>Playing</span>
+                        {% elif q.status == 'next' %}
+                        <span class="status-badge green-glow"><span class="dot-indicator bg-green"></span>Next Up</span>
+                        {% else %}
+                        <span class="status-badge gray-glow"><span class="dot-indicator bg-gray"></span>Waiting</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div
+                            style="display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--text-secondary); font-weight: 500;">
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <i class="ph ph-layout" style="font-size: 1.1rem; color: var(--text-muted);"></i>
+                                <span>
+                                    {% set court = courts | selectattr('id', 'equalto', q.court_id) | first %}
+                                    {{ court.name if court else 'Any Available' }}
+                                </span>
+                            </div>
+                            <button type="button" class="btn-action-icon" style="width: 26px; height: 26px; font-size: 0.8rem; border-radius: 6px;" title="Reassign Court" onclick="openReassignModal('{{ q.id }}', '{{ q.court_id or '' }}', '{{ (court.name if court else 'Any Available')|escape }}')">
+                                <i class="ph ph-pencil-simple"></i>
+                            </button>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="ph ph-clock" style="font-size: 1.1rem; color: var(--text-muted);"></i>
+                            {% if q.status == 'playing' %}
+                            <span class="wait-time-display font-bold" style="color: var(--primary-orange);"
+                                data-target-time="{{ q.target_time }}" data-time-type="Remaining">{{
+                                q.estimated_wait_mins }} min left</span>
+                            {% else %}
+                            <span class="wait-time-display font-medium" style="color: var(--text-primary);"
+                                data-target-time="{{ q.target_time }}" data-time-type="Wait">~{{ q.estimated_wait_mins
+                                }} mins</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                            {% if q.status == 'waiting' %}
+                            <button type="button" onclick="updateQueueStatus('{{ q.id }}', 'next', this)"
+                                class="btn-action green-btn" title="Call to Court">
+                                <i class="ph ph-microphone-stage"></i> <span>Call Next</span>
+                            </button>
+                            {% endif %}
+                            {% if q.status == 'next' %}
+                            <button type="button" onclick="updateQueueStatus('{{ q.id }}', 'playing', this)"
+                                class="btn-action navy-btn" title="Start Match">
+                                <i class="ph ph-play-circle"></i> <span>Start Game</span>
+                            </button>
+                            {% if q.player_id %}
+                            <button type="button" onclick="nudgePlayer('{{ q.player_id }}', this)"
+                                class="btn-action-icon orange-btn" title="Nudge Player (Send alert notification)">
+                                <i class="ph ph-bell"></i>
+                            </button>
+                            {% endif %}
+                            {% endif %}
+                            {% if q.status == 'playing' %}
+                            <button type="button" onclick="updateQueueStatus('{{ q.id }}', 'completed', this)"
+                                class="btn-action completed-btn" title="Mark Game Completed">
+                                <i class="ph ph-check-square"></i> <span>Complete</span>
+                            </button>
+                            {% endif %}
+                            <button type="button"
+                                onclick="showConfirmModal({ title: 'Remove Player', message: 'Remove this player from the queue?', confirmText: 'Remove', danger: true, onConfirm: () => updateQueueStatus('{{ q.id }}', 'cancelled', this) })"
+                                class="btn-action-icon red-btn" title="Remove Player">
+                                <i class="ph ph-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 48px 20px; color: var(--text-muted);">
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; max-width: 420px; margin: 0 auto;">
+                            <div style="width: 52px; height: 52px; border-radius: 16px; background: rgba(34, 197, 94, 0.1); color: var(--btn-green); display: flex; align-items: center; justify-content: center; font-size: 1.8rem;">
+                                <i class="ph ph-check-circle"></i>
+                            </div>
+                            <h4 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--text-primary);">Waitlist is Clear</h4>
+                            <p style="margin: 0; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4;">There are no players currently waiting in line. All active courts are available or running scheduled matches.</p>
+                            <button type="button" class="desk-btn-primary" style="margin-top: 6px; font-size: 0.82rem; padding: 8px 16px;" onclick="openModal('quickWalkinModal')">
+                                <i class="ph ph-user-plus"></i> + Register Walk-In Player
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endfor %}
 {% else %}
-    <div class="glass-card" style="text-align: center; padding: 50px;">
-        <i class="ph ph-warning-circle" style="font-size: 3.5rem; color: var(--primary-orange); opacity: 0.8; margin-bottom: 15px; display: block;"></i>
-        <h3 style="margin-bottom: 10px; font-weight: 700; color: var(--text-primary);">No Facilities Assigned</h3>
-        <p style="color: var(--text-muted); max-width: 400px; margin: 0 auto; line-height: 1.5;">You are not assigned to manage any facility queues yet. Please contact your facility owner.</p>
-    </div>
+<div class="glass-card" style="text-align: center; padding: 50px;">
+    <i class="ph ph-warning-circle"
+        style="font-size: 3.5rem; color: var(--primary-orange); opacity: 0.8; margin-bottom: 15px; display: block;"></i>
+    <h3 style="margin-bottom: 10px; font-weight: 700; color: var(--text-primary);">No Facilities Assigned</h3>
+    <p style="color: var(--text-muted); max-width: 400px; margin: 0 auto; line-height: 1.5;">You are not assigned to
+        manage any facility queues yet. Please contact your facility owner.</p>
+</div>
 {% endif %}

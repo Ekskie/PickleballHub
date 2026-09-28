@@ -118,7 +118,7 @@ html.dark-mode .content-background {
 
 /* ----- Sidebar ----- */
 .sidebar {
-    width: 250px;
+    width: 260px;
     background: var(--sidebar-bg);
     border-right: 1px solid var(--border-color);
     display: flex;
@@ -129,55 +129,60 @@ html.dark-mode .content-background {
 .sidebar-header {
     display: flex;
     align-items: center;
-    padding: 24px;
+    padding: 22px 24px;
     gap: 12px;
     border-bottom: 1px solid var(--border-color);
 }
 
 .sidebar-header h2 {
-    font-size: 1.15rem;
+    font-size: 1.2rem;
     color: var(--text-primary);
     font-weight: 700;
 }
 
 .sidebar-logo {
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     object-fit: contain;
 }
 
 .logo-ball {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     background: var(--primary-orange);
     border-radius: 50%;
 }
 
 .sidebar-profile {
-    padding: 20px 24px;
+    padding: 18px 22px;
     border-bottom: 1px solid var(--border-color);
 }
 
 .welcome-text {
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     color: var(--text-muted);
+    margin-bottom: 3px;
+    font-weight: 500;
 }
 
 .profile-name {
-    font-size: 1.05rem;
-    font-weight: 600;
+    font-size: 1.08rem;
+    font-weight: 700;
     color: var(--text-primary);
-    margin-bottom: 6px;
+    margin-bottom: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .role-pill {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
     background: var(--primary-orange-light);
     color: var(--primary-orange);
-    font-size: 0.7rem;
-    padding: 4px 8px;
+    font-size: 0.74rem;
+    padding: 4px 9px;
     border-radius: 6px;
     font-weight: 600;
 }
@@ -186,51 +191,180 @@ html.dark-mode .content-background {
     list-style: none;
     flex: 1;
     overflow-y: auto;
-    padding: 8px 0;
+    padding: 12px 10px;
+}
+
+.sidebar-nav-divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 8px 10px;
+    opacity: 0.6;
+    list-style: none;
 }
 
 .sidebar-nav li {
-    margin-bottom: 2px;
+    margin-bottom: 3px;
+    list-style: none;
 }
 
+/* Modern Balanced Nav Item */
 .sidebar-nav a {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px 24px;
+    padding: 10px 14px;
     color: var(--text-secondary);
     text-decoration: none;
-    font-size: 0.9rem;
+    font-size: 0.93rem;
     font-weight: 500;
-    border-left: 3px solid transparent;
+    border-radius: 9px;
+    transition: background 0.15s ease, color 0.15s ease;
 }
 
 .sidebar-nav a i {
     font-size: 1.25rem;
+    flex-shrink: 0;
 }
 
 .sidebar-nav a:hover,
-.sidebar-nav li.active a {
+.sidebar-nav li.active > a {
     background: var(--primary-orange-light);
     color: var(--primary-orange);
-    border-left: 3px solid var(--primary-orange);
+    font-weight: 600;
+}
+
+/* ── Collapsible Dropdown Navigation Groups ── */
+.sidebar-dropdown-group {
+    margin-bottom: 3px;
+    list-style: none;
+}
+
+.sidebar-dropdown-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 14px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: 0.93rem;
+    font-weight: 600;
+    border-radius: 9px;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-dropdown-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.sidebar-dropdown-group.open .sidebar-dropdown-btn {
+    color: var(--text-primary);
+}
+
+.sidebar-dropdown-group.active-group .sidebar-dropdown-btn {
+    color: var(--primary-orange);
+}
+
+.dropdown-btn-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.dropdown-btn-label i.group-icon {
+    font-size: 1.25rem;
+    color: inherit;
+    flex-shrink: 0;
+}
+
+.dropdown-btn-label span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.93rem;
+}
+
+.dropdown-arrow {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease;
+    flex-shrink: 0;
+}
+
+.sidebar-dropdown-group.open .dropdown-arrow {
+    transform: rotate(180deg);
+    color: var(--primary-orange);
+}
+
+/* Subnavigation Links Inside Dropdown */
+.sidebar-subnav {
+    list-style: none;
+    padding: 4px 0 4px 12px;
+    margin: 4px 0 6px 18px;
+    border-left: 2px solid var(--border-color);
+    display: none;
+}
+
+.sidebar-dropdown-group.open .sidebar-subnav {
+    display: block;
+    animation: subnavFadeDown 0.18s ease-out;
+}
+
+@keyframes subnavFadeDown {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.sidebar-subnav li {
+    margin-bottom: 3px;
+}
+
+.sidebar-subnav a {
+    padding: 9px 12px;
+    font-size: 0.88rem;
+    gap: 10px;
+    border-radius: 7px;
+    color: var(--text-secondary);
+}
+
+.sidebar-subnav a i {
+    font-size: 1.15rem;
+}
+
+.sidebar-subnav li.active > a {
+    background: var(--primary-orange-light);
+    color: var(--primary-orange);
+    font-weight: 600;
 }
 
 .sidebar-footer {
-    padding: 24px;
+    padding: 16px 20px;
+    border-top: 1px solid var(--border-color);
 }
 
 .logout-btn {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     color: var(--primary-orange);
     text-decoration: none;
-    font-weight: 500;
-    font-size: 0.9rem;
+    font-weight: 600;
+    font-size: 0.92rem;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: background 0.15s ease;
 }
 
 .logout-btn:hover {
+    background: var(--primary-orange-light);
     color: var(--primary-orange-hover);
 }
 
@@ -379,6 +513,7 @@ a.user-profile:hover .avatar {
 .content-area {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 32px 40px;
     position: relative;
     z-index: 1;
@@ -2251,7 +2386,7 @@ html.dark-mode .contact-item.unread {
     display: none;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 100000;
     backdrop-filter: blur(4px);
 }
 
@@ -3487,4 +3622,493 @@ html.dark-mode .contact-item.unread {
         padding: 20px !important;
         gap: 16px !important;
     }
+}
+
+/* ==========================================================================
+   UNIVERSAL ROLE-AWARE MOBILE BOTTOM NAVIGATION BAR (< 768px)
+   ========================================================================== */
+.role-bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: var(--header-bg);
+    border-top: 1px solid var(--border-color);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+    z-index: 990;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 0 8px;
+    box-sizing: border-box;
+}
+
+html.dark-mode .role-bottom-nav {
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.35);
+}
+
+@media (max-width: 768px) {
+    .role-bottom-nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        padding-bottom: env(safe-area-inset-bottom);
+        height: calc(64px + env(safe-area-inset-bottom));
+    }
+
+    .dashboard-body .content-area {
+        padding-bottom: calc(84px + env(safe-area-inset-bottom)) !important;
+    }
+}
+
+.role-bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 8px 10px;
+    border-radius: 10px;
+    transition: var(--transition);
+    position: relative;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    flex: 1;
+    max-width: 76px;
+}
+
+.role-bottom-nav-item i {
+    font-size: 1.35rem;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.role-bottom-nav-item:active {
+    transform: scale(0.92);
+}
+
+.role-bottom-nav-item:hover,
+.role-bottom-nav-item.active {
+    color: var(--primary-orange);
+}
+
+.role-bottom-nav-item.active i {
+    transform: translateY(-1px);
+}
+
+.role-bottom-nav-item.active::after {
+    content: "";
+    position: absolute;
+    top: 4px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--primary-orange);
+}
+
+.role-bottom-nav-more {
+    color: var(--text-secondary);
+}
+
+.role-bottom-nav-more:hover {
+    color: var(--primary-orange);
+}
+
+/* ==========================================================================
+   Phase 2 UI/UX: Mobile Table-to-Card Transformation (.responsive-card-table)
+   ========================================================================== */
+@media (max-width: 640px) {
+    .table-container table.responsive-card-table,
+    table.data-grid.responsive-card-table,
+    table.responsive-card-table {
+        min-width: 100% !important;
+        border-collapse: separate;
+        border-spacing: 0;
+        display: block;
+        width: 100% !important;
+    }
+
+    table.responsive-card-table thead {
+        display: none !important;
+    }
+
+    table.responsive-card-table tbody {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: 100%;
+    }
+
+    table.responsive-card-table tr {
+        display: flex;
+        flex-direction: column;
+        background: var(--card-bg, rgba(255, 255, 255, 0.03));
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 12px 14px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        box-sizing: border-box;
+        width: 100%;
+        transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+
+    table.responsive-card-table tr:hover {
+        border-color: rgba(255, 107, 0, 0.3);
+    }
+
+    table.responsive-card-table td {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        text-align: right !important;
+        padding: 8px 0 !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+        font-size: 0.85rem;
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    table.responsive-card-table td:last-child {
+        border-bottom: none !important;
+        padding-bottom: 0 !important;
+    }
+
+    table.responsive-card-table td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        color: var(--text-muted, #94a3b8);
+        letter-spacing: 0.5px;
+        margin-right: 12px;
+        text-align: left;
+        flex-shrink: 0;
+    }
+
+    /* Row header/title cell exception (e.g. member/player name) */
+    table.responsive-card-table td[data-label="PLAYER"]::before,
+    table.responsive-card-table td[data-label="MEMBER"]::before {
+        display: none !important;
+    }
+    table.responsive-card-table td[data-label="PLAYER"],
+    table.responsive-card-table td[data-label="MEMBER"] {
+        justify-content: flex-start !important;
+        padding-bottom: 10px !important;
+        border-bottom: 1px solid var(--border-color) !important;
+        margin-bottom: 4px;
+    }
+}
+
+/* ==========================================================================
+   Phase 2 UI/UX: Rich Searchable Combobox Component (.custom-combobox)
+   ========================================================================== */
+.custom-combobox-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.custom-combobox {
+    position: relative;
+    width: 100%;
+}
+
+.combobox-trigger {
+    width: 100%;
+    min-height: 42px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.88rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    text-align: left;
+}
+
+.combobox-trigger:hover {
+    border-color: rgba(255, 107, 0, 0.4);
+}
+
+.custom-combobox.open .combobox-trigger {
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 0 2px rgba(255, 107, 0, 0.2);
+}
+
+.combobox-selection {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.combobox-placeholder {
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+}
+
+.combobox-selected-player {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex: 1;
+}
+
+.combobox-selected-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--btn-navy, #1e293b);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.combobox-selected-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.combobox-selected-name {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+}
+
+.combobox-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.combobox-clear {
+    display: none;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: color 0.15s, background 0.15s;
+    line-height: 1;
+}
+
+.combobox-clear:hover {
+    color: #f87171;
+    background: rgba(248, 113, 113, 0.12);
+}
+
+.custom-combobox.has-value .combobox-clear {
+    display: block;
+}
+
+.combobox-arrow {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    transition: transform 0.2s ease;
+}
+
+.custom-combobox.open .combobox-arrow {
+    transform: rotate(180deg);
+}
+
+/* Combobox Popover */
+.combobox-popover {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: var(--card-bg, #1a2234);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+    z-index: 10000;
+    padding: 8px;
+    box-sizing: border-box;
+    backdrop-filter: blur(8px);
+}
+
+.custom-combobox.open .combobox-popover {
+    display: block;
+    animation: comboboxFadeIn 0.15s ease-out;
+}
+
+@keyframes comboboxFadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.combobox-search-wrap {
+    position: relative;
+    margin-bottom: 6px;
+}
+
+.combobox-search-wrap i {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    pointer-events: none;
+}
+
+.combobox-search {
+    width: 100%;
+    padding: 8px 10px 8px 30px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 0.82rem;
+    font-family: inherit;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.combobox-search:focus {
+    border-color: var(--primary-orange);
+}
+
+.combobox-list {
+    max-height: 190px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.combobox-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.combobox-list::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 2px;
+}
+
+.combobox-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+    user-select: none;
+}
+
+.combobox-item:hover {
+    background: rgba(255, 107, 0, 0.08);
+}
+
+.combobox-item.selected {
+    background: rgba(255, 107, 0, 0.15);
+}
+
+.combobox-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--btn-navy, #1e293b);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.combobox-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.combobox-item-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.combobox-item-name {
+    display: block;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.combobox-item-stats {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+}
+
+.c-badge {
+    font-size: 0.68rem;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.c-badge.dupr {
+    background: rgba(74, 222, 128, 0.15);
+    color: #4ade80;
+}
+
+.c-badge.elo {
+    background: rgba(14, 165, 233, 0.15);
+    color: #38bdf8;
+}
+
+.combobox-item-check {
+    font-size: 0.9rem;
+    color: var(--primary-orange);
+    opacity: 0;
+    transition: opacity 0.15s;
+    flex-shrink: 0;
+}
+
+.combobox-item.selected .combobox-item-check {
+    opacity: 1;
+}
+
+.combobox-empty {
+    padding: 18px 10px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.8rem;
 }

@@ -80,188 +80,1409 @@
     /* ── Facility / Court Cards ── */
     .facility-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 16px;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 22px;
     }
 
     .facility-card {
         background: var(--card-bg);
-        border: 2px solid var(--card-border);
-        border-radius: 14px;
+        border: 1.5px solid var(--border-color);
+        border-radius: 16px;
         overflow: hidden;
         cursor: pointer;
-        transition: all .2s;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
     }
 
     .facility-card:hover {
+        transform: translateY(-4px);
         border-color: var(--primary-orange);
-        box-shadow: var(--shadow-hover);
+        box-shadow: 0 12px 28px rgba(255, 87, 34, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
     }
 
     .facility-card.selected {
         border-color: var(--primary-orange);
-        box-shadow: 0 0 0 3px rgba(249, 115, 22, .2);
+        box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.22), 0 8px 24px rgba(255, 87, 34, 0.14);
     }
 
-    .fac-img-banner {
-        height: 140px;
-        background: linear-gradient(135deg, #c2520a, var(--primary-orange));
+    /* Hero Banner & Badges */
+    .fac-hero-wrap {
+        height: 165px;
         position: relative;
         overflow: hidden;
+        background: linear-gradient(135deg, #1e293b, #0f172a);
     }
 
-    .fac-img-banner img {
+    .fac-hero-img {
         width: 100%;
         height: 100%;
         object-fit: cover;
         display: block;
+        transition: transform 0.4s ease;
     }
 
-    .fac-img-banner .fac-img-placeholder {
+    .facility-card:hover .fac-hero-img {
+        transform: scale(1.05);
+    }
+
+    .fac-hero-placeholder {
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
         height: 100%;
+        color: rgba(255, 255, 255, 0.5);
+        gap: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
     }
 
-    .fac-img-banner .fac-img-placeholder i {
-        font-size: 2.5rem;
-        color: rgba(255, 255, 255, .45);
+    .fac-hero-placeholder i {
+        font-size: 2.8rem;
+        color: rgba(255, 255, 255, 0.35);
     }
 
-    .fac-img-overlay {
+    .fac-badge-top-left {
         position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        padding: 10px 14px;
-        background: linear-gradient(0deg, rgba(0, 0, 0, .65), transparent);
-    }
-
-    .fac-img-overlay h4 {
-        font-size: .95rem;
-        font-weight: 700;
-        color: #fff;
-        margin: 0;
-    }
-
-    .fac-card-body {
-        padding: 12px 14px 14px;
-    }
-
-    .facility-card .fac-loc {
-        font-size: .78rem;
-        color: var(--text-muted);
+        top: 10px;
+        left: 10px;
         display: flex;
         align-items: center;
-        gap: 4px;
-        margin-bottom: 6px;
-        flex-wrap: wrap;
-    }
-
-    .facility-card .fac-hours {
-        font-size: .75rem;
-        color: var(--text-secondary);
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    .btn-map {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 3px 10px;
-        border: 1px solid var(--primary-orange);
+        gap: 5px;
+        padding: 4px 10px;
+        background: rgba(15, 23, 42, 0.78);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
         border-radius: 20px;
-        background: transparent;
-        color: var(--primary-orange);
-        font-size: .72rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all .2s;
-        font-family: inherit;
-        margin-left: 4px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #10b981;
+        z-index: 2;
     }
 
-    .btn-map:hover {
-        background: var(--primary-orange);
-        color: #fff;
-    }
-
-    /* ── Slot Grid ── */
-    .slot-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-        gap: 8px;
-    }
-
-    .slot-btn {
-        padding: 10px 6px;
-        border: 1.5px solid var(--border-color);
-        border-radius: 8px;
-        background: var(--card-bg);
-        font-size: .75rem;
-        font-weight: 600;
-        cursor: pointer;
-        text-align: center;
-        transition: all .2s;
-        font-family: inherit;
-        color: var(--text-secondary);
-    }
-
-    .slot-btn:hover:not(.booked) {
-        border-color: var(--primary-orange);
-        color: var(--primary-orange);
-    }
-
-    .slot-btn.selected {
-        background: var(--primary-orange);
-        border-color: var(--primary-orange);
-        color: #fff;
-    }
-
-    .slot-btn.booked {
-        background: var(--input-bg);
-        color: var(--text-muted);
-        cursor: not-allowed;
-        opacity: .6;
-    }
-
-    .slot-legend {
-        display: flex;
-        gap: 16px;
-        margin-bottom: 14px;
-        flex-wrap: wrap;
-    }
-
-    .leg-item {
+    .fac-badge-top-right {
+        position: absolute;
+        top: 10px;
+        right: 10px;
         display: flex;
         align-items: center;
         gap: 6px;
-        font-size: .75rem;
+        padding: 4px 10px;
+        background: rgba(15, 23, 42, 0.78);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 20px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: #f1f5f9;
+        z-index: 2;
+    }
+
+    .fac-badge-pulse-dot {
+        width: 7px;
+        height: 7px;
+        background: #10b981;
+        border-radius: 50%;
+        box-shadow: 0 0 6px #10b981;
+    }
+
+    .fac-price-chip {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background: rgba(15, 23, 42, 0.88);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 138, 76, 0.4);
+        color: #fff;
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        font-weight: 800;
+        z-index: 2;
+        letter-spacing: 0.3px;
+    }
+
+    .fac-price-chip span {
+        color: var(--primary-orange);
+    }
+
+    /* Card Body */
+    .fac-card-body {
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    .fac-header-row {
+        margin-bottom: 6px;
+    }
+
+    .fac-title {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        line-height: 1.3;
+        margin: 0 0 6px 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .fac-location-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        margin-bottom: 10px;
+    }
+
+    .fac-location-text {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .btn-map-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 9px;
+        border: 1px solid rgba(255, 87, 34, 0.35);
+        border-radius: 6px;
+        background: rgba(255, 87, 34, 0.08);
+        color: var(--primary-orange);
+        font-size: 0.72rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: inherit;
+        flex-shrink: 0;
+    }
+
+    .btn-map-chip:hover {
+        background: var(--primary-orange);
+        color: #fff;
+    }
+
+    /* Feature Pill Tags */
+    .fac-features-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 10px;
+    }
+
+    .fac-feat-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 8px;
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+    }
+
+    .fac-feat-tag i {
+        font-size: 0.8rem;
+        color: var(--primary-orange);
+    }
+
+    .fac-desc-preview {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        line-height: 1.45;
+        margin: 0 0 14px 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        min-height: 2.3em;
+    }
+
+    /* Host & Staff Management Strip */
+    .fac-host-strip {
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 8px 10px;
+        margin-top: auto;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .fac-host-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .fac-avatar-group {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+    }
+
+    .fac-avatar-circle {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: 2px solid var(--card-bg);
+        margin-left: -8px;
+        background: #e2e8f0;
+        color: #334155;
+        font-size: 0.65rem;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .fac-avatar-circle:first-child {
+        margin-left: 0;
+    }
+
+    .fac-avatar-circle.owner {
+        background: rgba(255, 87, 34, 0.15);
+        color: var(--primary-orange);
+        border-color: rgba(255, 87, 34, 0.35);
+    }
+
+    .fac-avatar-circle.staff {
+        background: rgba(16, 185, 129, 0.15);
+        color: var(--btn-green);
+        border-color: rgba(16, 185, 129, 0.35);
+    }
+
+    .fac-avatar-circle img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .fac-host-info {
+        min-width: 0;
+        line-height: 1.25;
+    }
+
+    .fac-host-name {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+    }
+
+    .fac-host-sub {
+        font-size: 0.68rem;
+        color: var(--text-muted);
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .fac-host-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+
+    .btn-team-modal {
+        padding: 4px 8px;
+        border: 1px solid var(--border-color);
+        background: var(--card-bg);
+        color: var(--text-secondary);
+        border-radius: 6px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.2s;
+        font-family: inherit;
+    }
+
+    .btn-team-modal:hover {
+        border-color: var(--primary-orange);
+        color: var(--primary-orange);
+    }
+
+    .btn-host-chat {
+        padding: 4px 9px;
+        background: rgba(255, 87, 34, 0.12);
+        border: 1px solid rgba(255, 87, 34, 0.3);
+        color: var(--primary-orange);
+        border-radius: 6px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        text-decoration: none;
+        transition: all 0.2s;
+        font-family: inherit;
+    }
+
+    .btn-host-chat:hover {
+        background: var(--primary-orange);
+        color: #fff;
+    }
+
+    /* Facility Selection CTA Button */
+    .btn-select-fac {
+        width: 100%;
+        padding: 9px 14px;
+        border-radius: 10px;
+        border: 1.5px solid rgba(255, 87, 34, 0.35);
+        background: rgba(255, 87, 34, 0.08);
+        color: var(--primary-orange);
+        font-size: 0.82rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-family: inherit;
+    }
+
+    .facility-card:hover .btn-select-fac {
+        background: var(--primary-orange);
+        border-color: var(--primary-orange);
+        color: #fff;
+        box-shadow: 0 4px 14px rgba(255, 87, 34, 0.25);
+    }
+
+    .facility-card.selected .btn-select-fac {
+        background: #10b981;
+        border-color: #10b981;
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+    }
+
+    /* Keep support for booking summary staff contact styling */
+    .btn-chat-person {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: inherit;
+    }
+    .btn-chat-person.owner {
+        background: rgba(255, 87, 34, 0.12);
+        color: var(--primary-orange);
+        border: 1px solid rgba(255, 87, 34, 0.35);
+    }
+    .btn-chat-person.owner:hover {
+        background: var(--primary-orange);
+        color: #fff;
+    }
+    .btn-chat-person.staff {
+        background: rgba(16, 185, 129, 0.12);
+        color: var(--btn-green);
+        border: 1px solid rgba(16, 185, 129, 0.35);
+    }
+    .btn-chat-person.staff:hover {
+        background: var(--btn-green);
+        color: #fff;
+    }
+
+    /* ── Team & Staff Modal Styling ── */
+    .modal-team-member {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 14px;
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        transition: border-color 0.2s ease;
+    }
+    .modal-team-member:hover {
+        border-color: rgba(255, 87, 34, 0.3);
+    }
+
+    .modal-member-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 0.82rem;
+        flex-shrink: 0;
+        overflow: hidden;
+    }
+    .modal-member-avatar.owner {
+        background: rgba(255, 87, 34, 0.15);
+        color: var(--primary-orange);
+        border: 1.5px solid rgba(255, 87, 34, 0.4);
+    }
+    .modal-member-avatar.staff {
+        background: rgba(16, 185, 129, 0.15);
+        color: var(--btn-green);
+        border: 1.5px solid rgba(16, 185, 129, 0.4);
+    }
+    .modal-member-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .modal-member-info {
+        flex: 1;
+        min-width: 0;
+    }
+    .modal-member-name {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .modal-member-role {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 2px;
+    }
+
+    .modal-member-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .btn-modal-phone {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        background: var(--card-bg);
+        color: var(--text-secondary);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    .btn-modal-phone:hover {
+        border-color: var(--primary-orange);
+        color: var(--primary-orange);
+    }
+
+    .btn-modal-chat {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    .btn-modal-chat.owner {
+        background: rgba(255, 87, 34, 0.12);
+        color: var(--primary-orange);
+        border: 1px solid rgba(255, 87, 34, 0.35);
+    }
+    .btn-modal-chat.owner:hover {
+        background: var(--primary-orange);
+        color: #fff;
+    }
+    .btn-modal-chat.staff {
+        background: rgba(16, 185, 129, 0.12);
+        color: var(--btn-green);
+        border: 1px solid rgba(16, 185, 129, 0.35);
+    }
+    .btn-modal-chat.staff:hover {
+        background: var(--btn-green);
+        color: #fff;
+    }
+
+    /* ── Step 2 Layout: Calendar & Time Slots ── */
+    .step2-layout {
+        display: grid;
+        grid-template-columns: 420px 1fr;
+        gap: 24px;
+        align-items: start;
+    }
+
+    @media (max-width: 1100px) {
+        .step2-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* ── Custom Interactive Availability Calendar ── */
+    .calendar-panel {
+        background: var(--card-bg);
+        border: 1.5px solid var(--border-color);
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: var(--shadow-card);
+        min-width: 0;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+
+    .cal-top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .cal-month-nav {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .cal-month-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        background: var(--input-bg);
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 0.95rem;
+        transition: all 0.15s;
+    }
+
+    .cal-month-btn:hover {
+        border-color: var(--primary-orange);
+        color: var(--primary-orange);
+        background: var(--primary-orange-light);
+    }
+
+    .cal-month-title {
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        min-width: 130px;
+        text-align: center;
+    }
+
+    .cal-shortcuts {
+        display: flex;
+        gap: 5px;
+    }
+
+    .cal-shortcut-chip {
+        padding: 4px 9px;
+        border-radius: 20px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        border: 1px solid var(--border-color);
+        background: var(--input-bg);
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+
+    .cal-shortcut-chip:hover {
+        border-color: var(--primary-orange);
+        color: var(--primary-orange);
+    }
+
+    .cal-shortcut-chip.active {
+        background: var(--primary-orange-light);
+        border-color: var(--primary-orange);
+        color: var(--primary-orange);
+    }
+
+    .cal-weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        text-align: center;
+        font-size: 0.68rem;
+        font-weight: 800;
+        color: var(--text-muted);
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid var(--border-color);
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    .cal-grid {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 4px;
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    .cal-day {
+        min-width: 0;
+        min-height: 48px;
+        border-radius: 9px;
+        border: 1.5px solid var(--border-color);
+        background: var(--card-bg);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 4px 1px;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        box-sizing: border-box;
+        transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .cal-day:hover:not(.past):not(.disabled) {
+        border-color: var(--primary-orange);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(225, 86, 35, 0.15);
+    }
+
+    .cal-day.selected {
+        border-color: var(--primary-orange) !important;
+        background: var(--primary-orange-light) !important;
+        box-shadow: 0 0 0 2px var(--primary-orange);
+    }
+
+    .cal-day.today .cal-day-num {
+        color: var(--primary-orange);
+        font-weight: 900;
+    }
+
+    .cal-day.past, .cal-day.disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        background: var(--input-bg);
+    }
+
+    .cal-day-num {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1.1;
+    }
+
+    .cal-day-status {
+        font-size: 0.58rem;
+        font-weight: 700;
+        margin-top: 2px;
+        padding: 1px 3px;
+        border-radius: 4px;
+        line-height: 1.1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        white-space: nowrap;
+        max-width: 96%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        box-sizing: border-box;
+    }
+
+    .cal-day-status.available {
+        color: #16a34a;
+        background: rgba(22, 163, 74, 0.12);
+    }
+
+    .cal-day-status.limited {
+        color: #d97706;
+        background: rgba(217, 119, 6, 0.12);
+    }
+
+    .cal-day-status.full {
+        color: #dc2626;
+        background: rgba(220, 38, 38, 0.12);
+    }
+
+    .cal-day-status.past {
         color: var(--text-muted);
     }
 
-    .leg-dot {
-        width: 12px;
-        height: 12px;
-        border-radius: 3px;
+    .cal-legend-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 14px;
+        padding-top: 12px;
+        border-top: 1px solid var(--border-color);
+        flex-wrap: wrap;
+        gap: 8px;
+        font-size: 0.72rem;
+        color: var(--text-muted);
     }
 
-    .leg-dot.avail {
+    .cal-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .cal-legend-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+
+    .cal-legend-dot.avail { background: #16a34a; }
+    .cal-legend-dot.limited { background: #d97706; }
+    .cal-legend-dot.full { background: #dc2626; }
+    .cal-legend-dot.pro-locked { background: #8b5cf6; box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.25); }
+    .cal-legend-dot.past { background: var(--text-muted); }
+
+    /* ── Pro Early Access Calendar Additions ── */
+    .cal-access-banner {
+        margin: 10px 0 12px 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .cal-access-badge {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 8px 10px;
+        border-radius: 10px;
+        font-size: 0.72rem;
+        line-height: 1.35;
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    .cal-access-badge.free {
+        background: rgba(139, 92, 246, 0.08);
+        border: 1px solid rgba(139, 92, 246, 0.25);
+        color: var(--text-secondary);
+    }
+
+    .cal-access-badge.pro {
+        background: rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        color: #047857;
+    }
+
+    .cal-access-badge-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+    }
+
+    .cal-tier-tag {
+        font-size: 0.65rem;
+        font-weight: 800;
+        padding: 2px 7px;
+        border-radius: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .cal-tier-tag.free {
+        background: #8b5cf6;
+        color: #fff;
+    }
+
+    .cal-tier-tag.pro {
+        background: #10b981;
+        color: #fff;
+    }
+
+    .btn-cal-upgrade {
+        background: linear-gradient(135deg, #8b5cf6, #6366f1);
+        color: #fff;
+        border: none;
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        white-space: nowrap;
+        transition: all 0.2s;
+        font-family: inherit;
+    }
+
+    .btn-cal-upgrade:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.35);
+    }
+
+    /* Cal Day Pro Locked */
+    .cal-day.pro-locked {
+        background: rgba(139, 92, 246, 0.05);
+        border: 1.5px dashed rgba(139, 92, 246, 0.45);
+        cursor: pointer;
+    }
+
+    .cal-day.pro-locked:hover {
+        border-color: #8b5cf6;
+        border-style: solid;
+        background: rgba(139, 92, 246, 0.12);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 14px rgba(139, 92, 246, 0.22);
+    }
+
+    .cal-day.pro-locked .cal-day-num {
+        color: #7c3aed;
+        font-weight: 800;
+    }
+
+    .cal-day-status.pro-locked {
+        color: #7c3aed;
+        background: rgba(139, 92, 246, 0.16);
+        border: 1px solid rgba(139, 92, 246, 0.3);
+        font-weight: 800;
+        gap: 2px;
+    }
+
+    /* Cal Day Beyond 14-day Horizon */
+    .cal-day.closed-horizon {
+        opacity: 0.35;
+        background: var(--input-bg);
+        cursor: not-allowed;
+        border: 1px solid var(--border-color);
+    }
+
+    .cal-day-status.closed {
+        color: var(--text-muted);
+        background: rgba(100, 116, 139, 0.12);
+    }
+
+    /* ── Pro Early Access Modal ── */
+    .early-access-modal-card {
+        background: var(--card-bg);
+        border-radius: 20px;
+        border: 1.5px solid rgba(139, 92, 246, 0.35);
+        box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.35), 0 0 35px rgba(139, 92, 246, 0.15);
+        max-width: 490px;
+        width: 92%;
+        overflow: hidden;
+        animation: earlyModalIn 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+    }
+
+    @keyframes earlyModalIn {
+        from { transform: scale(0.94); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    .early-access-header {
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.16) 0%, rgba(255, 87, 34, 0.1) 100%);
+        padding: 22px 22px 16px 22px;
+        border-bottom: 1px solid var(--border-color);
+        position: relative;
+    }
+
+    .early-access-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #8b5cf6;
+        color: #fff;
+        font-size: 0.68rem;
+        font-weight: 800;
+        padding: 3px 10px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4);
+    }
+
+    .early-access-title {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        margin: 0 0 5px 0;
+        line-height: 1.3;
+    }
+
+    .early-access-desc {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        margin: 0;
+        line-height: 1.45;
+    }
+
+    .early-access-desc strong {
+        color: #8b5cf6;
+    }
+
+    .early-perks-list {
+        padding: 16px 22px 14px 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 11px;
+    }
+
+    .early-perk-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .early-perk-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 9px;
+        background: rgba(139, 92, 246, 0.12);
+        color: #8b5cf6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.05rem;
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+    .early-perk-text h5 {
+        font-size: 0.83rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0 0 2px 0;
+    }
+
+    .early-perk-text p {
+        font-size: 0.73rem;
+        color: var(--text-muted);
+        margin: 0;
+        line-height: 1.35;
+    }
+
+    .early-pricing-callout {
+        margin: 0 22px 16px 22px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .early-pricing-callout .price-tag {
+        font-size: 1.3rem;
+        font-weight: 900;
+        color: var(--text-primary);
+    }
+
+    .early-pricing-callout .price-tag span {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-muted);
+    }
+
+    .early-pricing-callout .save-tag {
+        font-size: 0.68rem;
+        font-weight: 800;
+        color: #10b981;
+        background: rgba(16, 185, 129, 0.12);
+        padding: 3px 8px;
+        border-radius: 6px;
+    }
+
+    .early-modal-actions {
+        padding: 14px 22px 18px 22px;
+        background: var(--card-bg);
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .btn-upgrade-pro-action {
+        background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+        color: #fff;
+        border: none;
+        padding: 11px 18px;
+        border-radius: 10px;
+        font-size: 0.88rem;
+        font-weight: 800;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+        transition: all 0.2s;
+        font-family: inherit;
+    }
+
+    .btn-upgrade-pro-action:hover {
+        box-shadow: 0 6px 18px rgba(139, 92, 246, 0.5);
+        transform: translateY(-1px);
+    }
+
+    .btn-pick-valid-date {
+        background: var(--input-bg);
+        color: var(--text-secondary);
+        border: 1px solid var(--border-color);
+        padding: 9px 14px;
+        border-radius: 10px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition: all 0.15s;
+        font-family: inherit;
+    }
+
+    .btn-pick-valid-date:hover {
+        border-color: var(--primary-orange);
+        color: var(--primary-orange);
+        background: var(--card-bg);
+    }
+
+    /* ── Right Panel: Time Slots & Options ── */
+    .times-panel {
         background: var(--card-bg);
         border: 1.5px solid var(--border-color);
+        border-radius: 16px;
+        padding: 22px 24px;
+        box-shadow: var(--shadow-card);
     }
 
-    .leg-dot.sel {
-        background: var(--primary-orange);
+    .selected-date-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 18px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border-color);
     }
 
-    .leg-dot.bkd {
+    .date-display-badge {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .date-display-badge .date-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: var(--primary-orange-light);
+        color: var(--primary-orange);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+    }
+
+    .date-display-badge h4 {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--text-primary);
+    }
+
+    .date-display-badge p {
+        font-size: 0.76rem;
+        color: var(--text-muted);
+        margin-top: 2px;
+    }
+
+    .config-selectors-row {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        margin-bottom: 22px;
         background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 10px 16px;
+    }
+
+    .duration-pill-group {
+        display: flex;
+        gap: 6px;
+    }
+
+    .duration-pill {
+        padding: 6px 14px;
+        border-radius: 8px;
         border: 1.5px solid var(--border-color);
-        opacity: .6;
+        background: var(--card-bg);
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+
+    .duration-pill:hover {
+        border-color: var(--primary-orange);
+        color: var(--primary-orange);
+    }
+
+    .duration-pill.active {
+        background: var(--primary-orange);
+        border-color: var(--primary-orange);
+        color: #fff;
+    }
+
+    .party-stepper {
+        display: inline-flex;
+        align-items: center;
+        background: var(--card-bg);
+        border: 1.5px solid var(--border-color);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .stepper-btn {
+        width: 30px;
+        height: 30px;
+        border: none;
+        background: transparent;
+        color: var(--text-primary);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        transition: background 0.15s;
+    }
+
+    .stepper-btn:hover {
+        background: var(--input-bg);
+        color: var(--primary-orange);
+    }
+
+    .stepper-val {
+        padding: 0 10px;
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: var(--text-primary);
+    }
+
+    /* Grouped Time Slots */
+    .slot-period-group {
+        margin-bottom: 20px;
+    }
+
+    .slot-period-title {
+        font-size: 0.8rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .slot-period-title i {
+        color: var(--primary-orange);
+        font-size: 1.05rem;
+    }
+
+    .slot-period-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 10px;
+    }
+
+    .slot-time-card {
+        border: 1.5px solid var(--border-color);
+        background: var(--card-bg);
+        border-radius: 10px;
+        padding: 10px 8px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        font-family: inherit;
+    }
+
+    .slot-time-card:hover:not(.booked) {
+        border-color: var(--primary-orange);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 14px rgba(225, 86, 35, 0.15);
+    }
+
+    .slot-time-card.selected {
+        background: var(--primary-orange);
+        border-color: var(--primary-orange);
+        color: #fff;
+    }
+
+    .slot-time-card.booked {
+        background: var(--input-bg);
+        border-color: var(--border-color);
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+
+    .slot-main-time {
+        font-size: 0.88rem;
+        font-weight: 800;
+        line-height: 1.2;
+        color: var(--text-primary);
+    }
+
+    .slot-time-card.selected .slot-main-time {
+        color: #fff;
+    }
+
+    .slot-sub-time {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+    }
+
+    .slot-time-card.selected .slot-sub-time {
+        color: rgba(255, 255, 255, 0.85);
+    }
+
+    .slot-avail-pill {
+        font-size: 0.68rem;
+        font-weight: 700;
+        padding: 2px 7px;
+        border-radius: 12px;
+        margin-top: 3px;
+        line-height: 1.2;
+    }
+
+    .slot-avail-pill.avail {
+        background: rgba(22, 163, 74, 0.12);
+        color: #16a34a;
+    }
+
+    .slot-time-card.selected .slot-avail-pill.avail {
+        background: rgba(255, 255, 255, 0.25);
+        color: #fff;
+    }
+
+    .slot-avail-pill.full {
+        background: rgba(220, 38, 38, 0.12);
+        color: #dc2626;
+    }
+
+    .slot-avail-pill.past {
+        background: rgba(100, 116, 139, 0.12);
+        color: var(--text-muted);
+    }
+
+    .today-passed-alert {
+        background: rgba(245, 158, 11, 0.09);
+        border: 1.5px solid rgba(245, 158, 11, 0.35);
+        border-radius: 14px;
+        padding: 18px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+    }
+
+    .today-passed-alert-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .today-passed-alert-left i {
+        font-size: 1.8rem;
+        color: #d97706;
+    }
+
+    .today-passed-alert-left h5 {
+        font-size: 0.92rem;
+        font-weight: 800;
+        color: #92400e;
+    }
+
+    .today-passed-alert-left p {
+        font-size: 0.78rem;
+        color: #b45309;
+        margin-top: 2px;
+    }
+
+    .btn-jump-tomorrow {
+        background: #d97706;
+        color: #fff;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: background 0.15s;
+    }
+
+    .btn-jump-tomorrow:hover {
+        background: #b45309;
     }
 
     /* ── Summary Card ── */
@@ -660,6 +1881,131 @@
         margin-top: 10px;
         background: #e0e0e0;
     }
+
+    /* ── Floating Booking Cart & Status Tracker ── */
+    .reservation-top-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-res-cart {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        background: var(--card-bg);
+        border: 1.5px solid var(--border-color);
+        padding: 8px 16px;
+        border-radius: 12px;
+        color: var(--text-primary);
+        font-family: inherit;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: var(--shadow-sm);
+        text-align: left;
+    }
+
+    .btn-res-cart:hover {
+        border-color: var(--primary-orange);
+        background: var(--primary-orange-light);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(225, 86, 35, 0.15);
+    }
+
+    .cart-btn-icon-wrap {
+        position: relative;
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: rgba(225, 86, 35, 0.12);
+        color: var(--primary-orange);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+
+    .cart-pulse-dot {
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        border: 2px solid var(--card-bg);
+    }
+
+    .cart-pulse-dot.pending {
+        background: #f59e0b;
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+        animation: cartDotPulse 1.8s infinite;
+    }
+
+    .cart-pulse-dot.confirmed {
+        background: #16a34a;
+        box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7);
+        animation: cartDotPulse 1.8s infinite;
+    }
+
+    @keyframes cartDotPulse {
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+        70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+    }
+
+    .cart-btn-details {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .cart-btn-title {
+        font-size: 0.88rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    .cart-btn-sub {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        line-height: 1.2;
+        margin-top: 1px;
+    }
+
+    .cart-badge-pill {
+        background: var(--primary-orange);
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        min-width: 22px;
+        height: 22px;
+        padding: 0 6px;
+        border-radius: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 2px;
+    }
+
+    .btn-res-history-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        border: 1.5px solid var(--border-color);
+        background: var(--card-bg);
+        color: var(--text-muted);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .btn-res-history-icon:hover {
+        color: var(--primary-orange);
+        border-color: var(--primary-orange);
+        background: var(--primary-orange-light);
 </style>
 <!-- Leaflet CSS & JS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -667,15 +2013,49 @@
 {% endblock %}
 
 {% block content %}
+{% set pending_list = (user_reservations or []) | selectattr('display_status', 'in', ['pending_payment', 'pending_verification']) | list %}
+{% set confirmed_list = (user_reservations or []) | selectattr('display_status', 'equalto', 'confirmed') | list %}
+{% set declined_list = (user_reservations or []) | selectattr('display_status', 'equalto', 'cancelled') | list %}
+
 <!-- Header -->
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
     <div>
         <h1 class="page-title"><i class="ph ph-tennis-ball"></i> Court Reservation</h1>
         <p style="color:var(--text-muted);font-size:.85rem;margin-top:4px;">Book a court in 3 easy steps</p>
     </div>
-    <a href="{{ url_for('player.my_reservations') }}" class="btn-back">
-        <i class="ph ph-calendar-check"></i> My Reservations
-    </a>
+    
+    <!-- Floating Cart & Booking Tracker Header Actions -->
+    <div class="reservation-top-actions">
+        <button type="button" class="btn-res-cart" id="openCartBtn" onclick="toggleResDrawer()" aria-label="Open booking cart and tracker">
+            <div class="cart-btn-icon-wrap">
+                <i class="ph ph-shopping-bag-open"></i>
+                {% if pending_list|length > 0 %}
+                    <span class="cart-pulse-dot pending"></span>
+                {% elif confirmed_list|length > 0 %}
+                    <span class="cart-pulse-dot confirmed"></span>
+                {% endif %}
+            </div>
+            <div class="cart-btn-details">
+                <span class="cart-btn-title">My Bookings</span>
+                <span class="cart-btn-sub" id="headerCartSubtext">
+                    {% if not user_reservations or user_reservations|length == 0 %}
+                        No active bookings
+                    {% elif pending_list|length > 0 %}
+                        <span style="color:#d97706;font-weight:700;">{{ pending_list|length }} Pending</span>
+                    {% elif confirmed_list|length > 0 %}
+                        <span style="color:#16a34a;font-weight:700;">{{ confirmed_list|length }} Accepted</span>
+                    {% else %}
+                        {{ user_reservations|length }} Total
+                    {% endif %}
+                </span>
+            </div>
+            <span class="cart-badge-pill" id="cartCountBadge">{{ (user_reservations or [])|length }}</span>
+        </button>
+
+        <a href="{{ url_for('player.my_reservations') }}" class="btn-res-history-icon" title="View Full Reservations History Page">
+            <i class="ph ph-arrow-square-out"></i>
+        </a>
+    </div>
 </div>
 
 <!-- Wizard Steps -->
@@ -698,44 +2078,211 @@
 
 <!-- Step 1: Choose Facility -->
 <div class="wizard-panel active glass-card" id="panel-1">
-    <h3 style="font-size:1rem;font-weight:700;margin-bottom:16px;"><i class="ph ph-building"
-            style="color:var(--primary-orange)"></i> Choose a Facility</h3>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+        <div>
+            <h3 style="font-size:1.1rem;font-weight:800;color:var(--text-primary);display:flex;align-items:center;gap:8px;margin:0;">
+                <i class="ph ph-building" style="color:var(--primary-orange)"></i> Choose a Facility
+            </h3>
+            <p style="font-size:0.75rem;color:var(--text-muted);margin:3px 0 0 0;">Select your preferred pickleball venue to check court availability and pricing.</p>
+        </div>
+    </div>
     {% if facilities %}
     <div class="facility-grid">
         {% for f in facilities %}
         <div class="facility-card" data-id="{{ f.id }}" data-name="{{ f.name }}"
             data-open="{{ f.open_time or '08:00' }}" data-close="{{ f.close_time or '21:00' }}"
-            data-slot="{{ f.slot_duration_minutes or 60 }}" onclick="selectFacility(this)">
-            <!-- Image Banner -->
-            <div class="fac-img-banner">
+            data-open-12="{{ f.open_time_12 or '8:00 AM' }}" data-close-12="{{ f.close_time_12 or '9:00 PM' }}"
+            data-slot="{{ f.slot_duration_minutes or 60 }}"
+            data-owner-name="{{ f.owner.full_name if f.owner else '' }}"
+            data-owner-id="{{ f.owner.id if f.owner else '' }}"
+            data-staff-name="{{ f.staff_members[0].full_name if f.staff_members else '' }}"
+            data-staff-id="{{ f.staff_members[0].id if f.staff_members else '' }}"
+            onclick="selectFacility(this)">
+
+            <!-- Hero Image Banner -->
+            <div class="fac-hero-wrap">
                 {% if f.image_url %}
-                <img src="{{ f.image_url }}" alt="{{ f.name }}">
+                <img src="{{ f.image_url }}" alt="{{ f.name }}" class="fac-hero-img">
                 {% else %}
-                <div class="fac-img-placeholder"><i class="ph ph-buildings"></i></div>
-                {% endif %}
-                <div class="fac-img-overlay">
-                    <h4>{{ f.name }}
-                        {% if f.kyc_status == 'verified' %}
-                        <i class="ph ph-shield-check" style="color:#10b981;font-size:.75rem;margin-left:4px;"
-                            title="KYC Verified"></i>
-                        {% endif %}
-                    </h4>
+                <div class="fac-hero-placeholder">
+                    <i class="ph ph-buildings"></i>
+                    <span>Pickleball Venue</span>
                 </div>
+                {% endif %}
+
+                <!-- KYC Badge (Top Left) -->
+                {% if f.kyc_status == 'verified' %}
+                <div class="fac-badge-top-left" title="KYC Verified Facility">
+                    <i class="ph ph-shield-check"></i>
+                    <span>Verified</span>
+                </div>
+                {% endif %}
+
+                <!-- Operating Hours Pill (Top Right) -->
+                <div class="fac-badge-top-right" title="Operating Hours">
+                    <span class="fac-badge-pulse-dot"></span>
+                    <span>{{ f.open_time_12 or '8:00 AM' }} – {{ f.close_time_12 or '9:00 PM' }}</span>
+                </div>
+
+                <!-- Price Range Chip (Bottom Right) -->
+                {% if f.rate_display %}
+                <div class="fac-price-chip" title="Court Hourly Rates">
+                    <span>{{ f.rate_display }}</span>
+                </div>
+                {% endif %}
             </div>
+
             <!-- Card Body -->
             <div class="fac-card-body">
-                <div class="fac-loc">
-                    <i class="ph ph-map-pin"></i>{{ f.location or 'Location not set' }}
-                    {% if f.latitude and f.longitude %}
-                    <button type="button" class="btn-map"
-                        onclick="event.stopPropagation(); showMapModal({{ f.latitude }}, {{ f.longitude }}, '{{ f.name | escape }}')"><i
-                            class="ph ph-map-trifold"></i> Map</button>
+                <div class="fac-header-row">
+                    <h4 class="fac-title" title="{{ f.name }}">{{ f.name }}</h4>
+                    <div class="fac-location-row">
+                        <span class="fac-location-text" title="{{ f.location or 'Location not specified' }}">
+                            <i class="ph ph-map-pin" style="color:var(--primary-orange);"></i> {{ f.location or 'Location not specified' }}
+                        </span>
+                        {% if f.latitude and f.longitude %}
+                        <button type="button" class="btn-map-chip"
+                            onclick="event.stopPropagation(); showMapModal({{ f.latitude }}, {{ f.longitude }}, '{{ f.name | escape }}')"
+                            title="View on Map">
+                            <i class="ph ph-map-trifold"></i> Map
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Court Highlights & Features -->
+                <div class="fac-features-bar">
+                    <span class="fac-feat-tag" title="Total Active Courts">
+                        <i class="ph ph-tennis-ball"></i> {{ f.courts_count or 1 }} Court{{ 's' if f.courts_count != 1 else '' }}
+                    </span>
+                    <span class="fac-feat-tag" title="Court Surface / Types">
+                        <i class="ph ph-squares-four"></i> {{ f.court_types_str or 'Outdoor' }}
+                    </span>
+                    <span class="fac-feat-tag" title="Reservation Slot Duration">
+                        <i class="ph ph-timer"></i> {{ f.slot_duration_minutes or 60 }}m slots
+                    </span>
+                </div>
+
+                <!-- Description Clamped -->
+                <p class="fac-desc-preview" title="{{ f.description or '' }}">
+                    {{ f.description or 'Book modern courts with quality nets and professional playing surfaces.' }}
+                </p>
+
+                <!-- Compact Host & Team Strip -->
+                {% set primary_contact = f.owner if (f.owner and f.owner.id) else (f.staff_members[0] if f.staff_members else none) %}
+                {% set total_team = (1 if (f.owner and f.owner.id) else 0) + (f.staff_members|length) %}
+
+                <div class="fac-host-strip" onclick="event.stopPropagation();">
+                    <div class="fac-host-left">
+                        <!-- Avatar Stack -->
+                        <div class="fac-avatar-group">
+                            {% if f.owner and f.owner.id %}
+                            <div class="fac-avatar-circle owner" title="Owner: {{ f.owner.full_name }}">
+                                {% if f.owner.avatar_url %}
+                                <img src="{{ f.owner.avatar_url }}" alt="{{ f.owner.full_name }}">
+                                {% else %}
+                                {{ f.owner.initials }}
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            {% if f.staff_members %}
+                                {% for st in f.staff_members[:2] %}
+                                <div class="fac-avatar-circle staff" title="Staff: {{ st.full_name }}">
+                                    {% if st.avatar_url %}
+                                    <img src="{{ st.avatar_url }}" alt="{{ st.full_name }}">
+                                    {% else %}
+                                    {{ st.initials }}
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                                {% if f.staff_members|length > 2 %}
+                                <div class="fac-avatar-circle" style="font-size:0.6rem;background:var(--input-bg);color:var(--text-muted);" title="+{{ f.staff_members|length - 2 }} more staff">
+                                    +{{ f.staff_members|length - 2 }}
+                                </div>
+                                {% endif %}
+                            {% endif %}
+                            {% if not primary_contact %}
+                            <div class="fac-avatar-circle" style="background:var(--input-bg);color:var(--text-muted);">
+                                <i class="ph ph-user"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="fac-host-info">
+                            {% if primary_contact %}
+                            <span class="fac-host-name">Hosted by {{ primary_contact.full_name }}</span>
+                            <span class="fac-host-sub">
+                                {% if total_team > 1 %}
+                                    {{ total_team }} Management Members
+                                {% else %}
+                                    Facility Management
+                                {% endif %}
+                            </span>
+                            {% else %}
+                            <span class="fac-host-name">Pickleball Facility</span>
+                            <span class="fac-host-sub">Staff assigned upon booking</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="fac-host-actions">
+                        {% if total_team > 0 %}
+                        <button type="button" class="btn-team-modal" onclick="event.stopPropagation(); showFacilityTeamModal('{{ f.id }}', '{{ f.name | escape }}')" title="View Management Team & Staff">
+                            <i class="ph ph-users"></i> Team
+                        </button>
+                        {% endif %}
+                        {% if primary_contact %}
+                        <a href="{{ url_for('player.messages') }}?chat_user={{ primary_contact.id }}" class="btn-host-chat" onclick="event.stopPropagation();" title="Chat with {{ primary_contact.full_name }}">
+                            <i class="ph ph-chat-circle-dots"></i> Chat
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Hidden template holding detailed team members for modal -->
+                <div id="team-data-{{ f.id }}" style="display:none;">
+                    {% if f.owner and f.owner.id %}
+                    <div class="modal-team-member">
+                        <div class="modal-member-avatar owner">
+                            {% if f.owner.avatar_url %}<img src="{{ f.owner.avatar_url }}" alt="{{ f.owner.full_name }}">{% else %}{{ f.owner.initials }}{% endif %}
+                        </div>
+                        <div class="modal-member-info">
+                            <div class="modal-member-name">{{ f.owner.full_name }}</div>
+                            <div class="modal-member-role"><i class="ph ph-crown" style="color:#f59e0b;"></i> Facility Owner</div>
+                        </div>
+                        <div class="modal-member-actions">
+                            {% if f.owner.phone %}
+                            <a href="tel:{{ f.owner.phone }}" class="btn-modal-phone" title="Call {{ f.owner.phone }}"><i class="ph ph-phone"></i> {{ f.owner.phone }}</a>
+                            {% endif %}
+                            <a href="{{ url_for('player.messages') }}?chat_user={{ f.owner.id }}" class="btn-modal-chat owner"><i class="ph ph-chat-circle-dots"></i> Chat</a>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if f.staff_members %}
+                        {% for st in f.staff_members %}
+                        <div class="modal-team-member">
+                            <div class="modal-member-avatar staff">
+                                {% if st.avatar_url %}<img src="{{ st.avatar_url }}" alt="{{ st.full_name }}">{% else %}{{ st.initials }}{% endif %}
+                            </div>
+                            <div class="modal-member-info">
+                                <div class="modal-member-name">{{ st.full_name }}</div>
+                                <div class="modal-member-role"><i class="ph ph-user-check" style="color:var(--btn-green);"></i> Court Manager</div>
+                            </div>
+                            <div class="modal-member-actions">
+                                {% if st.phone %}
+                                <a href="tel:{{ st.phone }}" class="btn-modal-phone" title="Call {{ st.phone }}"><i class="ph ph-phone"></i> {{ st.phone }}</a>
+                                {% endif %}
+                                <a href="{{ url_for('player.messages') }}?chat_user={{ st.id }}" class="btn-modal-chat staff"><i class="ph ph-chat-dots"></i> Chat</a>
+                            </div>
+                        </div>
+                        {% endfor %}
                     {% endif %}
                 </div>
-                {% if f.description %}<p style="font-size:.78rem;color:var(--text-secondary);margin-bottom:6px;">{{
-                    f.description }}</p>{% endif %}
-                <div class="fac-hours"><i class="ph ph-clock"></i>{{ (f.open_time or '08:00')[:5] }} – {{ (f.close_time
-                    or '21:00')[:5] }}</div>
+
+                <!-- Explicit Card Action Button -->
+                <button type="button" class="btn-select-fac" onclick="event.stopPropagation(); selectFacility(this.closest('.facility-card'));">
+                    <span>Select Facility</span> <i class="ph ph-arrow-right"></i>
+                </button>
             </div>
         </div>
         {% endfor %}
@@ -748,39 +2295,158 @@
 </div>
 
 <!-- Step 2: Choose Date & Time -->
-<div class="wizard-panel glass-card" id="panel-2">
-    <div class="panel-action-row">
-        <h3 style="font-size:1rem;font-weight:700;"><i class="ph ph-calendar" style="color:var(--primary-orange)"></i> Choose Date &amp; Time — <span id="s2-fac-name" style="color:var(--primary-orange)"></span></h3>
-        <button class="btn-back" onclick="goStep(1)"><i class="ph ph-arrow-left"></i> Back</button>
-    </div>
-    
-    <div style="display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; align-items: flex-end;">
-        <div class="form-group" style="margin: 0; display: flex; flex-direction: column; gap: 6px;">
-            <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Select Date</label>
-            <input type="date" id="select-date" onchange="onDateTimeChange()" style="border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-primary); padding: 8px 12px; border-radius: 8px; outline: none; font-family: inherit; font-size: .875rem;">
+<div class="wizard-panel" id="panel-2">
+    <div class="panel-action-row" style="background:var(--card-bg);padding:16px 20px;border-radius:14px;border:1.5px solid var(--border-color);margin-bottom:20px;box-shadow:var(--shadow-card);">
+        <div>
+            <h3 style="font-size:1.05rem;font-weight:800;color:var(--text-primary);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <i class="ph ph-calendar-plus" style="color:var(--primary-orange)"></i> Choose Date &amp; Time
+                <span style="color:var(--text-muted);font-weight:400;font-size:0.9rem;">—</span>
+                <span id="s2-fac-name" style="color:var(--primary-orange)"></span>
+            </h3>
+            <p style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">Select an available date on the calendar, then pick your preferred court time slot.</p>
         </div>
-        <div class="form-group" style="margin: 0; display: flex; flex-direction: column; gap: 6px;">
-            <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Duration</label>
-            <select id="select-duration" onchange="onDateTimeChange()" style="border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-primary); padding: 8px 12px; border-radius: 8px; outline: none; font-family: inherit; font-size: .875rem; width: 120px;">
-                <option value="1">1 Hour</option>
-                <option value="2">2 Hours</option>
-                <option value="3">3 Hours</option>
-            </select>
-        </div>
-        <div class="form-group" style="margin: 0; display: flex; flex-direction: column; gap: 6px;">
-            <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Party Size</label>
-            <input type="number" id="select-party-size" min="1" max="10" value="1" onchange="onDateTimeChange()" style="border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-primary); padding: 8px 12px; border-radius: 8px; outline: none; font-family: inherit; font-size: .875rem; width: 80px;">
-        </div>
+        <button class="btn-back" onclick="goStep(1)"><i class="ph ph-arrow-left"></i> Change Facility</button>
     </div>
 
-    <div style="border-top: 1px solid var(--border-color); padding-top: 20px;">
-        <h4 style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-bottom: 12px;">Select Start Time</h4>
-        <div class="slot-legend" style="margin-bottom: 16px;">
-            <div class="leg-item"><div class="leg-dot avail"></div> Available</div>
-            <div class="leg-item"><div class="leg-dot bkd"></div> Closed / Full</div>
+    <!-- Notice banner if coming from Instant Court Booking -->
+    <div id="preselectedCourtNotice" style="display:none;margin-bottom:18px;"></div>
+
+    <!-- Hidden inputs for form data binding -->
+    <input type="hidden" id="select-date">
+    <input type="hidden" id="select-duration" value="1">
+    <input type="hidden" id="select-party-size" value="1">
+
+    <div class="step2-layout">
+        <!-- Left Column: Custom Interactive Availability Calendar -->
+        <div class="calendar-panel">
+            <div class="cal-top-bar">
+                <div class="cal-month-nav">
+                    <button type="button" class="cal-month-btn" onclick="navMonth(-1)" title="Previous Month">
+                        <i class="ph ph-caret-left"></i>
+                    </button>
+                    <span id="calendarMonthTitle" class="cal-month-title">September 2026</span>
+                    <button type="button" class="cal-month-btn" onclick="navMonth(1)" title="Next Month">
+                        <i class="ph ph-caret-right"></i>
+                    </button>
+                </div>
+                <div class="cal-shortcuts">
+                    <button type="button" class="cal-shortcut-chip" id="chip-today" onclick="selectQuickDate('today')">Today</button>
+                    <button type="button" class="cal-shortcut-chip" id="chip-tomorrow" onclick="selectQuickDate('tomorrow')">Tomorrow</button>
+                    <button type="button" class="cal-shortcut-chip" id="chip-weekend" onclick="selectQuickDate('weekend')">Weekend</button>
+                </div>
+            </div>
+
+            <!-- Early Access Window Status Banner -->
+            <div class="cal-access-banner" id="calAccessBanner">
+                {% if not current_user.is_pro %}
+                <div class="cal-access-badge free">
+                    <div class="cal-access-badge-left">
+                        <span class="cal-tier-tag free"><i class="ph ph-calendar-blank"></i> FREE WINDOW</span>
+                        <span>Book up to <strong>3 days in advance</strong>. Days 4–14 are reserved for <strong style="color:#7c3aed;">Pro Early Access</strong>.</span>
+                    </div>
+                    <button type="button" class="btn-cal-upgrade" onclick="openProEarlyAccessModal()">
+                        <i class="ph ph-crown-simple"></i> Upgrade
+                    </button>
+                </div>
+                {% else %}
+                <div class="cal-access-badge pro">
+                    <div class="cal-access-badge-left">
+                        <span class="cal-tier-tag pro"><i class="ph ph-crown-simple"></i> PRO PASS</span>
+                        <span><strong>14-Day Early Access Active!</strong> Enjoy ₱0 convenience fees on all bookings.</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="cal-weekdays">
+                <span>SUN</span><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span>
+            </div>
+
+            <div id="calendarDaysGrid" class="cal-grid">
+                <!-- Dynamically populated days with live availability badges -->
+            </div>
+
+            <div class="cal-legend-bar">
+                <div class="cal-legend-item"><span class="cal-legend-dot avail"></span> Available</div>
+                <div class="cal-legend-item"><span class="cal-legend-dot limited"></span> Filling Fast</div>
+                <div class="cal-legend-item"><span class="cal-legend-dot full"></span> Full</div>
+                <div class="cal-legend-item"><span class="cal-legend-dot pro-locked"></span> Pro Early Access (4–14d)</div>
+                <div class="cal-legend-item"><span class="cal-legend-dot past"></span> Past / Closed</div>
+            </div>
         </div>
-        <div id="times-loading" style="display:none;text-align:center;padding:30px;color:var(--text-muted);"><i class="ph ph-circle-notch" style="animation:spin .8s linear infinite;font-size:1.5rem"></i></div>
-        <div id="start-time-grid" class="slot-grid"></div>
+
+        <!-- Right Column: Time Slots & Booking Options -->
+        <div class="times-panel">
+            <div class="selected-date-header">
+                <div class="date-display-badge">
+                    <div class="date-icon"><i class="ph ph-calendar-check"></i></div>
+                    <div>
+                        <h4 id="selectedDateDisplayTitle">Friday, September 25, 2026</h4>
+                        <p id="selectedDateAvailabilitySummary"><i class="ph ph-check-circle" style="color:#10b981;"></i> Select a start time below</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="config-selectors-row">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:0.78rem;font-weight:700;color:var(--text-secondary);"><i class="ph ph-hourglass-high" style="color:var(--primary-orange);"></i> Duration:</span>
+                    <div class="duration-pill-group">
+                        <button type="button" class="duration-pill active" data-dur="1" onclick="setDuration(1)">1 hr</button>
+                        <button type="button" class="duration-pill" data-dur="2" onclick="setDuration(2)">2 hrs</button>
+                        <button type="button" class="duration-pill" data-dur="3" onclick="setDuration(3)">3 hrs</button>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:0.78rem;font-weight:700;color:var(--text-secondary);"><i class="ph ph-users" style="color:var(--primary-orange);"></i> Players:</span>
+                    <div class="party-stepper">
+                        <button type="button" class="stepper-btn" onclick="stepPartySize(-1)"><i class="ph ph-minus"></i></button>
+                        <span class="stepper-val" id="partySizeDisplay">1</span>
+                        <button type="button" class="stepper-btn" onclick="stepPartySize(1)"><i class="ph ph-plus"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notice when today's slots have all passed -->
+            <div id="todayAllPastNotice" style="display:none;" class="today-passed-alert">
+                <div class="today-passed-alert-left">
+                    <i class="ph ph-clock-countdown"></i>
+                    <div>
+                        <h5>All Court Hours for Today Have Passed</h5>
+                        <p>This facility is closed for reservations today. Jump ahead to view open courts for tomorrow!</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-jump-tomorrow" onclick="selectQuickDate('tomorrow')">
+                    View Tomorrow <i class="ph ph-arrow-right"></i>
+                </button>
+            </div>
+
+            <!-- Loading indicator -->
+            <div id="times-loading" style="display:none;text-align:center;padding:36px;color:var(--text-muted);">
+                <i class="ph ph-circle-notch" style="animation:spin .8s linear infinite;font-size:1.8rem"></i>
+                <p style="font-size:0.8rem;margin-top:8px;">Finding available court slots...</p>
+            </div>
+
+            <!-- Grouped Time Slots (Morning, Afternoon, Evening) -->
+            <div id="groupedTimeSlots" class="grouped-time-slots">
+                <!-- Morning Group -->
+                <div class="slot-period-group" id="groupMorning" style="display:none;">
+                    <div class="slot-period-title"><i class="ph ph-sun-horizon"></i> Morning (Until 12:00 PM)</div>
+                    <div class="slot-period-grid" id="gridMorning"></div>
+                </div>
+
+                <!-- Afternoon Group -->
+                <div class="slot-period-group" id="groupAfternoon" style="display:none;">
+                    <div class="slot-period-title"><i class="ph ph-sun"></i> Afternoon (12:00 PM – 5:00 PM)</div>
+                    <div class="slot-period-grid" id="gridAfternoon"></div>
+                </div>
+
+                <!-- Evening Group -->
+                <div class="slot-period-group" id="groupEvening" style="display:none;">
+                    <div class="slot-period-title"><i class="ph ph-moon-stars"></i> Evening (5:00 PM Onwards)</div>
+                    <div class="slot-period-grid" id="gridEvening"></div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -819,6 +2485,7 @@
         <div class="summary-card">
             <h3><i class="ph ph-receipt" style="color:var(--primary-orange)"></i> Booking Summary</h3>
             <div class="summary-row"><span class="s-label">Facility</span><span class="s-val" id="sum-facility">—</span></div>
+            <div class="summary-row" id="sum-row-contact" style="display:none;"><span class="s-label">Host / Manager</span><span class="s-val" id="sum-contact">—</span></div>
             <div class="summary-row"><span class="s-label">Court</span><span class="s-val" id="sum-court">—</span></div>
             <div class="summary-row"><span class="s-label">Date</span><span class="s-val" id="sum-date">—</span></div>
             <div class="summary-row"><span class="s-label">Time</span><span class="s-val" id="sum-time">—</span></div>
@@ -848,22 +2515,66 @@
 </div>
 
 <script>
+    // User subscription tier variables
+    let USER_IS_PRO = {{ 'true' if (current_user and current_user.is_pro) else 'false' }};
+    let USER_MAX_ADVANCE_DAYS = {{ current_user.tier_limits.advance_booking_days if (current_user and current_user.tier_limits and current_user.tier_limits.advance_booking_days) else 3 }};
+    const SYSTEM_MAX_ADVANCE_DAYS = 14;
+    const SERVER_TODAY_STR = "{{ today_date or '' }}";
+
+    function getDaysAhead(targetStr, baseStr) {
+        if (!targetStr) return 0;
+        const bStr = baseStr || (SERVER_TODAY_STR || getLocalIsoDate(new Date()));
+        const [tY, tM, tD] = targetStr.split('-').map(Number);
+        const [bY, bM, bD] = bStr.split('-').map(Number);
+        const targetUtc = Date.UTC(tY, tM - 1, tD);
+        const baseUtc = Date.UTC(bY, bM - 1, bD);
+        return Math.round((targetUtc - baseUtc) / 86400000);
+    }
+
     // State
     let state = {
-        facility: null,      // { id, name, open, close }
-        selectedDate: null,  // "YYYY-MM-DD"
-        duration: 1,         // 1, 2, 3
-        partySize: 1,        // number
-        startTime: null,     // integer hour (e.g. 10)
-        endTime: null,       // integer hour
-        court: null,         // { id, name, rate }
-        courtsList: [],      // fetched courts
-        reservationsList: [] // fetched reservations
+        facility: null,          // { id, name, open, close, open12, close12 }
+        selectedDate: null,      // "YYYY-MM-DD"
+        calYear: null,           // current calendar year
+        calMonth: null,          // current calendar month (1-12)
+        monthAvailability: {},   // "YYYY-MM-DD" -> { status, remaining_slots, total_slots, booked_slots }
+        duration: 1,             // 1, 2, 3
+        partySize: 1,            // number
+        startTime: null,         // integer hour (e.g. 10)
+        endTime: null,           // integer hour
+        court: null,             // { id, name, rate }
+        targetCourtId: null,     // preselected court id if coming from instant book
+        courtsList: [],          // fetched courts
+        reservationsList: []     // fetched reservations
     };
 
-    function fmt12(h) { 
-        let ap = h < 12 ? 'AM' : 'PM', h12 = h % 12 || 12; 
-        return `${String(h12).padStart(2, '0')}:00 ${ap}`; 
+    const MONTH_NAMES = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+
+    function fmt12(h, m = 0) { 
+        const hNum = parseInt(h, 10);
+        const mNum = parseInt(m, 10) || 0;
+        const minStr = mNum > 0 ? `:${String(mNum).padStart(2, '0')}` : ':00';
+        
+        let ap = (hNum >= 12 && hNum < 24) ? 'PM' : 'AM';
+        let h12 = hNum % 12;
+        if (h12 === 0) h12 = 12;
+        return `${h12}${minStr} ${ap}`; 
+    }
+
+    function formatTimeString12(timeStr) {
+        if (!timeStr) return '';
+        const parts = String(timeStr).split(':');
+        return fmt12(parts[0], parts[1] || 0);
+    }
+
+    function getLocalIsoDate(d) {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
     }
 
     /* ── Step navigation ── */
@@ -879,38 +2590,289 @@
 
     /* ── Step 1: Select Facility ── */
     function selectFacility(card) {
-        document.querySelectorAll('.facility-card').forEach(c => c.classList.remove('selected'));
+        document.querySelectorAll('.facility-card').forEach(c => {
+            c.classList.remove('selected');
+            const btn = c.querySelector('.btn-select-fac');
+            if (btn) btn.innerHTML = '<span>Select Facility</span> <i class="ph ph-arrow-right"></i>';
+        });
         card.classList.add('selected');
+        const selBtn = card.querySelector('.btn-select-fac');
+        if (selBtn) selBtn.innerHTML = '<span>Selected Facility</span> <i class="ph ph-check-circle"></i>';
         
         state.facility = { 
             id: card.dataset.id, 
             name: card.dataset.name, 
-            open: card.dataset.open, 
-            close: card.dataset.close 
+            open: card.dataset.open || '08:00', 
+            close: card.dataset.close || '21:00',
+            open12: card.dataset.open12 || '8:00 AM',
+            close12: card.dataset.close12 || '9:00 PM'
         };
         
         document.getElementById('s2-fac-name').textContent = card.dataset.name;
         document.getElementById('inp-facility-id').value = card.dataset.id;
         document.getElementById('sum-facility').textContent = card.dataset.name;
 
-        // Initialize default Date to today
-        const today = new Date().toISOString().split('T')[0];
-        const dateInput = document.getElementById('select-date');
-        dateInput.min = today;
-        dateInput.value = today;
-        state.selectedDate = today;
+        // Populate Host / Manager contact in Booking Summary
+        const ownerName = card.dataset.ownerName;
+        const ownerId = card.dataset.ownerId;
+        const staffName = card.dataset.staffName;
+        const staffId = card.dataset.staffId;
+        const sumContactRow = document.getElementById('sum-row-contact');
+        const sumContact = document.getElementById('sum-contact');
+        if (sumContactRow && sumContact) {
+            if (ownerName && ownerId) {
+                sumContactRow.style.display = 'flex';
+                sumContact.innerHTML = `<span style="font-size:0.78rem;font-weight:700;">${ownerName}</span> <a href="/player/messages?chat_user=${ownerId}" class="btn-chat-person owner" style="padding:2px 8px;font-size:0.68rem;text-decoration:none;" title="Chat with owner" target="_blank"><i class="ph ph-chat-circle-dots"></i> Chat</a>`;
+            } else if (staffName && staffId) {
+                sumContactRow.style.display = 'flex';
+                sumContact.innerHTML = `<span style="font-size:0.78rem;font-weight:700;">${staffName}</span> <a href="/player/messages?chat_user=${staffId}" class="btn-chat-person staff" style="padding:2px 8px;font-size:0.68rem;text-decoration:none;" title="Chat with manager" target="_blank"><i class="ph ph-chat-dots"></i> Chat</a>`;
+            } else {
+                sumContactRow.style.display = 'none';
+            }
+        }
 
-        // Initialize duration and party size
-        state.duration = parseInt(document.getElementById('select-duration').value) || 1;
-        state.partySize = parseInt(document.getElementById('select-party-size').value) || 1;
+        // Smart Initial Date Selection:
+        // If current hour has already reached/passed facility close, default to tomorrow!
+        const now = new Date();
+        const todayStr = getLocalIsoDate(now);
         
-        // Reset state
+        let closeH = parseInt(state.facility.close.substring(0, 2), 10);
+        if (isNaN(closeH) || closeH === 0) closeH = 24;
+
+        let targetDate = todayStr;
+        if (now.getHours() >= closeH - 1) {
+            const tom = new Date(now);
+            tom.setDate(tom.getDate() + 1);
+            targetDate = getLocalIsoDate(tom);
+        }
+
+        state.selectedDate = targetDate;
+        const targetObj = new Date(targetDate + 'T00:00:00');
+        state.calYear = targetObj.getFullYear();
+        state.calMonth = targetObj.getMonth() + 1;
+
+        state.duration = 1;
+        state.partySize = 1;
+        document.getElementById('select-date').value = targetDate;
+        document.getElementById('select-duration').value = 1;
+        document.getElementById('select-party-size').value = 1;
+        document.getElementById('partySizeDisplay').textContent = 1;
+        setDuration(1, false);
+
+        // Reset selections
         state.startTime = null;
         state.endTime = null;
         state.court = null;
 
-        onDateTimeChange(); // Load times
+        // Load month availability calendar and load slots
+        loadMonthAvailability().then(() => {
+            onDateTimeChange();
+        });
         goStep(2);
+    }
+
+    /* ── Custom Interactive Availability Calendar ── */
+    async function loadMonthAvailability() {
+        if (!state.facility) return;
+        try {
+            const resp = await fetch(`/player/reservation/api/facility_month_availability?facility_id=${state.facility.id}&year=${state.calYear}&month=${state.calMonth}`);
+            if (resp.ok) {
+                const data = await resp.json();
+                state.monthAvailability = data.days || {};
+            }
+        } catch (err) {
+            console.error("Error loading month availability:", err);
+        }
+        renderCalendar();
+    }
+
+    function renderCalendar() {
+        const grid = document.getElementById('calendarDaysGrid');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        const title = document.getElementById('calendarMonthTitle');
+        if (title) {
+            title.textContent = `${MONTH_NAMES[state.calMonth - 1]} ${state.calYear}`;
+        }
+
+        const now = new Date();
+        const todayStr = SERVER_TODAY_STR || getLocalIsoDate(now);
+        state.todayIso = todayStr;
+
+        // First day of month (0 = Sun, 1 = Mon...)
+        const firstDayObj = new Date(state.calYear, state.calMonth - 1, 1);
+        const firstDayWeekday = firstDayObj.getDay();
+        const totalDays = new Date(state.calYear, state.calMonth, 0).getDate();
+
+        // Empty padding cells for start of month
+        for (let i = 0; i < firstDayWeekday; i++) {
+            const emptyCell = document.createElement('div');
+            emptyCell.className = 'cal-day disabled';
+            grid.appendChild(emptyCell);
+        }
+
+        // Render days
+        for (let day = 1; day <= totalDays; day++) {
+            const dayStr = `${state.calYear}-${String(state.calMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const daysAhead = getDaysAhead(dayStr, todayStr);
+            const isPast = daysAhead < 0;
+            const isToday = daysAhead === 0;
+            const isSelected = dayStr === state.selectedDate;
+
+            const isLockedEarlyAccess = !USER_IS_PRO && (daysAhead > USER_MAX_ADVANCE_DAYS) && (daysAhead <= SYSTEM_MAX_ADVANCE_DAYS);
+            const isBeyondHorizon = daysAhead > SYSTEM_MAX_ADVANCE_DAYS;
+
+            const dayInfo = state.monthAvailability[dayStr] || {};
+            const status = isPast ? 'past' : (dayInfo.status || 'available');
+
+            const cell = document.createElement('div');
+            cell.dataset.date = dayStr;
+
+            let badgeHtml = '';
+            if (isPast) {
+                cell.className = `cal-day past ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}`;
+                badgeHtml = `<span class="cal-day-status past">Past</span>`;
+            } else if (isBeyondHorizon) {
+                cell.className = `cal-day closed-horizon ${isSelected ? 'selected' : ''}`;
+                badgeHtml = `<span class="cal-day-status closed"><i class="ph ph-lock-key"></i> Max</span>`;
+                cell.title = "Bookings open 14 days in advance";
+                cell.onclick = (e) => {
+                    e.preventDefault();
+                    showEarlyAccessNoticeToast("Court reservations open up to 14 days in advance.");
+                };
+            } else if (isLockedEarlyAccess) {
+                cell.className = `cal-day pro-locked ${isSelected ? 'selected' : ''}`;
+                badgeHtml = `<span class="cal-day-status pro-locked"><i class="ph ph-crown-simple"></i> Pro</span>`;
+                cell.title = `Pro Early Access (${daysAhead} days ahead) — Click to view early booking options`;
+                cell.onclick = (e) => {
+                    e.preventDefault();
+                    openProEarlyAccessModal(dayStr, daysAhead);
+                };
+            } else {
+                // Available within permitted booking window
+                cell.className = `cal-day ${status} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}`;
+                if (status === 'full') {
+                    badgeHtml = `<span class="cal-day-status full">Full</span>`;
+                } else if (status === 'limited') {
+                    badgeHtml = `<span class="cal-day-status limited">Filling</span>`;
+                } else {
+                    const rem = dayInfo.remaining_slots;
+                    const remText = (rem !== undefined && rem > 0) ? `${rem} left` : 'Avail';
+                    if (USER_IS_PRO && daysAhead > 3) {
+                        badgeHtml = `<span class="cal-day-status available" style="border:1px solid rgba(16,185,129,0.35); background:rgba(16,185,129,0.12);"><i class="ph ph-sparkle" style="color:#10b981;font-size:0.6rem;"></i> ${remText}</span>`;
+                    } else {
+                        badgeHtml = `<span class="cal-day-status available">${remText}</span>`;
+                    }
+                }
+                cell.onclick = () => selectCalendarDate(dayStr);
+            }
+
+            cell.innerHTML = `
+                <span class="cal-day-num">${day}</span>
+                ${badgeHtml}
+            `;
+
+            grid.appendChild(cell);
+        }
+
+        updateShortcutChips();
+    }
+
+    function selectCalendarDate(dateStr) {
+        const todayStr = SERVER_TODAY_STR || getLocalIsoDate(new Date());
+        const daysAhead = getDaysAhead(dateStr, todayStr);
+        if (!USER_IS_PRO && daysAhead > USER_MAX_ADVANCE_DAYS) {
+            openProEarlyAccessModal(dateStr, daysAhead);
+            return;
+        }
+        if (daysAhead > SYSTEM_MAX_ADVANCE_DAYS) {
+            showEarlyAccessNoticeToast("Court reservations open up to 14 days in advance.");
+            return;
+        }
+        state.selectedDate = dateStr;
+        document.getElementById('select-date').value = dateStr;
+        renderCalendar();
+        onDateTimeChange();
+    }
+
+    function navMonth(dir) {
+        state.calMonth += dir;
+        if (state.calMonth > 12) {
+            state.calMonth = 1;
+            state.calYear += 1;
+        } else if (state.calMonth < 1) {
+            state.calMonth = 12;
+            state.calYear -= 1;
+        }
+        loadMonthAvailability();
+    }
+
+    function selectQuickDate(type) {
+        const now = new Date();
+        let target = new Date(now);
+
+        if (type === 'today') {
+            target = now;
+        } else if (type === 'tomorrow') {
+            target.setDate(target.getDate() + 1);
+        } else if (type === 'weekend') {
+            const dayOfWeek = now.getDay();
+            const daysToSat = (6 - dayOfWeek + 7) % 7 || 7;
+            target.setDate(target.getDate() + daysToSat);
+        }
+
+        const dateStr = getLocalIsoDate(target);
+        const daysAhead = getDaysAhead(dateStr, SERVER_TODAY_STR || getLocalIsoDate(now));
+        if (!USER_IS_PRO && daysAhead > USER_MAX_ADVANCE_DAYS) {
+            openProEarlyAccessModal(dateStr, daysAhead, type === 'weekend');
+            return;
+        }
+
+        state.calYear = target.getFullYear();
+        state.calMonth = target.getMonth() + 1;
+        state.selectedDate = dateStr;
+        document.getElementById('select-date').value = dateStr;
+
+        loadMonthAvailability().then(() => {
+            onDateTimeChange();
+        });
+    }
+
+    function updateShortcutChips() {
+        const now = new Date();
+        const todayStr = getLocalIsoDate(now);
+        const tom = new Date(now); tom.setDate(tom.getDate() + 1);
+        const tomStr = getLocalIsoDate(tom);
+
+        const chipToday = document.getElementById('chip-today');
+        const chipTom = document.getElementById('chip-tomorrow');
+        const chipWknd = document.getElementById('chip-weekend');
+
+        if (chipToday) chipToday.classList.toggle('active', state.selectedDate === todayStr);
+        if (chipTom) chipTom.classList.toggle('active', state.selectedDate === tomStr);
+    }
+
+    function setDuration(dur, triggerReload = true) {
+        state.duration = dur;
+        document.getElementById('select-duration').value = dur;
+        document.querySelectorAll('.duration-pill').forEach(p => {
+            p.classList.toggle('active', parseInt(p.dataset.dur, 10) === dur);
+        });
+        if (triggerReload) {
+            renderStartTimes();
+            updateSummary();
+        }
+    }
+
+    function stepPartySize(delta) {
+        let curr = state.partySize || 1;
+        curr = Math.max(1, Math.min(10, curr + delta));
+        state.partySize = curr;
+        document.getElementById('select-party-size').value = curr;
+        const disp = document.getElementById('partySizeDisplay');
+        if (disp) disp.textContent = curr;
+        updateSummary();
     }
 
     /* ── Step 2: Date & Time Selection ── */
@@ -927,8 +2889,10 @@
 
         if (!state.facility || !state.selectedDate) return;
 
-        document.getElementById('times-loading').style.display = 'block';
-        document.getElementById('start-time-grid').style.display = 'none';
+        const loadingEl = document.getElementById('times-loading');
+        const groupedEl = document.getElementById('groupedTimeSlots');
+        if (loadingEl) loadingEl.style.display = 'block';
+        if (groupedEl) groupedEl.style.display = 'none';
 
         try {
             // Fetch occupancy API
@@ -941,37 +2905,96 @@
             renderStartTimes();
         } catch (err) {
             console.error("Error fetching facility occupancy:", err);
-            document.getElementById('start-time-grid').innerHTML = '<p style="color:red;font-size:0.8rem;text-align:center;">Failed to load time slots.</p>';
+            const summaryEl = document.getElementById('selectedDateAvailabilitySummary');
+            if (summaryEl) summaryEl.innerHTML = '<span style="color:#ef4444;"><i class="ph ph-warning-circle"></i> Failed to load time slots. Please try again.</span>';
         } finally {
-            document.getElementById('times-loading').style.display = 'none';
-            document.getElementById('start-time-grid').style.display = 'grid';
+            if (loadingEl) loadingEl.style.display = 'none';
+            if (groupedEl) groupedEl.style.display = 'block';
         }
     }
 
     function renderStartTimes() {
-        const grid = document.getElementById('start-time-grid');
-        grid.innerHTML = '';
+        const gridMorning = document.getElementById('gridMorning');
+        const gridAfternoon = document.getElementById('gridAfternoon');
+        const gridEvening = document.getElementById('gridEvening');
+        const groupMorning = document.getElementById('groupMorning');
+        const groupAfternoon = document.getElementById('groupAfternoon');
+        const groupEvening = document.getElementById('groupEvening');
+        const alertPast = document.getElementById('todayAllPastNotice');
+
+        if (!gridMorning || !gridAfternoon || !gridEvening) return;
+
+        // Update preselected court notice if targetCourtId is present
+        const noticeContainer = document.getElementById('preselectedCourtNotice');
+        if (noticeContainer) {
+            if (state.targetCourtId && state.courtsList.length) {
+                const targetCourt = state.courtsList.find(c => c.id === state.targetCourtId);
+                if (targetCourt) {
+                    noticeContainer.innerHTML = `
+                        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 18px;background:rgba(255,87,34,0.08);border:1.5px solid rgba(255,87,34,0.35);border-radius:12px;box-shadow:0 2px 8px rgba(255,87,34,0.06);">
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <div style="width:34px;height:34px;border-radius:50%;background:var(--primary-orange);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">
+                                    <i class="ph ph-tennis-ball"></i>
+                                </div>
+                                <div>
+                                    <span style="font-size:0.7rem;font-weight:800;text-transform:uppercase;color:var(--primary-orange);letter-spacing:0.5px;display:block;">Instant Court Booking</span>
+                                    <h4 style="margin:1px 0 0 0;font-size:0.95rem;font-weight:800;color:var(--text-primary);">${targetCourt.name} <small style="font-size:0.75rem;color:var(--text-muted);font-weight:600;">(${targetCourt.type})</small></h4>
+                                </div>
+                            </div>
+                            <div style="text-align:right;">
+                                <span style="font-size:0.95rem;font-weight:800;color:var(--btn-green);">₱${parseFloat(targetCourt.hourly_rate).toFixed(2)}<small style="font-size:0.7rem;color:var(--text-muted);font-weight:600;">/hr</small></span>
+                                <span style="display:block;font-size:0.7rem;color:var(--text-muted);margin-top:1px;">Auto-selected in Step 3</span>
+                            </div>
+                        </div>
+                    `;
+                    noticeContainer.style.display = 'block';
+                } else {
+                    noticeContainer.style.display = 'none';
+                }
+            } else {
+                noticeContainer.style.display = 'none';
+            }
+        }
+
+        gridMorning.innerHTML = '';
+        gridAfternoon.innerHTML = '';
+        gridEvening.innerHTML = '';
+        groupMorning.style.display = 'none';
+        groupAfternoon.style.display = 'none';
+        groupEvening.style.display = 'none';
+        if (alertPast) alertPast.style.display = 'none';
+
+        // Update selected date title with human date string
+        const dateObj = new Date(state.selectedDate + 'T00:00:00');
+        const fullDateStr = dateObj.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        const titleEl = document.getElementById('selectedDateDisplayTitle');
+        if (titleEl) titleEl.textContent = fullDateStr;
 
         if (!state.courtsList.length) {
-            grid.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem;text-align:center;grid-column:1/-1;">No courts available at this facility.</p>';
+            const summaryEl = document.getElementById('selectedDateAvailabilitySummary');
+            if (summaryEl) summaryEl.innerHTML = '<span style="color:#ef4444;"><i class="ph ph-warning-circle"></i> No active courts at this facility.</span>';
             return;
         }
 
-        const openHour = parseInt(state.facility.open.substring(0, 2)) || 8;
-        const closeHour = parseInt(state.facility.close.substring(0, 2)) || 21;
-        
+        let openHour = parseInt(state.facility.open.substring(0, 2), 10) || 8;
+        let closeHour = parseInt(state.facility.close.substring(0, 2), 10);
+        if (isNaN(closeHour) || closeHour === 0) closeHour = 24;
+
         const now = new Date();
-        const todayStr = now.toISOString().split('T')[0];
+        const todayStr = getLocalIsoDate(now);
         const currentHour = now.getHours();
 
-        // Generate start hours
+        let totalAvailableSlots = 0;
+        let allSlotsPast = true;
+
         for (let h = openHour; h <= closeHour - state.duration; h++) {
             const startStr = `${String(h).padStart(2, '0')}:00`;
             const endStr = `${String(h + state.duration).padStart(2, '0')}:00`;
 
             const isPast = (state.selectedDate === todayStr && h <= currentHour);
+            if (!isPast) allSlotsPast = false;
 
-            // Check how many courts are available during this entire duration
+            // Count available courts
             let availableCourtsCount = 0;
             state.courtsList.forEach(c => {
                 const isCourtOccupied = state.reservationsList.some(r => {
@@ -982,33 +3005,67 @@
             });
 
             const isBooked = (availableCourtsCount === 0) || isPast;
+            if (!isBooked) totalAvailableSlots++;
 
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'slot-btn' + (isBooked ? ' booked' : '');
-            
-            let label = `${fmt12(h)}`;
+            // Build 12-Hour Slot Card
+            const card = document.createElement('div');
+            card.className = `slot-time-card ${isBooked ? 'booked' : ''} ${state.startTime === h ? 'selected' : ''}`;
+            card.dataset.hour = h;
+
+            let pillHtml = '';
             if (isPast) {
-                label += `<br><small style="font-weight:400;opacity:0.7">Past</small>`;
+                pillHtml = `<span class="slot-avail-pill past">Past</span>`;
             } else if (availableCourtsCount === 0) {
-                label += `<br><small style="font-weight:400;opacity:0.7">Fully Booked</small>`;
+                pillHtml = `<span class="slot-avail-pill full">Fully Booked</span>`;
             } else {
-                label += `<br><small style="font-weight:400;opacity:0.7">${availableCourtsCount} court${availableCourtsCount !== 1 ? 's' : ''} free</small>`;
+                pillHtml = `<span class="slot-avail-pill avail">${availableCourtsCount} court${availableCourtsCount !== 1 ? 's' : ''} free</span>`;
             }
 
-            btn.innerHTML = label;
-            
+            card.innerHTML = `
+                <span class="slot-main-time">${fmt12(h)}</span>
+                <span class="slot-sub-time">to ${fmt12(h + state.duration)}</span>
+                ${pillHtml}
+            `;
+
             if (!isBooked) {
-                btn.onclick = () => selectStartTime(h);
+                card.onclick = () => selectStartTime(h);
             }
-            grid.appendChild(btn);
+
+            // Group into Morning (<12), Afternoon (12-16), Evening (>=17)
+            if (h < 12) {
+                gridMorning.appendChild(card);
+                groupMorning.style.display = 'block';
+            } else if (h < 17) {
+                gridAfternoon.appendChild(card);
+                groupAfternoon.style.display = 'block';
+            } else {
+                gridEvening.appendChild(card);
+                groupEvening.style.display = 'block';
+            }
+        }
+
+        // Update Availability Summary text
+        const summaryEl = document.getElementById('selectedDateAvailabilitySummary');
+        if (summaryEl) {
+            if (totalAvailableSlots > 0) {
+                summaryEl.innerHTML = `<span style="color:#10b981;font-weight:700;"><i class="ph ph-check-circle"></i> ${totalAvailableSlots} time slot${totalAvailableSlots !== 1 ? 's' : ''} open &bull; Choose one to continue</span>`;
+            } else if (state.selectedDate === todayStr && allSlotsPast) {
+                summaryEl.innerHTML = `<span style="color:#d97706;font-weight:700;"><i class="ph ph-clock-countdown"></i> Today's court hours have closed.</span>`;
+            } else {
+                summaryEl.innerHTML = `<span style="color:#ef4444;font-weight:700;"><i class="ph ph-x-circle"></i> Fully booked for this duration. Try another day or shorter duration.</span>`;
+            }
+        }
+
+        // Show "Today's hours passed" banner if applicable
+        if (state.selectedDate === todayStr && allSlotsPast && alertPast) {
+            alertPast.style.display = 'flex';
         }
     }
 
     function isOverlapping(s1, e1, s2, e2) {
         const t = str => {
             const parts = str.split(':');
-            return parseInt(parts[0]) * 60 + (parseInt(parts[1]) || 0);
+            return parseInt(parts[0], 10) * 60 + (parseInt(parts[1], 10) || 0);
         };
         return t(s1) < t(e2) && t(s2) < t(e1);
     }
@@ -1017,14 +3074,10 @@
         state.startTime = h;
         state.endTime = h + state.duration;
         
-        // Update selection UI in Step 2
-        document.querySelectorAll('#start-time-grid .slot-btn').forEach(btn => {
-            btn.classList.remove('selected');
-        });
-        const activeBtn = Array.from(document.querySelectorAll('#start-time-grid .slot-btn')).find(b => parseInt(b.innerHTML.substring(0,2)) === h);
-        if (activeBtn) activeBtn.classList.add('selected');
+        document.querySelectorAll('.slot-time-card').forEach(c => c.classList.remove('selected'));
+        const chosen = document.querySelector(`.slot-time-card[data-hour="${h}"]`);
+        if (chosen) chosen.classList.add('selected');
 
-        // Render visual court occupancy map in Step 3
         renderVisualCourtMap();
         goStep(3);
     }
@@ -1034,10 +3087,10 @@
         const startStr = `${String(state.startTime).padStart(2, '0')}:00`;
         const endStr = `${String(state.endTime).padStart(2, '0')}:00`;
 
-        // Format selected slot text
+        // Format selected slot text using friendly 12-hour format
         const dateObj = new Date(state.selectedDate + 'T00:00:00');
         const formattedDate = dateObj.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        document.getElementById('map-selected-slot-text').textContent = `${formattedDate} @ ${fmt12(state.startTime)} - ${fmt12(state.endTime)} (${state.duration} hr${state.duration !== 1 ? 's' : ''})`;
+        document.getElementById('map-selected-slot-text').textContent = `${formattedDate} @ ${fmt12(state.startTime)} – ${fmt12(state.endTime)} (${state.duration} hr${state.duration !== 1 ? 's' : ''})`;
 
         const mapContainer = document.getElementById('visual-court-map');
         const mapLoading = document.getElementById('map-loading');
@@ -1101,9 +3154,22 @@
             mapContainer.appendChild(card);
         });
 
-        // Clear previous court selection
-        state.court = null;
-        updateSummary();
+        // Auto-select preselected court if available
+        let autoSelected = false;
+        if (state.targetCourtId) {
+            const targetCard = mapContainer.querySelector(`.visual-court-card[data-id="${state.targetCourtId}"]`);
+            if (targetCard && !targetCard.classList.contains('occupied')) {
+                selectCourtMapCard(targetCard);
+                autoSelected = true;
+                setTimeout(() => targetCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+            }
+        }
+
+        if (!autoSelected) {
+            // Clear previous court selection
+            state.court = null;
+            updateSummary();
+        }
     }
 
     function selectCourtMapCard(card) {
@@ -1201,6 +3267,203 @@
     function closeMapModal() {
         document.getElementById('map-modal').classList.remove('active');
     }
+
+    /* ── Facility Team Modal ── */
+    function showFacilityTeamModal(facId, facName) {
+        const dataContainer = document.getElementById(`team-data-${facId}`);
+        const modalList = document.getElementById('team-modal-list');
+        const facNameEl = document.getElementById('team-modal-facility-name');
+        const modal = document.getElementById('facility-team-modal');
+
+        if (facNameEl) facNameEl.textContent = facName;
+        if (modalList && dataContainer) {
+            modalList.innerHTML = dataContainer.innerHTML.trim() || '<p style="text-align:center;color:var(--text-muted);font-size:0.8rem;padding:20px 0;">No management contact details listed.</p>';
+        }
+        if (modal) {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeFacilityTeamModal() {
+        const modal = document.getElementById('facility-team-modal');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    }
+
+    /* ── Pro Early Access Modal Handlers ── */
+    function openProEarlyAccessModal(dateStr, daysAhead, isWeekend = false) {
+        const modal = document.getElementById('pro-early-access-modal');
+        if (!modal) return;
+        
+        const dateTitleEl = document.getElementById('modal-early-date-str');
+        const daysAheadEl = document.getElementById('modal-early-days-ahead');
+        const subtitleNoteEl = document.getElementById('modal-early-subtitle-note');
+
+        let formattedDate = dateStr;
+        if (dateStr) {
+            try {
+                const [y, m, d] = dateStr.split('-').map(Number);
+                const dateObj = new Date(y, m - 1, d);
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                formattedDate = dateObj.toLocaleDateString('en-US', options);
+                if (dateTitleEl) dateTitleEl.textContent = formattedDate;
+            } catch(e) {
+                if (dateTitleEl) dateTitleEl.textContent = dateStr;
+            }
+        } else {
+            if (dateTitleEl) dateTitleEl.textContent = "Peak Court Dates";
+        }
+
+        if (daysAheadEl) {
+            daysAheadEl.textContent = daysAhead || '4+';
+        }
+
+        if (subtitleNoteEl) {
+            if (isWeekend) {
+                subtitleNoteEl.innerHTML = `Upcoming weekend court slots are <strong>${daysAhead} days ahead</strong>. Free player accounts can reserve up to 3 days in advance. Upgrade to unlock 14-day early access!`;
+            } else if (daysAhead) {
+                subtitleNoteEl.innerHTML = `Booking for <strong>${formattedDate || dateStr}</strong> is <strong>${daysAhead} days ahead</strong>. Free players can reserve up to 3 days in advance. Upgrade to Pro Player Pass to unlock 14-day early access!`;
+            }
+        }
+
+        modal.dataset.attemptedDate = dateStr || '';
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeProEarlyAccessModal() {
+        const modal = document.getElementById('pro-early-access-modal');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    }
+
+    function pickNearestAvailableDate() {
+        closeProEarlyAccessModal();
+        const now = new Date();
+        const maxDate = new Date(now);
+        maxDate.setDate(maxDate.getDate() + USER_MAX_ADVANCE_DAYS);
+        const targetStr = getLocalIsoDate(maxDate);
+
+        state.calYear = maxDate.getFullYear();
+        state.calMonth = maxDate.getMonth() + 1;
+        state.selectedDate = targetStr;
+        document.getElementById('select-date').value = targetStr;
+
+        loadMonthAvailability().then(() => {
+            onDateTimeChange();
+        });
+    }
+
+    async function handleUpgradeToPro() {
+        const btn = document.getElementById('btnUpgradeProSubmit');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="ph ph-circle-notch" style="animation:spin .8s linear infinite;"></i> Activating Pro Pass...';
+        }
+
+        try {
+            const csrfToken = document.querySelector('input[name="csrf_token"]')?.value || '';
+            const resp = await fetch('/player/reservation/api/upgrade-pro', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                }
+            });
+            const data = await resp.json();
+            if (resp.ok && data.success) {
+                USER_IS_PRO = true;
+                USER_MAX_ADVANCE_DAYS = 14;
+                
+                // Update banner
+                const banner = document.getElementById('calAccessBanner');
+                if (banner) {
+                    banner.innerHTML = `
+                        <div class="cal-access-badge pro">
+                            <div class="cal-access-badge-left">
+                                <span class="cal-tier-tag pro"><i class="ph ph-crown-simple"></i> PRO PASS</span>
+                                <span><strong>14-Day Early Access Active!</strong> Enjoy ₱0 convenience fees on all bookings.</span>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                const modal = document.getElementById('pro-early-access-modal');
+                const attemptedDate = modal?.dataset?.attemptedDate;
+                closeProEarlyAccessModal();
+
+                showEarlyAccessNoticeToast("🎉 Welcome to Pro Pass! 14-day early access is now unlocked.", 4000);
+
+                if (attemptedDate) {
+                    selectCalendarDate(attemptedDate);
+                } else {
+                    renderCalendar();
+                }
+            } else {
+                alert(data.error || 'Failed to upgrade. Please try again.');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="ph ph-crown-simple"></i> Upgrade to Pro Player Pass (₱199/mo)';
+                }
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Network error while processing upgrade.');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="ph ph-crown-simple"></i> Upgrade to Pro Player Pass (₱199/mo)';
+            }
+        }
+    }
+
+    function showEarlyAccessNoticeToast(msg, duration = 3000) {
+        let toast = document.getElementById('earlyAccessNoticeToast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'earlyAccessNoticeToast';
+            toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e1b4b;color:#fff;padding:12px 20px;border-radius:12px;font-size:0.82rem;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,0.3);z-index:999999;display:flex;align-items:center;gap:8px;border:1px solid #8b5cf6;transition:all 0.3s ease;opacity:0;pointer-events:none;';
+            document.body.appendChild(toast);
+        }
+        toast.innerHTML = `<i class="ph ph-info" style="color:#8b5cf6;font-size:1.1rem;"></i> <span>${msg}</span>`;
+        toast.style.opacity = '1';
+        toast.style.pointerEvents = 'auto';
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.pointerEvents = 'none';
+        }, duration);
+    }
+
+    // Close modals on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeFacilityTeamModal();
+            closeMapModal();
+            closeProEarlyAccessModal();
+        }
+    });
+
+    // Auto-advance if facility_id or court_id passed in URL or template
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const preFacId = "{{ preselected_facility_id or '' }}" || urlParams.get('facility_id');
+        const preCourtId = "{{ preselected_court_id or '' }}" || urlParams.get('court_id');
+
+        if (preFacId) {
+            const facCard = document.querySelector(`.facility-card[data-id="${preFacId}"]`);
+            if (facCard) {
+                if (preCourtId) {
+                    state.targetCourtId = preCourtId;
+                }
+                selectFacility(facCard);
+            }
+        }
+    });
+
 </script>
 
 <!-- Map Modal HTML -->
@@ -1211,6 +3474,106 @@
                 class="ph ph-x"></i></button>
         <h3 style="margin-bottom: 10px; font-size: 1.1rem; color: var(--text-primary);">Facility Location</h3>
         <div id="facility-map"></div>
+    </div>
+</div>
+
+<!-- Facility Management & Team Modal -->
+<div class="modal-backdrop" id="facility-team-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);" onclick="if(event.target === this) closeFacilityTeamModal();">
+    <div style="max-width:500px; width:92%; background:var(--card-bg); border-radius:18px; border:1px solid var(--border-color); box-shadow:0 24px 48px rgba(0,0,0,0.35); overflow:hidden;">
+        <div style="padding:16px 20px; border-bottom:1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between;">
+            <div>
+                <h4 style="margin:0; font-size:1.05rem; font-weight:800; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
+                    <i class="ph ph-users-three" style="color:var(--primary-orange);"></i> Facility Management
+                </h4>
+                <p id="team-modal-facility-name" style="margin:3px 0 0 0; font-size:0.75rem; color:var(--text-muted); font-weight:600;"></p>
+            </div>
+            <button type="button" onclick="closeFacilityTeamModal()" style="background:var(--input-bg); border:1px solid var(--border-color); color:var(--text-primary); border-radius:50%; width:32px; height:32px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+        <div id="team-modal-list" style="padding:18px 20px; max-height:380px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;">
+            <!-- Populated dynamically -->
+        </div>
+        <div style="padding:12px 20px; background:var(--input-bg); border-top:1px solid var(--border-color); display:flex; justify-content:flex-end;">
+            <button type="button" onclick="closeFacilityTeamModal()" style="padding:7px 18px; border-radius:10px; border:1px solid var(--border-color); background:var(--card-bg); color:var(--text-primary); font-size:0.82rem; font-weight:700; cursor:pointer; font-family:inherit;">
+                Done
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Pro Early Access Upgrade Modal -->
+<div class="modal-backdrop" id="pro-early-access-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.72); z-index:99999; align-items:center; justify-content:center; backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px);" onclick="if(event.target === this) closeProEarlyAccessModal();">
+    <div class="early-access-modal-card">
+        <div class="early-access-header">
+            <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
+                <div>
+                    <span class="early-access-pill"><i class="ph ph-crown-simple"></i> PRO EARLY ACCESS</span>
+                    <h4 class="early-access-title" id="modal-early-title">Lock In Peak Dates Early</h4>
+                    <p class="early-access-desc" id="modal-early-subtitle-note">
+                        Booking for <strong id="modal-early-date-str">Selected Date</strong> is <strong id="modal-early-days-ahead">4</strong> days ahead. Free players can reserve up to 3 days in advance. Upgrade to Pro Player Pass to unlock 14-day early access!
+                    </p>
+                </div>
+                <button type="button" onclick="closeProEarlyAccessModal()" style="background:var(--input-bg); border:1px solid var(--border-color); color:var(--text-primary); border-radius:50%; width:32px; height:32px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s; flex-shrink:0;">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="early-perks-list">
+            <div class="early-perk-item">
+                <div class="early-perk-icon"><i class="ph ph-calendar-check"></i></div>
+                <div class="early-perk-text">
+                    <h5>14-Day Advance Court Booking</h5>
+                    <p>Secure prime weekend &amp; evening court slots 2 weeks ahead before general availability.</p>
+                </div>
+            </div>
+            <div class="early-perk-item">
+                <div class="early-perk-icon" style="background:rgba(16,185,129,0.12); color:#10b981;"><i class="ph ph-tag"></i></div>
+                <div class="early-perk-text">
+                    <h5>₱0 Platform Convenience Fees</h5>
+                    <p>Save ₱25 on every single booking with unlimited active reservations.</p>
+                </div>
+            </div>
+            <div class="early-perk-item">
+                <div class="early-perk-icon" style="background:rgba(255,87,34,0.12); color:var(--primary-orange);"><i class="ph ph-lightning"></i></div>
+                <div class="early-perk-text">
+                    <h5>Priority Matchmaker Queue</h5>
+                    <p>Skip open play waitlists and get paired into skill-balanced matches faster.</p>
+                </div>
+            </div>
+            <div class="early-perk-item">
+                <div class="early-perk-icon" style="background:rgba(245,158,11,0.12); color:#d97706;"><i class="ph ph-medal"></i></div>
+                <div class="early-perk-text">
+                    <h5>Verified Gold "PRO" Badge</h5>
+                    <p>Exclusive athlete badge displayed across leaderboards, chats, and club rosters.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="early-pricing-callout">
+            <div>
+                <div class="price-tag">₱199 <span>/ month</span></div>
+                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">Cancel or switch anytime</div>
+            </div>
+            <div class="save-tag">
+                <i class="ph ph-sparkle"></i> Or ₱149/mo Billed Annually
+            </div>
+        </div>
+
+        <div class="early-modal-actions">
+            <a href="{{ url_for('billing.checkout_page', plan='pro', cycle='monthly', return_to=url_for('player.reservation')) }}" class="btn-upgrade-pro-action" style="text-decoration:none;">
+                <i class="ph ph-credit-card"></i> Legit Subscribe with GCash (₱199/mo)
+            </a>
+            <div style="display:flex; gap:8px;">
+                <button type="button" class="btn-pick-valid-date" style="flex:1;" id="btnUpgradeProSubmit" onclick="handleUpgradeToPro()" title="Quick 1-click Pro demo activation">
+                    <i class="ph ph-lightning"></i> 1-Click Instant Upgrade
+                </button>
+                <button type="button" class="btn-pick-valid-date" style="flex:1;" onclick="pickNearestAvailableDate()">
+                    <i class="ph ph-calendar-blank"></i> Pick Available Free Date
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

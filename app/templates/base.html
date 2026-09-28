@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{% block title %}Dashboard{% endblock %} - {{ platform_settings.platform_name }}</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,113 +12,136 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Base CSS + Dashboard Specific CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    {% if request.blueprint == 'player' %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/player-sports.css') }}">
+    {% endif %}
     <!-- Phosphor Icons -->
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
 
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script>
         // Init Dark Mode from localStorage on load to prevent flickering
-        if (localStorage.getItem('theme') === 'dark') {
-            document.documentElement.classList.add('dark-mode');
-        }
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark-mode');
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
     </script>
     <style>
-        /* Toast Notification Styles */
+        /* Toast Notification Styles - Always Topmost across all views & modals */
         #toast-container {
-            position: fixed;
-            top: 70px;
-            right: 20px;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            position: fixed !important;
+            top: 24px !important;
+            right: 24px !important;
+            z-index: 2147483647 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 12px !important;
+            pointer-events: none !important;
+            max-width: min(440px, calc(100vw - 32px)) !important;
         }
 
         .toast {
-            background: var(--card-bg, #ffffff);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-            border-left: 4px solid var(--primary-orange);
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: var(--shadow-hover);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            min-width: 280px;
-            max-width: 380px;
-            animation: slideInRight 0.3s ease-out forwards;
-            transition: opacity 0.3s ease;
+            pointer-events: auto !important;
+            position: relative !important;
+            z-index: 2147483647 !important;
+            background: var(--card-bg, #ffffff) !important;
+            color: var(--text-primary, #1e293b) !important;
+            border: 1px solid var(--border-color, #eaecf0) !important;
+            border-left: 5px solid var(--primary-orange, #f97316) !important;
+            padding: 14px 18px !important;
+            border-radius: 14px !important;
+            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.38), 0 6px 16px rgba(0, 0, 0, 0.18) !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            min-width: 290px !important;
+            max-width: 420px !important;
+            animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
         }
 
         .toast.success {
-            border-left-color: var(--btn-green);
+            border-left-color: #10b981 !important;
         }
 
         .toast.error {
-            border-left-color: #ef4444;
+            border-left-color: #ef4444 !important;
         }
 
         .toast.info {
-            border-left-color: var(--btn-blue);
+            border-left-color: #3b82f6 !important;
         }
 
         .toast.warning {
-            border-left-color: #f59e0b;
+            border-left-color: #f59e0b !important;
         }
 
         .toast-icon {
-            font-size: 1.5rem;
+            font-size: 1.55rem !important;
+            flex-shrink: 0 !important;
         }
 
         .toast.success .toast-icon {
-            color: var(--btn-green);
+            color: #10b981 !important;
         }
 
         .toast.error .toast-icon {
-            color: #ef4444;
+            color: #ef4444 !important;
         }
 
         .toast.info .toast-icon {
-            color: var(--btn-blue);
+            color: #3b82f6 !important;
         }
 
         .toast.warning .toast-icon {
-            color: #f59e0b;
+            color: #f59e0b !important;
         }
 
         .toast-content {
-            flex: 1;
+            flex: 1 !important;
+            min-width: 0 !important;
         }
 
         .toast-title {
-            font-weight: 600;
-            font-size: 0.95rem;
-            margin-bottom: 2px;
+            font-weight: 700 !important;
+            font-size: 0.92rem !important;
+            margin-bottom: 2px !important;
+            color: var(--text-primary, #1e293b) !important;
+            line-height: 1.3 !important;
         }
 
         .toast-message {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            line-height: 1.4;
+            font-size: 0.82rem !important;
+            color: var(--text-secondary, #64748b) !important;
+            line-height: 1.4 !important;
+            word-break: break-word !important;
         }
 
         .toast-close {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            padding: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            transition: background 0.2s;
+            background: none !important;
+            border: none !important;
+            color: var(--text-muted, #94a3b8) !important;
+            cursor: pointer !important;
+            padding: 6px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            border-radius: 6px !important;
+            transition: background 0.15s, color 0.15s !important;
+            flex-shrink: 0 !important;
         }
 
         .toast-close:hover {
-            background: var(--hover-bg);
-            color: var(--text-primary);
+            background: var(--input-bg, rgba(0, 0, 0, 0.06)) !important;
+            color: var(--text-primary, #0f172a) !important;
         }
 
         @keyframes slideInRight {
@@ -179,6 +203,222 @@
                 transform: rotate(360deg);
             }
         }
+
+        /* ── Header Membership Pill ── */
+        .header-membership-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            padding: 5px 12px;
+            border-radius: 20px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            letter-spacing: 0.5px;
+        }
+        .header-membership-pill.pro {
+            background: rgba(16, 185, 129, 0.12);
+            color: #10b981;
+            border: 1.5px solid rgba(16, 185, 129, 0.4);
+        }
+        .header-membership-pill.pro:hover {
+            background: #10b981;
+            color: #fff;
+        }
+        .header-membership-pill.upgrade {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(99, 102, 241, 0.12));
+            color: #8b5cf6;
+            border: 1.5px solid rgba(139, 92, 246, 0.4);
+        }
+        .header-membership-pill.upgrade:hover {
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+        }
+
+        /* ── Global Confirmation Modal Styles ── */
+        .confirm-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(11, 14, 20, 0.68);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+
+        .confirm-modal-overlay.open {
+            display: flex;
+            opacity: 1;
+        }
+
+        .confirm-modal-box {
+            background: var(--card-bg, #ffffff);
+            border: 1px solid var(--border-color, #e2e8f0);
+            border-radius: 18px;
+            padding: 24px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.28);
+            position: relative;
+            transform: scale(0.95);
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            color: var(--text-primary, #1e293b);
+        }
+
+        .confirm-modal-overlay.open .confirm-modal-box {
+            transform: scale(1);
+        }
+
+        .confirm-modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted, #94a3b8);
+            cursor: pointer;
+            font-size: 1.25rem;
+            padding: 6px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .confirm-modal-close:hover {
+            background: var(--hover-bg, rgba(0, 0, 0, 0.05));
+            color: var(--text-primary);
+        }
+
+        .confirm-modal-header-wrap {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .confirm-modal-icon-wrap {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            flex-shrink: 0;
+            background: rgba(225, 86, 35, 0.12);
+            color: var(--primary-orange, #e15623);
+            border: 1px solid rgba(225, 86, 35, 0.25);
+        }
+
+        .confirm-modal-icon-wrap.danger {
+            background: rgba(239, 68, 68, 0.12);
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.25);
+        }
+
+        .confirm-modal-icon-wrap.success {
+            background: rgba(16, 185, 129, 0.12);
+            color: #10b981;
+            border-color: rgba(16, 185, 129, 0.25);
+        }
+
+        .confirm-modal-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .confirm-modal-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0 0 6px 0;
+            line-height: 1.3;
+        }
+
+        .confirm-modal-desc {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .confirm-modal-footer {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .confirm-btn-secondary {
+            padding: 10px 18px;
+            border-radius: 10px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .confirm-btn-secondary:hover {
+            background: var(--hover-bg, rgba(0, 0, 0, 0.05));
+            border-color: var(--text-muted);
+        }
+
+        .confirm-btn-primary {
+            padding: 10px 20px;
+            border-radius: 10px;
+            background: var(--primary-orange, #e15623);
+            color: #ffffff;
+            border: none;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 2px 8px rgba(225, 86, 35, 0.3);
+            transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+        }
+
+        .confirm-btn-primary:hover {
+            background: var(--primary-orange-hover, #d04512);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(225, 86, 35, 0.4);
+        }
+
+        .confirm-btn-primary.danger {
+            background: #ef4444;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        }
+
+        .confirm-btn-primary.danger:hover {
+            background: #dc2626;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        .confirm-btn-primary.success {
+            background: #10b981;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        }
+
+        .confirm-btn-primary.success:hover {
+            background: #059669;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
     </style>
     {% include 'seo_tags.html' %}
     {% block extra_head %}{% endblock %}
@@ -194,7 +434,7 @@
         <button class="sidebar-close" onclick="toggleSidebar(false)" aria-label="Close sidebar">
             <i class="ph ph-x"></i>
         </button>
-        <a href="{{ url_for(current_user.role_raw ~ '.dashboard') }}" style="text-decoration: none;">
+        <a href="{{ url_for(current_user.role_raw ~ '.dashboard') if current_user and current_user.role_raw and current_user.role_raw != 'main' else url_for('main.index') }}" style="text-decoration: none;">
             <div class="sidebar-header">
                 <img class="sidebar-logo" src="{{ url_for('static', filename='images/logo.png') }}"
                     alt="{{ platform_settings.platform_name }} Logo">
@@ -215,19 +455,69 @@
 
         <ul class="sidebar-nav">
             {% block sidebar_menu %}
-            <li class="{% if request.endpoint == 'player.dashboard' %}active{% endif %}"><a
-                    href="{{ url_for('player.dashboard') }}"><i class="ph ph-squares-four"></i> Dashboard</a></li>
-            <li class="{% if request.endpoint == 'player.reservation' %}active{% endif %}"><a
-                    href="{{ url_for('player.reservation') }}"><i class="ph ph-calendar-plus"></i> Court Reservation</a>
+            <li class="{% if request.endpoint == 'player.dashboard' %}active{% endif %}">
+                <a href="{{ url_for('player.dashboard') }}">
+                    <i class="ph ph-squares-four"></i>
+                    <span>Dashboard</span>
+                </a>
             </li>
-            <li class="{% if request.endpoint == 'player.queue' %}active{% endif %}"><a
-                    href="{{ url_for('player.queue') }}"><i class="ph ph-list-numbers"></i> Queue Monitoring</a></li>
-            <li class="{% if request.endpoint == 'player.events' %}active{% endif %}"><a
-                    href="{{ url_for('player.events') }}"><i class="ph ph-trophy"></i> Events & Tournaments</a></li>
-            <li class="{% if request.endpoint == 'player.community' %}active{% endif %}"><a
-                    href="{{ url_for('player.community') }}"><i class="ph ph-users"></i> Community</a></li>
-            <li class="{% if request.endpoint == 'player.messages' %}active{% endif %}"><a
-                    href="{{ url_for('player.messages') }}"><i class="ph ph-chat-circle-dots"></i> Messages</a></li>
+
+            <!-- Play & Courts Dropdown -->
+            {% set is_play_active = request.endpoint in ['player.reservation', 'player.my_reservations', 'player.queue', 'player.matchmaker', 'player.matchmaker_detail'] %}
+            <li class="sidebar-dropdown-group {% if is_play_active %}open active-group{% endif %}" data-group="player-play">
+                <button type="button" class="sidebar-dropdown-btn" onclick="toggleSidebarDropdown(this)">
+                    <span class="dropdown-btn-label">
+                        <i class="ph ph-tennis-ball group-icon"></i>
+                        <span>Play & Courts</span>
+                    </span>
+                    <i class="ph ph-caret-down dropdown-arrow"></i>
+                </button>
+                <ul class="sidebar-subnav">
+                    <li class="{% if request.endpoint in ['player.reservation', 'player.my_reservations'] %}active{% endif %}">
+                        <a href="{{ url_for('player.reservation') }}"><i class="ph ph-calendar-plus"></i> <span>Court Reservation</span></a>
+                    </li>
+                    <li class="{% if request.endpoint == 'player.queue' %}active{% endif %}">
+                        <a href="{{ url_for('player.queue') }}"><i class="ph ph-list-numbers"></i> <span>Queue Monitoring</span></a>
+                    </li>
+                </ul>
+            </li>
+
+            <!-- Competition Dropdown -->
+            {% set is_comp_active = request.endpoint in ['player.events', 'player.leaderboard', 'player.clubs'] %}
+            <li class="sidebar-dropdown-group {% if is_comp_active %}open active-group{% endif %}" data-group="player-compete">
+                <button type="button" class="sidebar-dropdown-btn" onclick="toggleSidebarDropdown(this)">
+                    <span class="dropdown-btn-label">
+                        <i class="ph ph-trophy group-icon"></i>
+                        <span>Competition</span>
+                    </span>
+                    <i class="ph ph-caret-down dropdown-arrow"></i>
+                </button>
+                <ul class="sidebar-subnav">
+                    <li class="{% if request.endpoint == 'player.events' %}active{% endif %}">
+                        <a href="{{ url_for('player.events') }}"><i class="ph ph-medal"></i> <span>Events & Tournaments</span></a>
+                    </li>
+                </ul>
+            </li>
+
+            <!-- Community & Social Dropdown -->
+            {% set is_social_active = request.endpoint in ['player.community', 'player.messages'] %}
+            <li class="sidebar-dropdown-group {% if is_social_active %}open active-group{% endif %}" data-group="player-social">
+                <button type="button" class="sidebar-dropdown-btn" onclick="toggleSidebarDropdown(this)">
+                    <span class="dropdown-btn-label">
+                        <i class="ph ph-users-three group-icon"></i>
+                        <span>Community & Social</span>
+                    </span>
+                    <i class="ph ph-caret-down dropdown-arrow"></i>
+                </button>
+                <ul class="sidebar-subnav">
+                    <li class="{% if request.endpoint == 'player.community' %}active{% endif %}">
+                        <a href="{{ url_for('player.community') }}"><i class="ph ph-chats-circle"></i> <span>Community</span></a>
+                    </li>
+                    <li class="{% if request.endpoint == 'player.messages' %}active{% endif %}">
+                        <a href="{{ url_for('player.messages') }}"><i class="ph ph-chat-circle-dots"></i> <span>Messages</span></a>
+                    </li>
+                </ul>
+            </li>
             {% endblock %}
         </ul>
         <div class="sidebar-footer">
@@ -237,7 +527,6 @@
 
     <!-- Main Content Wrapper -->
     <div class="main-wrapper">
-        <div id="toast-container"></div>
         <!-- Reusable Header -->
         <header class="top-header">
             <button class="hamburger-menu" onclick="toggleSidebar(true)" aria-label="Open sidebar">
@@ -254,6 +543,12 @@
                     onclick="document.getElementById('support-modal').style.display='flex'" title="Help & Support">
                     <i class="ph ph-headset"></i>
                 </button>
+                {% if current_user and current_user.is_logged_in and current_user.role_raw in ['player', 'owner', 'clubadmin'] %}
+                <a href="{{ url_for('billing.subscription_page') }}" class="header-membership-pill {% if current_user.is_pro or current_user.is_elite %}pro{% else %}upgrade{% endif %}" title="Membership & Pro Pass">
+                    <i class="ph ph-crown-simple"></i>
+                    {% if current_user.is_elite %}<span>ELITE</span>{% elif current_user.is_pro %}<span>PRO</span>{% else %}<span>UPGRADE</span>{% endif %}
+                </a>
+                {% endif %}
                 <a href="{{ url_for(current_user.role_raw ~ '.notifications') }}"><button
                         class="icon-btn notification-bell"><i class="ph ph-bell"></i> <span
                             class="badge"></span></button></a>
@@ -349,31 +644,107 @@
         </div>
     </div>
 
+    <!-- Global Branded Confirmation Modal -->
+    <div id="global-confirm-modal" class="confirm-modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+        <div class="confirm-modal-box">
+            <button type="button" class="confirm-modal-close" onclick="closeConfirmModal()" aria-label="Close dialog">
+                <i class="ph ph-x"></i>
+            </button>
+            <div class="confirm-modal-header-wrap">
+                <div class="confirm-modal-icon-wrap" id="confirm-modal-icon-wrap">
+                    <i class="ph ph-warning-circle" id="confirm-modal-icon"></i>
+                </div>
+                <div class="confirm-modal-content">
+                    <h3 id="confirm-modal-title" class="confirm-modal-title">Confirm Action</h3>
+                    <p id="confirm-modal-message" class="confirm-modal-desc">Are you sure you want to proceed?</p>
+                </div>
+            </div>
+            <div class="confirm-modal-footer">
+                <button type="button" class="confirm-btn-secondary" id="confirm-modal-cancel" onclick="closeConfirmModal()">Cancel</button>
+                <button type="button" class="confirm-btn-primary" id="confirm-modal-confirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page Specific Modals (rendered outside main-wrapper to prevent clipping by sidebar/topbar) -->
+    {% block modals %}{% endblock %}
+
+    <!-- Global Toast Container (strictly at document root, above all modals, z-index 2147483647) -->
+    <div id="toast-container"></div>
+
     <!-- Theme Toggle & Sidebar Control Script -->
     <script>
         function toggleTheme() {
-            const body = document.documentElement;
-            body.classList.toggle('dark-mode');
-            const isDark = body.classList.contains('dark-mode');
+            const html = document.documentElement;
+            const isDark = !html.classList.contains('dark-mode');
 
-            // Save state to local storage
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-
-            // Toggle icon
-            const icon = document.getElementById('theme-icon');
             if (isDark) {
-                icon.classList.remove('ph-moon');
-                icon.classList.add('ph-sun');
+                html.classList.add('dark-mode');
+                html.setAttribute('data-theme', 'dark');
+                if (document.body) {
+                    document.body.classList.add('dark-mode');
+                    document.body.setAttribute('data-theme', 'dark');
+                }
+                localStorage.setItem('theme', 'dark');
             } else {
-                icon.classList.remove('ph-sun');
-                icon.classList.add('ph-moon');
+                html.classList.remove('dark-mode');
+                html.setAttribute('data-theme', 'light');
+                if (document.body) {
+                    document.body.classList.remove('dark-mode');
+                    document.body.setAttribute('data-theme', 'light');
+                }
+                localStorage.setItem('theme', 'light');
             }
+
+            // Sync all theme icons in DOM
+            const icons = document.querySelectorAll('#theme-icon, #themeToggleIcon, .theme-icon');
+            icons.forEach(icon => {
+                if (isDark) {
+                    icon.classList.remove('ph-moon');
+                    icon.classList.add('ph-sun');
+                } else {
+                    icon.classList.remove('ph-sun');
+                    icon.classList.add('ph-moon');
+                }
+            });
+
+            // Dispatch global event for components or observers
+            window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: isDark ? 'dark' : 'light' } }));
         }
 
-        // Ensure icon is correct on initial load
-        if (document.documentElement.classList.contains('dark-mode')) {
-            document.getElementById('theme-icon').classList.replace('ph-moon', 'ph-sun');
-        }
+        // Ensure icon and attributes are fully in sync on load
+        (function syncThemeOnLoad() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            const html = document.documentElement;
+            const isDark = (savedTheme === 'dark');
+            
+            if (isDark) {
+                html.classList.add('dark-mode');
+                html.setAttribute('data-theme', 'dark');
+                if (document.body) {
+                    document.body.classList.add('dark-mode');
+                    document.body.setAttribute('data-theme', 'dark');
+                }
+            } else {
+                html.classList.remove('dark-mode');
+                html.setAttribute('data-theme', 'light');
+                if (document.body) {
+                    document.body.classList.remove('dark-mode');
+                    document.body.setAttribute('data-theme', 'light');
+                }
+            }
+
+            const icons = document.querySelectorAll('#theme-icon, #themeToggleIcon, .theme-icon');
+            icons.forEach(icon => {
+                if (isDark) {
+                    icon.classList.remove('ph-moon');
+                    icon.classList.add('ph-sun');
+                } else {
+                    icon.classList.remove('ph-sun');
+                    icon.classList.add('ph-moon');
+                }
+            });
+        })();
 
         // Toggle Sidebar for Mobile Responsive View
         function toggleSidebar(show) {
@@ -392,6 +763,52 @@
                 overlay.classList.remove('active');
             }
         }
+
+        // Toggle Sidebar Dropdown Categories (Collapsible navigation groups)
+        function toggleSidebarDropdown(btn) {
+            const group = btn.closest('.sidebar-dropdown-group');
+            if (!group) return;
+
+            const wasOpen = group.classList.contains('open');
+            const groupId = group.getAttribute('data-group');
+
+            if (wasOpen) {
+                group.classList.remove('open');
+                if (groupId) {
+                    try { localStorage.setItem('sidebar_group_' + groupId, 'closed'); } catch(e){}
+                }
+            } else {
+                group.classList.add('open');
+                if (groupId) {
+                    try { localStorage.setItem('sidebar_group_' + groupId, 'open'); } catch(e){}
+                }
+            }
+        }
+
+        // Initialize and persist sidebar dropdown states
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.sidebar-dropdown-group').forEach(group => {
+                const groupId = group.getAttribute('data-group');
+                const hasActive = group.querySelector('li.active, a.active') !== null;
+
+                if (hasActive) {
+                    group.classList.add('open');
+                    group.classList.add('active-group');
+                    return;
+                }
+
+                if (groupId) {
+                    try {
+                        const savedState = localStorage.getItem('sidebar_group_' + groupId);
+                        if (savedState === 'open') {
+                            group.classList.add('open');
+                        } else if (savedState === 'closed') {
+                            group.classList.remove('open');
+                        }
+                    } catch(e){}
+                }
+            });
+        });
     </script>
 
     <!-- Supabase Client -->
@@ -435,6 +852,14 @@
                         headers: { Authorization: `Bearer ${accessToken}` }
                     } : {}
                 });
+
+                if (accessToken && supabaseClient.realtime) {
+                    try {
+                        supabaseClient.realtime.setAuth(accessToken);
+                    } catch (rErr) {
+                        console.warn('[Supabase Realtime] setAuth failed:', rErr);
+                    }
+                }
             }
 
             // Dispatch event so other scripts know the client is ready
@@ -472,10 +897,48 @@
             oscillator.stop(audioCtx.currentTime + 0.2);
         }
 
+        // --- Court Queue Audio Chime (Melodic Web Audio Arpeggio) ---
+        function playCourtAlertSound() {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const now = audioCtx.currentTime;
+                // Harmonic sport chime: C5 (523.25Hz), E5 (659.25Hz), G5 (783.99Hz), C6 (1046.50Hz)
+                const freqs = [523.25, 659.25, 783.99, 1046.50];
+                freqs.forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+
+                    gain.gain.setValueAtTime(0, now + idx * 0.08);
+                    gain.gain.linearRampToValueAtTime(0.22, now + idx * 0.08 + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.28);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.start(now + idx * 0.08);
+                    osc.stop(now + idx * 0.08 + 0.3);
+                });
+            } catch (err) {
+                console.warn('Audio chime notice:', err);
+            }
+        }
+
         // --- Toast System ---
         function showToast(title, message, type = 'info') {
-            const container = document.getElementById('toast-container');
-            if (!container) return;
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                document.body.appendChild(container);
+            }
+            // Always ensure container is physically the very last element in document.body so DOM stacking order puts it on top
+            if (container.parentElement !== document.body || document.body.lastElementChild !== container) {
+                document.body.appendChild(container);
+            }
 
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
@@ -491,7 +954,7 @@
                     <div class="toast-title">${title}</div>
                     <div class="toast-message">${message}</div>
                 </div>
-                <button class="toast-close"><i class="ph ph-x"></i></button>
+                <button class="toast-close" type="button" aria-label="Close notification"><i class="ph ph-x"></i></button>
             `;
 
             container.appendChild(toast);
@@ -500,6 +963,7 @@
             const closeBtn = toast.querySelector('.toast-close');
             closeBtn.onclick = () => {
                 toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
                 setTimeout(() => toast.remove(), 300);
             };
 
@@ -507,12 +971,178 @@
             setTimeout(() => {
                 if (toast.parentElement) {
                     toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(100%)';
                     setTimeout(() => toast.remove(), 300);
                 }
             }, 5000);
         }
 
-        // --- Supabase Realtime Notifications ---
+        // Keep toast container at the root of document.body after DOM content is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('toast-container');
+            if (container && (container.parentElement !== document.body || document.body.lastElementChild !== container)) {
+                document.body.appendChild(container);
+            }
+        });
+
+        // --- Global Confirmation Modal System ---
+        let _confirmModalCallback = null;
+
+        function showConfirmModal(options) {
+            const modal = document.getElementById('global-confirm-modal');
+            if (!modal) {
+                // Fallback if modal DOM element is not found
+                if (confirm(options.message || 'Are you sure?')) {
+                    if (typeof options.onConfirm === 'function') options.onConfirm();
+                }
+                return;
+            }
+
+            const title = options.title || 'Confirm Action';
+            const message = options.message || 'Are you sure you want to proceed?';
+            const confirmText = options.confirmText || 'Confirm';
+            const cancelText = options.cancelText || 'Cancel';
+            const isDanger = options.danger === true || options.danger === 'true';
+            const isSuccess = options.type === 'success';
+
+            document.getElementById('confirm-modal-title').textContent = title;
+            document.getElementById('confirm-modal-message').textContent = message;
+
+            const confirmBtn = document.getElementById('confirm-modal-confirm');
+            confirmBtn.textContent = confirmText;
+            confirmBtn.className = isDanger ? 'confirm-btn-primary danger' : (isSuccess ? 'confirm-btn-primary success' : 'confirm-btn-primary');
+
+            const cancelBtn = document.getElementById('confirm-modal-cancel');
+            cancelBtn.textContent = cancelText;
+
+            const iconWrap = document.getElementById('confirm-modal-icon-wrap');
+            if (isDanger) {
+                iconWrap.className = 'confirm-modal-icon-wrap danger';
+                iconWrap.innerHTML = '<i class="ph ph-warning-circle"></i>';
+            } else if (isSuccess) {
+                iconWrap.className = 'confirm-modal-icon-wrap success';
+                iconWrap.innerHTML = '<i class="ph ph-check-circle"></i>';
+            } else {
+                iconWrap.className = 'confirm-modal-icon-wrap';
+                iconWrap.innerHTML = '<i class="ph ph-question"></i>';
+            }
+
+            _confirmModalCallback = typeof options.onConfirm === 'function' ? options.onConfirm : null;
+
+            modal.style.display = 'flex';
+            requestAnimationFrame(() => modal.classList.add('open'));
+            document.body.style.overflow = 'hidden';
+            confirmBtn.focus();
+        }
+
+        function closeConfirmModal() {
+            const modal = document.getElementById('global-confirm-modal');
+            if (!modal) return;
+            modal.classList.remove('open');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+                _confirmModalCallback = null;
+            }, 200);
+        }
+
+        document.getElementById('confirm-modal-confirm')?.addEventListener('click', () => {
+            const cb = _confirmModalCallback;
+            closeConfirmModal();
+            if (cb) cb();
+        });
+
+        // Close on Escape or click outside
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('global-confirm-modal');
+                if (modal && modal.classList.contains('open')) closeConfirmModal();
+            }
+        });
+
+        document.getElementById('global-confirm-modal')?.addEventListener('click', (e) => {
+            if (e.target.id === 'global-confirm-modal') closeConfirmModal();
+        });
+
+        // Safe window.alert override to stop blocking native alerts
+        const _nativeAlert = window.alert;
+        window.alert = function(msg) {
+            if (typeof showToast === 'function') {
+                showToast('Notification', String(msg), 'info');
+            } else {
+                _nativeAlert(msg);
+            }
+        };
+
+        // Declarative data-confirm & legacy confirm() form interceptor
+        document.addEventListener('DOMContentLoaded', () => {
+            // Auto upgrade legacy form onsubmit="return confirm('...')"
+            document.querySelectorAll('form[onsubmit*="confirm("]').forEach(form => {
+                const rawAttr = form.getAttribute('onsubmit') || '';
+                const match = rawAttr.match(/confirm\(['"](.*?)['"]\)/);
+                const msg = match ? match[1] : 'Are you sure you want to proceed?';
+                form.removeAttribute('onsubmit');
+                form.addEventListener('submit', function(e) {
+                    if (!form.dataset.confirmed) {
+                        e.preventDefault();
+                        showConfirmModal({
+                            title: 'Confirmation Needed',
+                            message: msg,
+                            danger: true,
+                            confirmText: 'Yes, Proceed',
+                            onConfirm: () => {
+                                form.dataset.confirmed = 'true';
+                                form.submit();
+                            }
+                        });
+                    }
+                });
+            });
+
+            // Auto upgrade legacy button onclick="return confirm('...')" or onclick="if(!confirm(...))"
+            document.querySelectorAll('button[onclick*="confirm("], a[onclick*="confirm("]').forEach(el => {
+                const rawAttr = el.getAttribute('onclick') || '';
+                const match = rawAttr.match(/confirm\(['"](.*?)['"]\)/);
+                if (match) {
+                    const msg = match[1];
+                    el.removeAttribute('onclick');
+                    el.setAttribute('data-confirm', msg);
+                    el.setAttribute('data-confirm-danger', 'true');
+                }
+            });
+        });
+
+        // Click handler for [data-confirm]
+        document.addEventListener('click', function(e) {
+            const trigger = e.target.closest('[data-confirm]');
+            if (!trigger) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            const message = trigger.getAttribute('data-confirm') || 'Are you sure you want to proceed?';
+            const title = trigger.getAttribute('data-confirm-title') || 'Please Confirm';
+            const btnText = trigger.getAttribute('data-confirm-btn') || 'Proceed';
+            const isDanger = trigger.getAttribute('data-confirm-danger') === 'true' || trigger.classList.contains('danger') || trigger.classList.contains('red-btn') || trigger.classList.contains('red');
+
+            showConfirmModal({
+                title: title,
+                message: message,
+                confirmText: btnText,
+                danger: isDanger,
+                onConfirm: () => {
+                    if (trigger.tagName === 'A' && trigger.href) {
+                        window.location.href = trigger.href;
+                    } else if (trigger.form) {
+                        trigger.form.dataset.confirmed = 'true';
+                        trigger.form.submit();
+                    } else if (trigger.tagName === 'FORM') {
+                        trigger.dataset.confirmed = 'true';
+                        trigger.submit();
+                    }
+                }
+            });
+        }, true);
         window.addEventListener("supabase-ready", () => {
             if (supabaseClient && currentUserId) {
                 // Fetch initial unread count
@@ -546,6 +1176,28 @@
                                 const currentCount = parseInt(badge.textContent || '0');
                                 badge.textContent = currentCount + 1;
                                 badge.style.display = 'flex';
+                            }
+                        }
+                    )
+                    .subscribe();
+
+                // Realtime Court Queue Listener (Alerts player when Up Next or On Court)
+                supabaseClient.channel('realtime-player-court-queue')
+                    .on(
+                        'postgres_changes',
+                        { event: 'UPDATE', schema: 'public', table: 'court_queues', filter: `player_id=eq.${currentUserId}` },
+                        (payload) => {
+                            const newQ = payload.new;
+                            if (newQ) {
+                                if (newQ.status === 'next') {
+                                    playCourtAlertSound();
+                                    showToast('🏸 You are Up Next!', 'Get ready! Your court is opening shortly.', 'warning');
+                                    if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
+                                } else if (newQ.status === 'playing') {
+                                    playCourtAlertSound();
+                                    showToast('🎉 Court Ready!', 'You are now ON COURT. Have a great match!', 'success');
+                                    if ('vibrate' in navigator) navigator.vibrate([300, 150, 300, 150, 400]);
+                                }
                             }
                         }
                     )
@@ -654,6 +1306,174 @@
             }, 250);
         }
     </script>
+
+    {% if request.blueprint == 'player' %}
+    <!-- Mobile Sports Bottom Navigation Bar -->
+    <nav class="player-bottom-nav" aria-label="Mobile Navigation">
+        <a href="{{ url_for('player.dashboard') }}" class="nav-bottom-item {% if request.endpoint == 'player.dashboard' %}active{% endif %}">
+            <i class="ph ph-squares-four"></i>
+            <span>Home</span>
+        </a>
+        <a href="{{ url_for('player.matchmaker') }}" class="nav-bottom-item {% if request.endpoint in ['player.matchmaker', 'player.matchmaker_detail', 'player.events'] %}active{% endif %}">
+            <i class="ph ph-tennis-ball"></i>
+            <span>Matches</span>
+        </a>
+        <button type="button" class="nav-bottom-fab" id="nav-bottom-quick-action" aria-label="Quick Action">
+            <i class="ph ph-plus"></i>
+        </button>
+        <a href="{{ url_for('player.community') }}" class="nav-bottom-item {% if request.endpoint == 'player.community' %}active{% endif %}">
+            <i class="ph ph-users-three"></i>
+            <span>Activity</span>
+        </a>
+        <a href="{{ url_for('player.profile') }}" class="nav-bottom-item {% if request.endpoint == 'player.profile' %}active{% endif %}">
+            <i class="ph ph-user"></i>
+            <span>Profile</span>
+        </a>
+    </nav>
+
+    <!-- Sports Quick Action Bottom Sheet -->
+    <div id="sports-quick-action-sheet" class="sports-sheet-backdrop" role="dialog" aria-modal="true" aria-label="Quick Actions">
+        <div class="sports-sheet-card">
+            <div class="sheet-drag-handle"></div>
+            <h3 class="sheet-title"><i class="ph ph-lightning" style="color: var(--pb-orange);"></i> Quick Sports Action</h3>
+            <p class="sheet-subtitle">Jump into the action or schedule your next game.</p>
+            <div class="sheet-options-grid">
+                <a href="{{ url_for('player.reservation') }}" class="sheet-option-btn">
+                    <div class="sheet-option-icon orange"><i class="ph ph-calendar-plus"></i></div>
+                    <span class="sheet-option-label">Book a Court</span>
+                    <span class="sheet-option-sub">Reserve slot at facility</span>
+                </a>
+                <a href="{{ url_for('player.matchmaker') }}" class="sheet-option-btn">
+                    <div class="sheet-option-icon green"><i class="ph ph-handshake"></i></div>
+                    <span class="sheet-option-label">Find Open Play</span>
+                    <span class="sheet-option-sub">Join player lobbies</span>
+                </a>
+                <a href="{{ url_for('player.queue') }}" class="sheet-option-btn">
+                    <div class="sheet-option-icon blue"><i class="ph ph-list-numbers"></i></div>
+                    <span class="sheet-option-label">Live Queue</span>
+                    <span class="sheet-option-sub">Check court wait times</span>
+                </a>
+                <a href="{{ url_for('player.events') }}" class="sheet-option-btn">
+                    <div class="sheet-option-icon purple"><i class="ph ph-trophy"></i></div>
+                    <span class="sheet-option-label">Tournaments</span>
+                    <span class="sheet-option-sub">Browse competitions</span>
+                </a>
+                <button type="button" class="sheet-option-btn" onclick="document.getElementById('sports-quick-action-sheet').classList.remove('active'); toggleSidebar(true);" style="grid-column: 1 / -1; border: 1px dashed var(--sports-border); background: rgba(255,255,255,0.02); text-align: left; cursor: pointer;">
+                    <div class="sheet-option-icon" style="background: rgba(148, 163, 184, 0.15); color: var(--sports-text-muted);"><i class="ph ph-list"></i></div>
+                    <span class="sheet-option-label">All Navigation & Menu</span>
+                    <span class="sheet-option-sub">Clubs, Leaderboard, Tutorials, Settings</span>
+                </button>
+            </div>
+            <button type="button" class="sheet-close-btn" id="close-quick-action-sheet">Cancel</button>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/player-sports.js') }}" defer></script>
+    {% elif current_user %}
+    <!-- Universal Role-Aware Mobile Bottom Navigation (< 768px) -->
+    <nav class="role-bottom-nav" aria-label="Mobile Navigation">
+        {% set role = current_user.role_raw|default('player') %}
+
+        {% if role == 'owner' %}
+            <a href="{{ url_for('owner.dashboard') }}" class="role-bottom-nav-item {% if request.endpoint == 'owner.dashboard' %}active{% endif %}">
+                <i class="ph ph-squares-four"></i>
+                <span>Overview</span>
+            </a>
+            <a href="{{ url_for('owner.facilities') }}" class="role-bottom-nav-item {% if request.endpoint == 'owner.facilities' %}active{% endif %}">
+                <i class="ph ph-buildings"></i>
+                <span>Facilities</span>
+            </a>
+            <a href="{{ url_for('owner.courts') }}" class="role-bottom-nav-item {% if request.endpoint == 'owner.courts' %}active{% endif %}">
+                <i class="ph ph-intersect"></i>
+                <span>Courts</span>
+            </a>
+            <a href="{{ url_for('owner.payment_ledger') }}" class="role-bottom-nav-item {% if request.endpoint == 'owner.payment_ledger' %}active{% endif %}">
+                <i class="ph ph-receipt"></i>
+                <span>Ledger</span>
+            </a>
+        {% elif role == 'facilitystaff' %}
+            <a href="{{ url_for('facilitystaff.dashboard') }}" class="role-bottom-nav-item {% if request.endpoint == 'facilitystaff.dashboard' %}active{% endif %}">
+                <i class="ph ph-squares-four"></i>
+                <span>Desk</span>
+            </a>
+            <a href="{{ url_for('facilitystaff.queue') }}" class="role-bottom-nav-item {% if request.endpoint == 'facilitystaff.queue' %}active{% endif %}">
+                <i class="ph ph-users-four"></i>
+                <span>Queue</span>
+            </a>
+            <a href="{{ url_for('facilitystaff.schedule') }}" class="role-bottom-nav-item {% if request.endpoint == 'facilitystaff.schedule' %}active{% endif %}">
+                <i class="ph ph-calendar-blank"></i>
+                <span>Schedule</span>
+            </a>
+            <a href="{{ url_for('facilitystaff.walkin') }}" class="role-bottom-nav-item {% if request.endpoint == 'facilitystaff.walkin' %}active{% endif %}">
+                <i class="ph ph-user-plus"></i>
+                <span>Walk-In</span>
+            </a>
+        {% elif role == 'clubadmin' %}
+            <a href="{{ url_for('clubadmin.dashboard') }}" class="role-bottom-nav-item {% if request.endpoint == 'clubadmin.dashboard' %}active{% endif %}">
+                <i class="ph ph-squares-four"></i>
+                <span>Overview</span>
+            </a>
+            <a href="{{ url_for('clubadmin.members') }}" class="role-bottom-nav-item {% if request.endpoint == 'clubadmin.members' %}active{% endif %}">
+                <i class="ph ph-users"></i>
+                <span>Members</span>
+            </a>
+            <a href="{{ url_for('clubadmin.events') }}" class="role-bottom-nav-item {% if request.endpoint == 'clubadmin.events' %}active{% endif %}">
+                <i class="ph ph-calendar-star"></i>
+                <span>Events</span>
+            </a>
+            <a href="{{ url_for('clubadmin.ledger') }}" class="role-bottom-nav-item {% if request.endpoint == 'clubadmin.ledger' %}active{% endif %}">
+                <i class="ph ph-receipt"></i>
+                <span>Ledger</span>
+            </a>
+        {% elif role == 'superadmin' %}
+            <a href="{{ url_for('superadmin.dashboard') }}" class="role-bottom-nav-item {% if request.endpoint == 'superadmin.dashboard' %}active{% endif %}">
+                <i class="ph ph-squares-four"></i>
+                <span>Overview</span>
+            </a>
+            <a href="{{ url_for('superadmin.facilities') }}" class="role-bottom-nav-item {% if request.endpoint == 'superadmin.facilities' %}active{% endif %}">
+                <i class="ph ph-buildings"></i>
+                <span>Facilities</span>
+            </a>
+            <a href="{{ url_for('superadmin.users') }}" class="role-bottom-nav-item {% if request.endpoint == 'superadmin.users' %}active{% endif %}">
+                <i class="ph ph-users"></i>
+                <span>Users</span>
+            </a>
+            <a href="{{ url_for('superadmin.reports') }}" class="role-bottom-nav-item {% if request.endpoint == 'superadmin.reports' %}active{% endif %}">
+                <i class="ph ph-chart-line-up"></i>
+                <span>Reports</span>
+            </a>
+        {% elif role == 'adminstaff' %}
+            <a href="{{ url_for('adminstaff.dashboard') }}" class="role-bottom-nav-item {% if request.endpoint == 'adminstaff.dashboard' %}active{% endif %}">
+                <i class="ph ph-squares-four"></i>
+                <span>Overview</span>
+            </a>
+            <a href="{{ url_for('adminstaff.support') }}" class="role-bottom-nav-item {% if request.endpoint == 'adminstaff.support' %}active{% endif %}">
+                <i class="ph ph-ticket"></i>
+                <span>Support</span>
+            </a>
+            <a href="{{ url_for('adminstaff.verifications') }}" class="role-bottom-nav-item {% if request.endpoint == 'adminstaff.verifications' %}active{% endif %}">
+                <i class="ph ph-shield-check"></i>
+                <span>Verify</span>
+            </a>
+            <a href="{{ url_for('adminstaff.disputes') }}" class="role-bottom-nav-item {% if request.endpoint == 'adminstaff.disputes' %}active{% endif %}">
+                <i class="ph ph-warning-circle"></i>
+                <span>Disputes</span>
+            </a>
+        {% endif %}
+
+        <!-- Universal Hamburger Drawer Opener -->
+        <button type="button" class="role-bottom-nav-item role-bottom-nav-more" onclick="toggleSidebar(true)" aria-label="Open menu drawer">
+            <i class="ph ph-list"></i>
+            <span>Menu</span>
+        </button>
+    </nav>
+    {% endif %}
+
+    {% if request.blueprint == 'player' or (current_user and current_user.role_raw == 'player') %}
+    {% include "player/partials/booking_cart_drawer.html" %}
+    {% endif %}
+
+    {% block extra_scripts %}{% endblock %}
+    {% block scripts %}{% endblock %}
 </body>
 
 </html>

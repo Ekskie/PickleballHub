@@ -1,0 +1,649 @@
+{% extends "player/base_player.html" if role == 'player' else ("owner/base_owner.html" if role == 'owner' else ("clubadmin/base_clubadmin.html" if role == 'clubadmin' else "base.html")) %}
+{% block title %}Checkout - {{ plan_cfg.label or plan|capitalize }}{% endblock %}
+
+{% block content %}
+<div class="checkout-page-container">
+    <div class="checkout-breadcrumbs">
+        <a href="{{ return_to or url_for('billing.subscription_page') }}"><i class="ph ph-arrow-left"></i> Back</a>
+        <span>/</span>
+        <span>Subscription Checkout</span>
+    </div>
+
+    <div class="checkout-grid-layout">
+        <!-- Left Column: Order Summary -->
+        <div class="order-summary-card">
+            <span class="checkout-step-pill"><i class="ph ph-receipt"></i> ORDER SUMMARY</span>
+            <h3>{{ plan_cfg.label or (plan|capitalize ~ ' Pass') }}</h3>
+            <p class="plan-sub-desc">
+                {% if role == 'player' %}
+                Unlock 14-day early access booking, ₱0 platform convenience fees, unlimited simultaneous active reservations, and a verified gold badge.
+                {% elif role == 'owner' %}
+                Expanded venue capacity, low 3% platform commission, dynamic peak pricing, and verified partner badge.
+                {% else %}
+                Manage multiple clubs with unlimited members, automated GCash entry fee collection, and bracket tools.
+                {% endif %}
+            </p>
+
+            <div class="order-items-box">
+                <div class="order-item-row">
+                    <span class="label">Billing Cycle</span>
+                    <span class="val">{{ cycle|capitalize }}</span>
+                </div>
+                <div class="order-item-row">
+                    <span class="label">Plan Price</span>
+                    <span class="val">₱{{ '%.2f'|format(amount) }}</span>
+                </div>
+                <div class="order-item-row">
+                    <span class="label">Platform Tax / Service Fee</span>
+                    <span class="val" style="color:#10b981; font-weight:700;">₱0.00 (Included)</span>
+                </div>
+                <div class="order-divider"></div>
+                <div class="order-total-row">
+                    <span>Total Due Now</span>
+                    <span class="total-price">₱{{ '%.2f'|format(amount) }}</span>
+                </div>
+            </div>
+
+            <div class="checkout-perks-box">
+                <h5><i class="ph ph-shield-check" style="color:#10b981;"></i> What's Unlocked Immediately:</h5>
+                <ul>
+                    {% if role == 'player' %}
+                    <li><i class="ph ph-check"></i> <strong>14-Day Advance Booking Window</strong></li>
+                    <li><i class="ph ph-check"></i> <strong>₱0 Convenience Fees</strong> on all court bookings</li>
+                    <li><i class="ph ph-check"></i> <strong>Unlimited Active Bookings</strong> simultaneously</li>
+                    <li><i class="ph ph-check"></i> <strong>Priority Open Play Matchmaker Queue</strong></li>
+                    <li><i class="ph ph-check"></i> <strong>Verified Gold "PRO" Badge</strong> on Profile</li>
+                    {% elif role == 'owner' %}
+                    <li><i class="ph ph-check"></i> <strong>Low 3% Platform Fee</strong> (Save 5% per booking)</li>
+                    <li><i class="ph ph-check"></i> <strong>Up to 3 Facilities &amp; 8 Courts</strong></li>
+                    <li><i class="ph ph-check-circle"></i> <strong>Verified Partner Badge</strong></li>
+                    {% else %}
+                    <li><i class="ph ph-check"></i> <strong>Automated GCash Entry Fees</strong></li>
+                    <li><i class="ph ph-check"></i> <strong>Unlimited Club Members</strong></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Right Column: GCash Payment Instructions & Submission -->
+        <div class="payment-submission-card">
+            <div class="pay-head-banner">
+                <div class="pay-head-left">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/52/GCash_logo.svg" alt="GCash" class="gcash-logo-img" onerror="this.style.display='none'">
+                    <div>
+                        <h4>Pay with GCash</h4>
+                        <p>Scan the official QR code or send payment to the registered number.</p>
+                    </div>
+                </div>
+                <span class="official-secure-badge"><i class="ph ph-lock-key"></i> Verified Merchant</span>
+            </div>
+
+            <!-- Official GCash QR & Account Card -->
+            <div class="gcash-portal-box">
+                <div class="gcash-qr-wrap">
+                    <svg viewBox="0 0 100 100" class="gcash-qr-svg">
+                        <rect width="100" height="100" fill="#ffffff" rx="6"/>
+                        <!-- QR patterns -->
+                        <rect x="10" y="10" width="28" height="28" fill="#0070BA" rx="3"/>
+                        <rect x="15" y="15" width="18" height="18" fill="#ffffff"/>
+                        <rect x="19" y="19" width="10" height="10" fill="#0070BA"/>
+
+                        <rect x="62" y="10" width="28" height="28" fill="#0070BA" rx="3"/>
+                        <rect x="67" y="15" width="18" height="18" fill="#ffffff"/>
+                        <rect x="71" y="19" width="10" height="10" fill="#0070BA"/>
+
+                        <rect x="10" y="62" width="28" height="28" fill="#0070BA" rx="3"/>
+                        <rect x="15" y="67" width="18" height="18" fill="#ffffff"/>
+                        <rect x="19" y="71" width="10" height="10" fill="#0070BA"/>
+
+                        <rect x="44" y="10" width="8" height="8" fill="#0070BA"/>
+                        <rect x="44" y="24" width="8" height="14" fill="#0070BA"/>
+                        <rect x="44" y="44" width="12" height="12" fill="#0070BA"/>
+                        <rect x="10" y="44" width="8" height="10" fill="#0070BA"/>
+                        <rect x="24" y="44" width="10" height="8" fill="#0070BA"/>
+                        <rect x="62" y="44" width="8" height="12" fill="#0070BA"/>
+                        <rect x="76" y="44" width="14" height="8" fill="#0070BA"/>
+                        <rect x="44" y="62" width="8" height="16" fill="#0070BA"/>
+                        <rect x="62" y="62" width="10" height="10" fill="#0070BA"/>
+                        <rect x="78" y="62" width="12" height="12" fill="#0070BA"/>
+                        <rect x="62" y="78" width="14" height="12" fill="#0070BA"/>
+                        <rect x="82" y="78" width="8" height="12" fill="#0070BA"/>
+                    </svg>
+                    <span class="qr-sub-text">Scan via GCash App</span>
+                </div>
+
+                <div class="gcash-details-col">
+                    <div class="detail-field">
+                        <span class="detail-label">GCash Mobile Number</span>
+                        <div class="detail-val-row">
+                            <span class="copyable-text" id="gcashNumber">0917 123 4567</span>
+                            <button type="button" class="btn-copy-mini" onclick="copyGcashNumber()">
+                                <i class="ph ph-copy"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="detail-field">
+                        <span class="detail-label">Account Name</span>
+                        <span class="detail-val">PickleballHub Philippines Inc.</span>
+                    </div>
+
+                    <div class="detail-field">
+                        <span class="detail-label">Exact Amount to Send</span>
+                        <div class="amount-highlight-chip">₱{{ '%.2f'|format(amount) }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Steps Instruction -->
+            <div class="pay-steps-box">
+                <div class="pay-step"><span class="step-num">1</span> <span>Send <strong>₱{{ '%.2f'|format(amount) }}</strong> via GCash to <strong>0917 123 4567</strong></span></div>
+                <div class="pay-step"><span class="step-num">2</span> <span>Take a screenshot of the completed GCash payment receipt</span></div>
+                <div class="pay-step"><span class="step-num">3</span> <span>Enter the 13-digit Reference Number and upload the receipt screenshot below</span></div>
+            </div>
+
+            <!-- Form Submission -->
+            <form method="POST" action="{{ url_for('billing.checkout_page') }}" enctype="multipart/form-data" class="checkout-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="plan" value="{{ plan }}">
+                <input type="hidden" name="cycle" value="{{ cycle }}">
+                <input type="hidden" name="return_to" value="{{ return_to }}">
+
+                <div class="form-group-checkout">
+                    <label for="gcash_ref"><i class="ph ph-hash"></i> GCash Reference Number <span class="req">*</span></label>
+                    <input type="text" name="gcash_ref" id="gcash_ref" class="field-input-checkout"
+                           placeholder="e.g. 1029384756123" maxlength="20" required
+                           pattern="[0-9]{10,20}" title="Enter your 10 to 20 digit GCash reference number">
+                    <span class="field-hint">Found on your GCash transaction confirmation screen.</span>
+                </div>
+
+                <div class="form-group-checkout">
+                    <label for="receipt"><i class="ph ph-image"></i> Payment Receipt Screenshot <span class="req">*</span></label>
+                    <div class="receipt-drop-zone" id="receiptDropZone" onclick="document.getElementById('receipt').click()">
+                        <input type="file" id="receipt" name="receipt" accept="image/*" required style="display:none;" onchange="previewReceipt(this)">
+                        <div id="dropZoneContent">
+                            <i class="ph ph-cloud-arrow-up" style="font-size:2rem; color:#8b5cf6;"></i>
+                            <p style="margin:6px 0 2px 0; font-size:0.84rem; font-weight:700; color:var(--text-primary);">Click to upload receipt screenshot</p>
+                            <span style="font-size:0.72rem; color:var(--text-muted);">PNG, JPG, WEBP up to 5MB</span>
+                        </div>
+                        <div id="receiptPreviewWrap" style="display:none; text-align:center;">
+                            <img id="receiptPreviewImg" src="" alt="Receipt Preview" style="max-height:140px; border-radius:8px; border:1px solid var(--border-color); margin-bottom:6px;">
+                            <span id="receiptFileName" style="display:block; font-size:0.75rem; font-weight:700; color:#10b981;"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-confirm-subscription" id="btnSubmitSub">
+                    <i class="ph ph-check-circle"></i> Confirm &amp; Activate Subscription
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .checkout-page-container {
+        max-width: 1040px;
+        margin: 0 auto;
+        padding: 24px 20px 60px 20px;
+    }
+
+    .checkout-breadcrumbs {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-bottom: 24px;
+    }
+
+    .checkout-breadcrumbs a {
+        color: var(--primary-orange);
+        text-decoration: none;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .checkout-grid-layout {
+        display: grid;
+        grid-template-columns: 380px 1fr;
+        gap: 26px;
+        align-items: start;
+    }
+
+    @media (max-width: 900px) {
+        .checkout-grid-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* ── Order Summary Card ── */
+    .order-summary-card {
+        background: var(--card-bg);
+        border: 1.5px solid var(--border-color);
+        border-radius: 20px;
+        padding: 24px;
+        box-shadow: var(--shadow-card);
+        position: sticky;
+        top: 24px;
+    }
+
+    .checkout-step-pill {
+        font-size: 0.68rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: #8b5cf6;
+        background: rgba(139, 92, 246, 0.12);
+        padding: 3px 9px;
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        margin-bottom: 12px;
+    }
+
+    .order-summary-card h3 {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        margin: 0 0 6px 0;
+    }
+
+    .plan-sub-desc {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin: 0 0 20px 0;
+        line-height: 1.45;
+    }
+
+    .order-items-box {
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        padding: 16px;
+        margin-bottom: 20px;
+    }
+
+    .order-item-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.82rem;
+        margin-bottom: 8px;
+    }
+
+    .order-item-row .label {
+        color: var(--text-muted);
+    }
+
+    .order-item-row .val {
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .order-divider {
+        height: 1px;
+        background: var(--border-color);
+        margin: 12px 0;
+    }
+
+    .order-total-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: var(--text-primary);
+    }
+
+    .total-price {
+        font-size: 1.4rem;
+        color: #8b5cf6;
+        font-weight: 900;
+    }
+
+    .checkout-perks-box h5 {
+        font-size: 0.82rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        margin: 0 0 10px 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .checkout-perks-box ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .checkout-perks-box li {
+        font-size: 0.78rem;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .checkout-perks-box li i {
+        color: #10b981;
+        font-size: 0.95rem;
+        flex-shrink: 0;
+    }
+
+    /* ── Payment Submission Card ── */
+    .payment-submission-card {
+        background: var(--card-bg);
+        border: 1.5px solid var(--border-color);
+        border-radius: 20px;
+        padding: 26px;
+        box-shadow: var(--shadow-card);
+    }
+
+    .pay-head-banner {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .pay-head-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .gcash-logo-img {
+        height: 28px;
+    }
+
+    .pay-head-banner h4 {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        margin: 0 0 2px 0;
+    }
+
+    .pay-head-banner p {
+        font-size: 0.76rem;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    .official-secure-badge {
+        font-size: 0.72rem;
+        font-weight: 800;
+        color: #0284c7;
+        background: rgba(2, 132, 199, 0.1);
+        padding: 4px 10px;
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* ── Portal Box ── */
+    .gcash-portal-box {
+        display: grid;
+        grid-template-columns: 140px 1fr;
+        gap: 20px;
+        background: rgba(0, 112, 186, 0.05);
+        border: 1.5px solid rgba(0, 112, 186, 0.25);
+        border-radius: 16px;
+        padding: 18px;
+        margin-bottom: 20px;
+        align-items: center;
+    }
+
+    @media (max-width: 500px) {
+        .gcash-portal-box {
+            grid-template-columns: 1fr;
+            text-align: center;
+        }
+    }
+
+    .gcash-qr-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .gcash-qr-svg {
+        width: 120px;
+        height: 120px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .qr-sub-text {
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: #0070BA;
+    }
+
+    .gcash-details-col {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .detail-field {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .detail-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .detail-val-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .copyable-text {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        font-family: monospace;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-copy-mini {
+        background: #0070BA;
+        color: #fff;
+        border: none;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        transition: opacity 0.15s;
+    }
+
+    .btn-copy-mini:hover {
+        opacity: 0.85;
+    }
+
+    .detail-val {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .amount-highlight-chip {
+        font-size: 1.25rem;
+        font-weight: 900;
+        color: #0070BA;
+    }
+
+    /* ── Pay Steps ── */
+    .pay-steps-box {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 22px;
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 12px 16px;
+    }
+
+    .pay-step {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        font-size: 0.78rem;
+        color: var(--text-secondary);
+        line-height: 1.4;
+    }
+
+    .step-num {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #8b5cf6;
+        color: #fff;
+        font-size: 0.65rem;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+    /* ── Form ── */
+    .checkout-form {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .form-group-checkout {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .form-group-checkout label {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .form-group-checkout .req {
+        color: #ef4444;
+    }
+
+    .field-input-checkout {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 1.5px solid var(--border-color);
+        background: var(--input-bg);
+        color: var(--text-primary);
+        font-size: 0.95rem;
+        font-weight: 600;
+        outline: none;
+        transition: border-color 0.2s;
+        box-sizing: border-box;
+        font-family: inherit;
+    }
+
+    .field-input-checkout:focus {
+        border-color: #8b5cf6;
+    }
+
+    .field-hint {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+    }
+
+    .receipt-drop-zone {
+        border: 2px dashed rgba(139, 92, 246, 0.4);
+        background: rgba(139, 92, 246, 0.04);
+        border-radius: 12px;
+        padding: 22px 16px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .receipt-drop-zone:hover {
+        border-color: #8b5cf6;
+        background: rgba(139, 92, 246, 0.08);
+    }
+
+    .btn-confirm-subscription {
+        background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+        color: #fff;
+        border: none;
+        padding: 14px 20px;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        font-weight: 800;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 4px 16px rgba(139, 92, 246, 0.4);
+        transition: all 0.2s;
+        margin-top: 6px;
+        font-family: inherit;
+    }
+
+    .btn-confirm-subscription:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(139, 92, 246, 0.55);
+    }
+</style>
+
+<script>
+    function copyGcashNumber() {
+        const num = document.getElementById('gcashNumber').textContent.replace(/\s+/g, '');
+        navigator.clipboard.writeText(num).then(() => {
+            alert("GCash number copied: " + num);
+        });
+    }
+
+    function previewReceipt(input) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('receiptPreviewImg').src = e.target.result;
+                document.getElementById('receiptFileName').textContent = file.name;
+                document.getElementById('dropZoneContent').style.display = 'none';
+                document.getElementById('receiptPreviewWrap').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+</script>
+{% endblock %}

@@ -38,11 +38,38 @@ def get_lobby_display_status(lobby_status, res_date, res_start, res_end):
         return lobby_status
 
 
+def format_time_12h(time_str):
+    if not time_str:
+        return ''
+    try:
+        parts = str(time_str).split(':')
+        h = int(parts[0])
+        m = int(parts[1]) if len(parts) > 1 else 0
+        ap = 'PM' if h >= 12 else 'AM'
+        h12 = h % 12
+        if h12 == 0:
+            h12 = 12
+        return f"{h12}:{m:02d} {ap}"
+    except Exception:
+        return str(time_str)[:5]
+
+
+def format_date_friendly(date_str):
+    if not date_str:
+        return ''
+    try:
+        d = datetime.strptime(str(date_str)[:10], '%Y-%m-%d')
+        return d.strftime('%a, %b %d, %Y')
+    except Exception:
+        return str(date_str)
+
+
 @player_bp.route('/matchmaker')
 @require_role('player')
 def matchmaker():
     player_id = session.get('user_id')
     db = get_db()
+    admin_db = get_admin_db()
     lobbies = []
     reservations = []
     search_query = request.args.get('search', '').strip()
@@ -52,35 +79,61 @@ def matchmaker():
     try:
         # Fetch active court reservations that belong to this player to populate the dropdown
         today_str = datetime.now(PH_TZ).strftime('%Y-%m-%d')
-        res_resp = db.table('court_reservations').select(
+        res_resp = admin_db.table('court_reservations').select(
             'id, date, start_time, end_time, facilities(name), courts(name)'
         ).eq('player_id', player_id).eq('status', 'confirmed').gte('date', today_str).execute()
         reservations = res_resp.data or []
 
         # Filter out reservations already listed in matchmaker_lobbies
-        already_listed = db.table('matchmaker_lobbies').select('reservation_id').eq('creator_id', player_id).neq('status', 'cancelled').execute()
+        already_listed = admin_db.table('matchmaker_lobbies').select('reservation_id').eq('creator_id', player_id).neq('status', 'cancelled').execute()
         listed_ids = {r['reservation_id'] for r in (already_listed.data or [])}
         reservations = [r for r in reservations if r['id'] not in listed_ids]
 
         # Fetch joined matchmaking lobby IDs for tab filtering
         joined_lobby_ids = set()
         if player_id:
-            my_joined = db.table('lobby_participants').select('lobby_id').eq('player_id', player_id).eq('status', 'joined').execute()
+            my_joined = admin_db.table('lobby_participants').select('lobby_id').eq('player_id', player_id).eq('status', 'joined').execute()
             joined_lobby_ids = {p['lobby_id'] for p in (my_joined.data or [])}
 
         # Fetch active lobbies (status: open, full, completed)
-        lob_resp = db.table('matchmaker_lobbies').select(
+        lob_resp = admin_db.table('matchmaker_lobbies').select(
             'id, creator_id, reservation_id, title, description, min_dupr, max_dupr, slots_total, slots_filled, status, created_at, match_type, '
-            'creator:profiles!creator_id(first_name, last_name, elo, dupr, proficiency), '
+            'creator:profiles!creator_id(first_name, last_name, avatar_url, elo, dupr, proficiency), '
             'reservation:court_reservations!reservation_id(date, start_time, end_time, courts(name), facilities(name))'
         ).neq('status', 'cancelled').order('created_at', desc=True).execute()
 
         raw_lobbies = lob_resp.data or []
+
+        # Tab counts across active lobbies
+        count_all = len(raw_lobbies)
+        count_hosted = sum(1 for lob in raw_lobbies if lob.get('creator_id') == player_id)
+        count_joined = sum(1 for lob in raw_lobbies if lob.get('id') in joined_lobby_ids)
+        tab_counts = {
+            'all': count_all,
+            'hosted': count_hosted,
+            'joined': count_joined
+        }
+
         for lobby in raw_lobbies:
             creator = lobby.get('creator') or {}
             res = lobby.get('reservation') or {}
             court = res.get('courts') or {}
             facility = res.get('facilities') or {}
+
+            c_first = creator.get('first_name', '')
+            c_last = creator.get('last_name', '')
+            c_initials = ((c_first[0] if c_first else '') + (c_last[0] if c_last else '')).upper() or 'PL'
+
+            st_raw = res.get('start_time') or '00:00'
+            et_raw = res.get('end_time') or '00:00'
+            res_date = res.get('date') or today_str
+
+            slots_total = int(lobby.get('slots_total') or 4)
+            slots_filled = int(lobby.get('slots_filled') or 1)
+            slots_rem = max(0, slots_total - slots_filled)
+            fill_pct = min(100, int((slots_filled / max(1, slots_total)) * 100))
+            is_creator = bool(player_id and lobby.get('creator_id') == player_id)
+            is_joined = bool(player_id and lobby.get('id') in joined_lobby_ids)
 
             lobby_item = {
                 'id': lobby['id'],
@@ -89,28 +142,36 @@ def matchmaker():
                 'description': lobby['description'],
                 'min_dupr': float(lobby['min_dupr']),
                 'max_dupr': float(lobby['max_dupr']),
-                'slots_total': lobby['slots_total'],
-                'slots_filled': lobby['slots_filled'],
+                'slots_total': slots_total,
+                'slots_filled': slots_filled,
+                'slots_remaining': slots_rem,
+                'fill_percentage': fill_pct,
                 'status': lobby['status'],
                 'match_type': lobby.get('match_type') or 'ranked',
-                'creator_name': f"{creator.get('first_name', '')} {creator.get('last_name', '')}".strip() or "Anonymous Player",
+                'creator_name': f"{c_first} {c_last}".strip() or "Anonymous Player",
+                'creator_avatar': creator.get('avatar_url'),
+                'creator_initials': c_initials,
                 'creator_dupr': creator.get('dupr') if creator.get('dupr') is not None else 3.00,
                 'facility_name': facility.get('name', 'Unknown Facility'),
                 'court_name': court.get('name', 'Court'),
-                'date': res.get('date') or today_str,
-                'start_time': res.get('start_time') or '00:00',
-                'end_time': res.get('end_time') or '00:00',
+                'date': res_date,
+                'date_friendly': format_date_friendly(res_date),
+                'start_time': st_raw,
+                'end_time': et_raw,
+                'time_range_12': f"{format_time_12h(st_raw)} - {format_time_12h(et_raw)}",
+                'is_creator': is_creator,
+                'is_joined': is_joined,
             }
             lobby_item['display_status'] = get_lobby_display_status(
                 lobby_item['status'], lobby_item['date'], lobby_item['start_time'], lobby_item['end_time']
             )
-            
+
             # Apply tab filters
             if selected_tab == 'hosted':
-                if lobby_item['creator_id'] != player_id:
+                if not lobby_item['is_creator']:
                     continue
             elif selected_tab == 'joined':
-                if lobby_item['id'] not in joined_lobby_ids:
+                if not lobby_item['is_joined']:
                     continue
 
             # Apply search filter
@@ -141,7 +202,9 @@ def matchmaker():
         reservations=reservations,
         search_query=search_query,
         selected_level=dupr_level,
-        selected_tab=selected_tab
+        selected_tab=selected_tab,
+        tab_counts=tab_counts,
+        current_user_id=player_id
     )
 
 
@@ -260,6 +323,9 @@ def matchmaker_detail(lobby_id):
             'date': res.get('date') or datetime.now(PH_TZ).strftime('%Y-%m-%d'),
             'start_time': res.get('start_time') or '00:00',
             'end_time': res.get('end_time') or '00:00',
+            'formatted_date': format_date_friendly(res.get('date')),
+            'formatted_start_time': format_time_12h(res.get('start_time')),
+            'formatted_end_time': format_time_12h(res.get('end_time')),
         }
         lobby['display_status'] = get_lobby_display_status(
             lobby['status'], lobby['date'], lobby['start_time'], lobby['end_time']
@@ -479,6 +545,8 @@ def matchmaker_detail(lobby_id):
                     reporter_team = p.get('team')
                     break
 
+    has_opponents = any(p.get('team') == 2 for p in participants)
+
     return render_template(
         'player/matchmaker_detail.html',
         lobby=lobby,
@@ -490,7 +558,8 @@ def matchmaker_detail(lobby_id):
         messages=lobby_messages,
         current_user_team=current_user_team,
         reporter_team=reporter_team,
-        is_assigned_staff=is_assigned_staff
+        is_assigned_staff=is_assigned_staff,
+        has_opponents=has_opponents
     )
 
 
@@ -931,11 +1000,27 @@ def matchmaker_report(lobby_id):
             return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
 
         # Map winner team to a player ID
+        team2_players = [p['player_id'] for p in joined if p.get('team') == 2]
+
+        # If no opponents joined Team 2, finalize immediately as uncontested (no one to verify)
+        if not team2_players:
+            admin_db = get_admin_db()
+            admin_db.table('matchmaker_lobbies').update({
+                'status': 'completed',
+                'score': score or 'Uncontested',
+                'winner_id': lobby['creator_id'],
+                'reporter_id': player_id,
+                'reported_score': score or 'Uncontested',
+                'reported_winner_id': lobby['creator_id'],
+                'verification_status': 'verified'
+            }).eq('id', lobby_id).execute()
+            flash("Match finalized! Since no opposing players joined, this match was recorded as an uncontested match.", "success")
+            return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+
         if winner_team == 'team1':
             winner_id = lobby['creator_id']
         else:
-            team2_players = [p['player_id'] for p in joined if p.get('team') == 2]
-            winner_id = team2_players[0] if team2_players else (joined[0]['player_id'] if joined else lobby['creator_id'])
+            winner_id = team2_players[0] if team2_players else lobby['creator_id']
 
         # Update lobby details to pending_verification and reset verification_status
         admin_db = get_admin_db()
@@ -972,7 +1057,7 @@ def matchmaker_report(lobby_id):
 @require_role('player', 'facilitystaff')
 def matchmaker_verify(lobby_id):
     player_id = session.get('user_id')
-    action = request.form.get('action') # 'confirm' or 'dispute'
+    action = request.form.get('action') # 'confirm', 'dispute', 'reset', 'finalize_uncontested'
     admin_db = get_admin_db()
     
     try:
@@ -992,6 +1077,30 @@ def matchmaker_verify(lobby_id):
         if player_id not in joined_player_ids:
             flash("You are not a member of this match lobby.", "error")
             return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+
+        # Check if there are any opponents on Team 2
+        opponents = [p for p in participants if p.get('team') == 2]
+        if not opponents:
+            # Special case: No opponents joined the match!
+            if action in ['confirm', 'finalize_uncontested']:
+                admin_db.table('matchmaker_lobbies').update({
+                    'status': 'completed',
+                    'score': lobby.get('reported_score') or 'Uncontested',
+                    'winner_id': lobby.get('reported_winner_id') or lobby['creator_id'],
+                    'verification_status': 'verified'
+                }).eq('id', lobby_id).execute()
+                flash("Match finalized as uncontested (no opponents joined).", "success")
+                return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+            elif action in ['reset', 'dispute']:
+                admin_db.table('matchmaker_lobbies').update({
+                    'status': 'open',
+                    'reported_score': None,
+                    'reported_winner_id': None,
+                    'reporter_id': None,
+                    'verification_status': 'pending'
+                }).eq('id', lobby_id).execute()
+                flash("Score report reset. The lobby is back to open.", "info")
+                return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
             
         # Verify the user is not the one who reported the score
         if lobby['reporter_id'] == player_id:

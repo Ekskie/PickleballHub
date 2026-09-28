@@ -1,88 +1,2204 @@
 {% extends "clubadmin/base_clubadmin.html" %}
 
-{% block title %}Club Setup{% endblock %}
+{% block title %}Club Setup & Branding - {{ g.club.name if g.club else 'PickleballHub' }}{% endblock %}
+
+{% block extra_head %}
+<style>
+/* ── Club Setup Studio Styles ── */
+.setup-page-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding-bottom: 40px;
+}
+
+/* ── Top Executive Header ── */
+.setup-header-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 20px;
+    padding: 24px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    position: relative;
+    overflow: hidden;
+}
+
+.setup-header-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ff5722 0%, #ea580c 50%, #f59e0b 100%);
+}
+
+.setup-header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.setup-badge-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.setup-category-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--primary-orange, #ff5722);
+    background: rgba(255, 87, 34, 0.08);
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 87, 34, 0.2);
+}
+
+.club-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+
+.club-status-pill.active {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.club-status-pill.pending {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.pulse-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: currentColor;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    animation: pulseGlow 2s infinite;
+}
+
+@keyframes pulseGlow {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.setup-header-title {
+    font-size: 1.65rem;
+    font-weight: 800;
+    color: var(--text-primary, #0f172a);
+    margin: 0;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.setup-header-desc {
+    font-size: 0.88rem;
+    color: var(--text-secondary, #64748b);
+    margin: 0;
+    max-width: 650px;
+    line-height: 1.45;
+}
+
+.setup-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-header-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: 12px;
+    font-size: 0.86rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 1px solid var(--border-color, #e2e8f0);
+    background: var(--input-bg, #f8fafc);
+    color: var(--text-primary, #1e293b);
+}
+
+.btn-header-link:hover {
+    background: var(--card-bg, #ffffff);
+    border-color: var(--primary-orange, #ff5722);
+    color: var(--primary-orange, #ff5722);
+    transform: translateY(-1px);
+}
+
+/* ── Studio Layout Grid ── */
+.setup-studio-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(360px, 1fr);
+    gap: 28px;
+    align-items: start;
+}
+
+@media (max-width: 1080px) {
+    .setup-studio-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ── Left Column: Form Cards ── */
+.setup-form-column {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.setup-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 20px;
+    padding: 26px 28px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.02);
+    transition: box-shadow 0.25s ease, border-color 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.setup-card:focus-within {
+    box-shadow: 0 8px 26px rgba(255, 87, 34, 0.06);
+    border-color: rgba(255, 87, 34, 0.35);
+}
+
+.card-title-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    border-bottom: 1px solid var(--border-color, #f1f5f9);
+    padding-bottom: 16px;
+}
+
+.card-icon-box {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(255, 87, 34, 0.12) 0%, rgba(234, 88, 12, 0.05) 100%);
+    color: var(--primary-orange, #ff5722);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+    border: 1px solid rgba(255, 87, 34, 0.2);
+}
+
+.card-title-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.card-title-content h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-primary, #0f172a);
+    margin: 0;
+}
+
+.card-title-content p {
+    font-size: 0.83rem;
+    color: var(--text-secondary, #64748b);
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* ── Form Inputs & Groups ── */
+.form-group-custom {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    position: relative;
+}
+
+.field-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.form-label-custom {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-primary, #1e293b);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.form-label-custom .req-star {
+    color: #ef4444;
+}
+
+.field-counter {
+    font-size: 0.75rem;
+    color: var(--text-secondary, #94a3b8);
+    font-weight: 500;
+}
+
+.input-with-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-prefix-icon {
+    position: absolute;
+    left: 14px;
+    color: var(--text-secondary, #94a3b8);
+    font-size: 1.15rem;
+    pointer-events: none;
+    transition: color 0.2s ease;
+}
+
+.input-with-icon input {
+    padding-left: 42px !important;
+}
+
+.form-input-custom,
+.form-textarea-custom,
+.form-select-custom {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border-color, #e2e8f0);
+    background: var(--input-bg, #f8fafc);
+    color: var(--text-primary, #0f172a);
+    font-family: inherit;
+    font-size: 0.92rem;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-sizing: border-box;
+}
+
+.form-input-custom:hover,
+.form-textarea-custom:hover,
+.form-select-custom:hover {
+    border-color: #cbd5e1;
+}
+
+.form-input-custom:focus,
+.form-textarea-custom:focus,
+.form-select-custom:focus {
+    outline: none;
+    border-color: var(--primary-orange, #ff5722);
+    background: var(--card-bg, #ffffff);
+    box-shadow: 0 0 0 3.5px rgba(255, 87, 34, 0.12);
+}
+
+.input-with-icon input:focus ~ .input-prefix-icon {
+    color: var(--primary-orange, #ff5722);
+}
+
+.form-textarea-custom {
+    resize: vertical;
+    min-height: 105px;
+    line-height: 1.5;
+}
+
+.field-helper {
+    font-size: 0.79rem;
+    color: var(--text-secondary, #64748b);
+    line-height: 1.35;
+    margin-top: 2px;
+}
+
+/* ── Logo Uploader Suite ── */
+.logo-workspace-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.active-logo-preview-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.crest-avatar-frame {
+    width: 88px;
+    height: 88px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border: 2px solid rgba(255, 87, 34, 0.3);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.crest-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.crest-placeholder-text {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #ffffff;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #ff5722 0%, #f59e0b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.active-logo-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-secondary, #64748b);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ── Drag & Drop Area ── */
+.logo-dropzone {
+    flex: 1;
+    min-width: 250px;
+    border: 2px dashed var(--border-color, #cbd5e1);
+    border-radius: 16px;
+    padding: 18px 20px;
+    text-align: center;
+    cursor: pointer;
+    background: var(--input-bg, #f8fafc);
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+}
+
+.logo-dropzone:hover,
+.logo-dropzone.drag-active {
+    border-color: var(--primary-orange, #ff5722);
+    background: rgba(255, 87, 34, 0.03);
+    transform: translateY(-1px);
+}
+
+.dropzone-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(255, 87, 34, 0.1);
+    color: var(--primary-orange, #ff5722);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+}
+
+.dropzone-text-main {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-primary, #0f172a);
+}
+
+.dropzone-text-main span {
+    color: var(--primary-orange, #ff5722);
+    text-decoration: underline;
+}
+
+.dropzone-text-sub {
+    font-size: 0.75rem;
+    color: var(--text-secondary, #64748b);
+}
+
+/* Staged File Feedback Box */
+.staged-file-container {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    margin-top: 10px;
+}
+
+.staged-file-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.staged-thumb {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.staged-file-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.staged-file-name {
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: var(--text-primary, #0f172a);
+}
+
+.staged-file-size {
+    font-size: 0.73rem;
+    color: #10b981;
+    font-weight: 600;
+}
+
+.btn-remove-staged {
+    background: transparent;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 4px;
+    border-radius: 6px;
+    transition: background 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-remove-staged:hover {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* ── Brand Assets Subsections & Banner Styles ── */
+.brand-asset-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.brand-asset-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.brand-asset-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-primary, #0f172a);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.brand-asset-hint {
+    font-size: 0.74rem;
+    color: var(--text-secondary, #64748b);
+}
+
+.banner-workspace-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.active-banner-preview-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.banner-frame-preview {
+    width: 140px;
+    height: 75px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border: 2px solid rgba(255, 87, 34, 0.3);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background-size: cover;
+    background-position: center;
+}
+
+.banner-placeholder-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: #94a3b8;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.banner-placeholder-content i {
+    font-size: 1.3rem;
+    color: var(--primary-orange, #ff5722);
+}
+
+/* ── Interactive Membership Plan Cards ── */
+.membership-plan-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+@media (max-width: 640px) {
+    .membership-plan-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.plan-option-card {
+    border: 2px solid var(--border-color, #e2e8f0);
+    border-radius: 16px;
+    padding: 18px 20px;
+    background: var(--input-bg, #f8fafc);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+    user-select: none;
+}
+
+.plan-option-card:hover {
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
+    background: var(--card-bg, #ffffff);
+}
+
+.plan-option-card.selected {
+    border-color: var(--primary-orange, #ff5722);
+    background: rgba(255, 87, 34, 0.035);
+    box-shadow: 0 4px 18px rgba(255, 87, 34, 0.1);
+}
+
+.plan-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.plan-icon-wrap {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.plan-option-card.free-plan .plan-icon-wrap {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.plan-option-card.paid-plan .plan-icon-wrap {
+    background: rgba(255, 87, 34, 0.12);
+    color: var(--primary-orange, #ff5722);
+}
+
+.plan-radio-circle {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--border-color, #cbd5e1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.plan-option-card.selected .plan-radio-circle {
+    border-color: var(--primary-orange, #ff5722);
+    background: var(--primary-orange, #ff5722);
+}
+
+.plan-radio-inner {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ffffff;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.2s ease;
+}
+
+.plan-option-card.selected .plan-radio-inner {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.plan-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.plan-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary, #0f172a);
+    margin: 0;
+}
+
+.plan-tag {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 12px;
+}
+
+.plan-tag.free {
+    background: rgba(59, 130, 246, 0.1);
+    color: #2563eb;
+}
+
+.plan-tag.paid {
+    background: rgba(255, 87, 34, 0.12);
+    color: var(--primary-orange, #ff5722);
+}
+
+.plan-desc {
+    font-size: 0.8rem;
+    color: var(--text-secondary, #64748b);
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* ── Paid Configuration Drawer ── */
+.paid-settings-drawer {
+    border: 1.5px solid rgba(255, 87, 34, 0.25);
+    border-radius: 16px;
+    padding: 20px 22px;
+    background: linear-gradient(135deg, rgba(255, 87, 34, 0.02) 0%, rgba(245, 158, 11, 0.02) 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    animation: fadeInSlide 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInSlide {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.paid-drawer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+@media (max-width: 640px) {
+    .paid-drawer-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.currency-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.currency-prefix {
+    position: absolute;
+    left: 14px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--primary-orange, #ff5722);
+    pointer-events: none;
+}
+
+.currency-input-wrap input {
+    padding-left: 36px !important;
+    font-weight: 700;
+    font-size: 1.05rem;
+}
+
+/* Quick Fee Presets */
+.quick-fee-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+.quick-fee-pill {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 9px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color, #e2e8f0);
+    background: var(--card-bg, #ffffff);
+    color: var(--text-secondary, #64748b);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.quick-fee-pill:hover {
+    border-color: var(--primary-orange, #ff5722);
+    color: var(--primary-orange, #ff5722);
+    background: rgba(255, 87, 34, 0.05);
+}
+
+.drawer-info-callout {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    color: var(--text-primary, #0f172a);
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.drawer-info-callout i {
+    color: #f59e0b;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+/* ── Actions Dock ── */
+.setup-actions-dock {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding-top: 8px;
+}
+
+.setup-actions-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.setup-actions-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-secondary-custom {
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: 1px solid var(--border-color, #e2e8f0);
+    background: var(--input-bg, #f8fafc);
+    color: var(--text-primary, #1e293b);
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-secondary-custom:hover {
+    background: var(--card-bg, #ffffff);
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+}
+
+.btn-primary-save {
+    padding: 12px 28px;
+    border-radius: 12px;
+    font-size: 0.94rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary-orange, #ff5722) 0%, #ea580c 100%);
+    color: #ffffff !important;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 18px rgba(255, 87, 34, 0.35);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255, 87, 34, 0.45);
+    background: linear-gradient(135deg, #ff6633 0%, #f97316 100%);
+}
+
+.btn-primary-save:active {
+    transform: translateY(0);
+}
+
+.btn-spinner {
+    display: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── Right Column: Sticky Live Preview & Scorecard Dock ── */
+.setup-preview-column {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    position: sticky;
+    top: 90px;
+}
+
+/* ── Live Directory Preview Card ── */
+.preview-box-container {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.preview-box-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.preview-box-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary, #0f172a);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.preview-live-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.08);
+    padding: 3px 9px;
+    border-radius: 20px;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+/* Rendered Club Card */
+.mock-club-card {
+    border: 1.5px solid var(--border-color, #eaecf0);
+    border-radius: 18px;
+    overflow: hidden;
+    background: var(--card-bg, #ffffff);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease;
+}
+
+.mock-card-banner {
+    height: 86px;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+    position: relative;
+    padding: 12px;
+}
+
+.mock-card-banner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at 80% 20%, rgba(255, 87, 34, 0.2) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+.mock-watermark-tag {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background: rgba(0, 0, 0, 0.4);
+    color: #e2e8f0;
+    padding: 2px 8px;
+    border-radius: 6px;
+    backdrop-filter: blur(4px);
+}
+
+.mock-card-body {
+    padding: 0 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+}
+
+.mock-crest-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-top: -38px;
+    margin-bottom: 2px;
+}
+
+.mock-crest-box {
+    width: 72px;
+    height: 72px;
+    border-radius: 18px;
+    background: #0f172a;
+    border: 3.5px solid var(--card-bg, #ffffff);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mock-crest-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.mock-crest-initials {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #ffffff;
+    background: linear-gradient(135deg, #ff5722 0%, #f59e0b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.mock-card-plan-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 20px;
+}
+
+.mock-card-plan-pill.free {
+    background: rgba(59, 130, 246, 0.1);
+    color: #2563eb;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.mock-card-plan-pill.paid {
+    background: rgba(255, 87, 34, 0.1);
+    color: var(--primary-orange, #ff5722);
+    border: 1px solid rgba(255, 87, 34, 0.25);
+}
+
+.mock-club-title {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--text-primary, #0f172a);
+    margin: 0;
+    line-height: 1.25;
+    word-break: break-word;
+}
+
+.mock-location-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    color: var(--text-secondary, #64748b);
+    font-weight: 500;
+}
+
+.mock-location-row i {
+    color: var(--primary-orange, #ff5722);
+    font-size: 0.95rem;
+}
+
+.mock-desc-text {
+    font-size: 0.83rem;
+    color: var(--text-secondary, #64748b);
+    line-height: 1.45;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+}
+
+.mock-admin-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color, #f1f5f9);
+    font-size: 0.77rem;
+    color: var(--text-secondary, #94a3b8);
+}
+
+.mock-admin-meta strong {
+    color: var(--text-primary, #1e293b);
+}
+
+.mock-btn-join {
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 0.84rem;
+    font-weight: 700;
+    background: var(--input-bg, #f1f5f9);
+    color: var(--text-secondary, #64748b);
+    border: 1px dashed var(--border-color, #cbd5e1);
+    text-align: center;
+    cursor: not-allowed;
+    margin-top: 4px;
+}
+
+/* ── Profile Completeness Card ── */
+.completeness-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 20px;
+    padding: 22px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.02);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.completeness-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.completeness-title {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--text-primary, #0f172a);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.completeness-pct {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--primary-orange, #ff5722);
+}
+
+.progress-track {
+    width: 100%;
+    height: 8px;
+    border-radius: 20px;
+    background: var(--input-bg, #f1f5f9);
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 20px;
+    background: linear-gradient(90deg, #ff5722 0%, #10b981 100%);
+    width: 0%;
+    transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.checklist-list {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 0.8rem;
+    color: var(--text-secondary, #64748b);
+    transition: color 0.2s ease;
+}
+
+.checklist-item.done {
+    color: var(--text-primary, #0f172a);
+    font-weight: 600;
+}
+
+.check-icon-circle {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--input-bg, #e2e8f0);
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.checklist-item.done .check-icon-circle {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+}
+
+.completeness-tip-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 0.76rem;
+    color: var(--text-secondary, #64748b);
+    background: var(--input-bg, #f8fafc);
+    padding: 9px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color, #e2e8f0);
+    line-height: 1.4;
+}
+
+.completeness-tip-box i {
+    color: #f59e0b;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+/* ── Dark Mode Refinements ── */
+[data-theme="dark"] .setup-header-card,
+[data-theme="dark"] .setup-card,
+[data-theme="dark"] .preview-box-container,
+[data-theme="dark"] .mock-club-card,
+[data-theme="dark"] .completeness-card {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+[data-theme="dark"] .mock-card-banner {
+    background: linear-gradient(135deg, #090d16 0%, #0f172a 100%);
+}
+
+[data-theme="dark"] .mock-crest-box {
+    border-color: #1e293b;
+}
+
+[data-theme="dark"] .plan-option-card {
+    background: #0f172a;
+    border-color: #334155;
+}
+
+[data-theme="dark"] .plan-option-card:hover {
+    border-color: #475569;
+    background: #1e293b;
+}
+
+[data-theme="dark"] .logo-dropzone {
+    background: #0f172a;
+    border-color: #334155;
+}
+
+[data-theme="dark"] .quick-fee-pill {
+    background: #0f172a;
+    border-color: #334155;
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="dashboard-header">
-    <h1 class="page-title">Club Setup</h1>
-</div>
+<div class="setup-page-container">
 
-<div class="glass-card" style="max-width: 800px; margin: 0 auto;">
-    <form method="POST" action="{{ url_for('clubadmin.club_setup') }}" enctype="multipart/form-data">
-        
-        <div class="form-group" style="margin-bottom: 20px;">
-            <label for="name" style="display: block; margin-bottom: 8px; color: var(--text-secondary); font-weight: 600;">Club Name <span style="color: red;">*</span></label>
-            <input type="text" id="name" name="name" value="{{ g.club.name if g.club else '' }}" required
-                   style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary);">
-        </div>
-
-        <div class="form-group" style="margin-bottom: 20px;">
-            <label for="description" style="display: block; margin-bottom: 8px; color: var(--text-secondary); font-weight: 600;">Description</label>
-            <textarea id="description" name="description" rows="4"
-                      style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary);">{{ g.club.description if g.club else '' }}</textarea>
-        </div>
-
-        <div class="form-group" style="margin-bottom: 20px;">
-            <label for="location" style="display: block; margin-bottom: 8px; color: var(--text-secondary); font-weight: 600;">Location (e.g., City, State or Primary Facility)</label>
-            <input type="text" id="location" name="location" value="{{ g.club.location if g.club else '' }}"
-                   style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary);">
-        </div>
-
-        <div class="form-group" style="margin-bottom: 20px;">
-            <label for="logo" style="display: block; margin-bottom: 8px; color: var(--text-secondary); font-weight: 600;">Club Logo</label>
-            {% if g.club and g.club.logo_url %}
-            <div style="margin-bottom: 10px;">
-                <img src="{{ g.club.logo_url }}" alt="Club Logo" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
+    <!-- ── Top Executive Header ── -->
+    <div class="setup-header-card">
+        <div class="setup-header-left">
+            <div class="setup-badge-row">
+                <span class="setup-category-badge">
+                    <i class="ph ph-gear-six"></i> Club Configuration Suite
+                </span>
+                {% if g.club %}
+                <span class="club-status-pill active">
+                    <span class="pulse-dot"></span> Active Club • Publicly Listed
+                </span>
+                {% else %}
+                <span class="club-status-pill pending">
+                    <span class="pulse-dot"></span> Initial Setup Pending
+                </span>
+                {% endif %}
             </div>
-            {% endif %}
-            <input type="file" id="logo" name="logo" accept="image/*"
-                   style="width: 100%; padding: 10px; border: 1px dashed var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary);">
+            <h1 class="setup-header-title">
+                <i class="ph ph-shield-star" style="color: var(--primary-orange);"></i>
+                Club Setup & Visual Identity
+            </h1>
+            <p class="setup-header-desc">
+                Configure your official pickleball club identity, crest logo, home facility location, and player membership dues structure.
+            </p>
         </div>
-
-        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
-            <div class="form-group">
-                <label for="membership_type" style="display: block; margin-bottom: 8px; color: var(--text-secondary); font-weight: 600;">Membership Type</label>
-                <select id="membership_type" name="membership_type" onchange="toggleFeeInput()"
-                        style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary);">
-                    <option value="free" {% if not g.club or g.club.membership_type == 'free' %}selected{% endif %}>Free to Join</option>
-                    <option value="paid" {% if g.club and g.club.membership_type == 'paid' %}selected{% endif %}>Paid Membership</option>
-                </select>
-            </div>
-            
-        <div class="form-row" id="paid_settings" style="display: {% if g.club and g.club.membership_type == 'paid' %}grid{% else %}none{% endif %}; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
-            <div class="form-group">
-                <label for="membership_fee" style="display: block; margin-bottom: 8px; color: var(--text-secondary); font-weight: 600;">Membership Fee (₱)</label>
-                <input type="number" id="membership_fee" name="membership_fee" min="0" step="0.01" value="{{ g.club.membership_fee if g.club else 0 }}"
-                       style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary);">
-            </div>
-            
-            <div class="form-group">
-                <label for="membership_duration" style="display: block; margin-bottom: 8px; color: var(--text-secondary); font-weight: 600;">Membership Duration</label>
-                <select id="membership_duration" name="membership_duration"
-                        style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary);">
-                    <option value="lifetime" {% if not g.club or g.club.membership_duration == 'lifetime' %}selected{% endif %}>Lifetime / One-time</option>
-                    <option value="monthly" {% if g.club and g.club.membership_duration == 'monthly' %}selected{% endif %}>Monthly</option>
-                    <option value="quarterly" {% if g.club and g.club.membership_duration == 'quarterly' %}selected{% endif %}>Quarterly</option>
-                    <option value="annually" {% if g.club and g.club.membership_duration == 'annually' %}selected{% endif %}>Annually</option>
-                </select>
-            </div>
-        </div>
-
-        <div style="display: flex; justify-content: flex-end; gap: 12px;">
+        <div class="setup-header-actions">
+            <a href="{{ url_for('clubadmin.dashboard') }}" class="btn-header-link">
+                <i class="ph ph-squares-four"></i>
+                <span>Club Overview</span>
+            </a>
             {% if g.club %}
-            <a href="{{ url_for('clubadmin.dashboard') }}" class="btn-cancel" style="padding: 12px 24px; border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); text-decoration: none;">Cancel</a>
+            <a href="{{ url_for('player.club_detail', club_id=g.club.id) }}" target="_blank" class="btn-header-link" title="Open player-facing public club view in a new tab">
+                <i class="ph ph-arrow-square-out"></i>
+                <span>Public View</span>
+            </a>
             {% endif %}
-            <button type="submit" class="action-box orange" style="padding: 12px 24px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
-                {% if g.club %}Save Changes{% else %}Create Club{% endif %}
-            </button>
         </div>
-    </form>
+    </div>
+
+    <!-- ── Master 2-Column Studio Layout ── -->
+    <div class="setup-studio-grid">
+        
+        <!-- ── Left Column: Configuration Studio Form ── -->
+        <div class="setup-form-column">
+            <form method="POST" action="{{ url_for('clubadmin.club_setup') }}" enctype="multipart/form-data" id="clubSetupForm" novalidate>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="membership_type" id="membership_type_input" value="{{ g.club.membership_type if g.club else 'free' }}">
+
+                <!-- CARD 1: Identity & Location -->
+                <div class="setup-card">
+                    <div class="card-title-row">
+                        <div class="card-icon-box">
+                            <i class="ph ph-shield-check"></i>
+                        </div>
+                        <div class="card-title-content">
+                            <h2>Club Identity & Location</h2>
+                            <p>Primary information displayed to players searching the community directory and entering tournaments.</p>
+                        </div>
+                    </div>
+
+                    <!-- Club Name -->
+                    <div class="form-group-custom">
+                        <div class="field-label-row">
+                            <label for="name" class="form-label-custom">
+                                Club Name <span class="req-star">*</span>
+                            </label>
+                            <span class="field-counter"><span id="nameCount">0</span>/60</span>
+                        </div>
+                        <div class="input-with-icon">
+                            <i class="ph ph-buildings input-prefix-icon"></i>
+                            <input type="text" id="name" name="name" 
+                                   class="form-input-custom" 
+                                   value="{{ g.club.name if g.club else '' }}" 
+                                   maxlength="60" 
+                                   required 
+                                   placeholder="e.g. Siniloan Pickleball Club" 
+                                   autocomplete="off">
+                        </div>
+                        <span class="field-helper">Choose a recognized club name representing your local community or facility.</span>
+                    </div>
+
+                    <!-- Location / Facility -->
+                    <div class="form-group-custom">
+                        <div class="field-label-row">
+                            <label for="location" class="form-label-custom">
+                                Home Facility & Location
+                            </label>
+                            <span class="field-counter"><span id="locCount">0</span>/80</span>
+                        </div>
+                        <div class="input-with-icon">
+                            <i class="ph ph-map-pin input-prefix-icon"></i>
+                            <input type="text" id="location" name="location" 
+                                   class="form-input-custom" 
+                                   value="{{ g.club.location if g.club else '' }}" 
+                                   maxlength="80" 
+                                   placeholder="e.g. Siniloan Sports Complex, Laguna" 
+                                   autocomplete="off">
+                        </div>
+                        <span class="field-helper">Specify your court facility, barangay, or municipality so nearby players can locate you.</span>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="form-group-custom">
+                        <div class="field-label-row">
+                            <label for="description" class="form-label-custom">
+                                Club Bio & Mission
+                            </label>
+                            <span class="field-counter"><span id="descCount">0</span>/600</span>
+                        </div>
+                        <textarea id="description" name="description" rows="4" maxlength="600"
+                                  class="form-textarea-custom" 
+                                  placeholder="Share your club culture, typical play schedules (e.g. MWF 6-9 PM), member skill levels accommodated, court rules, and what new members can expect...">{{ g.club.description if g.club else '' }}</textarea>
+                        <span class="field-helper">A warm, informative description boosts prospective player trust and club membership.</span>
+                    </div>
+                </div>
+
+                <!-- CARD 2: Visual Brand, Crest & Cover Banner -->
+                <div class="setup-card" style="margin-top: 24px;">
+                    <div class="card-title-row">
+                        <div class="card-icon-box">
+                            <i class="ph ph-image"></i>
+                        </div>
+                        <div class="card-title-content">
+                            <h2>Club Crest & Cover Banner</h2>
+                            <p>Customize both your club emblem and the top banner picture showcased in the player directory and public club details page.</p>
+                        </div>
+                    </div>
+
+                    <!-- 1. Crest Upload Subsection -->
+                    <div class="brand-asset-section">
+                        <div class="brand-asset-label-row">
+                            <span class="brand-asset-title"><i class="ph ph-shield-check" style="color: var(--primary-orange);"></i> Official Club Crest / Logo</span>
+                            <span class="brand-asset-hint">Square 1:1 • Shown on member badges, leaderboards & brackets</span>
+                        </div>
+                        <div class="logo-workspace-row">
+                            <!-- Active Crest Avatar Box -->
+                            <div class="active-logo-preview-box">
+                                <div class="crest-avatar-frame" id="activeCrestFrame">
+                                    {% if g.club and g.club.logo_url %}
+                                    <img src="{{ g.club.logo_url }}" id="activeLogoImg" class="crest-avatar-img" alt="Club Logo">
+                                    <div id="activeLogoInitials" class="crest-placeholder-text" style="display: none;">
+                                        {{ g.club.name[:2] if g.club.name else 'PB' }}
+                                    </div>
+                                    {% else %}
+                                    <img src="" id="activeLogoImg" class="crest-avatar-img" alt="Club Logo" style="display: none;">
+                                    <div id="activeLogoInitials" class="crest-placeholder-text">
+                                        {{ g.club.name[:2] if g.club and g.club.name else 'PB' }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <span class="active-logo-label">Current Crest</span>
+                            </div>
+
+                            <!-- Drag & Drop Upload Zone -->
+                            <div class="logo-dropzone" id="logoDropzone" onclick="document.getElementById('logo').click()">
+                                <input type="file" id="logo" name="logo" accept="image/png, image/jpeg, image/webp" style="display: none;">
+                                <div class="dropzone-icon">
+                                    <i class="ph ph-cloud-arrow-up"></i>
+                                </div>
+                                <div class="dropzone-text-main">
+                                    <span>Click to upload logo</span> or drag and drop
+                                </div>
+                                <div class="dropzone-text-sub">
+                                    PNG, JPG, or WEBP • Recommended 500×500 (1:1) • Max 5MB
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Staged File Status Box -->
+                        <div class="staged-file-container" id="stagedFileBox">
+                            <div class="staged-file-left">
+                                <img src="" id="stagedThumb" class="staged-thumb" alt="Preview">
+                                <div class="staged-file-meta">
+                                    <span class="staged-file-name" id="stagedFileName">logo_update.png</span>
+                                    <span class="staged-file-size" id="stagedFileSize">Ready to upload on save</span>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-remove-staged" id="btnRemoveStaged" title="Remove staged logo">
+                                <i class="ph ph-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="height: 1px; background: var(--border-color, #f1f5f9); margin: 6px 0;"></div>
+
+                    <!-- 2. Cover Banner Upload Subsection -->
+                    <div class="brand-asset-section">
+                        <div class="brand-asset-label-row">
+                            <span class="brand-asset-title"><i class="ph ph-picture-in-picture" style="color: #10b981;"></i> Club Cover Banner / Top Picture</span>
+                            <span class="brand-asset-hint">Wide 16:9 or 3:1 • Top picture on player directory cards & details hero</span>
+                        </div>
+                        <div class="banner-workspace-row">
+                            <!-- Active Banner Preview Box -->
+                            <div class="active-banner-preview-box">
+                                <div class="banner-frame-preview" id="activeBannerFrame"
+                                     {% if g.club and g.club.banner_url %}style="background: url('{{ g.club.banner_url }}') center/cover no-repeat;"{% endif %}>
+                                    {% if not g.club or not g.club.banner_url %}
+                                    <div class="banner-placeholder-content" id="activeBannerPlaceholder">
+                                        <i class="ph ph-image"></i>
+                                        <span>Default Strip</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <span class="active-logo-label">Current Banner</span>
+                            </div>
+
+                            <!-- Drag & Drop Upload Zone for Banner -->
+                            <div class="logo-dropzone" id="bannerDropzone" onclick="document.getElementById('banner').click()">
+                                <input type="file" id="banner" name="banner" accept="image/png, image/jpeg, image/webp" style="display: none;">
+                                <div class="dropzone-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                                    <i class="ph ph-camera-plus"></i>
+                                </div>
+                                <div class="dropzone-text-main">
+                                    <span>Click to upload cover picture</span> or drag and drop
+                                </div>
+                                <div class="dropzone-text-sub">
+                                    PNG, JPG, or WEBP • Recommended 1200×400 (3:1) • Max 5MB
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Staged Banner File Status Box -->
+                        <div class="staged-file-container" id="stagedBannerBox">
+                            <div class="staged-file-left">
+                                <img src="" id="stagedBannerThumb" class="staged-thumb" style="width: 60px; height: 36px; border-radius: 6px;" alt="Banner Preview">
+                                <div class="staged-file-meta">
+                                    <span class="staged-file-name" id="stagedBannerName">banner_update.jpg</span>
+                                    <span class="staged-file-size" id="stagedBannerSize">Ready to upload on save</span>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-remove-staged" id="btnRemoveStagedBanner" title="Remove staged banner">
+                                <i class="ph ph-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 3: Membership Model & Dues -->
+                <div class="setup-card" style="margin-top: 24px;">
+                    <div class="card-title-row">
+                        <div class="card-icon-box">
+                            <i class="ph ph-identification-card"></i>
+                        </div>
+                        <div class="card-title-content">
+                            <h2>Membership Model & Dues Structure</h2>
+                            <p>Configure how players join your club and manage recurring membership dues.</p>
+                        </div>
+                    </div>
+
+                    <!-- Plan Choice Cards -->
+                    <div class="membership-plan-grid">
+                        <!-- Free Plan Card -->
+                        <div class="plan-option-card free-plan {% if not g.club or g.club.membership_type != 'paid' %}selected{% endif %}" 
+                             id="planCardFree" 
+                             onclick="selectMembershipPlan('free')">
+                            <div class="plan-card-top">
+                                <div class="plan-icon-wrap">
+                                    <i class="ph ph-hand-heart"></i>
+                                </div>
+                                <div class="plan-radio-circle">
+                                    <div class="plan-radio-inner"></div>
+                                </div>
+                            </div>
+                            <div class="plan-name-row">
+                                <h3 class="plan-title">Free to Join</h3>
+                                <span class="plan-tag free">Open Access</span>
+                            </div>
+                            <p class="plan-desc">
+                                Zero dues required. Registered players can join your club roster immediately without payment approval.
+                            </p>
+                        </div>
+
+                        <!-- Paid Plan Card -->
+                        <div class="plan-option-card paid-plan {% if g.club and g.club.membership_type == 'paid' %}selected{% endif %}" 
+                             id="planCardPaid" 
+                             onclick="selectMembershipPlan('paid')">
+                            <div class="plan-card-top">
+                                <div class="plan-icon-wrap">
+                                    <i class="ph ph-crown"></i>
+                                </div>
+                                <div class="plan-radio-circle">
+                                    <div class="plan-radio-inner"></div>
+                                </div>
+                            </div>
+                            <div class="plan-name-row">
+                                <h3 class="plan-title">Paid Official Membership</h3>
+                                <span class="plan-tag paid">Dues Required</span>
+                            </div>
+                            <p class="plan-desc">
+                                Members pay structured dues. Integrates with GCash receipts, the Payment Ledger, and duration tracking.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Paid Settings Expandable Drawer -->
+                    <div class="paid-settings-drawer" id="paidSettingsDrawer" 
+                         style="display: {% if g.club and g.club.membership_type == 'paid' %}flex{% else %}none{% endif %};">
+                        
+                        <div class="paid-drawer-grid">
+                            <!-- Fee Input -->
+                            <div class="form-group-custom">
+                                <label for="membership_fee" class="form-label-custom">
+                                    Membership Fee (₱) <span class="req-star">*</span>
+                                </label>
+                                <div class="currency-input-wrap">
+                                    <span class="currency-prefix">₱</span>
+                                    <input type="number" id="membership_fee" name="membership_fee" 
+                                           class="form-input-custom" 
+                                           min="0" step="0.01" 
+                                           value="{{ g.club.membership_fee if g.club else 50.0 }}" 
+                                           placeholder="0.00">
+                                </div>
+                                <div class="quick-fee-row">
+                                    <span style="font-size: 0.72rem; color: var(--text-secondary); margin-right: 2px;">Presets:</span>
+                                    <button type="button" class="quick-fee-pill" onclick="setQuickFee(50)">₱50</button>
+                                    <button type="button" class="quick-fee-pill" onclick="setQuickFee(100)">₱100</button>
+                                    <button type="button" class="quick-fee-pill" onclick="setQuickFee(250)">₱250</button>
+                                    <button type="button" class="quick-fee-pill" onclick="setQuickFee(500)">₱500</button>
+                                    <button type="button" class="quick-fee-pill" onclick="setQuickFee(1000)">₱1,000</button>
+                                </div>
+                            </div>
+
+                            <!-- Duration Select -->
+                            <div class="form-group-custom">
+                                <label for="membership_duration" class="form-label-custom">
+                                    Membership Duration Cycle
+                                </label>
+                                <select id="membership_duration" name="membership_duration" class="form-select-custom">
+                                    <option value="lifetime" {% if not g.club or g.club.membership_duration == 'lifetime' %}selected{% endif %}>Lifetime / One-time Payment</option>
+                                    <option value="monthly" {% if g.club and g.club.membership_duration == 'monthly' %}selected{% endif %}>Monthly Renewal (30 Days)</option>
+                                    <option value="quarterly" {% if g.club and g.club.membership_duration == 'quarterly' %}selected{% endif %}>Quarterly Renewal (90 Days)</option>
+                                    <option value="annually" {% if g.club and g.club.membership_duration == 'annually' %}selected{% endif %}>Annual Membership (365 Days)</option>
+                                </select>
+                                <span class="field-helper">Duration calculates automatic expiration and sends renewal alerts.</span>
+                            </div>
+                        </div>
+
+                        <!-- System Notice -->
+                        <div class="drawer-info-callout">
+                            <i class="ph ph-bell-ringing"></i>
+                            <div>
+                                <strong>Automated Expiration Alerts:</strong> 
+                                PickleballHub automatically warns members 3 days prior to expiration. Expired players are clearly marked in your Member Roster and Payment Ledger.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ACTIONS DOCK -->
+                <div class="setup-actions-dock" style="margin-top: 24px;">
+                    <div class="setup-actions-left">
+                        <button type="button" class="btn-secondary-custom" id="btnResetForm">
+                            <i class="ph ph-arrow-counter-clockwise"></i>
+                            <span>Discard Changes</span>
+                        </button>
+                    </div>
+                    <div class="setup-actions-right">
+                        {% if g.club %}
+                        <a href="{{ url_for('clubadmin.dashboard') }}" class="btn-secondary-custom">
+                            Cancel
+                        </a>
+                        {% endif %}
+                        <button type="submit" class="btn-primary-save" id="btnSaveClub">
+                            <div class="btn-spinner" id="btnSaveSpinner"></div>
+                            <i class="ph ph-floppy-disk" id="btnSaveIcon"></i>
+                            <span id="btnSaveText">{% if g.club %}Save Club Settings{% else %}Create Club Profile{% endif %}</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- ── Right Column: Sticky Live Preview & Scorecard Dock ── -->
+        <div class="setup-preview-column">
+            
+            <!-- Live Member Directory Preview Card -->
+            <div class="preview-box-container">
+                <div class="preview-box-header">
+                    <div class="preview-box-title">
+                        <i class="ph ph-eye" style="color: var(--primary-orange);"></i>
+                        Live Directory Preview
+                    </div>
+                    <span class="preview-live-indicator">
+                        <span class="pulse-dot"></span> Real-time Sync
+                    </span>
+                </div>
+
+                <!-- Mock Player-Facing Card -->
+                <div class="mock-club-card">
+                    <div class="mock-card-banner" id="previewBannerBox"
+                         {% if g.club and g.club.banner_url %}style="background: url('{{ g.club.banner_url }}') center/cover no-repeat; position: relative;"{% endif %}>
+                        <div id="previewBannerOverlay" style="{% if not g.club or not g.club.banner_url %}display: none;{% endif %} position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15, 23, 42, 0.3) 0%, rgba(15, 23, 42, 0.6) 100%); pointer-events: none; border-top-left-radius: 18px; border-top-right-radius: 18px;"></div>
+                        <span class="mock-watermark-tag" style="position: relative; z-index: 2;">Player View</span>
+                    </div>
+                    <div class="mock-card-body">
+                        <div class="mock-crest-row">
+                            <div class="mock-crest-box">
+                                <img src="{{ g.club.logo_url if g.club and g.club.logo_url else '' }}" 
+                                     id="previewCrestImg" 
+                                     class="mock-crest-img" 
+                                     alt="Preview Crest"
+                                     style="{% if not g.club or not g.club.logo_url %}display: none;{% endif %}">
+                                <div id="previewCrestInitials" class="mock-crest-initials"
+                                     style="{% if g.club and g.club.logo_url %}display: none;{% endif %}">
+                                    {{ g.club.name[:2] if g.club and g.club.name else 'PB' }}
+                                </div>
+                            </div>
+                            <span id="previewPlanPill" class="mock-card-plan-pill {% if g.club and g.club.membership_type == 'paid' %}paid{% else %}free{% endif %}">
+                                {% if g.club and g.club.membership_type == 'paid' %}
+                                <i class="ph ph-crown"></i> ₱{{ "%.2f"|format(g.club.membership_fee) if g.club.membership_fee else '50.00' }} • {{ (g.club.membership_duration or 'Lifetime')|capitalize }}
+                                {% else %}
+                                <i class="ph ph-check"></i> Free to Join
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <h3 class="mock-club-title" id="previewClubName">
+                            {{ g.club.name if g.club else 'Siniloan Pickleball Club' }}
+                        </h3>
+
+                        <div class="mock-location-row" id="previewLocationRow">
+                            <i class="ph ph-map-pin"></i>
+                            <span id="previewLocationText">
+                                {{ g.club.location if g.club and g.club.location else 'Siniloan, Laguna' }}
+                            </span>
+                        </div>
+
+                        <p class="mock-desc-text" id="previewDescText">
+                            {{ g.club.description if g.club and g.club.description else 'Join our growing pickleball community for regular weekly play, competitive tournaments, and social drills.' }}
+                        </p>
+
+                        <div class="mock-admin-meta">
+                            <span>Admin: <strong>{{ current_user.full_name }}</strong></span>
+                            <span><i class="ph ph-users-three"></i> Active Club</span>
+                        </div>
+
+                        <div class="mock-btn-join">
+                            <i class="ph ph-lock-simple"></i> Join Club (Directory Preview)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Completeness Scorecard -->
+            <div class="completeness-card">
+                <div class="completeness-header">
+                    <div class="completeness-title">
+                        <i class="ph ph-chart-donut" style="color: var(--primary-orange);"></i>
+                        Profile Readiness
+                    </div>
+                    <span class="completeness-pct" id="completenessPct">0%</span>
+                </div>
+
+                <div class="progress-track">
+                    <div class="progress-fill" id="completenessFill"></div>
+                </div>
+
+                <ul class="checklist-list">
+                    <li class="checklist-item" id="chkName">
+                        <div class="check-icon-circle"><i class="ph ph-check"></i></div>
+                        <span>Official Club Name specified</span>
+                    </li>
+                    <li class="checklist-item" id="chkLocation">
+                        <div class="check-icon-circle"><i class="ph ph-check"></i></div>
+                        <span>Home Venue / Location added</span>
+                    </li>
+                    <li class="checklist-item" id="chkDesc">
+                        <div class="check-icon-circle"><i class="ph ph-check"></i></div>
+                        <span>Club bio & play schedules described</span>
+                    </li>
+                    <li class="checklist-item" id="chkLogo">
+                        <div class="check-icon-circle"><i class="ph ph-check"></i></div>
+                        <span>Official Crest / Logo uploaded</span>
+                    </li>
+                    <li class="checklist-item" id="chkBanner">
+                        <div class="check-icon-circle"><i class="ph ph-check"></i></div>
+                        <span>Cover Banner / Picture uploaded</span>
+                    </li>
+                    <li class="checklist-item" id="chkPlan">
+                        <div class="check-icon-circle"><i class="ph ph-check"></i></div>
+                        <span>Membership plan configured</span>
+                    </li>
+                </ul>
+
+                <div class="completeness-tip-box">
+                    <i class="ph ph-lightbulb"></i>
+                    <div>
+                        <strong>Pro Tip:</strong> Complete club profiles gain 3× more member applications and higher participation in regional tournaments.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
 </div>
 
+<!-- ── Self-Contained JavaScript for Real-Time Synchronization & UX ── -->
 <script>
-function toggleFeeInput() {
-    const type = document.getElementById('membership_type').value;
-    document.getElementById('paid_settings').style.display = type === 'paid' ? 'grid' : 'none';
-}
+document.addEventListener('DOMContentLoaded', function() {
+    // Inputs
+    const nameInput = document.getElementById('name');
+    const locInput = document.getElementById('location');
+    const descInput = document.getElementById('description');
+    const feeInput = document.getElementById('membership_fee');
+    const durationInput = document.getElementById('membership_duration');
+    const membershipTypeInput = document.getElementById('membership_type_input');
+    const logoInput = document.getElementById('logo');
+    const logoDropzone = document.getElementById('logoDropzone');
+    const stagedFileBox = document.getElementById('stagedFileBox');
+    const stagedThumb = document.getElementById('stagedThumb');
+    const stagedFileName = document.getElementById('stagedFileName');
+    const stagedFileSize = document.getElementById('stagedFileSize');
+    const btnRemoveStaged = document.getElementById('btnRemoveStaged');
+
+    const bannerInput = document.getElementById('banner');
+    const bannerDropzone = document.getElementById('bannerDropzone');
+    const stagedBannerBox = document.getElementById('stagedBannerBox');
+    const stagedBannerThumb = document.getElementById('stagedBannerThumb');
+    const stagedBannerName = document.getElementById('stagedBannerName');
+    const stagedBannerSize = document.getElementById('stagedBannerSize');
+    const btnRemoveStagedBanner = document.getElementById('btnRemoveStagedBanner');
+    const previewBannerBox = document.getElementById('previewBannerBox');
+    const previewBannerOverlay = document.getElementById('previewBannerOverlay');
+    const activeBannerFrame = document.getElementById('activeBannerFrame');
+    const activeBannerPlaceholder = document.getElementById('activeBannerPlaceholder');
+    const chkBanner = document.getElementById('chkBanner');
+
+    // Counters
+    const nameCount = document.getElementById('nameCount');
+    const locCount = document.getElementById('locCount');
+    const descCount = document.getElementById('descCount');
+
+    // Live Preview elements
+    const previewClubName = document.getElementById('previewClubName');
+    const previewLocationText = document.getElementById('previewLocationText');
+    const previewDescText = document.getElementById('previewDescText');
+    const previewPlanPill = document.getElementById('previewPlanPill');
+    const previewCrestImg = document.getElementById('previewCrestImg');
+    const previewCrestInitials = document.getElementById('previewCrestInitials');
+    const activeLogoImg = document.getElementById('activeLogoImg');
+    const activeLogoInitials = document.getElementById('activeLogoInitials');
+
+    // Completeness elements
+    const completenessPct = document.getElementById('completenessPct');
+    const completenessFill = document.getElementById('completenessFill');
+    const chkName = document.getElementById('chkName');
+    const chkLocation = document.getElementById('chkLocation');
+    const chkDesc = document.getElementById('chkDesc');
+    const chkLogo = document.getElementById('chkLogo');
+    const chkPlan = document.getElementById('chkPlan');
+
+    // Store initial values for reset
+    const initialFormState = {
+        name: nameInput.value,
+        location: locInput.value,
+        description: descInput.value,
+        membership_type: membershipTypeInput.value,
+        fee: feeInput ? feeInput.value : 0,
+        duration: durationInput ? durationInput.value : 'lifetime'
+    };
+
+    // Helper: update character count and live preview for text fields
+    function updateName() {
+        const val = nameInput.value.trim();
+        nameCount.textContent = nameInput.value.length;
+        previewClubName.textContent = val || 'Your Club Name';
+        
+        // Update initials if no logo image
+        const initials = (val ? val.substring(0, 2) : 'PB').toUpperCase();
+        if (previewCrestInitials) previewCrestInitials.textContent = initials;
+        if (activeLogoInitials) activeLogoInitials.textContent = initials;
+        
+        updateCompleteness();
+    }
+
+    function updateLocation() {
+        const val = locInput.value.trim();
+        locCount.textContent = locInput.value.length;
+        previewLocationText.textContent = val || 'Location not specified';
+        updateCompleteness();
+    }
+
+    function updateDescription() {
+        const val = descInput.value.trim();
+        descCount.textContent = descInput.value.length;
+        previewDescText.textContent = val || 'No club description provided yet. Add details to attract prospective players!';
+        updateCompleteness();
+    }
+
+    function updatePlanBadge() {
+        const plan = membershipTypeInput.value;
+        if (plan === 'paid') {
+            const feeVal = parseFloat(feeInput.value || 0).toFixed(2);
+            const durationText = durationInput.options[durationInput.selectedIndex].text.split(' ')[0] || 'Lifetime';
+            previewPlanPill.className = 'mock-card-plan-pill paid';
+            previewPlanPill.innerHTML = `<i class="ph ph-crown"></i> ₱${feeVal} • ${durationText}`;
+        } else {
+            previewPlanPill.className = 'mock-card-plan-pill free';
+            previewPlanPill.innerHTML = `<i class="ph ph-check"></i> Free to Join`;
+        }
+        updateCompleteness();
+    }
+
+    // Attach text input event listeners
+    nameInput.addEventListener('input', updateName);
+    locInput.addEventListener('input', updateLocation);
+    descInput.addEventListener('input', updateDescription);
+    if (feeInput) feeInput.addEventListener('input', updatePlanBadge);
+    if (durationInput) durationInput.addEventListener('change', updatePlanBadge);
+
+    // Global function for membership plan selection
+    window.selectMembershipPlan = function(planType) {
+        membershipTypeInput.value = planType;
+        const cardFree = document.getElementById('planCardFree');
+        const cardPaid = document.getElementById('planCardPaid');
+        const paidDrawer = document.getElementById('paidSettingsDrawer');
+
+        if (planType === 'paid') {
+            cardPaid.classList.add('selected');
+            cardFree.classList.remove('selected');
+            paidDrawer.style.display = 'flex';
+        } else {
+            cardFree.classList.add('selected');
+            cardPaid.classList.remove('selected');
+            paidDrawer.style.display = 'none';
+        }
+
+        updatePlanBadge();
+    };
+
+    // Quick fee setter
+    window.setQuickFee = function(amount) {
+        if (feeInput) {
+            feeInput.value = parseFloat(amount).toFixed(2);
+            updatePlanBadge();
+            // Subtle pulse feedback
+            feeInput.style.transform = 'scale(1.03)';
+            setTimeout(() => feeInput.style.transform = 'scale(1)', 150);
+        }
+    };
+
+    // Logo Drag and Drop Handlers
+    ['dragenter', 'dragover'].forEach(eventName => {
+        logoDropzone.addEventListener(eventName, function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            logoDropzone.classList.add('drag-active');
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        logoDropzone.addEventListener(eventName, function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            logoDropzone.classList.remove('drag-active');
+        }, false);
+    });
+
+    logoDropzone.addEventListener('drop', function(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files && files.length > 0) {
+            logoInput.files = files;
+            handleFileSelection(files[0]);
+        }
+    });
+
+    logoInput.addEventListener('change', function(e) {
+        if (this.files && this.files.length > 0) {
+            handleFileSelection(this.files[0]);
+        }
+    });
+
+    function handleFileSelection(file) {
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Selected file is larger than 5MB. Please choose a smaller image.');
+            logoInput.value = '';
+            return;
+        }
+        if (!file.type.match(/^image\/(png|jpeg|webp)$/)) {
+            alert('Please select a PNG, JPG, or WEBP image.');
+            logoInput.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            const dataUrl = evt.target.result;
+            stagedThumb.src = dataUrl;
+            stagedFileName.textContent = file.name;
+            stagedFileSize.textContent = (file.size / 1024).toFixed(1) + ' KB • Ready to upload';
+            stagedFileBox.style.display = 'flex';
+
+            previewCrestImg.src = dataUrl;
+            previewCrestImg.style.display = 'block';
+            if (previewCrestInitials) previewCrestInitials.style.display = 'none';
+
+            if (activeLogoImg) {
+                activeLogoImg.src = dataUrl;
+                activeLogoImg.style.display = 'block';
+            }
+            if (activeLogoInitials) activeLogoInitials.style.display = 'none';
+
+            updateCompleteness();
+        };
+        reader.readAsDataURL(file);
+    }
+
+    btnRemoveStaged.addEventListener('click', function() {
+        logoInput.value = '';
+        stagedFileBox.style.display = 'none';
+        
+        {% if g.club and g.club.logo_url %}
+        const origUrl = "{{ g.club.logo_url }}";
+        previewCrestImg.src = origUrl;
+        previewCrestImg.style.display = 'block';
+        if (previewCrestInitials) previewCrestInitials.style.display = 'none';
+        if (activeLogoImg) {
+            activeLogoImg.src = origUrl;
+            activeLogoImg.style.display = 'block';
+        }
+        if (activeLogoInitials) activeLogoInitials.style.display = 'none';
+        {% else %}
+        previewCrestImg.style.display = 'none';
+        if (previewCrestInitials) previewCrestInitials.style.display = 'flex';
+        if (activeLogoImg) activeLogoImg.style.display = 'none';
+        if (activeLogoInitials) activeLogoInitials.style.display = 'flex';
+        {% endif %}
+
+        updateCompleteness();
+    });
+
+    // ── Cover Banner Drag and Drop Handlers ──
+    if (bannerDropzone && bannerInput) {
+        ['dragenter', 'dragover'].forEach(eventName => {
+            bannerDropzone.addEventListener(eventName, function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                bannerDropzone.classList.add('drag-active');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            bannerDropzone.addEventListener(eventName, function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                bannerDropzone.classList.remove('drag-active');
+            }, false);
+        });
+
+        bannerDropzone.addEventListener('drop', function(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files && files.length > 0) {
+                bannerInput.files = files;
+                handleBannerSelection(files[0]);
+            }
+        });
+
+        bannerInput.addEventListener('change', function(e) {
+            if (this.files && this.files.length > 0) {
+                handleBannerSelection(this.files[0]);
+            }
+        });
+    }
+
+    function handleBannerSelection(file) {
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Selected banner file is larger than 5MB. Please choose a smaller image.');
+            bannerInput.value = '';
+            return;
+        }
+        if (!file.type.match(/^image\/(png|jpeg|webp)$/)) {
+            alert('Please select a PNG, JPG, or WEBP image.');
+            bannerInput.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            const dataUrl = evt.target.result;
+            // Update Staged Box
+            stagedBannerThumb.src = dataUrl;
+            stagedBannerName.textContent = file.name;
+            stagedBannerSize.textContent = (file.size / 1024).toFixed(1) + ' KB • Ready to upload';
+            stagedBannerBox.style.display = 'flex';
+
+            // Update Live Preview Banner in card
+            if (previewBannerBox) {
+                previewBannerBox.style.background = `url('${dataUrl}') center/cover no-repeat`;
+            }
+            if (previewBannerOverlay) {
+                previewBannerOverlay.style.display = 'block';
+            }
+
+            // Update Card 2 Active Banner Preview
+            if (activeBannerFrame) {
+                activeBannerFrame.style.background = `url('${dataUrl}') center/cover no-repeat`;
+            }
+            if (activeBannerPlaceholder) {
+                activeBannerPlaceholder.style.display = 'none';
+            }
+
+            updateCompleteness();
+        };
+        reader.readAsDataURL(file);
+    }
+
+    if (btnRemoveStagedBanner) {
+        btnRemoveStagedBanner.addEventListener('click', function() {
+            bannerInput.value = '';
+            stagedBannerBox.style.display = 'none';
+
+            {% if g.club and g.club.banner_url %}
+            const origBanner = "{{ g.club.banner_url }}";
+            if (previewBannerBox) previewBannerBox.style.background = `url('${origBanner}') center/cover no-repeat`;
+            if (previewBannerOverlay) previewBannerOverlay.style.display = 'block';
+            if (activeBannerFrame) activeBannerFrame.style.background = `url('${origBanner}') center/cover no-repeat`;
+            if (activeBannerPlaceholder) activeBannerPlaceholder.style.display = 'none';
+            {% else %}
+            if (previewBannerBox) previewBannerBox.style.background = '';
+            if (previewBannerOverlay) previewBannerOverlay.style.display = 'none';
+            if (activeBannerFrame) activeBannerFrame.style.background = '';
+            if (activeBannerPlaceholder) activeBannerPlaceholder.style.display = 'flex';
+            {% endif %}
+
+            updateCompleteness();
+        });
+    }
+
+    // Reset Form button
+    document.getElementById('btnResetForm').addEventListener('click', function() {
+        nameInput.value = initialFormState.name;
+        locInput.value = initialFormState.location;
+        descInput.value = initialFormState.description;
+        if (feeInput) feeInput.value = initialFormState.fee;
+        if (durationInput) durationInput.value = initialFormState.duration;
+        selectMembershipPlan(initialFormState.membership_type);
+        btnRemoveStaged.click();
+        if (btnRemoveStagedBanner) btnRemoveStagedBanner.click();
+        updateName();
+        updateLocation();
+        updateDescription();
+        updatePlanBadge();
+    });
+
+    // Profile Completeness Calculation
+    function updateCompleteness() {
+        let score = 0;
+        const total = 6;
+
+        // 1. Name
+        const hasName = nameInput.value.trim().length > 0;
+        chkName.classList.toggle('done', hasName);
+        if (hasName) score++;
+
+        // 2. Location
+        const hasLoc = locInput.value.trim().length > 0;
+        chkLocation.classList.toggle('done', hasLoc);
+        if (hasLoc) score++;
+
+        // 3. Description
+        const hasDesc = descInput.value.trim().length >= 10;
+        chkDesc.classList.toggle('done', hasDesc);
+        if (hasDesc) score++;
+
+        // 4. Logo
+        const hasLogo = (logoInput.files && logoInput.files.length > 0) || 
+                        (activeLogoImg && activeLogoImg.src && activeLogoImg.style.display !== 'none' && !activeLogoImg.src.endsWith('/'));
+        chkLogo.classList.toggle('done', !!hasLogo);
+        if (hasLogo) score++;
+
+        // 5. Banner
+        const hasBanner = (bannerInput && bannerInput.files && bannerInput.files.length > 0) ||
+                          (activeBannerFrame && activeBannerFrame.style.background && !activeBannerFrame.style.background.includes('none'));
+        if (chkBanner) chkBanner.classList.toggle('done', !!hasBanner);
+        if (hasBanner) score++;
+
+        // 6. Plan
+        const plan = membershipTypeInput.value;
+        const hasPlan = plan === 'free' || (plan === 'paid' && parseFloat(feeInput.value || 0) > 0);
+        chkPlan.classList.toggle('done', hasPlan);
+        if (hasPlan) score++;
+
+        const pct = Math.round((score / total) * 100);
+        completenessPct.textContent = pct + '%';
+        completenessFill.style.width = pct + '%';
+        
+        // Color transition
+        if (pct < 40) {
+            completenessPct.style.color = '#ef4444';
+        } else if (pct < 80) {
+            completenessPct.style.color = '#f59e0b';
+        } else {
+            completenessPct.style.color = '#10b981';
+        }
+    }
+
+    // Form Submit state
+    const form = document.getElementById('clubSetupForm');
+    form.addEventListener('submit', function(e) {
+        if (!nameInput.value.trim()) {
+            e.preventDefault();
+            nameInput.focus();
+            nameInput.style.borderColor = '#ef4444';
+            alert('Please enter a club name.');
+            return false;
+        }
+
+        const btnSave = document.getElementById('btnSaveClub');
+        const spinner = document.getElementById('btnSaveSpinner');
+        const icon = document.getElementById('btnSaveIcon');
+        const text = document.getElementById('btnSaveText');
+
+        btnSave.disabled = true;
+        btnSave.style.opacity = '0.85';
+        spinner.style.display = 'block';
+        icon.style.display = 'none';
+        text.textContent = 'Saving Changes...';
+    });
+
+    // Initial triggers
+    updateName();
+    updateLocation();
+    updateDescription();
+    updatePlanBadge();
+    updateCompleteness();
+});
 </script>
 {% endblock %}

@@ -1,517 +1,1769 @@
 {% extends "player/base_player.html" %}
 
-{% block title %}Club Details: {{ club.name }}{% endblock %}
+{% block title %}{{ club.name }} — Club Details{% endblock %}
 
 {% block extra_head %}
 <style>
-    .club-detail-layout {
+    /* ==========================================================================
+       CLUB DETAIL — SPORTS PLATFORM 2.0 (LIGHT & DARK DUAL THEME)
+       ========================================================================== */
+    .club-page-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+        width: 100%;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding-bottom: 140px; /* Generous clearance for floating bookings cart widget */
+    }
+
+    /* ── Back Navigation ── */
+    .club-back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        color: var(--sports-text-muted, #475467);
+        font-size: 0.88rem;
+        font-weight: 700;
+        transition: color 0.18s ease, transform 0.18s ease;
+        align-self: flex-start;
+    }
+
+    .club-back-link:hover {
+        color: var(--primary-orange, #ff5722);
+        transform: translateX(-3px);
+    }
+
+    /* ── Club Hero Banner (Light Mode default) ── */
+    .club-banner-hero {
+        position: relative;
+        min-height: 180px;
+        border-radius: 20px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        box-shadow: 0 4px 16px rgba(16, 24, 40, 0.05);
+        display: flex;
+        align-items: center;
+        transition: background 0.3s ease, border-color 0.3s ease;
+    }
+
+    .club-banner-hero::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #ff5722, #10b981);
+        z-index: 2;
+    }
+
+    .club-banner-hero.has-cover {
+        background-size: cover !important;
+        background-position: center !important;
+        border-color: rgba(255, 255, 255, 0.15) !important;
+    }
+
+    .club-banner-hero.has-cover::before {
+        display: none;
+    }
+
+    .club-banner-hero.has-cover .club-banner-title {
+        color: #ffffff !important;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .club-banner-hero.has-cover .club-banner-meta-row span {
+        color: #e2e8f0 !important;
+        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .club-banner-hero.has-cover .club-banner-logo-wrap {
+        border-color: rgba(255, 255, 255, 0.6);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .club-banner-hero::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 380px;
+        height: 100%;
+        background: radial-gradient(circle at 85% 20%, rgba(225, 86, 35, 0.08) 0%, rgba(16, 185, 129, 0.04) 50%, transparent 80%);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .club-banner-overlay {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        padding: 26px 30px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .club-banner-info-left {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex: 1;
+        min-width: 280px;
+    }
+
+    .club-banner-logo-wrap {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        border: 3.5px solid #ffffff;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        background: #ffffff;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .club-banner-logo-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .club-banner-fallback-avatar {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        font-weight: 900;
+        color: #ffffff;
+        background: linear-gradient(135deg, var(--primary-orange, #ff5722), #ea580c);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        user-select: none;
+    }
+
+    .club-banner-text {
+        color: var(--sports-text-main, #0f172a);
+    }
+
+    .club-banner-title {
+        font-size: 1.85rem;
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        color: var(--sports-text-main, #0f172a);
+        margin: 0 0 6px 0;
+    }
+
+    .club-banner-meta-row {
+        display: flex;
+        gap: 16px;
+        font-size: 0.86rem;
+        color: var(--sports-text-muted, #475467);
+        align-items: center;
+        flex-wrap: wrap;
+        font-weight: 500;
+    }
+
+    .club-banner-meta-row span {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .club-banner-meta-row i {
+        color: var(--primary-orange, #ff5722);
+    }
+
+    .club-banner-actions-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+    }
+
+    .btn-hero-digital-pass {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        border-radius: 9999px;
+        font-size: 0.84rem;
+        font-weight: 800;
+        background: #ffffff;
+        color: var(--sports-text-main, #0f172a);
+        border: 1.5px solid var(--sports-border, #d0d5dd);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-hero-digital-pass:hover {
+        border-color: var(--primary-orange, #ff5722);
+        color: var(--primary-orange, #ff5722);
+        background: #fff7ed;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(225, 86, 35, 0.15);
+    }
+
+    /* ── Quick Action Hub ── */
+    .club-quick-actions-bar {
         display: grid;
-        grid-template-columns: 1.6fr 1fr;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+    }
+
+    .club-action-tile {
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        border-radius: 16px;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        text-decoration: none;
+        color: var(--sports-text-main, #0f172a);
+        box-shadow: var(--sports-shadow-sm, 0 1px 3px rgba(16, 24, 40, 0.04));
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        cursor: pointer;
+    }
+
+    .club-action-tile:hover {
+        transform: translateY(-2px);
+        border-color: var(--primary-orange, #ff5722);
+        box-shadow: 0 6px 18px rgba(225, 86, 35, 0.1);
+    }
+
+    .action-tile-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+
+    .action-tile-icon.green { background: rgba(16, 185, 129, 0.12); color: #059669; }
+    .action-tile-icon.orange { background: rgba(225, 86, 35, 0.12); color: #d04512; }
+    .action-tile-icon.blue { background: rgba(59, 130, 246, 0.12); color: #2563eb; }
+    .action-tile-icon.purple { background: rgba(139, 92, 246, 0.12); color: #7c3aed; }
+
+    .action-tile-text {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .action-tile-title {
+        font-size: 0.88rem;
+        font-weight: 800;
+        line-height: 1.2;
+        color: var(--sports-text-main, #0f172a);
+    }
+
+    .action-tile-sub {
+        font-size: 0.74rem;
+        color: var(--sports-text-muted, #475467);
+        margin-top: 2px;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* ── Tabbed Navigation ── */
+    .club-tabs-nav {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 2px solid var(--sports-border, #eaecf0);
+        padding-bottom: 4px;
+        overflow-x: auto;
+    }
+
+    .club-tab-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        border-radius: 12px 12px 0 0;
+        border: none;
+        background: transparent;
+        color: var(--sports-text-muted, #475467);
+        font-size: 0.88rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+        white-space: nowrap;
+    }
+
+    .club-tab-btn:hover {
+        color: var(--sports-text-main, #0f172a);
+    }
+
+    .club-tab-btn.active {
+        color: var(--primary-orange, #ff5722);
+    }
+
+    .club-tab-btn.active::after {
+        content: "";
+        position: absolute;
+        bottom: -6px;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--primary-orange, #ff5722);
+        border-radius: 3px 3px 0 0;
+    }
+
+    .tab-badge-pill {
+        padding: 2px 7px;
+        border-radius: 9999px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        background: #f1f5f9;
+        color: #475467;
+        border: 1px solid #e2e8f0;
+    }
+
+    .club-tab-btn.active .tab-badge-pill {
+        background: rgba(225, 86, 35, 0.12);
+        color: var(--primary-orange, #ff5722);
+        border-color: rgba(225, 86, 35, 0.25);
+    }
+
+    /* ── Main Two-Column Layout ── */
+    .club-main-layout {
+        display: grid;
+        grid-template-columns: 1.7fr 1fr;
         gap: 24px;
         align-items: start;
     }
 
-    @media (max-width: 900px) {
-        .club-detail-layout {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    /* Club Banner */
-    .club-banner {
-        height: 200px;
-        background: linear-gradient(135deg, var(--btn-navy), var(--primary-orange-light));
-        border-radius: 16px;
-        position: relative;
-        overflow: hidden;
-        margin-bottom: 24px;
-        box-shadow: var(--shadow-card);
-        border: 1px solid var(--border-color);
-    }
-
-    .club-banner-overlay {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(to top, rgba(15, 18, 24, 0.85) 0%, rgba(15, 18, 24, 0.2) 100%);
-        display: flex;
-        align-items: flex-end;
-        padding: 24px;
-    }
-
-    .club-banner-logo {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        border: 4px solid var(--card-bg);
-        background: var(--card-bg);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2.2rem;
-        color: var(--text-muted);
-        object-fit: cover;
-        box-shadow: var(--shadow-sm);
-        flex-shrink: 0;
-    }
-
-    .club-banner-info {
-        margin-left: 20px;
-        color: #fff;
-    }
-
-    .club-banner-title {
-        font-size: 1.6rem;
-        font-weight: 800;
-        margin: 0;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-    }
-
-    .club-banner-meta {
-        display: flex;
-        gap: 16px;
-        font-size: 0.85rem;
-        color: rgba(255, 255, 255, 0.85);
-        margin-top: 6px;
-        align-items: center;
-    }
-
-    .club-banner-meta span {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    /* Cards & Section headers */
-    .club-card {
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        border-radius: 14px;
+    /* Section Cards */
+    .club-card-pro {
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        border-radius: 18px;
         padding: 24px;
         margin-bottom: 20px;
-        box-shadow: var(--shadow-card);
+        box-shadow: var(--sports-shadow-sm, 0 1px 3px rgba(16, 24, 40, 0.04));
     }
 
     .club-card-title {
         font-size: 1.05rem;
-        font-weight: 700;
-        color: var(--text-primary);
+        font-weight: 800;
+        color: var(--sports-text-main, #0f172a);
         margin-bottom: 16px;
         display: flex;
         align-items: center;
         gap: 8px;
-        border-bottom: 1px solid var(--border-color);
-        padding-bottom: 8px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--sports-border, #eaecf0);
     }
 
-    /* Members list directory */
-    .member-search-wrap {
+    /* Member Perks Checklist */
+    .perks-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 14px;
+    }
+
+    .perk-pill {
+        background: var(--input-bg, #f8fafc);
+        border: 1px solid var(--sports-border, #eaecf0);
+        border-radius: 12px;
+        padding: 12px 14px;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .perk-pill i {
+        color: #10b981;
+        font-size: 1.15rem;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .perk-text-title {
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: var(--sports-text-main, #0f172a);
+        line-height: 1.2;
+    }
+
+    .perk-text-sub {
+        font-size: 0.74rem;
+        color: var(--sports-text-muted, #475467);
+        margin-top: 2px;
+    }
+
+    /* Notice Board Card */
+    .club-announcement-box {
+        background: linear-gradient(135deg, rgba(225, 86, 35, 0.04), rgba(245, 158, 11, 0.04));
+        border: 1.5px dashed rgba(225, 86, 35, 0.35);
+        border-radius: 14px;
+        padding: 18px 20px;
+        margin-top: 16px;
+        display: flex;
+        gap: 16px;
+    }
+
+    .announcement-icon-ring {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: rgba(225, 86, 35, 0.12);
+        color: var(--primary-orange, #ff5722);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+
+    .announcement-body {
+        flex: 1;
+    }
+
+    .announcement-badge-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+    }
+
+    .announcement-tag {
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #d04512;
+        letter-spacing: 0.5px;
+    }
+
+    .announcement-date {
+        font-size: 0.74rem;
+        color: var(--sports-text-muted, #475467);
+    }
+
+    .announcement-text {
+        font-size: 0.88rem;
+        color: var(--sports-text-main, #0f172a);
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    /* Members Directory Tab */
+    .member-search-box {
         position: relative;
         margin-bottom: 16px;
     }
 
+    .member-search-box i {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.1rem;
+        color: var(--sports-text-dim, #94a3b8);
+    }
+
     .member-search-input {
         width: 100%;
-        padding: 10px 14px 10px 38px;
-        border-radius: 10px;
-        border: 1px solid var(--border-color);
-        background: var(--input-bg);
-        color: var(--text-primary);
-        font-size: 0.85rem;
+        padding: 10px 14px 10px 40px;
+        border-radius: 12px;
+        border: 1.5px solid var(--sports-border, #d0d5dd);
+        background: var(--input-bg, #f8fafc);
+        color: var(--sports-text-main, #0f172a);
+        font-size: 0.86rem;
         outline: none;
-        transition: border-color 0.2s;
+        transition: border-color 0.2s ease;
     }
 
     .member-search-input:focus {
-        border-color: var(--primary-orange);
+        border-color: var(--primary-orange, #ff5722);
+        background: #ffffff;
+        box-shadow: 0 0 0 3px rgba(225, 86, 35, 0.1);
     }
 
-    .member-search-wrap i {
-        position: absolute;
-        left: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--text-muted);
-        font-size: 1.1rem;
-    }
-
-    .member-directory {
-        max-height: 320px;
-        overflow-y: auto;
+    .members-roster-list {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 10px;
+        max-height: 480px;
+        overflow-y: auto;
         padding-right: 4px;
     }
 
-    .member-card {
+    .member-roster-row {
+        background: var(--input-bg, #f8fafc);
+        border: 1px solid var(--sports-border, #eaecf0);
+        border-radius: 14px;
+        padding: 12px 16px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 10px 14px;
-        border-radius: 10px;
-        background: var(--input-bg);
-        border: 1px solid var(--border-color);
-        transition: transform 0.25s, box-shadow 0.25s;
+        gap: 14px;
+        transition: all 0.2s ease;
     }
 
-    .member-card:hover {
-        transform: translateX(2px);
-        border-color: var(--primary-orange-light);
+    .member-roster-row:hover {
+        transform: translateX(3px);
+        background: #ffffff;
+        border-color: rgba(225, 86, 35, 0.35);
+        box-shadow: 0 4px 12px rgba(16, 24, 40, 0.05);
     }
 
-    .member-avatar {
-        width: 36px;
-        height: 36px;
+    .member-row-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .member-circle-avatar {
+        width: 44px;
+        height: 44px;
         border-radius: 50%;
-        background: var(--btn-navy);
-        color: #fff;
+        background: linear-gradient(135deg, #1A213B, #2E3856);
+        color: #ffffff;
         display: flex;
         align-items: center;
         justify-content: center;
+        font-size: 0.95rem;
+        font-weight: 800;
+        cursor: pointer;
+        flex-shrink: 0;
+        overflow: hidden;
+        border: 2px solid var(--sports-border, #eaecf0);
+    }
+
+    .member-circle-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .member-name-tag {
+        font-size: 0.92rem;
         font-weight: 700;
-        font-size: 0.85rem;
+        color: var(--sports-text-main, #0f172a);
         cursor: pointer;
-        transition: transform 0.2s ease, border-color 0.2s ease;
+        transition: color 0.18s ease;
     }
 
-    .member-avatar:hover {
-        transform: scale(1.08);
-    }
-
-    .member-info {
-        flex: 1;
-        margin-left: 12px;
-    }
-
-    .member-name {
-        font-size: 0.88rem;
-        font-weight: 600;
-        color: var(--text-primary);
-        cursor: pointer;
-        transition: color 0.2s ease;
-    }
-
-    .member-name:hover {
-        color: var(--primary-orange);
+    .member-name-tag:hover {
+        color: var(--primary-orange, #ff5722);
         text-decoration: underline;
     }
 
-    .member-stats {
-        font-size: 0.75rem;
-        color: var(--text-muted);
+    .member-badges-row {
         display: flex;
+        align-items: center;
         gap: 8px;
+        font-size: 0.74rem;
+        color: var(--sports-text-muted, #475467);
+        margin-top: 3px;
     }
 
-    /* Actions */
-    .btn-message-admin {
-        width: 100%;
-        padding: 12px;
-        background: var(--btn-navy);
-        color: #fff;
-        border: none;
+    .rating-pill {
+        font-weight: 800;
+        padding: 1px 6px;
+        border-radius: 6px;
+        background: rgba(0, 0, 0, 0.06);
+    }
+
+    .rating-pill.dupr { color: #d04512; background: rgba(225, 86, 35, 0.1); }
+    .rating-pill.elo { color: #1d4ed8; background: rgba(59, 130, 246, 0.1); }
+
+    .member-row-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .btn-member-chat {
+        width: 36px;
+        height: 36px;
         border-radius: 10px;
-        font-size: 0.9rem;
-        font-weight: 700;
-        cursor: pointer;
+        background: #ffffff;
+        border: 1px solid var(--sports-border, #d0d5dd);
+        color: var(--primary-orange, #ff5722);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-member-chat:hover {
+        background: var(--primary-orange, #ff5722);
+        color: #ffffff;
+        border-color: var(--primary-orange, #ff5722);
+    }
+
+    .btn-member-challenge {
         display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 7px 12px;
+        border-radius: 10px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: #059669;
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-member-challenge:hover {
+        background: #10b981;
+        color: #ffffff;
+    }
+
+    /* ── Internal Club Leaderboard Tab ── */
+    .club-ladder-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.86rem;
+    }
+
+    .club-ladder-table th {
+        text-align: left;
+        padding: 10px 14px;
+        background: var(--input-bg, #f8fafc);
+        color: var(--sports-text-muted, #475467);
+        font-weight: 700;
+        font-size: 0.74rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid var(--sports-border, #eaecf0);
+    }
+
+    .club-ladder-table td {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--sports-border, #eaecf0);
+        color: var(--sports-text-main, #0f172a);
+    }
+
+    .ladder-rank-cell {
+        font-weight: 900;
+        width: 48px;
+    }
+
+    .rank-medal-1 { color: #f59e0b; font-size: 1.2rem; }
+    .rank-medal-2 { color: #94a3b8; font-size: 1.2rem; }
+    .rank-medal-3 { color: #b45309; font-size: 1.2rem; }
+
+    /* Right Column: Membership Pass Card */
+    .membership-pass-card {
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: var(--sports-shadow-sm, 0 1px 3px rgba(16, 24, 40, 0.04));
+        position: relative;
+        overflow: hidden;
+    }
+
+    .membership-pass-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: linear-gradient(90deg, #10b981, var(--primary-orange, #ff5722));
+    }
+
+    .pass-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .pass-title {
+        font-size: 1rem;
+        font-weight: 800;
+        color: var(--sports-text-main, #0f172a);
+    }
+
+    .pass-status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        border-radius: 9999px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .pass-status-pill.active {
+        background: rgba(16, 185, 129, 0.12);
+        color: #059669;
+        border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .pass-status-pill.pending {
+        background: rgba(245, 158, 11, 0.12);
+        color: #b45309;
+        border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+
+    .pass-details-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        font-size: 0.82rem;
+        margin-bottom: 20px;
+    }
+
+    .pass-detail-row {
+        display: flex;
+        justify-content: space-between;
+        color: var(--sports-text-muted, #475467);
+    }
+
+    .pass-detail-row strong {
+        color: var(--sports-text-main, #0f172a);
+        font-weight: 700;
+    }
+
+    .pass-actions-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .btn-show-pass-modal {
+        width: 100%;
+        padding: 11px;
+        border-radius: 12px;
+        font-size: 0.86rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #1A213B, #2E3856);
+        color: #ffffff;
+        border: none;
+        cursor: pointer;
+        display: flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
-        transition: var(--transition);
-        text-decoration: none;
-        margin-top: 10px;
+        transition: all 0.2s ease;
     }
 
-    .btn-message-admin:hover {
-        opacity: 0.95;
+    .btn-show-pass-modal:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 14px rgba(26, 33, 59, 0.25);
     }
 
-    .status-pill {
-        padding: 6px 14px;
-        border-radius: 20px;
+    .btn-leave-club-subtle {
+        background: none;
+        border: none;
+        color: #dc2626;
         font-size: 0.78rem;
-        font-weight: 700;
+        font-weight: 600;
+        cursor: pointer;
+        text-align: center;
+        padding: 6px;
+        transition: opacity 0.2s ease;
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .status-pill.active {
-        background: rgba(16, 185, 129, 0.12);
-        color: var(--btn-green);
-        border: 1px solid rgba(16, 185, 129, 0.2);
-    }
-
-    .status-pill.pending {
-        background: rgba(245, 158, 11, 0.12);
-        color: #f59e0b;
-        border: 1px solid rgba(245, 158, 11, 0.2);
-    }
-
-    /* Event Cards */
-    .club-events-list {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    .club-event-card {
-        padding: 14px;
-        border-radius: 10px;
-        border: 1px solid var(--border-color);
-        background: var(--input-bg);
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        gap: 8px;
-        border-left: 4px solid var(--primary-orange);
-    }
-
-    .club-event-title {
-        font-weight: 700;
-        font-size: 0.9rem;
-        color: var(--text-primary);
-        margin: 0;
-    }
-
-    .club-event-meta {
-        font-size: 0.78rem;
-        color: var(--text-secondary);
-        display: flex;
-        flex-direction: column;
+        justify-content: center;
         gap: 4px;
+        opacity: 0.8;
     }
 
-    .club-event-meta span {
+    .btn-leave-club-subtle:hover {
+        opacity: 1;
+        text-decoration: underline;
+    }
+
+    /* ── Digital Member Pass Modal (THEME AWARE) ── */
+    .digital-pass-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.5);
+        backdrop-filter: blur(6px);
+        z-index: 10001;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        transition: opacity 0.2s ease;
+    }
+
+    .digital-pass-card {
+        width: 100%;
+        max-width: 420px;
+        background: #ffffff;
+        border: 2px solid var(--sports-border, #eaecf0);
+        border-radius: 24px;
+        padding: 28px;
+        color: #0f172a;
+        box-shadow: 0 20px 50px rgba(15, 23, 42, 0.18), 0 4px 12px rgba(15, 23, 42, 0.08);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .digital-pass-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: linear-gradient(90deg, #ff5722, #10b981);
+    }
+
+    .digital-pass-close {
+        position: absolute;
+        top: 18px;
+        right: 18px;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        color: #475467;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
         display: flex;
         align-items: center;
-        gap: 6px;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 1.1rem;
+        transition: all 0.18s ease;
     }
 
-    .club-event-meta i {
-        color: var(--text-muted);
+    .digital-pass-close:hover {
+        background: #e2e8f0;
+        color: #0f172a;
+    }
+
+    .pass-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #eaecf0;
+        padding-bottom: 16px;
+        margin-bottom: 18px;
+    }
+
+    .pass-modal-sub {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #64748b;
+        font-weight: 700;
+    }
+
+    .pass-modal-brand {
+        font-size: 1.1rem;
+        font-weight: 900;
+        color: #0f172a;
+    }
+
+    .pass-verified-badge {
+        background: rgba(16, 185, 129, 0.12);
+        color: #059669;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        padding: 3px 10px;
+        border-radius: 9999px;
+        font-size: 0.72rem;
+        font-weight: 800;
+    }
+
+    .pass-modal-avatar-ring {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        border: 3px solid var(--primary-orange, #ff5722);
+        margin: 0 auto 12px;
+        overflow: hidden;
+        background: #f8fafc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 800;
+        box-shadow: 0 4px 14px rgba(225, 86, 35, 0.2);
+    }
+
+    .pass-modal-avatar-ring img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .pass-modal-member-name {
+        margin: 0;
+        font-size: 1.35rem;
+        font-weight: 900;
+        color: #0f172a;
+    }
+
+    .pass-modal-member-sub {
+        margin: 4px 0 0 0;
+        font-size: 0.86rem;
+        color: #475467;
+    }
+
+    .pass-modal-member-sub strong {
+        color: var(--primary-orange, #ff5722);
+        font-weight: 800;
+    }
+
+    .pass-modal-meta-grid {
+        background: #f8fafc;
+        border: 1.5px solid #eaecf0;
+        border-radius: 16px;
+        padding: 14px 18px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 20px;
+        font-size: 0.82rem;
+    }
+
+    .pass-meta-cell-label {
+        color: #64748b;
+        display: block;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+    }
+
+    .pass-meta-cell-dupr {
+        color: var(--primary-orange, #ff5722);
+        font-size: 1.15rem;
+        font-weight: 900;
+    }
+
+    .pass-meta-cell-elo {
+        font-size: 1.15rem;
+        font-weight: 900;
+        color: #2563eb;
+    }
+
+    .pass-meta-cell-val {
+        color: #0f172a;
+        font-weight: 700;
+    }
+
+    .pass-modal-footer {
+        text-align: center;
+        border-top: 1px solid #eaecf0;
+        padding-top: 16px;
+    }
+
+    .pass-modal-barcode {
+        font-family: monospace;
+        letter-spacing: 6px;
+        font-size: 1.15rem;
+        color: #0f172a;
+        margin-bottom: 4px;
+        font-weight: 700;
+        user-select: none;
+    }
+
+    .pass-modal-disclaimer {
+        font-size: 0.72rem;
+        color: #64748b;
+    }
+
+    /* ==========================================================================
+       DARK MODE OVERRIDES
+       ========================================================================== */
+    html.dark-mode .club-banner-hero {
+        background: linear-gradient(135deg, #19202e 0%, #111723 100%);
+        border-color: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    html.dark-mode .club-banner-title {
+        color: #f8fafc;
+    }
+
+    html.dark-mode .club-banner-meta-row {
+        color: #94a3b8;
+    }
+
+    html.dark-mode .club-banner-logo-wrap {
+        border-color: #19202e;
+        background: #141923;
+    }
+
+    html.dark-mode .btn-hero-digital-pass {
+        background: rgba(255, 255, 255, 0.1);
+        color: #f8fafc;
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    html.dark-mode .btn-hero-digital-pass:hover {
+        background: #ffffff;
+        color: #0f172a;
+    }
+
+    html.dark-mode .club-action-tile,
+    html.dark-mode .club-card-pro,
+    html.dark-mode .membership-pass-card {
+        background: #19202e;
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    html.dark-mode .action-tile-title,
+    html.dark-mode .club-card-title,
+    html.dark-mode .pass-title {
+        color: #f8fafc;
+    }
+
+    html.dark-mode .action-tile-sub,
+    html.dark-mode .pass-detail-row {
+        color: #94a3b8;
+    }
+
+    html.dark-mode .pass-detail-row strong {
+        color: #f8fafc;
+    }
+
+    html.dark-mode .perk-pill,
+    html.dark-mode .member-roster-row,
+    html.dark-mode .member-search-input {
+        background: #121620;
+        border-color: rgba(255, 255, 255, 0.08);
+        color: #f1f5f9;
+    }
+
+    html.dark-mode .club-tabs-nav {
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    html.dark-mode .tab-badge-pill {
+        background: rgba(255, 255, 255, 0.08);
+        color: #94a3b8;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    html.dark-mode .club-ladder-table th,
+    html.dark-mode .club-ladder-table td {
+        border-color: rgba(255, 255, 255, 0.08);
+        background: transparent;
+        color: #f1f5f9;
+    }
+
+    html.dark-mode .btn-member-chat {
+        background: #141923;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Modal Dark Mode */
+    html.dark-mode .digital-pass-modal-overlay {
+        background: rgba(0, 0, 0, 0.75);
+    }
+
+    html.dark-mode .digital-pass-card {
+        background: linear-gradient(135deg, #1A213B 0%, #0F1626 100%);
+        border-color: rgba(255, 255, 255, 0.15);
+        color: #ffffff;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+    }
+
+    html.dark-mode .digital-pass-close {
+        background: rgba(255, 255, 255, 0.12);
+        color: #ffffff;
+        border: none;
+    }
+
+    html.dark-mode .digital-pass-close:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    html.dark-mode .pass-modal-header {
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    html.dark-mode .pass-modal-sub {
+        color: rgba(255, 255, 255, 0.65);
+    }
+
+    html.dark-mode .pass-modal-brand {
+        color: #ffffff;
+    }
+
+    html.dark-mode .pass-modal-avatar-ring {
+        background: #1e293b;
+    }
+
+    html.dark-mode .pass-modal-member-name {
+        color: #ffffff;
+    }
+
+    html.dark-mode .pass-modal-member-sub {
+        color: rgba(255, 255, 255, 0.75);
+    }
+
+    html.dark-mode .pass-modal-member-sub strong {
+        color: #ffffff;
+    }
+
+    html.dark-mode .pass-modal-meta-grid {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    html.dark-mode .pass-meta-cell-label {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    html.dark-mode .pass-meta-cell-val {
+        color: #ffffff;
+    }
+
+    html.dark-mode .pass-modal-footer {
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    html.dark-mode .pass-modal-barcode {
+        color: rgba(255, 255, 255, 0.85);
+    }
+
+    html.dark-mode .pass-modal-disclaimer {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    @media (max-width: 900px) {
+        .club-main-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .club-quick-actions-bar {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 600px) {
+        .perks-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .club-quick-actions-bar {
+            grid-template-columns: 1fr;
+        }
+
+        .club-banner-overlay {
+            padding: 20px 16px;
+        }
+
+        .club-banner-title {
+            font-size: 1.45rem;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div style="margin-bottom: 20px;">
-    <a href="{{ url_for('player.clubs') }}" style="text-decoration: none; color: var(--text-muted); font-size: 0.9rem; display: flex; align-items: center; gap: 4px;">
-        <i class="ph ph-arrow-left"></i> Back to Clubs
+{% set words = (club.name or 'PB').split() %}
+{% if words|length >= 2 %}
+    {% set club_initials = (words[0][0] + words[1][0])|upper %}
+{% else %}
+    {% set club_initials = (words[0][:2])|upper %}
+{% endif %}
+
+<div class="club-page-wrapper">
+
+    <!-- ── 1. BACK LINK ── -->
+    <a href="{{ url_for('player.clubs') }}" class="club-back-link">
+        <i class="ph ph-arrow-left"></i> Back to Clubs Directory
     </a>
-</div>
 
-<!-- Club Banner Header -->
-<div class="club-banner">
-    {% if club.logo_url %}
-        <div style="position: absolute; inset: 0; background-image: url('{{ club.logo_url }}'); background-size: cover; background-position: center; filter: blur(5px) brightness(0.65);"></div>
-    {% endif %}
-    <div class="club-banner-overlay">
-        <div style="display: flex; align-items: center; width: 100%; flex-wrap: wrap; gap: 16px;">
-            {% if club.logo_url %}
-                <img class="club-banner-logo" src="{{ club.logo_url }}" alt="{{ club.name }} logo">
-            {% else %}
-                <div class="club-banner-logo"><i class="ph ph-shield"></i></div>
-            {% endif %}
-            <div class="club-banner-info">
-                <h1 class="club-banner-title">{{ club.name }}</h1>
-                <div class="club-banner-meta">
-                    <span><i class="ph ph-map-pin"></i> {{ club.location or 'No location' }}</span>
-                    <span><i class="ph ph-users"></i> {{ members|length }} Active Members</span>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="club-detail-layout">
-    
-    <!-- Left Column: Details & Members -->
-    <div>
-        <!-- Description -->
-        <div class="club-card">
-            <h3 class="club-card-title"><i class="ph ph-info" style="color: var(--primary-orange);"></i> About Club</h3>
-            <p style="font-size: 0.92rem; color: var(--text-secondary); line-height: 1.6; margin: 0;">
-                {{ club.description or 'No description provided for this club.' }}
-            </p>
-        </div>
-
-        <!-- Members Directory -->
-        <div class="club-card">
-            <h3 class="club-card-title"><i class="ph ph-address-book" style="color: var(--btn-green);"></i> Members Directory</h3>
-            
-            <div class="member-search-wrap">
-                <i class="ph ph-magnifying-glass"></i>
-                <input type="text" id="memberSearch" class="member-search-input" placeholder="Search members by name...">
-            </div>
-
-            <div class="member-directory" id="memberDirectory">
-                {% for m in members %}
-                <div class="member-card" data-name="{{ m.name|lower }}">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <div class="member-avatar" onclick="openPlayerDrawer('{{ m.profiles.id }}')" title="View profile & history" style="overflow: hidden;">{% if m.avatar_url %}<img src="{{ m.avatar_url }}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">{% else %}{{ m.initials }}{% endif %}</div>
-                        <div class="member-info">
-                            <div class="member-name" onclick="openPlayerDrawer('{{ m.profiles.id }}')" title="View profile & history">{{ m.name }}</div>
-                            <div class="member-stats">
-                                <span>DUPR: {{ "%.2f"|format(m.profiles.dupr|float) }}</span>
-                                <span>•</span>
-                                <span>Elo: {{ m.profiles.elo }}</span>
-                            </div>
-                        </div>
+    <!-- ── 2. HERO BANNER ── -->
+    <header class="club-banner-hero animate-entry {% if club.banner_url %}has-cover{% endif %}"
+            {% if club.banner_url %}style="background: url('{{ club.banner_url }}') center/cover no-repeat; position: relative;"{% endif %}>
+        {% if club.banner_url %}
+        <div style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(15, 23, 42, 0.82) 0%, rgba(15, 23, 42, 0.65) 100%); backdrop-filter: blur(2px); z-index: 0; border-radius: inherit;"></div>
+        {% endif %}
+        <div class="club-banner-overlay" style="position: relative; z-index: 1;">
+            <div class="club-banner-info-left">
+                <div class="club-banner-logo-wrap">
+                    {% if club.logo_url %}
+                    <img src="{{ club.logo_url }}" 
+                         alt="{{ club.name }} Logo" 
+                         loading="lazy" 
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="club-banner-fallback-avatar" style="display: none;">
+                        {{ club_initials }}
                     </div>
-                    {% if current_user.id != m.profiles.id %}
-                    <a href="{{ url_for('player.player_chat', target_id=m.profiles.id) }}" class="member-chat-btn" title="Message Member">
-                        <i class="ph ph-chat-circle-dots" style="font-size: 1.15rem; color: var(--primary-orange);"></i>
-                    </a>
-                    {% endif %}
-                </div>
-                {% else %}
-                <div style="text-align: center; padding: 24px; color: var(--text-muted); font-size: 0.85rem;">
-                    No members listed yet.
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Right Column: Membership & Events -->
-    <div>
-        <!-- Membership Widget -->
-        <div class="club-card">
-            <h3 class="club-card-title"><i class="ph ph-shield-check" style="color: var(--primary-orange);"></i> Membership Status</h3>
-            
-            <div style="text-align: center; padding: 10px 0 20px 0;">
-                {% if my_membership %}
-                    {% if my_membership.status == 'active' %}
-                        <div style="margin-bottom: 16px;">
-                            <span class="status-pill active"><i class="ph ph-check-circle"></i> Active Member</span>
-                        </div>
-                        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 16px;">
-                            You joined this club on {{ my_membership.joined_at.split('T')[0] }}.
-                        </p>
-                        <form action="{{ url_for('player.leave_club', club_id=club.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to leave this club?');">
-                            <button type="submit" class="btn-cancel" style="width: 100%; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer;">
-                                <i class="ph ph-sign-out"></i> Leave Club
-                            </button>
-                        </form>
-                    {% elif my_membership.status == 'pending' %}
-                        <div style="margin-bottom: 16px;">
-                            <span class="status-pill pending"><i class="ph ph-hourglass-high"></i> Pending Approval</span>
-                        </div>
-                        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 16px;">
-                            Your membership request is currently awaiting club admin review.
-                        </p>
-                        <form action="{{ url_for('player.leave_club', club_id=club.id) }}" method="POST">
-                            <button type="submit" class="btn-cancel" style="width: 100%; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer;">
-                                Cancel Join Request
-                            </button>
-                        </form>
-                    {% endif %}
-                {% else %}
-                    <div style="margin-bottom: 16px;">
-                        <span class="status-pill" style="background: rgba(148, 163, 184, 0.12); color: var(--text-secondary); border: 1px solid rgba(148, 163, 184, 0.2);"><i class="ph ph-user"></i> Guest Player</span>
-                    </div>
-                    
-                    {% if club.membership_type == 'free' %}
-                        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 16px;">
-                            This club is free to join. Apply now to participate in club discussions and events.
-                        </p>
                     {% else %}
-                        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 16px;">
-                            This is a paid club with a membership fee of <strong>₱{{ "%.2f"|format(club.membership_fee) }}</strong>.
-                        </p>
+                    <div class="club-banner-fallback-avatar" style="display: flex;">
+                        {{ club_initials }}
+                    </div>
                     {% endif %}
-                    
-                    <form action="{{ url_for('player.join_club', club_id=club.id) }}" method="POST">
-                        <button type="submit" class="action-box orange" style="width: 100%; padding: 12px; border-radius: 10px; font-weight: 700; border: none; cursor: pointer;">
-                            <i class="ph ph-plus-circle"></i> Join Club
-                        </button>
-                    </form>
+                </div>
+
+                <div class="club-banner-text">
+                    <h1 class="club-banner-title">{{ club.name }}</h1>
+                    <div class="club-banner-meta-row">
+                        <span><i class="ph ph-map-pin"></i> {{ club.location or 'Laguna, Philippines' }}</span>
+                        <span><i class="ph ph-users"></i> {{ members|length }} Active Members</span>
+                        {% if avg_dupr %}
+                        <span><i class="ph ph-trend-up"></i> Club Avg. DUPR: {{ avg_dupr }}</span>
+                        {% endif %}
+                        {% if club.membership_type == 'free' %}
+                        <span><i class="ph ph-sparkle"></i> Free Community Club</span>
+                        {% else %}
+                        <span><i class="ph ph-tag"></i> ₱{{ "%.2f"|format(club.membership_fee) }} Membership</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="club-banner-actions-right">
+                {% if my_membership and my_membership.status == 'active' %}
+                <button type="button" class="btn-hero-digital-pass" onclick="openDigitalPassModal()">
+                    <i class="ph ph-identification-card"></i> Digital Member Pass
+                </button>
                 {% endif %}
             </div>
         </div>
+    </header>
 
-        <!-- Club Organizer Details -->
-        <div class="club-card">
-            <h3 class="club-card-title"><i class="ph ph-crown" style="color: var(--primary-orange);"></i> Club Administrator</h3>
-            <div style="display: flex; align-items: center; gap: 12px; background: var(--input-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
-                <div class="member-avatar" onclick="openPlayerDrawer('{{ club.admin_id }}')" title="View profile & history" style="background: var(--primary-orange); overflow: hidden; cursor: pointer;">
-                    {% if club.profiles.avatar_url %}
-                        <img src="{{ club.profiles.avatar_url }}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+    <!-- ── 3. MEMBER ACTION HUB (WHAT PLAYERS CAN DO) ── -->
+    {% if my_membership and my_membership.status == 'active' %}
+    <section class="club-quick-actions-bar" aria-label="Club Quick Actions">
+        <a href="{{ url_for('player.matchmaker') }}" class="club-action-tile" title="Find open play matchmaker lobbies">
+            <div class="action-tile-icon green">
+                <i class="ph ph-handshake"></i>
+            </div>
+            <div class="action-tile-text">
+                <span class="action-tile-title">Find Club Match</span>
+                <span class="action-tile-sub">Lobbies & scrimmages</span>
+            </div>
+        </a>
+
+        <a href="{{ url_for('player.reservation') }}" class="club-action-tile" title="Reserve a court for club play">
+            <div class="action-tile-icon orange">
+                <i class="ph ph-calendar-plus"></i>
+            </div>
+            <div class="action-tile-text">
+                <span class="action-tile-title">Book Court</span>
+                <span class="action-tile-sub">Reserve home courts</span>
+            </div>
+        </a>
+
+        {% if current_user.id != club.admin_id %}
+        <a href="{{ url_for('player.player_chat', target_id=club.admin_id) }}" class="club-action-tile" title="Message club organizer">
+            <div class="action-tile-icon blue">
+                <i class="ph ph-chat-circle-dots"></i>
+            </div>
+            <div class="action-tile-text">
+                <span class="action-tile-title">Message Captain</span>
+                <span class="action-tile-sub">Captain {{ club.profiles.first_name if club.profiles else 'Organizer' }}</span>
+            </div>
+        </a>
+        {% else %}
+        <div class="club-action-tile" onclick="switchClubTab('members')" title="Review club roster">
+            <div class="action-tile-icon blue">
+                <i class="ph ph-address-book"></i>
+            </div>
+            <div class="action-tile-text">
+                <span class="action-tile-title">Club Roster</span>
+                <span class="action-tile-sub">{{ members|length }} Active Players</span>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="club-action-tile" onclick="openDigitalPassModal()" title="View your digital club membership badge">
+            <div class="action-tile-icon purple">
+                <i class="ph ph-qr-code"></i>
+            </div>
+            <div class="action-tile-text">
+                <span class="action-tile-title">Member ID Pass</span>
+                <span class="action-tile-sub">Verified Member</span>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- ── 4. TABS NAVIGATION ── -->
+    <nav class="club-tabs-nav" role="tablist">
+        <button type="button" class="club-tab-btn active" id="tabBtn-overview" onclick="switchClubTab('overview')">
+            <i class="ph ph-info"></i> Overview & Perks
+        </button>
+        <button type="button" class="club-tab-btn" id="tabBtn-members" onclick="switchClubTab('members')">
+            <i class="ph ph-users-three"></i> Roster & Members
+            <span class="tab-badge-pill">{{ members|length }}</span>
+        </button>
+        <button type="button" class="club-tab-btn" id="tabBtn-events" onclick="switchClubTab('events')">
+            <i class="ph ph-calendar"></i> Club Events
+            <span class="tab-badge-pill">{{ events|length }}</span>
+        </button>
+        <button type="button" class="club-tab-btn" id="tabBtn-leaderboard" onclick="switchClubTab('leaderboard')">
+            <i class="ph ph-trophy"></i> Club Leaderboard
+        </button>
+    </nav>
+
+    <!-- ── 5. MAIN TWO-COLUMN CONTENT ── -->
+    <div class="club-main-layout">
+
+        <!-- Left Column: Tab Panes -->
+        <div class="club-left-col">
+
+            <!-- TAB 1: OVERVIEW & PERKS -->
+            <div id="tabPane-overview" class="club-tab-content">
+                <!-- About Description -->
+                <div class="club-card-pro">
+                    <h3 class="club-card-title">
+                        <i class="ph ph-article" style="color: var(--primary-orange);"></i> About the Club
+                    </h3>
+                    <p style="font-size: 0.92rem; color: var(--sports-text-muted, #334155); line-height: 1.6; margin: 0;">
+                        {{ club.description or 'A welcoming pickleball community dedicated to fun, sportsmanship, and skill progression. All players are encouraged to join and practice together.' }}
+                    </p>
+
+                    <!-- Member Perks -->
+                    <h4 style="font-size: 0.92rem; font-weight: 800; color: var(--sports-text-main, #0f172a); margin-top: 20px;">
+                        Member Privileges & Activities
+                    </h4>
+                    <div class="perks-grid">
+                        <div class="perk-pill">
+                            <i class="ph ph-check-circle-fill"></i>
+                            <div>
+                                <div class="perk-text-title">Club Tournaments & Scrimmages</div>
+                                <div class="perk-text-sub">Exclusive access to club brackets & open play</div>
+                            </div>
+                        </div>
+                        <div class="perk-pill">
+                            <i class="ph ph-check-circle-fill"></i>
+                            <div>
+                                <div class="perk-text-title">Internal Ladder Leaderboard</div>
+                                <div class="perk-text-sub">Compete for #1 ranking within the club</div>
+                            </div>
+                        </div>
+                        <div class="perk-pill">
+                            <i class="ph ph-check-circle-fill"></i>
+                            <div>
+                                <div class="perk-text-title">Direct Player Messaging</div>
+                                <div class="perk-text-sub">Chat & organize pickup games with fellow members</div>
+                            </div>
+                        </div>
+                        <div class="perk-pill">
+                            <i class="ph ph-check-circle-fill"></i>
+                            <div>
+                                <div class="perk-text-title">Digital Membership Badge</div>
+                                <div class="perk-text-sub">Verified pass for local facility club hours</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Club Announcements / Notice Board -->
+                    <div class="club-announcement-box">
+                        <div class="announcement-icon-ring">
+                            <i class="ph ph-megaphone"></i>
+                        </div>
+                        <div class="announcement-body">
+                            <div class="announcement-badge-row">
+                                <span class="announcement-tag">Notice Board</span>
+                                <span class="announcement-date">• Official Club Schedule</span>
+                            </div>
+                            <p class="announcement-text">
+                                Weekly Club Scrimmages: Every Saturday & Sunday afternoon at our local courts. Bring your paddle, water, and invite your club partners for friendly rotation play!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: MEMBERS DIRECTORY -->
+            <div id="tabPane-members" class="club-tab-content" style="display: none;">
+                <div class="club-card-pro">
+                    <h3 class="club-card-title">
+                        <i class="ph ph-address-book" style="color: #10b981;"></i> Club Roster & Members
+                    </h3>
+
+                    <div class="member-search-box">
+                        <i class="ph ph-magnifying-glass"></i>
+                        <input type="text" id="memberDirectorySearch" class="member-search-input" placeholder="Search members by name or rating..." oninput="filterRosterMembers()">
+                    </div>
+
+                    <div class="members-roster-list" id="rosterListContainer">
+                        {% for m in members %}
+                        {% set is_admin = (m.profiles and m.profiles.id == club.admin_id) %}
+                        <div class="member-roster-row" data-name="{{ m.name|lower }}">
+                            <div class="member-row-left">
+                                <div class="member-circle-avatar" onclick="openPlayerDrawer('{{ m.profiles.id }}')" title="View player profile">
+                                    {% if m.avatar_url %}
+                                    <img src="{{ m.avatar_url }}" alt="{{ m.name }}">
+                                    {% else %}
+                                    {{ m.initials }}
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div class="member-name-tag" onclick="openPlayerDrawer('{{ m.profiles.id }}')">
+                                        {{ m.name }}
+                                        {% if is_admin %}
+                                        <span style="font-size: 0.68rem; font-weight: 800; background: rgba(225,86,35,0.15); color: var(--primary-orange); padding: 2px 6px; border-radius: 6px; margin-left: 4px;">CAPTAIN</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="member-badges-row">
+                                        <span>DUPR: <strong class="rating-pill dupr">{{ "%.2f"|format(m.profiles.dupr|float) if m.profiles.dupr else 'Unrated' }}</strong></span>
+                                        <span>•</span>
+                                        <span>Elo: <strong class="rating-pill elo">{{ m.profiles.elo or 1200 }}</strong></span>
+                                        <span>•</span>
+                                        <span>Joined {{ m.joined_at.split('T')[0] if m.joined_at else 'Recent' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="member-row-actions">
+                                {% if current_user.id != m.profiles.id %}
+                                <a href="{{ url_for('player.player_chat', target_id=m.profiles.id) }}" class="btn-member-chat" title="Send direct message">
+                                    <i class="ph ph-chat-circle-dots"></i>
+                                </a>
+                                <a href="{{ url_for('player.matchmaker') }}" class="btn-member-challenge" title="Invite to Matchmaker lobby">
+                                    <i class="ph ph-swords"></i> Challenge
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% else %}
+                        <div style="text-align: center; padding: 32px; color: var(--sports-text-muted);">
+                            No active members found.
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: EVENTS & TOURNAMENTS -->
+            <div id="tabPane-events" class="club-tab-content" style="display: none;">
+                <div class="club-card-pro">
+                    <h3 class="club-card-title">
+                        <i class="ph ph-calendar-star" style="color: var(--primary-orange);"></i> Club Events & Tournaments
+                    </h3>
+
+                    <div style="display: flex; flex-direction: column; gap: 14px;">
+                        {% for ev in events %}
+                        <div style="background: var(--input-bg); border: 1.5px solid var(--sports-border); border-left: 4px solid var(--primary-orange); border-radius: 12px; padding: 16px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;">
+                            <div>
+                                <h4 style="margin: 0 0 6px 0; font-size: 1.05rem; font-weight: 800; color: var(--sports-text-main);">{{ ev.title }}</h4>
+                                <div style="display: flex; gap: 14px; font-size: 0.8rem; color: var(--sports-text-muted); flex-wrap: wrap;">
+                                    <span><i class="ph ph-calendar" style="color: var(--primary-orange);"></i> {{ ev.event_date }}</span>
+                                    <span><i class="ph ph-map-pin"></i> {{ ev.location_label or 'Official Club Courts' }}</span>
+                                    <span style="text-transform: uppercase; font-weight: 700; color: #10b981;">{{ ev.type }}</span>
+                                </div>
+                            </div>
+                            <a href="{{ url_for('player.events') }}" class="sports-pill-btn outline" style="font-size: 0.8rem; padding: 8px 16px;">
+                                View Event <i class="ph ph-arrow-right"></i>
+                            </a>
+                        </div>
+                        {% else %}
+                        <div style="text-align: center; padding: 36px 20px; color: var(--sports-text-muted); border: 1.5px dashed var(--sports-border); border-radius: 14px;">
+                            <i class="ph ph-calendar-blank" style="font-size: 2.2rem; display: block; margin-bottom: 8px; opacity: 0.4;"></i>
+                            <h4 style="margin: 0 0 4px 0; color: var(--sports-text-main); font-weight: 700;">No Scheduled Events Currently</h4>
+                            <p style="margin: 0; font-size: 0.85rem;">The club organizer hasn't scheduled any upcoming matches or tournaments. Stay tuned!</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: CLUB LEADERBOARD (INTERNAL LADDER) -->
+            <div id="tabPane-leaderboard" class="club-tab-content" style="display: none;">
+                <div class="club-card-pro">
+                    <h3 class="club-card-title">
+                        <i class="ph ph-trophy" style="color: #f59e0b;"></i> Club Power Rankings & Ladder
+                    </h3>
+                    <p style="font-size: 0.84rem; color: var(--sports-text-muted); margin-bottom: 16px;">
+                        Internal club ranking calculated by official DUPR assessment and active Elo points.
+                    </p>
+
+                    <div style="overflow-x: auto;">
+                        <table class="club-ladder-table">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Player</th>
+                                    <th>DUPR</th>
+                                    <th>Elo</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for m in top_members %}
+                                <tr>
+                                    <td class="ladder-rank-cell">
+                                        {% if loop.index == 1 %}
+                                            <i class="ph ph-medal-military rank-medal-1" title="Gold - Rank 1"></i>
+                                        {% elif loop.index == 2 %}
+                                            <i class="ph ph-medal-military rank-medal-2" title="Silver - Rank 2"></i>
+                                        {% elif loop.index == 3 %}
+                                            <i class="ph ph-medal-military rank-medal-3" title="Bronze - Rank 3"></i>
+                                        {% else %}
+                                            #{{ loop.index }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <div class="member-circle-avatar" style="width: 32px; height: 32px; font-size: 0.75rem;" onclick="openPlayerDrawer('{{ m.profiles.id }}')">
+                                                {% if m.avatar_url %}<img src="{{ m.avatar_url }}">{% else %}{{ m.initials }}{% endif %}
+                                            </div>
+                                            <span class="member-name-tag" onclick="openPlayerDrawer('{{ m.profiles.id }}')">{{ m.name }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <strong style="color: var(--primary-orange);">{{ "%.2f"|format(m.profiles.dupr|float) if m.profiles.dupr else '3.00' }}</strong>
+                                    </td>
+                                    <td>
+                                        <strong>{{ m.profiles.elo or 1200 }}</strong>
+                                    </td>
+                                    <td>
+                                        {% if current_user.id != m.profiles.id %}
+                                        <a href="{{ url_for('player.player_chat', target_id=m.profiles.id) }}" class="btn-member-chat" style="width: 28px; height: 28px; font-size: 0.9rem;" title="Message Player">
+                                            <i class="ph ph-chat-circle"></i>
+                                        </a>
+                                        {% else %}
+                                        <span style="font-size: 0.72rem; font-weight: 800; color: #10b981;">YOU</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Membership Pass & Captain Profile -->
+        <div class="club-right-col">
+
+            <!-- Membership Status Pass -->
+            <div class="membership-pass-card">
+                <div class="pass-header">
+                    <span class="pass-title">Membership Status</span>
+                    {% if my_membership %}
+                        {% if my_membership.status == 'active' %}
+                        <span class="pass-status-pill active"><i class="ph ph-check-circle-fill"></i> Active Member</span>
+                        {% elif my_membership.status == 'pending' %}
+                        <span class="pass-status-pill pending"><i class="ph ph-hourglass-high"></i> Pending</span>
+                        {% endif %}
                     {% else %}
-                        {{ club.profiles.first_name[0]|upper if club.profiles else 'A' }}
+                        <span class="pass-status-pill" style="background: rgba(148, 163, 184, 0.15); color: var(--sports-text-muted);">Non-Member</span>
                     {% endif %}
                 </div>
-                <div style="flex: 1;">
-                    <div style="font-size: 0.9rem; font-weight: 700; color: var(--text-primary); cursor: pointer;" onclick="openPlayerDrawer('{{ club.admin_id }}')" title="View profile & history" onmouseover="this.style.color='var(--primary-orange)';this.style.textDecoration='underline'" onmouseout="this.style.color='var(--text-primary)';this.style.textDecoration='none'">
-                        {{ club.profiles.first_name }} {{ club.profiles.last_name }}
+
+                <div class="pass-details-list">
+                    <div class="pass-detail-row">
+                        <span>Club Tier:</span>
+                        <strong>{{ 'Free Community Tier' if club.membership_type == 'free' else 'Paid Annual Tier' }}</strong>
                     </div>
-                    <div style="font-size: 0.78rem; color: var(--text-muted);">
-                        Club Organizer • ELO: {{ club.profiles.elo }}
+                    {% if my_membership %}
+                    <div class="pass-detail-row">
+                        <span>Member Since:</span>
+                        <strong>{{ my_membership.joined_at.split('T')[0] if my_membership.joined_at else 'Recent' }}</strong>
                     </div>
+                    <div class="pass-detail-row">
+                        <span>Digital Pass ID:</span>
+                        <strong style="font-family: monospace; letter-spacing: 0.5px;">#PB-{{ club.id[:6]|upper }}</strong>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="pass-actions-group">
+                    {% if my_membership and my_membership.status == 'active' %}
+                    <button type="button" class="btn-show-pass-modal" onclick="openDigitalPassModal()">
+                        <i class="ph ph-identification-card"></i> Member Pass & ID
+                    </button>
+                    
+                    <form action="{{ url_for('player.leave_club', club_id=club.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to leave {{ club.name }}? You will lose access to member events and ladder rankings.');" style="text-align: center; margin-top: 4px;">
+                        <button type="submit" class="btn-leave-club-subtle">
+                            <i class="ph ph-sign-out"></i> Leave Club
+                        </button>
+                    </form>
+                    {% elif my_membership and my_membership.status == 'pending' %}
+                    <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 10px; padding: 12px; font-size: 0.8rem; color: #b45309; text-align: center;">
+                        <i class="ph ph-clock-countdown"></i> Payment / join request submitted. Awaiting approval by club organizer.
+                    </div>
+                    <form action="{{ url_for('player.leave_club', club_id=club.id) }}" method="POST" style="text-align: center; margin-top: 8px;">
+                        <button type="submit" class="btn-leave-club-subtle">
+                            Cancel Join Request
+                        </button>
+                    </form>
+                    {% else %}
+                        {% if club.membership_type == 'free' %}
+                        <form action="{{ url_for('player.join_club', club_id=club.id) }}" method="POST">
+                            <button type="submit" class="sports-pill-btn primary" style="width: 100%; justify-content: center; border-radius: 12px;">
+                                <i class="ph ph-user-plus"></i> Join This Club (Free)
+                            </button>
+                        </form>
+                        {% else %}
+                        <a href="{{ url_for('player.club_payment', club_id=club.id) }}" class="sports-pill-btn primary" style="width: 100%; justify-content: center; border-radius: 12px; text-decoration: none;">
+                            <i class="ph ph-credit-card"></i> Join Club (₱{{ "%.2f"|format(club.membership_fee) }})
+                        </a>
+                        {% endif %}
+                    {% endif %}
                 </div>
             </div>
-            {% if current_user.id != club.admin_id %}
-            <a href="{{ url_for('player.player_chat', target_id=club.admin_id) }}" class="btn-message-admin">
-                <i class="ph ph-chat-circle"></i> Contact Organizer
-            </a>
-            {% endif %}
+
+            <!-- Club Administrator Card -->
+            <div class="club-card-pro" style="margin-top: 20px;">
+                <h3 class="club-card-title">
+                    <i class="ph ph-crown" style="color: var(--primary-orange);"></i> Club Captain & Organizer
+                </h3>
+                
+                <div style="display: flex; align-items: center; gap: 14px; background: var(--input-bg); padding: 14px; border-radius: 14px; border: 1.5px solid var(--sports-border);">
+                    <div class="member-circle-avatar" onclick="openPlayerDrawer('{{ club.admin_id }}')" title="View profile" style="cursor: pointer; width: 48px; height: 48px;">
+                        {% if club.profiles.avatar_url %}
+                            <img src="{{ club.profiles.avatar_url }}" alt="Captain Avatar">
+                        {% else %}
+                            {{ club.profiles.first_name[0]|upper if club.profiles else 'A' }}
+                        {% endif %}
+                    </div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div class="member-name-tag" onclick="openPlayerDrawer('{{ club.admin_id }}')">
+                            {{ club.profiles.first_name }} {{ club.profiles.last_name or '' }}
+                        </div>
+                        <div style="font-size: 0.76rem; color: var(--sports-text-muted); margin-top: 2px;">
+                            Club Administrator • ELO: {{ club.profiles.elo or 1200 }}
+                        </div>
+                    </div>
+                </div>
+
+                {% if current_user.id != club.admin_id %}
+                <a href="{{ url_for('player.player_chat', target_id=club.admin_id) }}" class="sports-pill-btn outline" style="width: 100%; justify-content: center; border-radius: 12px; margin-top: 12px; text-decoration: none;">
+                    <i class="ph ph-chat-circle"></i> Contact Organizer
+                </a>
+                {% endif %}
+            </div>
+
         </div>
 
-        <!-- Upcoming Club Events -->
-        <div class="club-card">
-            <h3 class="club-card-title"><i class="ph ph-calendar-plus" style="color: var(--primary-orange);"></i> Club Events</h3>
-            
-            <div class="club-events-list">
-                {% for ev in events %}
-                <div class="club-event-card">
-                    <h4 class="club-event-title">{{ ev.title }}</h4>
-                    <div class="club-event-meta">
-                        <span><i class="ph ph-calendar"></i> {{ ev.event_date }}</span>
-                        <span><i class="ph ph-map-pin"></i> {{ ev.location_label or 'Main Facility' }}</span>
-                        <span>
-                            <i class="ph ph-trophy"></i> 
-                            <span class="role-pill" style="padding: 2px 6px; font-size: 0.65rem; text-transform: uppercase;">
-                                {{ ev.type }}
-                            </span>
-                        </span>
-                    </div>
-                    <a href="{{ url_for('player.events') }}" style="font-size: 0.78rem; font-weight: 700; color: var(--primary-orange); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px;">
-                        Event Page <i class="ph ph-caret-double-right"></i>
-                    </a>
-                </div>
-                {% else %}
-                <div style="text-align: center; padding: 24px; color: var(--text-muted); font-size: 0.85rem; background: var(--input-bg); border-radius: 10px; border: 1px dashed var(--border-color);">
-                    <i class="ph ph-calendar-x" style="font-size: 1.8rem; display: block; margin-bottom: 8px; opacity: 0.4;"></i>
-                    No upcoming events scheduled.
-                </div>
-                {% endfor %}
-            </div>
-        </div>
     </div>
 
 </div>
 
+<!-- ── 6. DIGITAL MEMBERSHIP PASS MODAL (THEME AWARE) ── -->
+<div id="digitalPassModal" class="digital-pass-modal-overlay" onclick="closeDigitalPassModal(event)">
+    <div class="digital-pass-card" onclick="event.stopPropagation()">
+        <button type="button" class="digital-pass-close" onclick="closeDigitalPassModal()">
+            <i class="ph ph-x"></i>
+        </button>
+
+        <!-- Pass Header -->
+        <div class="pass-modal-header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="ph ph-shield-check" style="font-size: 1.8rem; color: #10b981;"></i>
+                <div>
+                    <div class="pass-modal-sub">Official Member Pass</div>
+                    <div class="pass-modal-brand">PickleballHub</div>
+                </div>
+            </div>
+            <span class="pass-verified-badge">
+                VERIFIED
+            </span>
+        </div>
+
+        <!-- Pass Body -->
+        <div style="text-align: center; margin-bottom: 20px;">
+            <div class="pass-modal-avatar-ring">
+                {% if current_user.avatar_url %}
+                    <img src="{{ current_user.avatar_url }}">
+                {% else %}
+                    {{ current_user.initials }}
+                {% endif %}
+            </div>
+            <h3 class="pass-modal-member-name">{{ current_user.full_name }}</h3>
+            <p class="pass-modal-member-sub">
+                Member of <strong>{{ club.name }}</strong>
+            </p>
+        </div>
+
+        <!-- Pass Meta Grid -->
+        <div class="pass-modal-meta-grid">
+            <div>
+                <span class="pass-meta-cell-label">DUPR RATING</span>
+                <span class="pass-meta-cell-dupr">{{ "%.2f"|format(current_user.dupr|float) }}</span>
+            </div>
+            <div>
+                <span class="pass-meta-cell-label">ELO SCORE</span>
+                <span class="pass-meta-cell-elo">{{ current_user.elo }}</span>
+            </div>
+            <div>
+                <span class="pass-meta-cell-label">PASS ID</span>
+                <span class="pass-meta-cell-val" style="font-family: monospace;">#PB-{{ club.id[:6]|upper }}</span>
+            </div>
+            <div>
+                <span class="pass-meta-cell-label">LOCATION</span>
+                <span class="pass-meta-cell-val">{{ club.location or 'Laguna, PH' }}</span>
+            </div>
+        </div>
+
+        <!-- Simulated Barcode Footer -->
+        <div class="pass-modal-footer">
+            <div class="pass-modal-barcode">
+                ||| | |||| | ||| || |||| |
+            </div>
+            <span class="pass-modal-disclaimer">Valid for club priority court access and member tournaments</span>
+        </div>
+    </div>
+</div>
+
+<!-- ── JAVASCRIPT LOGIC ── -->
 <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const searchInput = document.getElementById("memberSearch");
-        const memberCards = document.querySelectorAll("#memberDirectory .member-card");
-        
-        searchInput?.addEventListener("input", (e) => {
-            const query = e.target.value.trim().toLowerCase();
-            
-            memberCards.forEach(card => {
-                const name = card.getAttribute("data-name") || "";
-                if (!query || name.includes(query)) {
-                    card.style.display = "flex";
-                } else {
-                    card.style.display = "none";
-                }
-            });
+    // Tab switching
+    function switchClubTab(tabName) {
+        document.querySelectorAll('.club-tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.club-tab-content').forEach(pane => pane.style.display = 'none');
+
+        const activeBtn = document.getElementById('tabBtn-' + tabName);
+        const activePane = document.getElementById('tabPane-' + tabName);
+
+        if (activeBtn) activeBtn.classList.add('active');
+        if (activePane) activePane.style.display = 'block';
+    }
+
+    // Member Roster live search
+    function filterRosterMembers() {
+        const query = (document.getElementById('memberDirectorySearch')?.value || '').trim().toLowerCase();
+        const rows = document.querySelectorAll('#rosterListContainer .member-roster-row');
+
+        rows.forEach(row => {
+            const name = row.getAttribute('data-name') || '';
+            row.style.display = (!query || name.includes(query)) ? 'flex' : 'none';
         });
-    });
+    }
+
+    // Digital Pass Modal
+    function openDigitalPassModal() {
+        const modal = document.getElementById('digitalPassModal');
+        if (modal) modal.style.display = 'flex';
+    }
+
+    function closeDigitalPassModal(event) {
+        if (!event || event.target.id === 'digitalPassModal' || event.target.closest('.digital-pass-close')) {
+            const modal = document.getElementById('digitalPassModal');
+            if (modal) modal.style.display = 'none';
+        }
+    }
 </script>
 {% endblock %}

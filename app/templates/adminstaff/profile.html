@@ -1,356 +1,1251 @@
 {% extends "adminstaff/base_adminstaff.html" %}
 
-{% block title %}Profile Management{% endblock %}
+{% block title %}Admin Staff Profile & Operational Settings{% endblock %}
 
 {% block extra_head %}
+{{ super() }}
 <style>
-    .profile-layout {
+    /* ── PROFILE CONSOLE DESIGN SYSTEM ── */
+    :root {
+        --staff-accent: #f97316;
+        --staff-accent-hover: #ea580c;
+        --staff-accent-soft: rgba(249, 115, 22, 0.1);
+        --staff-accent-border: rgba(249, 115, 22, 0.25);
+    }
+
+    .profile-console-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        padding-bottom: 40px;
+    }
+
+    /* ── Hero Profile Header Card ── */
+    .staff-hero-card {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--border-color-soft);
+        border-radius: 20px;
+        padding: 26px 30px;
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .staff-hero-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: linear-gradient(90deg, #f97316 0%, #ea580c 45%, #6366f1 100%);
+    }
+
+    .staff-hero-left {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        flex: 1;
+        min-width: 290px;
+    }
+
+    .staff-avatar-wrapper {
+        position: relative;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    .staff-avatar-box {
+        width: 86px;
+        height: 86px;
+        border-radius: 22px;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2rem;
+        font-weight: 800;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+        border: 2px solid var(--card-bg, #ffffff);
+        transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+    }
+
+    .staff-avatar-wrapper:hover .staff-avatar-box {
+        transform: scale(1.03);
+        box-shadow: 0 14px 30px rgba(0, 0, 0, 0.18);
+    }
+
+    .staff-avatar-box img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .avatar-edit-badge {
+        position: absolute;
+        bottom: -4px;
+        right: -4px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: var(--staff-accent);
+        color: #ffffff;
+        border: 2px solid var(--card-bg, #ffffff);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.95rem;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.22);
+        transition: transform 0.18s ease;
+    }
+
+    .staff-avatar-wrapper:hover .avatar-edit-badge {
+        transform: scale(1.14);
+    }
+
+    .staff-hero-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .staff-hero-name-row {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .staff-hero-title {
+        font-size: 1.55rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        margin: 0;
+        letter-spacing: -0.02em;
+    }
+
+    .badge-role-operator {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: rgba(249, 115, 22, 0.1);
+        color: var(--staff-accent);
+        border: 1px solid var(--staff-accent-border);
+        font-size: 0.74rem;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .staff-chips-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .staff-id-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: monospace;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        background: var(--action-box-bg);
+        border: 1px solid var(--border-color-soft);
+        padding: 3px 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .staff-id-pill:hover {
+        color: var(--staff-accent);
+        border-color: var(--staff-accent);
+        background: var(--staff-accent-soft);
+    }
+
+    .staff-email-chip {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    /* Hero Right: Duty Switcher & Quick Links */
+    .staff-hero-right {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 12px;
+    }
+
+    @media (max-width: 768px) {
+        .staff-hero-right {
+            align-items: flex-start;
+            width: 100%;
+        }
+    }
+
+    .duty-status-card {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--action-box-bg);
+        border: 1px solid var(--border-color-soft);
+        padding: 6px 14px;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        user-select: none;
+    }
+
+    .duty-status-card:hover {
+        border-color: var(--border-color);
+        transform: translateY(-1px);
+    }
+
+    .duty-pulse-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+        animation: pulseDuty 2s infinite;
+    }
+
+    @keyframes pulseDuty {
+        0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+        70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .duty-status-text {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        letter-spacing: 0.2px;
+    }
+
+    .duty-switch-label {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+
+    .hero-quick-nav {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .btn-hero-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        background: var(--action-box-bg);
+        border: 1px solid var(--border-color-soft);
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: all 0.16s ease;
+    }
+
+    .btn-hero-link:hover {
+        color: var(--text-primary);
+        border-color: var(--border-color);
+        background: var(--input-bg);
+        transform: translateY(-1px);
+    }
+
+    /* ── Operations KPI Statistics Grid ── */
+    .ops-kpi-grid {
         display: grid;
-        grid-template-columns: 1fr 1.6fr;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+    }
+
+    @media (max-width: 1024px) {
+        .ops-kpi-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 640px) {
+        .ops-kpi-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .ops-kpi-card {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--border-color-soft);
+        border-radius: 16px;
+        padding: 18px 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow: var(--shadow-sm);
+        text-decoration: none;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .ops-kpi-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.08);
+        border-color: var(--border-color);
+    }
+
+    .ops-kpi-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+    }
+
+    .ops-kpi-icon.green {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .ops-kpi-icon.amber {
+        background: rgba(245, 158, 11, 0.1);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    .ops-kpi-icon.indigo {
+        background: rgba(99, 102, 241, 0.1);
+        color: #6366f1;
+        border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+
+    .ops-kpi-icon.orange {
+        background: var(--staff-accent-soft);
+        color: var(--staff-accent);
+        border: 1px solid var(--staff-accent-border);
+    }
+
+    .ops-kpi-content h4 {
+        margin: 0;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .ops-kpi-number {
+        margin: 2px 0 0 0;
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        line-height: 1.2;
+    }
+
+    /* ── Main Two-Column Layout ── */
+    .profile-two-col-layout {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
         gap: 24px;
         align-items: start;
     }
 
-    /* ---- Left: Profile Card ---- */
-    .profile-card {
+    @media (max-width: 1024px) {
+        .profile-two-col-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* ── Settings Section Cards ── */
+    .settings-panel-card {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--border-color-soft);
+        border-radius: 18px;
+        padding: 24px 26px;
+        box-shadow: var(--shadow-sm);
         display: flex;
         flex-direction: column;
-        align-items: center;
-        text-align: center;
-        gap: 8px;
-    }
-
-    .profile-avatar {
-        width: 72px;
-        height: 72px;
-        background: var(--btn-navy);
-        color: #fff;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem;
-        font-weight: 700;
-        margin-bottom: 8px;
-    }
-
-    .profile-card h2 {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: var(--text-primary);
-    }
-
-    .profile-card .player-id {
-        font-size: 0.8rem;
-        color: var(--text-muted);
-        margin-bottom: 12px;
-    }
-
-    .profile-contact {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        margin-bottom: 12px;
-    }
-
-    .contact-row {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 0.875rem;
-        color: var(--text-secondary);
-    }
-
-    .contact-row i {
-        font-size: 1.1rem;
-        color: var(--text-muted);
-        flex-shrink: 0;
-    }
-
-    .membership-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: rgba(225, 86, 35, 0.08);
-        color: var(--primary-orange);
-        border: 1px solid rgba(225, 86, 35, 0.2);
-        font-size: 0.75rem;
-        font-weight: 600;
-        padding: 4px 10px;
-        border-radius: 20px;
-        text-transform: uppercase;
-    }
-
-    .btn-edit-profile {
-        width: 100%;
-        margin-top: 8px;
-        padding: 12px;
-        border: 1px solid var(--border-color);
-        background: transparent;
-        color: var(--text-primary);
-        border-radius: 8px;
-        font-size: 0.875rem;
-        font-weight: 600;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        transition: var(--transition);
-    }
-
-    .btn-edit-profile:hover {
-        background: var(--input-bg);
-        border-color: var(--text-muted);
-    }
-
-    /* ---- Right: Stats Card ---- */
-    .stats-section-title {
-        font-size: 1rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 16px;
-    }
-
-    .stat-boxes {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
+        gap: 20px;
         margin-bottom: 24px;
     }
 
-    .stat-box {
-        background: var(--action-box-bg);
-        border: 1px solid var(--border-color-soft);
-        border-radius: 10px;
-        padding: 16px;
-        text-align: center;
+    .settings-panel-card:last-child {
+        margin-bottom: 0;
     }
 
-    .stat-box .stat-value {
-        font-size: 1.75rem;
-        font-weight: 700;
-        display: block;
-        margin-bottom: 4px;
-    }
-
-    .stat-box .stat-label {
-        font-size: 0.75rem;
-        color: var(--text-muted);
-    }
-
-    .stat-box.orange .stat-value {
-        color: var(--primary-orange);
-    }
-
-    .stat-box.navy .stat-value {
-        color: #6366f1;
-    }
-
-    .stat-box.green .stat-value {
-        color: var(--btn-green);
-    }
-
-    /* Fairness Rating */
-    .fairness-label {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: var(--text-primary);
-        margin-bottom: 10px;
-    }
-
-    .fairness-bar-wrap {
+    .panel-header-row {
         display: flex;
         align-items: center;
         gap: 12px;
-        margin-bottom: 6px;
+        border-bottom: 1px solid var(--border-color-soft);
+        padding-bottom: 14px;
     }
 
-    .fairness-track {
-        flex: 1;
-        height: 8px;
+    .panel-header-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    .panel-header-icon.orange {
+        background: var(--staff-accent-soft);
+        color: var(--staff-accent);
+    }
+
+    .panel-header-icon.blue {
+        background: rgba(99, 102, 241, 0.1);
+        color: #6366f1;
+    }
+
+    .panel-header-icon.green {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+    }
+
+    .panel-header-text h3 {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .panel-header-text p {
+        margin: 2px 0 0 0;
+        font-size: 0.82rem;
+        color: var(--text-secondary);
+    }
+
+    /* Form Fields */
+    .form-two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    @media (max-width: 640px) {
+        .form-two-col {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .form-group-custom {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .form-label-custom {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .form-input-custom {
+        width: 100%;
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        background: var(--input-bg);
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        font-family: inherit;
+        outline: none;
+        transition: all 0.2s ease;
+    }
+
+    .form-input-custom:focus {
+        border-color: var(--staff-accent);
+        box-shadow: 0 0 0 3px var(--staff-accent-soft);
+    }
+
+    .form-input-custom:read-only {
+        background: var(--action-box-bg);
+        color: var(--text-secondary);
+        cursor: not-allowed;
+    }
+
+    /* Password Input Wrap with Eye Button */
+    .password-field-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .password-field-wrapper input {
+        padding-right: 42px;
+    }
+
+    .btn-eye-toggle {
+        position: absolute;
+        right: 12px;
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 1.15rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px;
+        transition: color 0.15s;
+    }
+
+    .btn-eye-toggle:hover {
+        color: var(--text-primary);
+    }
+
+    /* Save & Action Buttons */
+    .btn-staff-primary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 11px 22px;
+        border-radius: 10px;
+        background: var(--staff-accent);
+        color: #ffffff !important;
+        font-size: 0.9rem;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        transition: all 0.18s ease;
+        box-shadow: 0 4px 14px rgba(249, 115, 22, 0.22);
+    }
+
+    .btn-staff-primary:hover {
+        background: var(--staff-accent-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(249, 115, 22, 0.3);
+    }
+
+    .btn-staff-navy {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 11px 22px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        color: #ffffff !important;
+        font-size: 0.9rem;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        transition: all 0.18s ease;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.25);
+    }
+
+    .btn-staff-navy:hover {
+        background: #0f172a;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.35);
+    }
+
+    /* ── Performance Resolution Card ── */
+    .sla-gauge-box {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        background: var(--action-box-bg);
+        border: 1px solid var(--border-color-soft);
+        border-radius: 14px;
+        padding: 18px;
+    }
+
+    .sla-rate-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+    }
+
+    .sla-rate-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .sla-percentage-num {
+        font-size: 1.55rem;
+        font-weight: 800;
+        color: #10b981;
+    }
+
+    .sla-progress-track {
+        width: 100%;
+        height: 10px;
         background: var(--border-color-soft);
         border-radius: 99px;
         overflow: hidden;
     }
 
-    .fairness-fill {
+    .sla-progress-fill {
         height: 100%;
-        background: var(--btn-green);
         border-radius: 99px;
-        transition: width 0.6s ease;
+        background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+        transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .fairness-score {
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: var(--btn-green);
-        white-space: nowrap;
-    }
-
-    .fairness-note {
-        font-size: 0.75rem;
+    .sla-footer-note {
+        font-size: 0.78rem;
         color: var(--text-muted);
-        margin-bottom: 20px;
+        margin: 0;
+        line-height: 1.4;
     }
 
-    /* Recent Activity */
-    .recent-activity-title {
-        font-size: 0.875rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 12px;
-    }
-
-    .activity-list {
-        list-style: none;
+    /* ── Recent Staff Audit Trail ── */
+    .audit-trail-list {
         display: flex;
         flex-direction: column;
-        gap: 10px;
-        padding: 0;
+        gap: 12px;
     }
 
-    .activity-list li {
+    .audit-trail-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 10px 14px;
+        background: var(--action-box-bg);
+        border: 1px solid var(--border-color-soft);
+        border-radius: 12px;
+        font-size: 0.85rem;
+        transition: all 0.15s ease;
+    }
+
+    .audit-trail-item:hover {
+        border-color: var(--border-color);
+        background: var(--input-bg);
+    }
+
+    .audit-action-badge {
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 2px 7px;
+        border-radius: 6px;
+        letter-spacing: 0.3px;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .audit-action-badge.resolve {
+        background: rgba(16, 185, 129, 0.12);
+        color: #10b981;
+    }
+
+    .audit-action-badge.kyc {
+        background: rgba(99, 102, 241, 0.12);
+        color: #6366f1;
+    }
+
+    .audit-action-badge.dispute {
+        background: rgba(245, 158, 11, 0.12);
+        color: #f59e0b;
+    }
+
+    .audit-action-badge.security {
+        background: rgba(239, 68, 68, 0.12);
+        color: #ef4444;
+    }
+
+    .audit-meta-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        flex: 1;
+    }
+
+    .audit-action-desc {
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 0.84rem;
+    }
+
+    .audit-time-snippet {
+        font-size: 0.74rem;
+        color: var(--text-muted);
+    }
+
+    /* ── SOP Guidelines Cards ── */
+    .sop-guidelines-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .sop-card-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        background: var(--action-box-bg);
+        border: 1px solid var(--border-color-soft);
+    }
+
+    .sop-card-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    .sop-card-icon.blue {
+        background: rgba(99, 102, 241, 0.1);
+        color: #6366f1;
+    }
+
+    .sop-card-icon.green {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+    }
+
+    .sop-card-icon.amber {
+        background: rgba(245, 158, 11, 0.1);
+        color: #f59e0b;
+    }
+
+    .sop-text-wrap h5 {
+        margin: 0 0 2px 0;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .sop-text-wrap p {
+        margin: 0;
+        font-size: 0.78rem;
+        color: var(--text-secondary);
+        line-height: 1.4;
+    }
+
+    /* ── Profile Toast Alert ── */
+    .profile-toast {
+        position: fixed;
+        bottom: 28px;
+        right: 28px;
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: #ffffff;
+        background: #059669;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
         display: flex;
         align-items: center;
         gap: 10px;
-        font-size: 0.85rem;
-        color: var(--text-secondary);
+        z-index: 2000000000;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        pointer-events: none;
     }
 
-    .activity-list li .dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--primary-orange);
-        flex-shrink: 0;
+    .profile-toast.show {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-header">
-    <h1 class="page-title">Profile Settings</h1>
-</div>
 
-<div class="profile-layout">
+{% set total_t = stats.total_tickets if stats else 0 %}
+{% set resolved_t = stats.resolved_tickets if stats else 0 %}
+{% if total_t > 0 %}
+    {% set resolution_rate = (resolved_t / total_t) * 100 %}
+{% else %}
+    {% set resolution_rate = 100.0 %}
+{% endif %}
 
-    <!-- Left: Profile Card -->
-    <div class="glass-card">
-        <form method="POST" action="{{ url_for(request.blueprint ~ '.profile') }}" class="profile-card"
-            enctype="multipart/form-data">
-            <div class="profile-avatar" style="position: relative; cursor: pointer; transition: transform 0.2s;"
-                onclick="document.getElementById('avatar-input').click()" title="Click to change profile picture"
-                onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
-                {% if current_user.avatar_url %}
-                <img src="{{ current_user.avatar_url }}" alt="Avatar"
-                    style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
-                {% else %}
-                {{ current_user.initials }}
-                {% endif %}
-                <div
-                    style="position: absolute; bottom: -4px; right: -4px; background: var(--primary-orange); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--card-bg); font-size: 0.8rem; box-shadow: var(--shadow-sm);">
+<div class="profile-console-wrap">
+    <!-- Page Header Title -->
+    <div class="dashboard-header" style="margin-bottom: 0;">
+        <div>
+            <h1 class="page-title" style="margin: 0 0 4px 0;">Staff Profile & Operations Console</h1>
+            <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary); font-weight: 500;">
+                Manage operator credentials, account security, and review your operations service benchmark.
+            </p>
+        </div>
+    </div>
+
+    <!-- ── 1. Hero Identity & Duty Card ── -->
+    <div class="staff-hero-card">
+        <div class="staff-hero-left">
+            <div class="staff-avatar-wrapper" onclick="document.getElementById('avatar-input').click()" title="Click to upload profile avatar">
+                <div class="staff-avatar-box">
+                    {% if current_user.avatar_url %}
+                    <img src="{{ current_user.avatar_url }}" alt="{{ current_user.full_name }}" onerror="this.style.display='none'; this.parentElement.innerText='{{ current_user.initials }}';">
+                    {% else %}
+                    {{ current_user.initials }}
+                    {% endif %}
+                </div>
+                <div class="avatar-edit-badge" title="Upload new photo">
                     <i class="ph ph-camera"></i>
                 </div>
             </div>
-            <input type="file" id="avatar-input" name="avatar" accept="image/*" style="display: none;"
-                onchange="previewAvatar(this)">
 
-            <div style="width: 100%; margin-bottom: 15px; text-align: left;">
-                <label style="font-size: 0.8rem; color: var(--text-muted);">First Name</label>
-                <input type="text" name="first_name" value="{{ current_user.first_name }}" required
-                    style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg); color: var(--text-primary); margin-bottom: 10px;">
-
-                <label style="font-size: 0.8rem; color: var(--text-muted);">Last Name</label>
-                <input type="text" name="last_name" value="{{ current_user.last_name }}" required
-                    style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg); color: var(--text-primary);">
-            </div>
-
-            <p class="player-id" style="margin-top: 0;">Staff ID: PBH-STF-{{ current_user.id[:8] | upper if
-                current_user.id else '544A69CB' }}</p>
-
-            <div class="profile-contact">
-                <div class="contact-row">
-                    <i class="ph ph-envelope"></i>
-                    <span>{{ current_user.email or '—' }} (Read-only)</span>
+            <div class="staff-hero-meta">
+                <div class="staff-hero-name-row">
+                    <h2 class="staff-hero-title">{{ current_user.full_name or 'Admin Staff' }}</h2>
+                    <span class="badge-role-operator">
+                        <i class="ph ph-shield-check"></i> Operations Specialist
+                    </span>
                 </div>
-                <div class="contact-row">
-                    <i class="ph ph-phone"></i>
-                    <input type="text" name="phone" value="{{ current_user.phone or '' }}" placeholder="Phone Number"
-                        style="width: 100%; padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--input-bg); color: var(--text-primary);">
+
+                <div class="staff-chips-row">
+                    <div class="staff-id-pill" onclick="copyStaffId('PBH-STF-{{ current_user.id[:8] | upper if current_user.id else '544A69CB' }}')" title="Click to copy Staff ID">
+                        <i class="ph ph-identification-badge"></i>
+                        <span>PBH-STF-{{ current_user.id[:8] | upper if current_user.id else '544A69CB' }}</span>
+                        <i class="ph ph-copy" style="font-size: 0.8rem; margin-left: 2px;"></i>
+                    </div>
+
+                    <div class="staff-email-chip">
+                        <i class="ph ph-envelope-simple"></i>
+                        <span>{{ current_user.email or 'adminstaff@gmail.com' }}</span>
+                        <i class="ph ph-check-circle" style="color: #10b981; font-size: 0.85rem;" title="Verified Staff Email"></i>
+                    </div>
                 </div>
-                <div class="contact-row">
-                    <i class="ph ph-shield-check"></i>
-                    <span class="membership-badge">Staff Operator</span>
-                </div>
-            </div>
-
-            <button type="submit" class="btn-edit-profile"
-                style="background: var(--btn-navy); color: white; border: none;">
-                <i class="ph ph-floppy-disk"></i> Save Profile
-            </button>
-        </form>
-    </div>
-
-    <!-- Right: Statistics & Activity -->
-    <div class="glass-card">
-        <p class="stats-section-title">Operational Overview</p>
-
-        <div class="stat-boxes">
-            <div class="stat-box orange">
-                <span class="stat-value">{{ stats.resolved_tickets if stats else 0 }}</span>
-                <span class="stat-label">Resolved Tickets</span>
-            </div>
-            <div class="stat-box navy">
-                <span class="stat-value">{{ stats.pending_kyc if stats else 0 }}</span>
-                <span class="stat-label">Pending KYC</span>
-            </div>
-            <div class="stat-box green">
-                <span class="stat-value">{{ stats.open_disputes if stats else 0 }}</span>
-                <span class="stat-label">Open Disputes</span>
             </div>
         </div>
 
-        <p class="fairness-label">Support Resolution Rate</p>
-        <div class="fairness-bar-wrap">
-            <div class="fairness-track">
-                {% if stats and stats.total_tickets > 0 %}
-                {% set resolution_rate = (stats.resolved_tickets / stats.total_tickets) * 100 %}
-                {% else %}
-                {% set resolution_rate = 100.0 %}
-                {% endif %}
-                <div class="fairness-fill" style="width: {{ resolution_rate }}%;"></div>
+        <div class="staff-hero-right">
+            <div class="duty-status-card" onclick="toggleDutyStatus(this)" title="Toggle operational duty status">
+                <div class="duty-pulse-dot" id="dutyDot"></div>
+                <div>
+                    <div class="duty-status-text" id="dutyStatusText">Active — On Duty</div>
+                    <div class="duty-switch-label">Click to switch status</div>
+                </div>
             </div>
-            <span class="fairness-score">{{ "%.1f"|format(resolution_rate) }}%</span>
-        </div>
-        <p class="fairness-note">Based on support tickets resolved vs total tickets assigned to system queue.</p>
 
-        <p class="recent-activity-title">Operational Guidelines</p>
-        <ul class="activity-list">
-            <li><span class="dot"></span> Review facilities verification documents within 24 hours of submission.</li>
-            <li><span class="dot"></span> Mediate court reservation disputes fairly following platform rules.</li>
-            <li><span class="dot"></span> Respond and resolve support tickets under the verified SLA agreements.</li>
-        </ul>
+            <div class="hero-quick-nav">
+                <a href="{{ url_for('adminstaff.dashboard') }}" class="btn-hero-link" title="Jump to Operations Dashboard">
+                    <i class="ph ph-squares-four"></i> Dashboard
+                </a>
+                <a href="{{ url_for('adminstaff.verifications') }}" class="btn-hero-link" title="KYC Verification Queue">
+                    <i class="ph ph-shield-check"></i> KYC
+                </a>
+                <a href="{{ url_for('adminstaff.support') }}" class="btn-hero-link" title="Support Tickets Console">
+                    <i class="ph ph-ticket"></i> Support
+                </a>
+            </div>
+        </div>
     </div>
 
+    <!-- ── 2. Operations KPI Summary Bar ── -->
+    <div class="ops-kpi-grid">
+        <a href="{{ url_for('adminstaff.support') }}" class="ops-kpi-card">
+            <div class="ops-kpi-icon green">
+                <i class="ph ph-check-circle"></i>
+            </div>
+            <div class="ops-kpi-content">
+                <h4>Resolved Tickets</h4>
+                <div class="ops-kpi-number">{{ stats.resolved_tickets if stats else 0 }}</div>
+            </div>
+        </a>
+
+        <a href="{{ url_for('adminstaff.verifications') }}" class="ops-kpi-card">
+            <div class="ops-kpi-icon amber">
+                <i class="ph ph-hourglass-high"></i>
+            </div>
+            <div class="ops-kpi-content">
+                <h4>Pending KYC</h4>
+                <div class="ops-kpi-number">{{ stats.pending_kyc if stats else 0 }}</div>
+            </div>
+        </a>
+
+        <a href="{{ url_for('adminstaff.disputes') }}" class="ops-kpi-card">
+            <div class="ops-kpi-icon indigo">
+                <i class="ph ph-scales"></i>
+            </div>
+            <div class="ops-kpi-content">
+                <h4>Open Disputes</h4>
+                <div class="ops-kpi-number">{{ stats.open_disputes if stats else 0 }}</div>
+            </div>
+        </a>
+
+        <a href="{{ url_for('adminstaff.verifications') }}" class="ops-kpi-card">
+            <div class="ops-kpi-icon orange">
+                <i class="ph ph-buildings"></i>
+            </div>
+            <div class="ops-kpi-content">
+                <h4>Monitored Facilities</h4>
+                <div class="ops-kpi-number">{{ stats.total_facilities if stats else 0 }}</div>
+            </div>
+        </a>
+    </div>
+
+    <!-- ── 3. Main Two-Column Layout ── -->
+    <div class="profile-two-col-layout">
+        <!-- ── Left Column: Profile & Security Forms ── -->
+        <div>
+            <!-- Card 1: Personal Identification & Contact -->
+            <div class="settings-panel-card">
+                <div class="panel-header-row">
+                    <div class="panel-header-icon orange">
+                        <i class="ph ph-user-gear"></i>
+                    </div>
+                    <div class="panel-header-text">
+                        <h3>Personal Identification</h3>
+                        <p>Update your display name, contact phone, and profile photo.</p>
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ url_for('adminstaff.profile') }}" enctype="multipart/form-data" id="profileForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+                    <input type="file" id="avatar-input" name="avatar" accept="image/*" style="display: none;" onchange="previewAvatar(this)">
+
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                        <!-- First Name & Last Name (2 cols) -->
+                        <div class="form-two-col">
+                            <div class="form-group-custom">
+                                <label class="form-label-custom"><i class="ph ph-identification-card"></i> First Name *</label>
+                                <input type="text" name="first_name" class="form-input-custom" value="{{ current_user.first_name }}" required placeholder="e.g. Admin">
+                            </div>
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">Last Name *</label>
+                                <input type="text" name="last_name" class="form-input-custom" value="{{ current_user.last_name }}" required placeholder="e.g. Staff">
+                            </div>
+                        </div>
+
+                        <!-- Email Address (Read-only) -->
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">
+                                <i class="ph ph-envelope"></i> Account Email (Read-Only)
+                                <span style="font-size:0.7rem; color: #10b981; font-weight: 600; text-transform:none;">• Authenticated</span>
+                            </label>
+                            <input type="email" class="form-input-custom" value="{{ current_user.email or '' }}" readonly>
+                        </div>
+
+                        <!-- Mobile / Contact Phone -->
+                        <div class="form-group-custom">
+                            <label class="form-label-custom"><i class="ph ph-phone"></i> Mobile / Contact Phone</label>
+                            <input type="tel" name="phone" class="form-input-custom" value="{{ current_user.phone or '' }}" placeholder="e.g. 0912 345 6789">
+                        </div>
+
+                        <!-- Department / Role Assignment -->
+                        <div class="form-group-custom">
+                            <label class="form-label-custom"><i class="ph ph-briefcase"></i> Operations Assignment</label>
+                            <input type="text" class="form-input-custom" value="Trust & Operations Moderation Desk (Supervised)" readonly>
+                        </div>
+
+                        <div style="display: flex; justify-content: flex-start; margin-top: 6px;">
+                            <button type="submit" class="btn-staff-primary">
+                                <i class="ph ph-floppy-disk"></i> Save Profile Changes
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Card 2: Security & Password Management -->
+            <div class="settings-panel-card">
+                <div class="panel-header-row">
+                    <div class="panel-header-icon blue">
+                        <i class="ph ph-shield-lock"></i>
+                    </div>
+                    <div class="panel-header-text">
+                        <h3>Security & Password Management</h3>
+                        <p>Change your operational account credentials to maintain security.</p>
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ url_for('adminstaff.change_password') }}" id="passwordForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                        <!-- Current Password -->
+                        <div class="form-group-custom">
+                            <label class="form-label-custom"><i class="ph ph-key"></i> Current Password *</label>
+                            <div class="password-field-wrapper">
+                                <input type="password" name="old_password" id="oldPasswordInput" class="form-input-custom" required placeholder="Enter current password">
+                                <button type="button" class="btn-eye-toggle" onclick="togglePasswordView('oldPasswordInput', this)" aria-label="Toggle password view">
+                                    <i class="ph ph-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- New Password & Confirm (2 cols) -->
+                        <div class="form-two-col">
+                            <div class="form-group-custom">
+                                <label class="form-label-custom"><i class="ph ph-lock-simple"></i> New Password *</label>
+                                <div class="password-field-wrapper">
+                                    <input type="password" name="new_password" id="newPasswordInput" class="form-input-custom" required minlength="8" placeholder="Min. 8 characters">
+                                    <button type="button" class="btn-eye-toggle" onclick="togglePasswordView('newPasswordInput', this)" aria-label="Toggle password view">
+                                        <i class="ph ph-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="form-group-custom">
+                                <label class="form-label-custom"><i class="ph ph-lock-simple-open"></i> Confirm Password *</label>
+                                <div class="password-field-wrapper">
+                                    <input type="password" name="confirm_password" id="confirmPasswordInput" class="form-input-custom" required minlength="8" placeholder="Repeat new password">
+                                    <button type="button" class="btn-eye-toggle" onclick="togglePasswordView('confirmPasswordInput', this)" aria-label="Toggle password view">
+                                        <i class="ph ph-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; justify-content: flex-start; margin-top: 6px;">
+                            <button type="submit" class="btn-staff-navy">
+                                <i class="ph ph-lock-key"></i> Update Password
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ── Right Column: Performance, Audit Trail & SOP ── -->
+        <div>
+            <!-- Card 1: Support SLA & Resolution Performance -->
+            <div class="settings-panel-card">
+                <div class="panel-header-row">
+                    <div class="panel-header-icon green">
+                        <i class="ph ph-chart-line-up"></i>
+                    </div>
+                    <div class="panel-header-text">
+                        <h3>Resolution Performance</h3>
+                        <p>Overall support ticket completion benchmark.</p>
+                    </div>
+                </div>
+
+                <div class="sla-gauge-box">
+                    <div class="sla-rate-header">
+                        <span class="sla-rate-title">Support Resolution Rate</span>
+                        <span class="sla-percentage-num">{{ "%.1f"|format(resolution_rate) }}%</span>
+                    </div>
+
+                    <div class="sla-progress-track">
+                        <div class="sla-progress-fill" style="width: {{ resolution_rate }}%;"></div>
+                    </div>
+
+                    <p class="sla-footer-note">
+                        <i class="ph ph-info" style="color: #10b981;"></i>
+                        Based on {{ resolved_t }} resolved tickets out of {{ total_t }} total platform queries assigned to operational queue.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Card 2: Recent Staff Audit Trail -->
+            <div class="settings-panel-card">
+                <div class="panel-header-row">
+                    <div class="panel-header-icon blue">
+                        <i class="ph ph-clock-counter-clockwise"></i>
+                    </div>
+                    <div class="panel-header-text">
+                        <h3>Recent Operational Actions</h3>
+                        <p>Logged accountability trail across platform queues.</p>
+                    </div>
+                </div>
+
+                <div class="audit-trail-list">
+                    {% for log in recent_logs %}
+                    {% set act = log.action or 'action' %}
+                    <div class="audit-trail-item">
+                        {% if 'resolve' in act or 'ticket' in act %}
+                        <span class="audit-action-badge resolve">Ticket</span>
+                        {% elif 'kyc' in act or 'facility' in act %}
+                        <span class="audit-action-badge kyc">KYC</span>
+                        {% elif 'dispute' in act %}
+                        <span class="audit-action-badge dispute">Dispute</span>
+                        {% else %}
+                        <span class="audit-action-badge security">Audit</span>
+                        {% endif %}
+
+                        <div class="audit-meta-wrap">
+                            <span class="audit-action-desc">
+                                {{ act | replace('_', ' ') | title }}
+                                {% if log.details and log.details.status %}
+                                <span style="color:var(--text-muted); font-weight: normal;">• {{ log.details.status | replace('_', ' ') | title }}</span>
+                                {% endif %}
+                            </span>
+                            <span class="audit-time-snippet">
+                                {{ log.created_at[:10] if log.created_at else 'Recent' }}
+                            </span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div style="text-align: center; padding: 24px; color: var(--text-muted); font-size: 0.85rem;">
+                        <i class="ph ph-check-circle" style="font-size: 1.8rem; color: #10b981; margin-bottom: 6px; display: block;"></i>
+                        All operations synchronized. No actions recorded in current session.
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Card 3: Standard Operating Procedures (SOP) -->
+            <div class="settings-panel-card">
+                <div class="panel-header-row">
+                    <div class="panel-header-icon orange">
+                        <i class="ph ph-notebook"></i>
+                    </div>
+                    <div class="panel-header-text">
+                        <h3>Operating Guidelines</h3>
+                        <p>Core platform standards for admin staff operators.</p>
+                    </div>
+                </div>
+
+                <div class="sop-guidelines-stack">
+                    <div class="sop-card-item">
+                        <div class="sop-card-icon blue">
+                            <i class="ph ph-shield-check"></i>
+                        </div>
+                        <div class="sop-text-wrap">
+                            <h5>Facility KYC Inspection</h5>
+                            <p>Verify business permits, court photos, and owner identity within 24 hours of submission.</p>
+                        </div>
+                    </div>
+
+                    <div class="sop-card-item">
+                        <div class="sop-card-icon amber">
+                            <i class="ph ph-scales"></i>
+                        </div>
+                        <div class="sop-text-wrap">
+                            <h5>Dispute Mediation</h5>
+                            <p>Mediate reservation cancellations and player disputes impartially using platform transaction proofs.</p>
+                        </div>
+                    </div>
+
+                    <div class="sop-card-item">
+                        <div class="sop-card-icon green">
+                            <i class="ph ph-ticket"></i>
+                        </div>
+                        <div class="sop-text-wrap">
+                            <h5>Support Resolution SLA</h5>
+                            <p>Acknowledge incoming user queries promptly and achieve resolution within official SLA limits.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Toast Element -->
+<div id="profileToast" class="profile-toast">
+    <i class="ph ph-check-circle" style="font-size: 1.2rem;"></i>
+    <span id="profileToastMsg">Copied to clipboard</span>
 </div>
 
 <script>
+    // ── AVATAR LIVE PREVIEW ──
     function previewAvatar(input) {
         if (input.files && input.files[0]) {
             const reader = new FileReader();
             reader.onload = function (e) {
-                const avatarDiv = document.querySelector('.profile-avatar');
-                avatarDiv.innerHTML = `
-                    <img src="${e.target.result}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
-                    <div style="position: absolute; bottom: -4px; right: -4px; background: var(--primary-orange); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--card-bg); font-size: 0.8rem; box-shadow: var(--shadow-sm);">
-                        <i class="ph ph-camera"></i>
-                    </div>
-                `;
-            }
+                const avatarBox = document.querySelector('.staff-avatar-box');
+                if (avatarBox) {
+                    avatarBox.innerHTML = `<img src="${e.target.result}" alt="Avatar Preview" style="width: 100%; height: 100%; object-fit: cover;">`;
+                }
+                showProfileToast('Avatar selected. Click "Save Profile Changes" to apply.');
+            };
             reader.readAsDataURL(input.files[0]);
         }
+    }
+
+    // ── COPY STAFF ID ──
+    function copyStaffId(idText) {
+        navigator.clipboard.writeText(idText).then(() => {
+            showProfileToast(`Copied ${idText} to clipboard!`);
+        }).catch(() => {
+            showProfileToast(`Staff ID: ${idText}`);
+        });
+    }
+
+    // ── TOAST MESSAGES ──
+    let toastTimeout = null;
+    function showProfileToast(message) {
+        const toast = document.getElementById('profileToast');
+        const msgEl = document.getElementById('profileToastMsg');
+        if (!toast || !msgEl) return;
+
+        clearTimeout(toastTimeout);
+        msgEl.textContent = message;
+        toast.classList.add('show');
+
+        toastTimeout = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+
+    // ── PASSWORD VISIBILITY TOGGLE ──
+    function togglePasswordView(inputId, btn) {
+        const input = document.getElementById(inputId);
+        const icon = btn.querySelector('i');
+        if (!input || !icon) return;
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'ph ph-eye-slash';
+        } else {
+            input.type = 'password';
+            icon.className = 'ph ph-eye';
+        }
+    }
+
+    // ── DUTY STATUS SWITCHER ──
+    const dutyStatuses = [
+        { text: 'Active — On Duty', color: '#10b981', pulse: true },
+        { text: 'Away — Short Break', color: '#f59e0b', pulse: false },
+        { text: 'Offline — Off Duty', color: '#94a3b8', pulse: false }
+    ];
+    let currentDutyIndex = 0;
+
+    function toggleDutyStatus(card) {
+        currentDutyIndex = (currentDutyIndex + 1) % dutyStatuses.length;
+        const cur = dutyStatuses[currentDutyIndex];
+
+        const textEl = document.getElementById('dutyStatusText');
+        const dotEl = document.getElementById('dutyDot');
+
+        if (textEl) textEl.textContent = cur.text;
+        if (dotEl) {
+            dotEl.style.background = cur.color;
+            if (cur.pulse) {
+                dotEl.style.animation = 'pulseDuty 2s infinite';
+            } else {
+                dotEl.style.animation = 'none';
+            }
+        }
+        showProfileToast(`Duty status updated: ${cur.text}`);
     }
 </script>
 {% endblock %}

@@ -45,6 +45,7 @@ def create_app():
     from app.facilitystaff.routes import facilitystaff_bp
     from app.clubadmin import clubadmin_bp
     from app.support.routes import support_bp
+    from app.billing.routes import billing_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
@@ -55,6 +56,45 @@ def create_app():
     app.register_blueprint(facilitystaff_bp)
     app.register_blueprint(clubadmin_bp)
     app.register_blueprint(support_bp)
+    app.register_blueprint(billing_bp)
+
+    @app.template_filter('time12')
+    def time12_filter(val):
+        if not val:
+            return ''
+        s = str(val).strip()
+        try:
+            parts = s.split(':')
+            h = int(parts[0])
+            m = int(parts[1]) if len(parts) > 1 else 0
+            if h == 24 or (h == 0 and m == 0):
+                return '12:00 AM'
+            ampm = 'AM' if h < 12 else 'PM'
+            h12 = h % 12
+            if h12 == 0:
+                h12 = 12
+            min_str = f":{m:02d}" if m > 0 else ":00"
+            return f"{h12}{min_str} {ampm}"
+        except Exception:
+            return s
+
+    @app.template_filter('parse_kyc')
+    def parse_kyc_filter(val):
+        """Parse KYC document storage string into structured dict of documents."""
+        if not val:
+            return {}
+        if isinstance(val, dict):
+            return val
+        val_str = str(val).strip()
+        if val_str.startswith('{') and val_str.endswith('}'):
+            try:
+                import json
+                data = json.loads(val_str)
+                if isinstance(data, dict):
+                    return data
+            except Exception:
+                pass
+        return {'document_url': val_str, 'legacy_url': val_str}
 
     @app.before_request
     def verify_session_integrity():
@@ -72,20 +112,28 @@ def create_app():
         import time
         now = time.time()
         last_check = session.get('last_integrity_check')
-        if last_check and (now - last_check < 60):
+        cached_profile = session.get('cached_profile')
+
+        # If checked within 60s, restore g.current_profile from session cache to avoid DB round-trip
+        if last_check and (now - last_check < 60) and cached_profile and cached_profile.get('id') == user_id:
+            g.current_profile = cached_profile
             return
             
         from app.db import get_admin_db
         try:
             db = get_admin_db()
             resp = db.table('profiles').select(
-                'role, is_suspended, first_name, last_name, phone, elo, dupr, proficiency, avatar_url'
+                'id, role, is_suspended, first_name, last_name, phone, elo, dupr, proficiency, avatar_url, subscription_tier, subscription_status, subscription_billing_cycle, subscription_expires_at'
             ).eq('id', user_id).single().execute()
             if resp.data:
                 profile = resp.data
                 
-                # Cache in flask.g for reuse by require_role and inject_current_user
+                # Cache in flask.g AND in session for reuse across requests without DB round-trips
                 g.current_profile = profile
+                session['cached_profile'] = profile
+                session['subscription_tier'] = profile.get('subscription_tier') or 'free'
+                session['subscription_status'] = profile.get('subscription_status') or 'active'
+                session['subscription_expires_at'] = profile.get('subscription_expires_at')
                 
                 # 1. Force logout if suspended
                 if profile.get('is_suspended'):
@@ -174,16 +222,25 @@ def create_app():
         # --- 1. Reuse profile cached in flask.g by verify_session_integrity ---
         d = getattr(g, 'current_profile', None)
 
-        # --- 2. Fallback: fetch from DB if g.current_profile wasn't populated ---
+        # --- 2. Fallback to session cached_profile if available ---
+        if not d and session.get('cached_profile') and session['cached_profile'].get('id') == user_id:
+            d = session['cached_profile']
+            g.current_profile = d
+
+        # --- 3. Fallback: fetch from DB if neither was populated ---
         if not d:
             from app.db import get_admin_db
             client = get_admin_db()
             if client:
                 try:
                     resp = client.table('profiles').select(
-                        'first_name, last_name, phone, role, elo, dupr, proficiency, avatar_url'
+                        'id, first_name, last_name, phone, role, elo, dupr, proficiency, avatar_url, subscription_tier, subscription_status, subscription_billing_cycle, subscription_expires_at'
                     ).eq('id', user_id).single().execute()
                     d = resp.data
+                    if d:
+                        g.current_profile = d
+                        session['cached_profile'] = d
+                        session['subscription_tier'] = d.get('subscription_tier') or 'free'
                 except Exception as exc:
                     print(f"[context_processor] Supabase error: {exc}", file=sys.stderr)
 
@@ -203,21 +260,29 @@ def create_app():
                 if elo is None: elo = elo_def
                 if dupr is None: dupr = dupr_def
 
+            from app.billing.tiers import get_user_tier, get_tier_limits
+            user_tier = get_user_tier(d, role=role)
+            tier_limits = get_tier_limits(role, user_tier)
+
             return dict(current_user={
-                'first_name':   first,
-                'last_name':    last,
-                'full_name':    full,
-                'initials':     initials,
-                'email':        (d.get('email') or session.get('email', '')),
-                'phone':        (d.get('phone') or ''),
-                'role':         role.capitalize(),
-                'role_raw':     role,
-                'id':           user_id,
-                'is_logged_in': True,
-                'elo':          elo,
-                'dupr':         dupr,
-                'proficiency':  d.get('proficiency'),
-                'avatar_url':   d.get('avatar_url'),
+                'first_name':          first,
+                'last_name':           last,
+                'full_name':           full,
+                'initials':            initials,
+                'email':               (d.get('email') or session.get('email', '')),
+                'phone':               (d.get('phone') or ''),
+                'role':                role.capitalize(),
+                'role_raw':            role,
+                'id':                  user_id,
+                'is_logged_in':        True,
+                'elo':                 elo,
+                'dupr':                dupr,
+                'proficiency':         d.get('proficiency'),
+                'avatar_url':          d.get('avatar_url'),
+                'subscription_tier':   user_tier,
+                'is_pro':              user_tier in ['pro', 'elite'],
+                'is_elite':            user_tier == 'elite',
+                'tier_limits':         tier_limits,
             }, supabase_url=supabase_url, supabase_anon_key=supabase_key)
 
         # --- 2. Fall back to whatever was stored in session at login ---
@@ -230,21 +295,29 @@ def create_app():
         from app.ratings import get_initial_rating
         elo_def, dupr_def = get_initial_rating(session.get('proficiency'))
 
+        from app.billing.tiers import get_user_tier, get_tier_limits
+        user_tier = session.get('subscription_tier', 'free')
+        tier_limits = get_tier_limits(role, user_tier)
+
         return dict(current_user={
-            'first_name':   first,
-            'last_name':    last,
-            'full_name':    full,
-            'initials':     initials,
-            'email':        session.get('email', ''),
-            'phone':        session.get('phone', ''),
-            'role':         role.capitalize(),
-            'role_raw':     role,
-            'id':           user_id,
-            'is_logged_in': True,
-            'elo':          session.get('elo', elo_def),
-            'dupr':         session.get('dupr', dupr_def),
-            'proficiency':  session.get('proficiency'),
-            'avatar_url':   session.get('avatar_url'),
+            'first_name':          first,
+            'last_name':           last,
+            'full_name':           full,
+            'initials':            initials,
+            'email':               session.get('email', ''),
+            'phone':               session.get('phone', ''),
+            'role':                role.capitalize(),
+            'role_raw':            role,
+            'id':                  user_id,
+            'is_logged_in':        True,
+            'elo':                 session.get('elo', elo_def),
+            'dupr':                session.get('dupr', dupr_def),
+            'proficiency':         session.get('proficiency'),
+            'avatar_url':          session.get('avatar_url'),
+            'subscription_tier':   user_tier,
+            'is_pro':              user_tier in ['pro', 'elite'],
+            'is_elite':            user_tier == 'elite',
+            'tier_limits':         tier_limits,
         }, supabase_url=supabase_url, supabase_anon_key=supabase_key)
 
     @app.context_processor

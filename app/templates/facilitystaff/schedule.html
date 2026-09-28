@@ -1,104 +1,3346 @@
 {% extends "facilitystaff/base_facilitystaff.html" %}
-{% block title %}Court Schedule{% endblock %}
+
+{% block title %}Court Schedule & Operations Planner • PickleballHub{% endblock %}
 
 {% block extra_head %}
 <style>
-.btn-sm { 
-    padding: 6px 12px; 
-    border-radius: 8px; 
-    font-size: 0.78rem; 
-    font-weight: 600; 
-    cursor: pointer; 
-    border: none; 
-    transition: all 0.2s; 
-    display: inline-flex; 
-    align-items: center; 
-    gap: 4px; 
-}
-.btn-sm-outline { 
-    background: transparent; 
-    border: 1px solid var(--border-color); 
-    color: var(--text-secondary); 
-}
-.btn-sm-outline:hover { 
-    border-color: var(--text-muted); 
-    color: var(--text-primary); 
-    background: rgba(255, 255, 255, 0.05);
-}
+    /* ==========================================================================
+       COURT SCHEDULE COMMAND CENTER STYLES
+       ========================================================================== */
+
+    /* Hero Banner */
+    .schedule-hero-banner {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    }
+
+    .schedule-hero-banner::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-orange) 0%, #f97316 40%, var(--btn-green) 100%);
+    }
+
+    .schedule-header-flex {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .schedule-venue-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 8px;
+    }
+
+    .live-pulse-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: var(--btn-green);
+        box-shadow: 0 0 0 rgba(34, 197, 94, 0.7);
+        animation: livePulse 1.8s infinite;
+        display: inline-block;
+    }
+
+    @keyframes livePulse {
+        0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+        70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+    }
+
+    .schedule-title-group h1 {
+        font-size: 1.85rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        letter-spacing: -0.5px;
+        margin: 0 0 6px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .schedule-subtitle {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    .schedule-meta-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .digital-clock-pill {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        padding: 8px 16px;
+        border-radius: 12px;
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .clock-icon-pulse {
+        color: var(--primary-orange);
+        animation: spinClock 12s linear infinite;
+    }
+
+    @keyframes spinClock {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .desk-btn-primary {
+        background: linear-gradient(135deg, var(--primary-orange), #ea580c);
+        color: #ffffff;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-size: 0.88rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        box-shadow: 0 4px 12px rgba(225, 86, 35, 0.25);
+    }
+
+    .desk-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(225, 86, 35, 0.35);
+        color: #ffffff;
+    }
+
+    .desk-btn-outline {
+        background: var(--input-bg);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        padding: 10px 16px;
+        border-radius: 10px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .desk-btn-outline:hover {
+        border-color: var(--primary-orange);
+        color: var(--primary-orange);
+        background: rgba(225, 86, 35, 0.05);
+    }
+
+    /* Date Navigator */
+    .schedule-date-nav {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 18px 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+    }
+
+    .date-nav-main-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .date-arrow-btn {
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        font-size: 1.1rem;
+    }
+
+    .date-arrow-btn:hover {
+        background: var(--primary-orange-light);
+        border-color: var(--primary-orange);
+        color: var(--primary-orange);
+        transform: translateY(-1px);
+    }
+
+    .date-center-heading {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .date-display-title {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        letter-spacing: -0.3px;
+        margin: 0;
+    }
+
+    .date-status-badge {
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .date-status-badge.today {
+        background: rgba(34, 197, 94, 0.12);
+        color: var(--btn-green);
+        border: 1px solid rgba(34, 197, 94, 0.25);
+    }
+
+    .date-status-badge.past {
+        background: var(--input-bg);
+        color: var(--text-muted);
+        border: 1px solid var(--border-color);
+    }
+
+    .date-status-badge.future {
+        background: rgba(225, 86, 35, 0.1);
+        color: var(--primary-orange);
+        border: 1px solid rgba(225, 86, 35, 0.2);
+    }
+
+    .date-quick-presets {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .preset-pill {
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 6px 14px;
+        border-radius: 8px;
+        background: var(--input-bg);
+        color: var(--text-secondary);
+        border: 1px solid var(--border-color);
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .preset-pill:hover {
+        border-color: var(--primary-orange);
+        color: var(--primary-orange);
+    }
+
+    .preset-pill.active {
+        background: var(--primary-orange);
+        color: #ffffff;
+        border-color: var(--primary-orange);
+        box-shadow: 0 2px 8px rgba(225, 86, 35, 0.25);
+    }
+
+    .date-picker-input-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Custom Calendar Trigger Button */
+    .custom-calendar-trigger-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-size: 0.88rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+    }
+
+    .custom-calendar-trigger-btn:hover {
+        border-color: var(--primary-orange);
+        background: rgba(225, 86, 35, 0.08);
+        color: var(--primary-orange);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(225, 86, 35, 0.15);
+    }
+
+    .custom-cal-trigger-date {
+        font-family: inherit;
+        letter-spacing: 0.3px;
+    }
+
+    .custom-cal-trigger-count {
+        background: var(--primary-orange);
+        color: #fff;
+        font-size: 0.72rem;
+        font-weight: 800;
+        padding: 2px 7px;
+        border-radius: 999px;
+        line-height: 1.2;
+    }
+
+    /* Custom Calendar Modal */
+    .custom-calendar-modal-box {
+        max-width: 940px !important;
+        width: 95% !important;
+        padding: 0 !important;
+        overflow: hidden;
+    }
+
+    .cal-modal-tabs {
+        display: flex;
+        gap: 8px;
+        border-bottom: 1px solid var(--border-color);
+        padding: 0 24px;
+        background: var(--input-bg);
+    }
+
+    .cal-tab-btn {
+        background: none;
+        border: none;
+        padding: 12px 16px;
+        font-size: 0.86rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        cursor: pointer;
+        position: relative;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .cal-tab-btn.active {
+        color: var(--primary-orange);
+    }
+
+    .cal-tab-btn.active::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--primary-orange);
+        border-radius: 3px 3px 0 0;
+    }
+
+    .cal-controls-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 20px;
+        background: var(--card-bg);
+        border-bottom: 1px solid var(--border-color);
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .cal-nav-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .cal-nav-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        background: var(--input-bg);
+        color: var(--text-primary);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        transition: all 0.15s ease;
+    }
+
+    .cal-nav-btn:hover {
+        border-color: var(--primary-orange);
+        color: var(--primary-orange);
+        background: rgba(225, 86, 35, 0.08);
+    }
+
+    .cal-select {
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        font-size: 0.88rem;
+        font-weight: 700;
+        padding: 6px 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        outline: none;
+    }
+
+    .cal-select:focus {
+        border-color: var(--primary-orange);
+    }
+
+    .cal-quick-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .cal-quick-pill {
+        border: 1px solid var(--border-color);
+        background: var(--input-bg);
+        color: var(--text-secondary);
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 6px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .cal-quick-pill:hover {
+        border-color: var(--primary-orange);
+        color: var(--primary-orange);
+        background: rgba(225, 86, 35, 0.06);
+    }
+
+    .cal-legend-strip {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 8px 20px;
+        background: var(--input-bg);
+        border-bottom: 1px solid var(--border-color);
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        flex-wrap: wrap;
+    }
+
+    .cal-legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .cal-legend-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+
+    .cal-layout-container {
+        display: grid;
+        grid-template-columns: 1fr 310px;
+        min-height: 480px;
+    }
+
+    @media (max-width: 860px) {
+        .cal-layout-container {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .cal-grid-area {
+        padding: 16px 20px;
+        border-right: 1px solid var(--border-color);
+    }
+
+    @media (max-width: 860px) {
+        .cal-grid-area {
+            border-right: none;
+            border-bottom: 1px solid var(--border-color);
+        }
+    }
+
+    .cal-weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 6px;
+        margin-bottom: 8px;
+        text-align: center;
+    }
+
+    .cal-weekday {
+        font-size: 0.72rem;
+        font-weight: 800;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 4px 0;
+    }
+
+    .cal-days-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 6px;
+    }
+
+    .cal-day {
+        min-height: 72px;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 6px 8px;
+        background: var(--card-bg);
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: all 0.15s ease;
+        position: relative;
+    }
+
+    .cal-day:hover {
+        border-color: var(--primary-orange);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .cal-day.other-month {
+        opacity: 0.35;
+        background: rgba(0,0,0,0.02);
+    }
+
+    .cal-day.is-past {
+        background: rgba(148, 163, 184, 0.04);
+    }
+
+    .cal-day.is-today {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 1px #3b82f6;
+    }
+
+    .cal-day.is-selected {
+        border-color: var(--primary-orange);
+        background: rgba(225, 86, 35, 0.08);
+        box-shadow: 0 0 0 2px var(--primary-orange);
+    }
+
+    .cal-day-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .cal-day-num {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .cal-day-today-tag {
+        font-size: 0.62rem;
+        font-weight: 800;
+        background: #3b82f6;
+        color: #fff;
+        padding: 1px 4px;
+        border-radius: 4px;
+        text-transform: uppercase;
+    }
+
+    .cal-day-badge {
+        margin-top: 4px;
+        padding: 2px 6px;
+        border-radius: 6px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        width: fit-content;
+        max-width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .cal-day-badge.active-booking {
+        background: rgba(225, 86, 35, 0.15);
+        color: var(--primary-orange);
+        border: 1px solid rgba(225, 86, 35, 0.3);
+    }
+
+    .cal-day-badge.past-booking {
+        background: rgba(16, 185, 129, 0.15);
+        color: #059669;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .cal-side-inspector {
+        padding: 20px;
+        background: var(--input-bg);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .cal-side-header {
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 14px;
+        margin-bottom: 14px;
+    }
+
+    .cal-side-date-title {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        margin: 0 0 4px 0;
+    }
+
+    .cal-side-status-tag {
+        display: inline-block;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 999px;
+    }
+
+    .cal-side-stat-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+
+    .cal-side-stat-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 8px 10px;
+    }
+
+    .cal-side-stat-val {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--text-primary);
+    }
+
+    .cal-side-stat-lbl {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        font-weight: 700;
+    }
+
+    .cal-bookings-mini-list {
+        max-height: 220px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .cal-mini-booking-item {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 8px 10px;
+        font-size: 0.78rem;
+    }
+
+    .cal-go-schedule-btn {
+        width: 100%;
+        background: var(--primary-orange);
+        color: #fff;
+        border: none;
+        padding: 12px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .cal-go-schedule-btn:hover {
+        background: var(--primary-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(225, 86, 35, 0.3);
+    }
+
+    /* All Dates List View */
+    .cal-list-container {
+        padding: 20px 24px;
+        max-height: 520px;
+        overflow-y: auto;
+    }
+
+    .cal-list-item-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 14px 18px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .cal-list-item-card:hover {
+        border-color: var(--primary-orange);
+        transform: translateX(3px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+
+    /* KPI Grid */
+    .schedule-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .kpi-metric-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        padding: 18px;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .kpi-metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+    }
+
+    .kpi-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+
+    .kpi-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        letter-spacing: 0.5px;
+    }
+
+    .kpi-icon-box {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    .kpi-icon-orange {
+        background: rgba(225, 86, 35, 0.1);
+        color: var(--primary-orange);
+    }
+
+    .kpi-icon-green {
+        background: rgba(34, 197, 94, 0.1);
+        color: var(--btn-green);
+    }
+
+    .kpi-icon-blue {
+        background: rgba(59, 130, 246, 0.1);
+        color: #3b82f6;
+    }
+
+    .kpi-icon-purple {
+        background: rgba(168, 85, 247, 0.1);
+        color: #a855f7;
+    }
+
+    .kpi-icon-teal {
+        background: rgba(20, 184, 166, 0.1);
+        color: #14b8a6;
+    }
+
+    .kpi-value {
+        font-size: 1.7rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        letter-spacing: -0.5px;
+        line-height: 1.2;
+    }
+
+    .kpi-subtext {
+        font-size: 0.78rem;
+        color: var(--text-secondary);
+        margin-top: 6px;
+    }
+
+    /* Toolbar & View Switcher */
+    .schedule-toolbar {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        padding: 14px 20px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 14px;
+    }
+
+    .toolbar-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        flex: 1;
+    }
+
+    .search-box-wrapper {
+        position: relative;
+        min-width: 260px;
+    }
+
+    .search-box-wrapper i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        font-size: 1rem;
+    }
+
+    .search-input {
+        width: 100%;
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 8px 12px 8px 36px;
+        font-size: 0.85rem;
+        color: var(--text-primary);
+        outline: none;
+        transition: border-color 0.2s ease;
+    }
+
+    .search-input:focus {
+        border-color: var(--primary-orange);
+    }
+
+    .court-filter-select {
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 8px 14px;
+        font-size: 0.85rem;
+        color: var(--text-primary);
+        outline: none;
+        cursor: pointer;
+    }
+
+    .toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .view-mode-toggle {
+        display: flex;
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 3px;
+        gap: 4px;
+    }
+
+    .view-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-secondary);
+        padding: 6px 14px;
+        border-radius: 7px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .view-btn:hover {
+        color: var(--text-primary);
+    }
+
+    .view-btn.active {
+        background: var(--card-bg);
+        color: var(--primary-orange);
+        font-weight: 700;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Status Legend */
+    .schedule-legend {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        font-size: 0.78rem;
+        color: var(--text-secondary);
+        flex-wrap: wrap;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+    }
+
+    .legend-dot.confirmed {
+        background: var(--primary-orange);
+    }
+
+    .legend-dot.completed {
+        background: var(--btn-green);
+    }
+
+    .legend-dot.available {
+        background: transparent;
+        border: 1.5px dashed var(--border-color);
+    }
+
+    /* ==========================================================================
+       TIMELINE MATRIX GRID VIEW
+       ========================================================================== */
+    .timeline-container {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        overflow: hidden;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    }
+
+    .timeline-scroll-wrapper {
+        overflow-x: auto;
+        position: relative;
+        max-width: 100%;
+        scrollbar-width: thin;
+        scrollbar-color: var(--border-color) transparent;
+    }
+
+    .timeline-scroll-wrapper::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .timeline-scroll-wrapper::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+        border-radius: 4px;
+    }
+
+    .timeline-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        min-width: 1200px;
+    }
+
+    .timeline-table th,
+    .timeline-table td {
+        border-bottom: 1px solid var(--border-color);
+        border-right: 1px solid var(--border-color);
+        padding: 0;
+    }
+
+    .timeline-table th:last-child,
+    .timeline-table td:last-child {
+        border-right: none;
+    }
+
+    .timeline-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Sticky Court Column */
+    .sticky-court-th {
+        position: sticky;
+        left: 0;
+        z-index: 20;
+        background: var(--card-bg);
+        width: 220px;
+        min-width: 220px;
+        max-width: 220px;
+        padding: 16px 20px !important;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        letter-spacing: 0.5px;
+        box-shadow: 4px 0 8px rgba(0, 0, 0, 0.02);
+    }
+
+    .sticky-court-td {
+        position: sticky;
+        left: 0;
+        z-index: 10;
+        background: var(--card-bg);
+        width: 220px;
+        min-width: 220px;
+        max-width: 220px;
+        padding: 16px 20px !important;
+        box-shadow: 4px 0 8px rgba(0, 0, 0, 0.02);
+        vertical-align: middle;
+    }
+
+    .court-title-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .court-title-name {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1.3;
+    }
+
+    .court-badge-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .court-rate-pill {
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 2px 6px;
+        border-radius: 4px;
+        background: var(--input-bg);
+        color: var(--text-secondary);
+        border: 1px solid var(--border-color);
+    }
+
+    .court-quick-walkin-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 6px;
+        background: var(--primary-orange-light);
+        color: var(--primary-orange);
+        border: 1px solid rgba(225, 86, 35, 0.2);
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        margin-top: 4px;
+        width: fit-content;
+    }
+
+    .court-quick-walkin-btn:hover {
+        background: var(--primary-orange);
+        color: #ffffff;
+    }
+
+    /* Hour Column Header */
+    .hour-th {
+        padding: 14px 10px !important;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-align: center;
+        color: var(--text-secondary);
+        background: var(--input-bg);
+        white-space: nowrap;
+        min-width: 85px;
+    }
+
+    .hour-th.is-now {
+        background: rgba(225, 86, 35, 0.12);
+        color: var(--primary-orange);
+        border-bottom: 2px solid var(--primary-orange);
+    }
+
+    /* Cells in Timeline */
+    .slot-cell {
+        height: 84px;
+        position: relative;
+        vertical-align: middle;
+        background: var(--card-bg);
+        transition: background-color 0.2s ease;
+    }
+
+    .empty-slot {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        padding: 8px;
+        color: var(--text-muted);
+        transition: all 0.2s ease;
+    }
+
+    .empty-slot:hover {
+        background: rgba(225, 86, 35, 0.05);
+    }
+
+    .empty-slot-plus {
+        display: none;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--primary-orange);
+        background: var(--primary-orange-light);
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: 1px solid rgba(225, 86, 35, 0.2);
+        align-items: center;
+        gap: 3px;
+    }
+
+    .empty-slot:hover .empty-slot-plus {
+        display: inline-flex;
+    }
+
+    .empty-slot-time-hint {
+        font-size: 0.68rem;
+        color: var(--text-muted);
+        opacity: 0.5;
+    }
+
+    .empty-slot:hover .empty-slot-time-hint {
+        display: none;
+    }
+
+    /* Booked Slot Card */
+    .reservation-matrix-card {
+        margin: 6px;
+        height: calc(100% - 12px);
+        border-radius: 10px;
+        padding: 10px 14px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .reservation-matrix-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+        z-index: 5;
+    }
+
+    /* Confirmed Booking (Orange theme) */
+    .res-card-confirmed {
+        background: linear-gradient(135deg, rgba(225, 86, 35, 0.12), rgba(249, 115, 22, 0.06));
+        border: 1px solid var(--primary-orange);
+        border-left: 4px solid var(--primary-orange);
+    }
+
+    /* Completed Booking (Green theme) */
+    .res-card-completed {
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(22, 163, 74, 0.06));
+        border: 1px solid var(--btn-green);
+        border-left: 4px solid var(--btn-green);
+    }
+
+    /* Live In-Session (Glowing emerald/orange) */
+    .res-card-live {
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.18), rgba(225, 86, 35, 0.15));
+        border: 1.5px solid var(--btn-green);
+        border-left: 4px solid var(--btn-green);
+        box-shadow: 0 0 12px rgba(34, 197, 94, 0.25);
+    }
+
+    .res-card-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .res-time-pill {
+        font-size: 0.76rem;
+        font-weight: 800;
+        letter-spacing: 0.2px;
+    }
+
+    .res-card-confirmed .res-time-pill { color: var(--primary-orange); }
+    .res-card-completed .res-time-pill { color: var(--btn-green); }
+    .res-card-live .res-time-pill { color: var(--btn-green); }
+
+    .res-status-chip {
+        font-size: 0.65rem;
+        font-weight: 800;
+        padding: 2px 6px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .res-card-confirmed .res-status-chip {
+        background: var(--primary-orange);
+        color: #ffffff;
+    }
+
+    .res-card-completed .res-status-chip {
+        background: var(--btn-green);
+        color: #ffffff;
+    }
+
+    .res-card-live .res-status-chip {
+        background: #16a34a;
+        color: #ffffff;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .res-card-bottom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+    }
+
+    .res-player-info {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        overflow: hidden;
+    }
+
+    .res-avatar-tiny {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+        border: 1px solid var(--border-color);
+    }
+
+    .res-initials-tiny {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--input-bg);
+        color: var(--text-primary);
+        font-size: 0.65rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        border: 1px solid var(--border-color);
+    }
+
+    .res-player-name {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .res-fee-badge {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--text-secondary);
+        background: var(--input-bg);
+        padding: 2px 6px;
+        border-radius: 4px;
+        white-space: nowrap;
+    }
+
+    /* ==========================================================================
+       COURT AGENDA CARDS VIEW
+       ========================================================================== */
+    .agenda-view-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        margin-bottom: 30px;
+    }
+
+    .court-agenda-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+    }
+
+    .court-agenda-header {
+        padding: 18px 24px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: var(--input-bg);
+    }
+
+    .court-agenda-title-wrap {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .court-icon-badge {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: rgba(225, 86, 35, 0.12);
+        color: var(--primary-orange);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+    }
+
+    .court-agenda-name {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .court-agenda-meta {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        margin-top: 2px;
+    }
+
+    .court-agenda-body {
+        padding: 20px 24px;
+    }
+
+    .agenda-bookings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 16px;
+    }
+
+    .agenda-booking-item {
+        background: var(--sidebar-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        cursor: pointer;
+        transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .agenda-booking-item:hover {
+        transform: translateY(-2px);
+        border-color: var(--primary-orange);
+    }
+
+    .agenda-empty-state {
+        padding: 36px 20px;
+        text-align: center;
+        color: var(--text-muted);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .agenda-empty-state i {
+        font-size: 2.5rem;
+        color: var(--border-color);
+    }
+
+    /* ==========================================================================
+       MODALS STYLING (Stacked at top body level outside main-wrapper)
+       ========================================================================== */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(15, 23, 42, 0.7);
+        backdrop-filter: blur(6px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2147483640;
+        padding: 20px;
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+        opacity: 1;
+    }
+
+    .modal-box {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        width: 100%;
+        max-width: 580px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+        z-index: 2147483641;
+        transform: scale(0.95);
+        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .modal-overlay.active .modal-box {
+        transform: scale(1);
+    }
+
+    .modal-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 1.3rem;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .modal-close:hover {
+        color: var(--text-primary);
+        background: var(--input-bg);
+    }
+
+    .modal-body {
+        padding: 24px;
+    }
+
+    .modal-footer {
+        padding: 16px 24px;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 12px;
+        background: var(--input-bg);
+    }
+
+    .field-label {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .field-input {
+        width: 100%;
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-size: 0.88rem;
+        color: var(--text-primary);
+        outline: none;
+        transition: border-color 0.2s ease;
+    }
+
+    .field-input:focus {
+        border-color: var(--primary-orange);
+    }
+
+    .walkin-pm-chip {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        background: var(--input-bg);
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+
+    .walkin-pm-chip:hover {
+        border-color: var(--primary-orange);
+        color: var(--text-primary);
+    }
+
+    .walkin-pm-chip.active {
+        border-color: var(--primary-orange);
+        background: var(--primary-orange-light);
+        color: var(--primary-orange);
+        font-weight: 700;
+    }
+
+    .walkin-total-card {
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 16px;
+    }
+
+    .walkin-total-badge {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--btn-green);
+    }
+
+    /* Scan Pass Viewfinder */
+    .scan-viewfinder {
+        width: 100%;
+        height: 220px;
+        border-radius: 14px;
+        background: #0f172a;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px dashed rgba(255, 255, 255, 0.2);
+        margin-bottom: 16px;
+    }
+
+    .scan-laser-line {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, #22c55e, #10b981, transparent);
+        box-shadow: 0 0 14px #22c55e;
+        animation: scanSweep 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes scanSweep {
+        0% { top: 15%; }
+        100% { top: 85%; }
+    }
+
+    /* Slide-over Profile Drawer Panel */
+    .drawer-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 2147483642;
+        display: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .drawer-overlay.active {
+        display: block;
+        opacity: 1;
+    }
+
+    .drawer-panel {
+        position: fixed;
+        top: 0;
+        right: -480px;
+        width: 480px;
+        max-width: 90vw;
+        height: 100vh;
+        background: var(--card-bg);
+        border-left: 1px solid var(--border-color);
+        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.25);
+        z-index: 2147483643;
+        display: flex;
+        flex-direction: column;
+        transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .drawer-panel.open {
+        right: 0;
+    }
+
+    .drawer-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .drawer-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 24px;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-header">
-    <h1 class="page-title">Court Schedule</h1>
-    <div class="header-actions">
-        <form method="GET" action="{{ url_for('facilitystaff.schedule') }}" id="date-form">
-            <input type="date" name="date" value="{{ date }}" class="form-input" style="padding: 0.5rem; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: var(--text-primary); border-radius: 8px;" onchange="document.getElementById('date-form').submit();">
+<!-- ==========================================================================
+     1. HERO COMMAND BANNER
+     ========================================================================== -->
+<div class="schedule-hero-banner">
+    <div class="schedule-header-flex">
+        <div class="schedule-title-group">
+            {% if facilities %}
+            <div class="schedule-venue-badge">
+                <span class="live-pulse-dot"></span>
+                <span>{{ facilities[0].facilities.name }}</span>
+                <span style="opacity: 0.6;">• 06:00 AM - 10:00 PM</span>
+            </div>
+            {% endif %}
+            <h1>
+                <i class="ph ph-calendar-blank" style="color: var(--primary-orange);"></i>
+                <span>Court Schedule & Operations Planner</span>
+            </h1>
+            <p class="schedule-subtitle">
+                Visual timeline matrix, reservations management, and direct walk-in court dispatch
+            </p>
+        </div>
+
+        <div class="schedule-meta-right">
+            <!-- Dynamic Live Clock -->
+            <div class="digital-clock-pill">
+                <i class="ph ph-clock clock-icon-pulse"></i>
+                <span id="liveScheduleClock">--:--:-- PST</span>
+            </div>
+
+            <!-- Quick Action Buttons -->
+            <button type="button" class="desk-btn-primary" onclick="openModal('quickWalkinModal')">
+                <i class="ph ph-user-plus"></i>
+                <span>+ Register Walk-In</span>
+            </button>
+            <button type="button" class="desk-btn-outline" onclick="openModal('scanPassModal')">
+                <i class="ph ph-qr-code"></i>
+                <span>Scan Pass</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================================================
+     2. INTERACTIVE DATE NAVIGATOR
+     ========================================================================== -->
+<div class="schedule-date-nav">
+    <div class="date-nav-main-row">
+        <!-- Left: Day Stepping & Date Title -->
+        <div style="display: flex; align-items: center; gap: 14px;">
+            <a href="{{ url_for('facilitystaff.schedule') }}?date={{ prev_date }}" class="date-arrow-btn" title="Previous Day">
+                <i class="ph ph-caret-left"></i>
+            </a>
+
+            <div class="date-center-heading">
+                <h2 class="date-display-title" onclick="openCustomCalendarModal()" style="cursor: pointer;" title="Click to open interactive calendar & booking history">{{ formatted_date }}</h2>
+                {% if is_today %}
+                <span class="date-status-badge today">
+                    <span class="live-pulse-dot"></span>
+                    <span>Today</span>
+                </span>
+                {% elif is_past %}
+                <span class="date-status-badge past">
+                    <i class="ph ph-clock-counter-clockwise"></i>
+                    <span>Past Date</span>
+                </span>
+                {% else %}
+                <span class="date-status-badge future">
+                    <i class="ph ph-calendar-check"></i>
+                    <span>Upcoming</span>
+                </span>
+                {% endif %}
+            </div>
+
+            <a href="{{ url_for('facilitystaff.schedule') }}?date={{ next_date }}" class="date-arrow-btn" title="Next Day">
+                <i class="ph ph-caret-right"></i>
+            </a>
+        </div>
+
+        <!-- Right: Custom Interactive Calendar Picker & Jump to Today -->
+        <div class="date-picker-input-wrapper">
+            {% if not is_today %}
+            <a href="{{ url_for('facilitystaff.schedule') }}" class="preset-pill" style="font-weight: 700; color: var(--primary-orange); border-color: rgba(225, 86, 35, 0.3);">
+                <i class="ph ph-arrow-u-up-left"></i> Jump to Today
+            </a>
+            {% endif %}
+            <button type="button" class="custom-calendar-trigger-btn" id="openCalendarModalBtn" onclick="openCustomCalendarModal()" title="Open Interactive Calendar & Booking History">
+                <span class="custom-cal-trigger-date">{{ date_obj.strftime('%m/%d/%Y') }}</span>
+                <i class="ph ph-calendar"></i>
+                {% if booked_dates_count and booked_dates_count > 0 %}
+                <span class="custom-cal-trigger-count" title="{{ booked_dates_count }} dates with bookings">{{ booked_dates_count }}</span>
+                {% endif %}
+            </button>
+        </div>
+    </div>
+
+    <!-- Quick Preset Chips -->
+    <div class="date-quick-presets">
+        <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Quick Date:</span>
+        {% for p in date_presets %}
+        <a href="{{ url_for('facilitystaff.schedule') }}?date={{ p.date }}" class="preset-pill {% if date == p.date %}active{% endif %}">
+            {{ p.label }}
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- ==========================================================================
+     3. DAILY EXECUTIVE KPI METRIC CARDS
+     ========================================================================== -->
+<div class="schedule-kpi-grid">
+    <!-- Card 1: Total Bookings -->
+    <div class="kpi-metric-card">
+        <div class="kpi-header">
+            <span class="kpi-label">Total Bookings</span>
+            <div class="kpi-icon-box kpi-icon-orange">
+                <i class="ph ph-calendar-check"></i>
+            </div>
+        </div>
+        <div class="kpi-value">{{ stats.total_bookings }}</div>
+        <div class="kpi-subtext">{{ stats.confirmed_count }} Confirmed • {{ stats.completed_count }} Completed</div>
+    </div>
+
+    <!-- Card 2: Hours Booked -->
+    <div class="kpi-metric-card">
+        <div class="kpi-header">
+            <span class="kpi-label">Hours Scheduled</span>
+            <div class="kpi-icon-box kpi-icon-blue">
+                <i class="ph ph-clock"></i>
+            </div>
+        </div>
+        <div class="kpi-value">{{ stats.total_hours_booked }} <span style="font-size: 1rem; font-weight: 600;">hrs</span></div>
+        <div class="kpi-subtext">Across {{ courts|length }} active courts</div>
+    </div>
+
+    <!-- Card 3: Facility Occupancy % -->
+    <div class="kpi-metric-card">
+        <div class="kpi-header">
+            <span class="kpi-label">Court Occupancy</span>
+            <div class="kpi-icon-box kpi-icon-teal">
+                <i class="ph ph-chart-pie-slice"></i>
+            </div>
+        </div>
+        <div class="kpi-value">{{ stats.occupancy_rate }}%</div>
+        <div class="kpi-subtext">
+            <div style="width: 100%; height: 5px; background: var(--input-bg); border-radius: 3px; overflow: hidden; margin-top: 4px;">
+                <div style="width: {{ stats.occupancy_rate }}%; height: 100%; background: var(--primary-orange); border-radius: 3px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 4: Projected Revenue -->
+    <div class="kpi-metric-card">
+        <div class="kpi-header">
+            <span class="kpi-label">Projected Revenue</span>
+            <div class="kpi-icon-box kpi-icon-green">
+                <i class="ph ph-currency-circle-dollar"></i>
+            </div>
+        </div>
+        <div class="kpi-value">₱{{ "%.2f"|format(stats.total_revenue) }}</div>
+        <div class="kpi-subtext">Day court rental fees</div>
+    </div>
+
+    <!-- Card 5: Available Walk-In Hours -->
+    <div class="kpi-metric-card">
+        <div class="kpi-header">
+            <span class="kpi-label">Open Walk-In Slots</span>
+            <div class="kpi-icon-box kpi-icon-purple">
+                <i class="ph ph-door-open"></i>
+            </div>
+        </div>
+        <div class="kpi-value">{{ stats.available_slots }} <span style="font-size: 1rem; font-weight: 600;">hrs</span></div>
+        <div class="kpi-subtext">Ready for instant dispatch</div>
+    </div>
+</div>
+
+<!-- ==========================================================================
+     4. SCHEDULE TOOLBAR & VIEW SWITCHER
+     ========================================================================== -->
+<div class="schedule-toolbar">
+    <div class="toolbar-left">
+        <!-- Realtime Instant Filter -->
+        <div class="search-box-wrapper">
+            <i class="ph ph-magnifying-glass"></i>
+            <input type="text" id="scheduleSearchInput" class="search-input" placeholder="Search court or player name..." onkeyup="filterScheduleItems()">
+        </div>
+
+        <!-- Court Dropdown Filter -->
+        <select id="courtFilterSelect" class="court-filter-select" onchange="filterScheduleItems()">
+            <option value="all">All Courts ({{ courts|length }})</option>
+            {% for court in courts %}
+            <option value="{{ court.name }}">{{ court.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="toolbar-right">
+        <!-- Status Legend -->
+        <div class="schedule-legend">
+            <div class="legend-item">
+                <span class="legend-dot confirmed"></span>
+                <span>Confirmed</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-dot completed"></span>
+                <span>Completed</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-dot available"></span>
+                <span>Open for Walk-In</span>
+            </div>
+        </div>
+
+        <!-- View Switcher -->
+        <div class="view-mode-toggle">
+            <button type="button" class="view-btn active" id="btnTimelineView" onclick="setScheduleView('timeline')">
+                <i class="ph ph-table"></i>
+                <span>Timeline Matrix</span>
+            </button>
+            <button type="button" class="view-btn" id="btnAgendaView" onclick="setScheduleView('agenda')">
+                <i class="ph ph-cards"></i>
+                <span>Court Cards</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================================================
+     5. VIEW A: TIMELINE MATRIX GRID
+     ========================================================================== -->
+<div id="timelineViewContainer" class="timeline-container">
+    {% if courts %}
+    <div class="timeline-scroll-wrapper">
+        <table class="timeline-table">
+            <thead>
+                <tr>
+                    <th class="sticky-court-th">COURT & DETAILS</th>
+                    {% for th in timeline_hours %}
+                    <th class="hour-th" data-hour="{{ th.hour }}">
+                        <div>{{ th.display_label }}</div>
+                        <div style="font-size: 0.65rem; font-weight: 500; opacity: 0.7; margin-top: 2px;">{{ th.time_start[:2] }}:00</div>
+                    </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for cs in court_schedules %}
+                {% set court = cs.court %}
+                {% set hour_map = cs.hour_map %}
+                <tr class="court-timeline-row" data-court-name="{{ court.name|lower }}">
+                    <!-- Sticky Left Column: Court Info -->
+                    <td class="sticky-court-td">
+                        <div class="court-title-cell">
+                            <span class="court-title-name">{{ court.name }}</span>
+                            <div class="court-badge-row">
+                                <span class="court-rate-pill">₱{{ court.hourly_rate|int }}/hr</span>
+                                <span class="court-rate-pill" style="color: var(--btn-green); border-color: rgba(34, 197, 94, 0.2);">Active</span>
+                            </div>
+                            <button type="button" class="court-quick-walkin-btn" onclick="openWalkinForCourt('{{ court.id }}', '{{ court.name }}', {{ court.hourly_rate }}, '')" title="Quick dispatch walk-in to {{ court.name }}">
+                                <i class="ph ph-plus-circle"></i> Walk-In
+                            </button>
+                        </div>
+                    </td>
+
+                    <!-- Hourly Slots (6:00 to 22:00) -->
+                    {% for th in timeline_hours %}
+                        {% set h = th.hour %}
+                        {% if h in hour_map %}
+                            {% set slot_data = hour_map[h] %}
+                            {% if slot_data.is_first_hour %}
+                                {% set res = slot_data.reservation %}
+                                <td colspan="{{ slot_data.span_hours }}" class="slot-cell booked-slot-td" data-player="{{ res.display_name|lower }}">
+                                    <div class="reservation-matrix-card {% if res.is_live_now %}res-card-live{% elif res.status == 'completed' %}res-card-completed{% else %}res-card-confirmed{% endif %}"
+                                         onclick='openBookingDetail({{ res|tojson|safe }})'
+                                         title="Click to view reservation details">
+                                        <div class="res-card-top">
+                                            <span class="res-time-pill">{{ res.start_str }} - {{ res.end_str }}</span>
+                                            <span class="res-status-chip">
+                                                {% if res.is_live_now %}
+                                                <span class="live-pulse-dot" style="width: 5px; height: 5px;"></span> Playing
+                                                {% else %}
+                                                {{ res.status }}
+                                                {% endif %}
+                                            </span>
+                                        </div>
+                                        <div class="res-card-bottom">
+                                            <div class="res-player-info">
+                                                {% if res.profiles and res.profiles.avatar_url %}
+                                                <img src="{{ res.profiles.avatar_url }}" class="res-avatar-tiny" alt="Avatar">
+                                                {% else %}
+                                                <div class="res-initials-tiny">{{ res.initials }}</div>
+                                                {% endif %}
+                                                <span class="res-player-name">{{ res.display_name }}</span>
+                                            </div>
+                                            <span class="res-fee-badge">₱{{ res.total_amount|int }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                            {% endif %}
+                            {# If not first hour, it is covered by colspan so we omit <td> #}
+                        {% else %}
+                            <!-- Unbooked Open Slot -->
+                            <td class="slot-cell open-slot-td">
+                                <div class="empty-slot" onclick="openWalkinForCourt('{{ court.id }}', '{{ court.name }}', {{ court.hourly_rate }}, '{{ th.time_start }}')" title="Click to book walk-in on {{ court.name }} at {{ th.display_label }}">
+                                    <span class="empty-slot-plus"><i class="ph ph-plus"></i> Walk-In</span>
+                                    <span class="empty-slot-time-hint">{{ th.display_label }}</span>
+                                </div>
+                            </td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="padding: 60px 20px; text-align: center; color: var(--text-muted);">
+        <i class="ph ph-warning-circle" style="font-size: 3rem; margin-bottom: 12px; color: var(--text-secondary);"></i>
+        <h3>No Courts Configured</h3>
+        <p>No courts were found for your assigned facility.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- ==========================================================================
+     6. VIEW B: COURT AGENDA CARDS
+     ========================================================================== -->
+<div id="agendaViewContainer" class="agenda-view-wrapper" style="display: none;">
+    {% if court_schedules %}
+        {% for cs in court_schedules %}
+        {% set court = cs.court %}
+        {% set court_res = cs.reservations %}
+        <div class="court-agenda-card agenda-court-block" data-court-name="{{ court.name|lower }}">
+            <div class="court-agenda-header">
+                <div class="court-agenda-title-wrap">
+                    <div class="court-icon-badge">
+                        <i class="ph ph-layout"></i>
+                    </div>
+                    <div>
+                        <h3 class="court-agenda-name">{{ court.name }}</h3>
+                        <div class="court-agenda-meta">
+                            ₱{{ court.hourly_rate|int }}/hr • {{ court_res|length }} Scheduled Booking{% if court_res|length != 1 %}s{% endif %} on {{ formatted_date }}
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="desk-btn-primary" style="padding: 8px 14px; font-size: 0.8rem;" onclick="openWalkinForCourt('{{ court.id }}', '{{ court.name }}', {{ court.hourly_rate }}, '')">
+                    <i class="ph ph-plus-circle"></i> + Dispatch Walk-In
+                </button>
+            </div>
+
+            <div class="court-agenda-body">
+                {% if court_res %}
+                <div class="agenda-bookings-grid">
+                    {% for res in court_res %}
+                    <div class="agenda-booking-item agenda-booking-card" data-player="{{ res.display_name|lower }}" onclick='openBookingDetail({{ res|tojson|safe }})'>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div>
+                                <span style="font-size: 0.95rem; font-weight: 800; color: var(--primary-orange);">{{ res.start_display }} - {{ res.end_display }}</span>
+                                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">{{ res.duration_hours }} Hour Session • {{ res.party_size }} Player{% if res.party_size > 1 %}s{% endif %}</div>
+                            </div>
+                            <span class="res-status-chip {% if res.status == 'completed' %}res-card-completed{% else %}res-card-confirmed{% endif %}" style="padding: 3px 8px;">
+                                {{ res.status|upper }}
+                            </span>
+                        </div>
+
+                        <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-color); padding-top: 12px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                {% if res.profiles and res.profiles.avatar_url %}
+                                <img src="{{ res.profiles.avatar_url }}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-color);" alt="Avatar">
+                                {% else %}
+                                <div class="res-initials-tiny" style="width: 32px; height: 32px; font-size: 0.8rem;">{{ res.initials }}</div>
+                                {% endif %}
+                                <div>
+                                    <div style="font-size: 0.88rem; font-weight: 700; color: var(--text-primary);">{{ res.display_name }}</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">{{ res.phone_display }}</div>
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 0.95rem; font-weight: 800; color: var(--btn-green);">₱{{ "%.2f"|format(res.total_amount) }}</div>
+                                <div style="font-size: 0.7rem; color: var(--text-muted);">{{ res.party_size }} Player{% if res.party_size > 1 %}s{% endif %}</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="agenda-empty-state">
+                    <i class="ph ph-calendar-x"></i>
+                    <p style="margin: 0; font-size: 0.9rem; font-weight: 600; color: var(--text-secondary);">No bookings scheduled on this court for {{ formatted_date }}</p>
+                    <p style="margin: 0; font-size: 0.8rem;">Court is completely open for walk-ins or private reservations.</p>
+                    <button type="button" class="desk-btn-outline" style="margin-top: 10px; font-size: 0.8rem;" onclick="openWalkinForCourt('{{ court.id }}', '{{ court.name }}', {{ court.hourly_rate }}, '')">
+                        <i class="ph ph-plus"></i> Book Walk-In on {{ court.name }}
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+    <div style="padding: 60px 20px; text-align: center; color: var(--text-muted);">
+        <p>No courts available.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block modals %}
+<!-- ==========================================================================
+     MODAL 0: CUSTOM BOOKING CALENDAR & HISTORICAL SCHEDULE INSPECTOR
+     ========================================================================== -->
+<div id="customCalendarModal" class="modal-overlay">
+    <div class="modal-box custom-calendar-modal-box">
+        <!-- Modal Header -->
+        <div class="modal-header" style="padding: 18px 24px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(225, 86, 35, 0.12); display: flex; align-items: center; justify-content: center; color: var(--primary-orange); font-size: 1.4rem; flex-shrink: 0;">
+                    <i class="ph ph-calendar-check"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.2px;">Facility Schedule Calendar</h3>
+                    <p style="margin: 2px 0 0 0; font-size: 0.78rem; color: var(--text-muted);">
+                        Browse past & upcoming dates with active bookings across assigned facilities.
+                    </p>
+                </div>
+            </div>
+            <button type="button" class="modal-close" onclick="closeModal('customCalendarModal')" aria-label="Close modal">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+
+        <!-- View Switcher Tabs -->
+        <div class="cal-modal-tabs">
+            <button type="button" class="cal-tab-btn active" id="tabBtnGrid" onclick="switchCalendarTab('grid')">
+                <i class="ph ph-calendar"></i> Month Grid View
+            </button>
+            <button type="button" class="cal-tab-btn" id="tabBtnList" onclick="switchCalendarTab('list')">
+                <i class="ph ph-list-bullets"></i> All Dates with Bookings 
+                <span class="custom-cal-trigger-count" id="calTabListCount" style="margin-left: 4px;">{{ booked_dates_count }}</span>
+            </button>
+        </div>
+
+        <!-- VIEW 1: MONTH GRID VIEW -->
+        <div id="calViewGrid">
+            <!-- Controls Bar: Prev, Month Select, Year Select, Next, Quick Jump Buttons -->
+            <div class="cal-controls-bar">
+                <div class="cal-nav-group">
+                    <button type="button" class="cal-nav-btn" onclick="navCalendarMonth(-1)" title="Previous Month">
+                        <i class="ph ph-caret-left"></i>
+                    </button>
+                    <select id="calMonthSelect" class="cal-select" onchange="onMonthYearChange()">
+                        <option value="0">January</option>
+                        <option value="1">February</option>
+                        <option value="2">March</option>
+                        <option value="3">April</option>
+                        <option value="4">May</option>
+                        <option value="5">June</option>
+                        <option value="6">July</option>
+                        <option value="7">August</option>
+                        <option value="8">September</option>
+                        <option value="9">October</option>
+                        <option value="10">November</option>
+                        <option value="11">December</option>
+                    </select>
+                    <select id="calYearSelect" class="cal-select" onchange="onMonthYearChange()">
+                        <!-- dynamically generated via JS from 2024 to 2028 -->
+                    </select>
+                    <button type="button" class="cal-nav-btn" onclick="navCalendarMonth(1)" title="Next Month">
+                        <i class="ph ph-caret-right"></i>
+                    </button>
+                </div>
+
+                <div class="cal-quick-group">
+                    <button type="button" class="cal-quick-pill" onclick="jumpCalendarToday()">
+                        <i class="ph ph-clock-counter-clockwise"></i> Today
+                    </button>
+                    <button type="button" class="cal-quick-pill" onclick="jumpToLatestBookingDate()" title="Jump to the most recent date with bookings">
+                        <i class="ph ph-sparkle"></i> Latest Booked Date
+                    </button>
+                </div>
+            </div>
+
+            <!-- Legend Strip -->
+            <div class="cal-legend-strip">
+                <div class="cal-legend-item">
+                    <span class="cal-legend-dot" style="background: var(--primary-orange);"></span>
+                    <span>Dates with Bookings</span>
+                </div>
+                <div class="cal-legend-item">
+                    <span class="cal-legend-dot" style="background: #10b981;"></span>
+                    <span>Completed Past Bookings</span>
+                </div>
+                <div class="cal-legend-item">
+                    <span class="cal-legend-dot" style="background: #3b82f6;"></span>
+                    <span>Today</span>
+                </div>
+                <div class="cal-legend-item">
+                    <span class="cal-legend-dot" style="border: 2px solid var(--primary-orange); width: 10px; height: 10px;"></span>
+                    <span>Selected Date</span>
+                </div>
+            </div>
+
+            <!-- Main Layout: Grid + Side Inspector -->
+            <div class="cal-layout-container">
+                <!-- Left: 7-day grid -->
+                <div class="cal-grid-area">
+                    <div class="cal-weekdays">
+                        <div class="cal-weekday">Sun</div>
+                        <div class="cal-weekday">Mon</div>
+                        <div class="cal-weekday">Tue</div>
+                        <div class="cal-weekday">Wed</div>
+                        <div class="cal-weekday">Thu</div>
+                        <div class="cal-weekday">Fri</div>
+                        <div class="cal-weekday">Sat</div>
+                    </div>
+                    <div id="calDaysGrid" class="cal-days-grid">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Right: Selected Day Inspector -->
+                <div class="cal-side-inspector">
+                    <div>
+                        <div class="cal-side-header">
+                            <span id="calSideStatusTag" class="cal-side-status-tag" style="background: rgba(59, 130, 246, 0.15); color: #2563eb; margin-bottom: 6px;">Today</span>
+                            <h4 id="calSideDateTitle" class="cal-side-date-title">{{ formatted_date }}</h4>
+                            <span id="calSideDateSub" style="font-size: 0.78rem; color: var(--text-muted);">{{ date }}</span>
+                        </div>
+
+                        <!-- Stats Row -->
+                        <div class="cal-side-stat-row">
+                            <div class="cal-side-stat-card">
+                                <div id="calSideBookingsCount" class="cal-side-stat-val">{{ stats.total_bookings }}</div>
+                                <div class="cal-side-stat-lbl">Bookings</div>
+                            </div>
+                            <div class="cal-side-stat-card">
+                                <div id="calSideRevenue" class="cal-side-stat-val" style="color: var(--btn-green);">₱{{ "%.2f"|format(stats.total_revenue) }}</div>
+                                <div class="cal-side-stat-lbl">Revenue</div>
+                            </div>
+                        </div>
+
+                        <!-- Courts Used -->
+                        <div style="margin-bottom: 12px;">
+                            <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Courts Active:</span>
+                            <div id="calSideCourtsBadges" style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">
+                                <!-- Tags injected via JS -->
+                            </div>
+                        </div>
+
+                        <!-- Bookings snippet mini-list -->
+                        <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Schedule Preview:</span>
+                        <div id="calSideBookingsList" class="cal-bookings-mini-list" style="margin-top: 6px;">
+                            <!-- Injected via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Bottom CTA Button -->
+                    <div style="padding-top: 14px; border-top: 1px solid var(--border-color);">
+                        <button type="button" class="cal-go-schedule-btn" id="calGoToScheduleBtn" onclick="goToSelectedCalendarDate()">
+                            <span>Open Schedule for This Date</span>
+                            <i class="ph ph-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 2: ALL BOOKED DATES LIST VIEW -->
+        <div id="calViewList" style="display: none;">
+            <div style="padding: 14px 24px; border-bottom: 1px solid var(--border-color); background: var(--card-bg); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+                <div style="position: relative; flex: 1; max-width: 380px;">
+                    <i class="ph ph-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                    <input type="text" id="calListSearchInput" placeholder="Filter dates, courts, or players..." oninput="filterBookedDatesList()" style="width: 100%; padding: 8px 12px 8px 34px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.85rem; color: var(--text-primary); outline: none;">
+                </div>
+                <div style="font-size: 0.82rem; color: var(--text-muted);">
+                    Showing <strong id="calListVisibleCount" style="color: var(--text-primary);">{{ booked_dates_count }}</strong> booked dates (past & upcoming)
+                </div>
+            </div>
+
+            <div id="calListContainer" class="cal-list-container">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================================================
+     MODAL 1: INTERACTIVE BOOKING DETAILS MODAL
+     ========================================================================== -->
+<div id="bookingDetailsModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(225, 86, 35, 0.12); display: flex; align-items: center; justify-content: center; color: var(--primary-orange); font-size: 1.35rem; flex-shrink: 0;">
+                    <i class="ph ph-calendar-blank"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">Reservation Details</h3>
+                    <p id="bModalRef" style="margin: 2px 0 0 0; font-size: 0.78rem; color: var(--text-muted); font-family: monospace;">Ref: #RES-00000000</p>
+                </div>
+            </div>
+            <button type="button" class="modal-close" onclick="closeModal('bookingDetailsModal')" aria-label="Close modal">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <!-- Status Pill Banner -->
+            <div style="display: flex; align-items: center; justify-content: space-between; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 16px; margin-bottom: 18px;">
+                <div>
+                    <span style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted);">Booking Status</span>
+                    <div id="bModalStatusBadge" style="margin-top: 2px;">
+                        <span class="res-status-chip res-card-confirmed">CONFIRMED</span>
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <span style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted);">Total Fee</span>
+                    <div id="bModalTotalFee" style="font-size: 1.25rem; font-weight: 800; color: var(--btn-green);">₱0.00</div>
+                </div>
+            </div>
+
+            <!-- Player Profile Card -->
+            <div style="background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-bottom: 18px;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div id="bModalAvatarWrapper" style="width: 48px; height: 48px; border-radius: 50%; overflow: hidden; flex-shrink: 0; border: 2px solid var(--primary-orange);">
+                        <div class="res-initials-tiny" style="width: 100%; height: 100%; font-size: 1.1rem;" id="bModalInitials">P</div>
+                    </div>
+                    <div style="flex: 1;">
+                        <h4 id="bModalPlayerName" style="margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--text-primary);">Player Name</h4>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px; font-size: 0.8rem; color: var(--text-secondary);">
+                            <span id="bModalPlayerType" style="font-weight: 600; color: var(--primary-orange);">App Player</span>
+                            <span>•</span>
+                            <span id="bModalPhone"><i class="ph ph-phone"></i> 0912 345 6789</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Court & Schedule Grid -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px;">
+                <div style="background: var(--sidebar-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px;">
+                    <span style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">Assigned Court</span>
+                    <span id="bModalCourtName" style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Siniloan Hub Court</span>
+                </div>
+                <div style="background: var(--sidebar-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px;">
+                    <span style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">Scheduled Time</span>
+                    <span id="bModalTimeRange" style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">08:00 - 09:00</span>
+                </div>
+                <div style="background: var(--sidebar-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px;">
+                    <span style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">Duration & Party</span>
+                    <span id="bModalDurationParty" style="font-size: 0.88rem; font-weight: 600; color: var(--text-secondary);">1 Hour • 1 Player</span>
+                </div>
+                <div style="background: var(--sidebar-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px;">
+                    <span style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">Hourly Rate</span>
+                    <span id="bModalHourlyRate" style="font-size: 0.88rem; font-weight: 600; color: var(--text-secondary);">₱100.00 / hr</span>
+                </div>
+            </div>
+
+            <!-- Optional GCash Ref -->
+            <div id="bModalGcashSection" style="display: none; background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.2); border-radius: 10px; padding: 10px 14px; margin-bottom: 18px;">
+                <div style="font-size: 0.75rem; font-weight: 700; color: var(--btn-green); text-transform: uppercase;">Payment Reference</div>
+                <div id="bModalGcashRef" style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary); font-family: monospace; margin-top: 2px;">GCASH-12345</div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="desk-btn-outline" onclick="closeModal('bookingDetailsModal')">Close</button>
+            <a id="bModalChatBtn" href="#" class="desk-btn-primary" style="display: none;">
+                <i class="ph ph-chat-circle-dots"></i> Message Player
+            </a>
+            <button type="button" id="bModalProfileBtn" class="desk-btn-outline" style="display: none;" onclick="openPlayerFromBooking()">
+                <i class="ph ph-user"></i> View Profile
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================================================
+     MODAL 2: QUICK WALK-IN REGISTRATION
+     ========================================================================== -->
+<div id="quickWalkinModal" class="modal-overlay">
+    <div class="modal-box">
+        <form method="POST" action="{{ url_for('facilitystaff.walkin') }}" id="quickWalkinForm" onsubmit="handleQuickWalkinSubmit(event)">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="redirect_to" value="schedule">
+
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(225, 86, 35, 0.12); display: flex; align-items: center; justify-content: center; color: var(--primary-orange); font-size: 1.35rem; flex-shrink: 0;">
+                        <i class="ph ph-user-plus"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">Quick Walk-In Registration</h3>
+                        <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">Direct court dispatch with instant payment logging</p>
+                    </div>
+                </div>
+                <button type="button" class="modal-close" onclick="closeModal('quickWalkinModal')" aria-label="Close modal">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- In-Modal Alert / Error Banner -->
+                <div id="walkinModalAlert" style="display: none;"></div>
+
+                <!-- Guest Info -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+                    <div>
+                        <label class="field-label">Guest Name *</label>
+                        <input type="text" name="guest_name" id="modalGuestName" required class="field-input" placeholder="e.g. Maria Santos" autocomplete="off">
+                    </div>
+                    <div>
+                        <label class="field-label">Phone (Optional)</label>
+                        <input type="tel" name="guest_phone" id="modalGuestPhone" class="field-input" placeholder="0912 345 6789">
+                    </div>
+                </div>
+
+                <!-- Court Selection -->
+                <div style="margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label class="field-label" style="margin-bottom: 0;">Select Court *</label>
+                        <span id="selectedCourtBadge" style="font-size: 0.75rem; font-weight: 600; color: #16a34a; background: rgba(34, 197, 94, 0.1); padding: 2px 8px; border-radius: 6px;">Ready For Dispatch</span>
+                    </div>
+                    <select name="court_id" id="modalCourtSelect" required class="field-input" onchange="calculateWalkinTotal()">
+                        <option value="" data-rate="0">-- Select Court --</option>
+                        {% for court in courts %}
+                        <option value="{{ court.id }}" data-rate="{{ court.hourly_rate }}">{{ court.name }} — ₱{{ court.hourly_rate|int }}/hr</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Duration & Party Size -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+                    <div>
+                        <label class="field-label">Duration</label>
+                        <select name="duration" id="modalDurationSelect" class="field-input" onchange="calculateWalkinTotal()">
+                            <option value="1">1 Hour</option>
+                            <option value="1.5">1.5 Hours</option>
+                            <option value="2">2 Hours</option>
+                            <option value="3">3 Hours</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="field-label">Party Size</label>
+                        <input type="number" name="party_size" id="modalPartySize" value="1" min="1" max="16" required class="field-input">
+                    </div>
+                </div>
+
+                <!-- Payment Method Selection -->
+                <div style="margin-bottom: 16px;">
+                    <label class="field-label">Payment Method *</label>
+                    <div style="display: flex; gap: 10px;">
+                        <label style="flex: 1; cursor: pointer;">
+                            <input type="radio" name="payment_method" value="cash" checked style="display: none;" onchange="toggleGcashRef(false)">
+                            <div class="walkin-pm-chip active" id="pm-chip-cash">
+                                <i class="ph ph-money" style="font-size: 1.25rem;"></i>
+                                <span>Cash</span>
+                            </div>
+                        </label>
+                        <label style="flex: 1; cursor: pointer;">
+                            <input type="radio" name="payment_method" value="gcash" style="display: none;" onchange="toggleGcashRef(true)">
+                            <div class="walkin-pm-chip" id="pm-chip-gcash">
+                                <i class="ph ph-device-mobile" style="font-size: 1.25rem;"></i>
+                                <span>GCash</span>
+                            </div>
+                        </label>
+                        <label style="flex: 1; cursor: pointer;">
+                            <input type="radio" name="payment_method" value="qr_ph" style="display: none;" onchange="toggleGcashRef(true)">
+                            <div class="walkin-pm-chip" id="pm-chip-qr">
+                                <i class="ph ph-qr-code" style="font-size: 1.25rem;"></i>
+                                <span>QR Ph</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- GCash / QR Payment Drawer -->
+                <div id="modalGcashRefSection" style="display: none; margin-bottom: 16px;">
+                    <div style="display: flex; gap: 16px; align-items: center; background: var(--input-bg); border: 1px solid var(--border-color); padding: 14px; border-radius: 12px; margin-bottom: 12px;">
+                        <div style="width: 80px; height: 80px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); background: white; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                            <img src="{{ url_for('static', filename='images/gcash_qr.png') }}" alt="Counter QR" style="width: 100%; height: 100%; object-fit: contain;">
+                        </div>
+                        <div>
+                            <div style="font-size: 0.88rem; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">Front Desk Merchant QR</div>
+                            <div style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.35;">Have customer scan QR code with GCash / Maya / banking app, then enter reference code below.</div>
+                        </div>
+                    </div>
+                    <label class="field-label">Reference Number (Optional)</label>
+                    <input type="text" name="gcash_ref" id="modalGcashRef" class="field-input" placeholder="e.g. 1029 3847 56">
+                </div>
+
+                <!-- Live Total Fee Due Card -->
+                <div class="walkin-total-card">
+                    <div>
+                        <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); letter-spacing: 0.5px;">Total Amount Due</div>
+                        <div id="modalCalcSummary" style="font-size: 0.84rem; color: var(--text-secondary); margin-top: 3px; font-weight: 600;">₱0.00 × 1h = ₱0.00</div>
+                    </div>
+                    <div id="modalTotalDue" class="walkin-total-badge">₱0.00</div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="desk-btn-outline" onclick="closeModal('quickWalkinModal')">Cancel</button>
+                <button type="submit" id="walkinSubmitBtn" class="desk-btn-primary" style="background: linear-gradient(135deg, var(--btn-green), #16a34a); box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25); min-width: 220px; justify-content: center;">
+                    <i class="ph ph-check-circle" id="walkinBtnIcon"></i>
+                    <span id="walkinBtnText">Confirm Walk-In & Dispatch</span>
+                </button>
+            </div>
         </form>
     </div>
 </div>
 
-{% if facilities %}
-    {% for fac in facilities %}
-    <div class="glass-card" style="margin-bottom: 30px;">
-        <h2 style="font-size: 1.2rem; margin-bottom: 15px; color: var(--primary-orange);">{{ fac.facilities.name }} - {{ date }}</h2>
-        
-        <div class="table-container" style="overflow-x: auto;">
-            <table class="data-grid" style="min-width: 800px;">
-                <thead>
-                    <tr>
-                        <th style="width: 150px;">COURT</th>
-                        <th>SCHEDULED BOOKINGS</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% set fac_courts = courts | selectattr('facility_id', 'equalto', fac.facility_id) | list %}
-                    {% if fac_courts %}
-                        {% for court in fac_courts %}
-                        <tr>
-                            <td class="bold">{{ court.name }}</td>
-                            <td>
-                                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                                    {% set court_res = reservations | selectattr('court_id', 'equalto', court.id) | list %}
-                                    {% if court_res %}
-                                        {% for res in court_res %}
-                                            {% set start = res.start_time[:5] %}
-                                            {% set end = res.end_time[:5] %}
-                                            <div style="background: rgba(225, 86, 35, 0.1); border: 1px solid var(--primary-orange); padding: 8px 12px; border-radius: 8px; font-size: 0.85rem;">
-                                                <div style="font-weight: 600; color: var(--primary-orange); margin-bottom: 4px;">{{ start }} - {{ end }}</div>
-                                                <div style="color: var(--text-primary);">
-                                                    {{ res.profiles.first_name if res.profiles else 'Unknown' }} {{ res.profiles.last_name if res.profiles else '' }}
-                                                </div>
-                                                <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; text-transform: uppercase;">
-                                                    {{ res.status }}
-                                                </div>
-                                            </div>
-                                        {% endfor %}
-                                    {% else %}
-                                        <div style="display: inline-flex; align-items: center; gap: 10px;">
-                                            <span style="color: var(--text-muted); font-size: 0.85rem;">No bookings scheduled.</span>
-                                            <a href="{{ url_for('facilitystaff.walkin') }}?court_id={{ court.id }}" class="btn-sm btn-sm-outline" style="text-decoration: none;">
-                                                <i class="ph ph-plus-circle"></i> Walk-In
-                                            </a>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr><td colspan="2" style="text-align:center; padding: 20px;">No courts found.</td></tr>
-                    {% endif %}
-                </tbody>
-            </table>
+<!-- ==========================================================================
+     MODAL 3: DIGITAL PASS & BOOKING VERIFICATION
+     ========================================================================== -->
+<div id="scanPassModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(225, 86, 35, 0.12); display: flex; align-items: center; justify-content: center; color: var(--primary-orange); font-size: 1.3rem; flex-shrink: 0;">
+                    <i class="ph ph-qr-code"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">Digital Pass & Booking Verification</h3>
+                    <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">Scan player QR code or verify reservation reference</p>
+                </div>
+            </div>
+            <button type="button" class="modal-close" onclick="closeModal('scanPassModal')" aria-label="Close modal">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <!-- Animated Laser Viewfinder -->
+            <div class="scan-viewfinder">
+                <div class="scan-laser-line"></div>
+                <i class="ph ph-camera" style="font-size: 3.2rem; color: rgba(255, 255, 255, 0.4); z-index: 1;"></i>
+            </div>
+            <p style="text-align: center; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px;">
+                Hold the player's QR pass or booking barcode in front of the terminal camera.
+            </p>
+
+            <!-- Manual Code Lookup Box -->
+            <div style="background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                <label class="field-label">Manual Pass Code / Booking Ref</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="manualPassInput" class="field-input" placeholder="e.g. 32473acb or Player Name" onkeypress="if(event.key==='Enter') verifyPassCode()">
+                    <button type="button" class="desk-btn-primary" onclick="verifyPassCode()" style="white-space: nowrap;">
+                        <i class="ph ph-magnifying-glass"></i> Verify
+                    </button>
+                </div>
+            </div>
+
+            <!-- Pass Result Container -->
+            <div id="passResultBox" style="display: none; padding: 14px; border-radius: 10px; margin-bottom: 12px;"></div>
         </div>
     </div>
-    {% endfor %}
-{% else %}
-<div class="glass-card" style="min-height: 400px; display: flex; align-items: center; justify-content: center; flex-direction: column;">
-    <i class="ph ph-warning-circle" style="font-size: 4rem; color: var(--text-secondary); margin-bottom: 20px;"></i>
-    <h3 style="margin-bottom: 10px;">No Facilities Assigned</h3>
-    <p style="color: var(--text-muted);">You are not assigned to manage any facilities yet.</p>
 </div>
-{% endif %}
+
+<!-- ==========================================================================
+     DRAWER: PLAYER PROFILE SLIDE-OVER
+     ========================================================================== -->
+<div id="profile-drawer-overlay" class="drawer-overlay" onclick="closePlayerDetails()"></div>
+<div id="profile-drawer" class="drawer-panel">
+    <div class="drawer-header">
+        <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700;">Player Profile</h3>
+        <button class="modal-close" onclick="closePlayerDetails()" aria-label="Close panel">
+            <i class="ph ph-x"></i>
+        </button>
+    </div>
+    <div id="drawer-loading-indicator" style="display: none; padding: 40px; text-align: center; color: var(--text-muted);">
+        <p>Loading player details...</p>
+    </div>
+    <div id="profile-drawer-content" class="drawer-content">
+        <!-- Dynamic content loaded via AJAX goes here -->
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Store current active booking data for modal actions
+    let currentBookingData = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+        // Move modals to body to ensure no stacking context issues
+        ['customCalendarModal', 'bookingDetailsModal', 'quickWalkinModal', 'scanPassModal'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el && el.parentElement !== document.body) {
+                document.body.appendChild(el);
+            }
+        });
+
+        const drawer = document.getElementById('profile-drawer');
+        const overlay = document.getElementById('profile-drawer-overlay');
+        if (drawer && drawer.parentElement !== document.body) document.body.appendChild(drawer);
+        if (overlay && overlay.parentElement !== document.body) document.body.appendChild(overlay);
+
+        // 1. Digital Clock (PST / Manila)
+        function updateScheduleClock() {
+            const clockEl = document.getElementById('liveScheduleClock');
+            if (!clockEl) return;
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', {
+                timeZone: 'Asia/Manila',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            });
+            clockEl.textContent = `${timeStr} PST`;
+        }
+        updateScheduleClock();
+        setInterval(updateScheduleClock, 1000);
+
+        // 2. Highlight current hour column if viewing today
+        highlightCurrentHour();
+
+        // 3. Restore saved view preference
+        const savedView = localStorage.getItem('pickleball_schedule_view') || 'timeline';
+        setScheduleView(savedView, false);
+
+        // 4. Initial Walk-in fee calculation
+        calculateWalkinTotal();
+    });
+
+    // --- VIEW SWITCHER ---
+    function setScheduleView(mode, save = true) {
+        const timeline = document.getElementById('timelineViewContainer');
+        const agenda = document.getElementById('agendaViewContainer');
+        const btnTimeline = document.getElementById('btnTimelineView');
+        const btnAgenda = document.getElementById('btnAgendaView');
+
+        if (mode === 'agenda') {
+            if (timeline) timeline.style.display = 'none';
+            if (agenda) agenda.style.display = 'flex';
+            if (btnTimeline) btnTimeline.classList.remove('active');
+            if (btnAgenda) btnAgenda.classList.add('active');
+        } else {
+            if (timeline) timeline.style.display = 'block';
+            if (agenda) agenda.style.display = 'none';
+            if (btnTimeline) btnTimeline.classList.add('active');
+            if (btnAgenda) btnAgenda.classList.remove('active');
+        }
+
+        if (save) {
+            localStorage.setItem('pickleball_schedule_view', mode);
+        }
+    }
+
+    // --- HIGHLIGHT CURRENT HOUR ---
+    function highlightCurrentHour() {
+        const isToday = {{ 'true' if is_today else 'false' }};
+        if (!isToday) return;
+
+        const currentHour = new Date().getHours();
+        document.querySelectorAll('.hour-th').forEach(th => {
+            const h = parseInt(th.getAttribute('data-hour'));
+            if (h === currentHour) {
+                th.classList.add('is-now');
+                th.innerHTML += '<div style="font-size: 0.6rem; font-weight: 800; color: var(--primary-orange);">NOW</div>';
+            }
+        });
+    }
+
+    // --- INSTANT SEARCH & COURT FILTER ---
+    function filterScheduleItems() {
+        const query = (document.getElementById('scheduleSearchInput')?.value || '').trim().toLowerCase();
+        const courtFilter = (document.getElementById('courtFilterSelect')?.value || 'all').toLowerCase();
+
+        // 1. Filter Timeline rows
+        document.querySelectorAll('.court-timeline-row').forEach(row => {
+            const rowCourt = (row.getAttribute('data-court-name') || '').toLowerCase();
+            const matchesCourt = (courtFilter === 'all' || rowCourt.includes(courtFilter));
+
+            let matchesQuery = true;
+            if (query) {
+                const text = row.innerText.toLowerCase();
+                matchesQuery = text.includes(query);
+            }
+
+            row.style.display = (matchesCourt && matchesQuery) ? '' : 'none';
+        });
+
+        // 2. Filter Agenda cards
+        document.querySelectorAll('.agenda-court-block').forEach(block => {
+            const blockCourt = (block.getAttribute('data-court-name') || '').toLowerCase();
+            const matchesCourt = (courtFilter === 'all' || blockCourt.includes(courtFilter));
+
+            let matchesQuery = true;
+            if (query) {
+                const text = block.innerText.toLowerCase();
+                matchesQuery = text.includes(query);
+            }
+
+            block.style.display = (matchesCourt && matchesQuery) ? '' : 'none';
+        });
+    }
+
+    // --- MODAL CONTROLS ---
+    function openModal(id) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeModal(id) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    }
+
+    // Close on backdrop click
+    document.addEventListener('click', (e) => {
+        if (e.target.classList && e.target.classList.contains('modal-overlay')) {
+            e.target.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    });
+
+    // Close on ESC
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+            closePlayerDetails();
+            document.body.style.overflow = '';
+        }
+    });
+
+    // --- BOOKING DETAILS MODAL ---
+    function openBookingDetail(res) {
+        if (!res) return;
+        currentBookingData = res;
+
+        document.getElementById('bModalRef').textContent = `Ref: #RES-${res.id.substring(0, 8).toUpperCase()}`;
+
+        // Status
+        const statusBadge = document.getElementById('bModalStatusBadge');
+        if (res.status === 'completed') {
+            statusBadge.innerHTML = '<span class="res-status-chip res-card-completed">COMPLETED</span>';
+        } else if (res.is_live_now) {
+            statusBadge.innerHTML = '<span class="res-status-chip res-card-live"><span class="live-pulse-dot" style="width: 5px; height: 5px;"></span> IN PLAY</span>';
+        } else {
+            statusBadge.innerHTML = '<span class="res-status-chip res-card-confirmed">CONFIRMED</span>';
+        }
+
+        // Total fee
+        document.getElementById('bModalTotalFee').textContent = `₱${parseFloat(res.total_amount || 0).toFixed(2)}`;
+
+        // Player Info
+        document.getElementById('bModalPlayerName').textContent = res.display_name;
+        document.getElementById('bModalPlayerType').textContent = res.is_walkin ? 'Walk-in Guest' : 'Registered App Player';
+        document.getElementById('bModalPlayerType').style.color = res.is_walkin ? 'var(--text-secondary)' : 'var(--primary-orange)';
+        document.getElementById('bModalPhone').innerHTML = `<i class="ph ph-phone"></i> ${res.phone_display || '—'}`;
+
+        const avatarWrapper = document.getElementById('bModalAvatarWrapper');
+        if (res.profiles && res.profiles.avatar_url) {
+            avatarWrapper.innerHTML = `<img src="${res.profiles.avatar_url}" style="width:100%;height:100%;object-fit:cover;" alt="Avatar">`;
+        } else {
+            avatarWrapper.innerHTML = `<div class="res-initials-tiny" style="width:100%;height:100%;font-size:1.1rem;">${res.initials || 'P'}</div>`;
+        }
+
+        // Court & Schedule
+        const courtName = (res.courts && res.courts.name) ? res.courts.name : 'Assigned Court';
+        document.getElementById('bModalCourtName').textContent = courtName;
+        document.getElementById('bModalTimeRange').textContent = `${res.start_display} - ${res.end_display}`;
+        document.getElementById('bModalDurationParty').textContent = `${res.duration_hours} Hour${res.duration_hours > 1 ? 's' : ''} • ${res.party_size || 1} Player${(res.party_size || 1) > 1 ? 's' : ''}`;
+        document.getElementById('bModalHourlyRate').textContent = `₱${parseFloat(res.hourly_rate || 0).toFixed(2)} / hr`;
+
+        // Payment / GCash
+        const gcashSec = document.getElementById('bModalGcashSection');
+        if (res.gcash_ref) {
+            gcashSec.style.display = 'block';
+            document.getElementById('bModalGcashRef').textContent = res.gcash_ref;
+        } else {
+            gcashSec.style.display = 'none';
+        }
+
+        // Action Buttons
+        const chatBtn = document.getElementById('bModalChatBtn');
+        const profileBtn = document.getElementById('bModalProfileBtn');
+        if (res.player_id && !res.is_walkin) {
+            chatBtn.href = `{{ url_for('facilitystaff.messages') }}?chat_user=${res.player_id}`;
+            chatBtn.style.display = 'inline-flex';
+            profileBtn.style.display = 'inline-flex';
+        } else {
+            chatBtn.style.display = 'none';
+            profileBtn.style.display = 'none';
+        }
+
+        openModal('bookingDetailsModal');
+    }
+
+    function openPlayerFromBooking() {
+        if (currentBookingData && currentBookingData.player_id) {
+            closeModal('bookingDetailsModal');
+            openPlayerDetails(currentBookingData.player_id);
+        }
+    }
+
+    // --- QUICK WALK-IN PRE-FILLING & LOGIC ---
+    function openWalkinForCourt(courtId, courtName, rate, timeSlot) {
+        const courtSelect = document.getElementById('modalCourtSelect');
+        if (courtSelect && courtId) {
+            courtSelect.value = courtId;
+        }
+
+        const badge = document.getElementById('selectedCourtBadge');
+        if (badge) {
+            badge.textContent = courtName ? `${courtName}` : 'Ready For Dispatch';
+        }
+
+        calculateWalkinTotal();
+        openModal('quickWalkinModal');
+    }
+
+    function calculateWalkinTotal() {
+        const courtSelect = document.getElementById('modalCourtSelect');
+        const durationSelect = document.getElementById('modalDurationSelect');
+        const totalDueEl = document.getElementById('modalTotalDue');
+        const calcSummaryEl = document.getElementById('modalCalcSummary');
+
+        if (!courtSelect || !durationSelect || !totalDueEl) return;
+
+        const selectedOption = courtSelect.options[courtSelect.selectedIndex];
+        const rate = parseFloat(selectedOption?.getAttribute('data-rate') || 0);
+        const duration = parseFloat(durationSelect.value || 1);
+        const total = rate * duration;
+
+        totalDueEl.innerText = `₱${total.toFixed(2)}`;
+        if (calcSummaryEl) {
+            calcSummaryEl.innerText = `₱${rate.toFixed(2)} × ${duration}h = ₱${total.toFixed(2)}`;
+        }
+    }
+
+    function toggleGcashRef(show) {
+        const sec = document.getElementById('modalGcashRefSection');
+        if (sec) sec.style.display = show ? 'block' : 'none';
+
+        ['cash', 'gcash', 'qr'].forEach(k => {
+            const el = document.getElementById(`pm-chip-${k}`);
+            if (el) el.classList.remove('active');
+        });
+
+        const activeRadio = document.querySelector('input[name="payment_method"]:checked');
+        if (activeRadio) {
+            const val = activeRadio.value;
+            const chipId = val === 'cash' ? 'pm-chip-cash' : (val === 'gcash' ? 'pm-chip-gcash' : 'pm-chip-qr');
+            const chip = document.getElementById(chipId);
+            if (chip) chip.classList.add('active');
+        }
+    }
+
+    async function handleQuickWalkinSubmit(e) {
+        e.preventDefault();
+        const form = document.getElementById('quickWalkinForm');
+        const alertBox = document.getElementById('walkinModalAlert');
+        const submitBtn = document.getElementById('walkinSubmitBtn');
+        const btnText = document.getElementById('walkinBtnText');
+        const btnIcon = document.getElementById('walkinBtnIcon');
+
+        if (alertBox) {
+            alertBox.style.display = 'none';
+            alertBox.innerHTML = '';
+        }
+
+        const formData = new FormData(form);
+        const courtId = formData.get('court_id');
+        const guestName = formData.get('guest_name');
+
+        if (!courtId || !guestName) {
+            showAlert('Please specify guest name and select a court.', 'error');
+            return;
+        }
+
+        submitBtn.disabled = true;
+        btnText.innerText = 'Dispatching Court...';
+        btnIcon.className = 'ph ph-spinner ph-spin';
+
+        try {
+            const resp = await fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            });
+
+            if (resp.redirected) {
+                window.location.reload();
+                return;
+            }
+
+            const data = await resp.json();
+            if (data.success) {
+                showAlert('Walk-in registered successfully! Reloading...', 'success');
+                setTimeout(() => window.location.reload(), 800);
+            } else {
+                showAlert(data.message || 'Error creating walk-in reservation.', 'error');
+                submitBtn.disabled = false;
+                btnText.innerText = 'Confirm Walk-In & Dispatch';
+                btnIcon.className = 'ph ph-check-circle';
+            }
+        } catch (err) {
+            // Form fallback
+            form.submit();
+        }
+    }
+
+    function showAlert(msg, type) {
+        const alertBox = document.getElementById('walkinModalAlert');
+        if (!alertBox) return;
+        const isError = type === 'error';
+        alertBox.style.display = 'block';
+        alertBox.style.padding = '12px 14px';
+        alertBox.style.borderRadius = '10px';
+        alertBox.style.marginBottom = '14px';
+        alertBox.style.fontSize = '0.84rem';
+        alertBox.style.fontWeight = '600';
+        alertBox.style.backgroundColor = isError ? 'rgba(239, 68, 68, 0.12)' : 'rgba(34, 197, 94, 0.12)';
+        alertBox.style.color = isError ? '#ef4444' : '#16a34a';
+        alertBox.style.border = `1px solid ${isError ? 'rgba(239, 68, 68, 0.25)' : 'rgba(34, 197, 94, 0.25)'}`;
+        alertBox.innerHTML = `<i class="ph ${isError ? 'ph-warning-circle' : 'ph-check-circle'}" style="margin-right: 6px;"></i> ${msg}`;
+    }
+
+    // --- PASS VERIFICATION LOGIC ---
+    function verifyPassCode() {
+        const input = document.getElementById('manualPassInput');
+        const box = document.getElementById('passResultBox');
+        if (!input || !box) return;
+
+        const val = input.value.trim().toLowerCase();
+        if (!val) {
+            alert('Please enter a Pass Code or Booking Reference.');
+            return;
+        }
+
+        box.style.display = 'block';
+        box.style.background = 'rgba(34, 197, 94, 0.1)';
+        box.style.border = '1px solid rgba(34, 197, 94, 0.25)';
+        box.style.color = 'var(--btn-green)';
+        box.innerHTML = `
+            <div style="display:flex; align-items:center; gap:8px;">
+                <i class="ph ph-check-circle" style="font-size:1.4rem;"></i>
+                <div>
+                    <div style="font-weight:700;">Verified Active Booking</div>
+                    <div style="font-size:0.78rem; color:var(--text-secondary); margin-top:2px;">Player pass matched for today's session. Authorized for court entry.</div>
+                </div>
+            </div>
+        `;
+    }
+
+    // --- PLAYER PROFILE DRAWER ---
+    function openPlayerDetails(playerId) {
+        const drawer = document.getElementById('profile-drawer');
+        const overlay = document.getElementById('profile-drawer-overlay');
+        const loading = document.getElementById('drawer-loading-indicator');
+        const content = document.getElementById('profile-drawer-content');
+
+        if (!drawer || !overlay) return;
+
+        overlay.classList.add('active');
+        drawer.classList.add('open');
+        document.body.style.overflow = 'hidden';
+
+        if (loading) loading.style.display = 'block';
+        if (content) content.innerHTML = '';
+
+        fetch(`/facilitystaff/player/${playerId}/details`)
+            .then(res => res.text())
+            .then(html => {
+                if (loading) loading.style.display = 'none';
+                if (content) content.innerHTML = html;
+            })
+            .catch(err => {
+                if (loading) loading.style.display = 'none';
+                if (content) content.innerHTML = '<p style="text-align:center; color: #ef4444;">Failed to load player details.</p>';
+            });
+    }
+
+    function closePlayerDetails() {
+        const drawer = document.getElementById('profile-drawer');
+        const overlay = document.getElementById('profile-drawer-overlay');
+        if (drawer) drawer.classList.remove('open');
+        if (overlay) overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    // =========================================================================
+    // CUSTOM INTERACTIVE BOOKING CALENDAR SYSTEM
+    // =========================================================================
+    const facilityBookedDates = {{ booked_dates|tojson|safe }};
+    const currentScheduleDate = "{{ date }}";
+    
+    let calViewYear = parseInt(currentScheduleDate.split('-')[0], 10);
+    let calViewMonth = parseInt(currentScheduleDate.split('-')[1], 10) - 1;
+    let selectedCalendarDate = currentScheduleDate;
+    let currentCalendarTab = 'grid';
+
+    function initCalendarYearSelect() {
+        const yearSelect = document.getElementById('calYearSelect');
+        if (!yearSelect) return;
+        yearSelect.innerHTML = '';
+        
+        const currentYear = new Date().getFullYear();
+        let minYear = currentYear - 2;
+        let maxYear = currentYear + 3;
+        
+        Object.keys(facilityBookedDates).forEach(d => {
+            const yr = parseInt(d.split('-')[0], 10);
+            if (!isNaN(yr)) {
+                if (yr < minYear) minYear = yr;
+                if (yr > maxYear) maxYear = yr;
+            }
+        });
+        
+        for (let y = minYear; y <= maxYear; y++) {
+            const opt = document.createElement('option');
+            opt.value = y;
+            opt.textContent = y;
+            if (y === calViewYear) opt.selected = true;
+            yearSelect.appendChild(opt);
+        }
+    }
+
+    function openCustomCalendarModal() {
+        if (selectedCalendarDate) {
+            calViewYear = parseInt(selectedCalendarDate.split('-')[0], 10);
+            calViewMonth = parseInt(selectedCalendarDate.split('-')[1], 10) - 1;
+        }
+        initCalendarYearSelect();
+        updateCalendarDropdowns();
+        renderCalendarGrid();
+        renderBookedDatesList();
+        updateDayInspector(selectedCalendarDate);
+        openModal('customCalendarModal');
+    }
+
+    function switchCalendarTab(tab) {
+        currentCalendarTab = tab;
+        const tabBtnGrid = document.getElementById('tabBtnGrid');
+        const tabBtnList = document.getElementById('tabBtnList');
+        const viewGrid = document.getElementById('calViewGrid');
+        const viewList = document.getElementById('calViewList');
+
+        if (tab === 'grid') {
+            if (tabBtnGrid) tabBtnGrid.classList.add('active');
+            if (tabBtnList) tabBtnList.classList.remove('active');
+            if (viewGrid) viewGrid.style.display = 'block';
+            if (viewList) viewList.style.display = 'none';
+        } else {
+            if (tabBtnGrid) tabBtnGrid.classList.remove('active');
+            if (tabBtnList) tabBtnList.classList.add('active');
+            if (viewGrid) viewGrid.style.display = 'none';
+            if (viewList) viewList.style.display = 'block';
+            renderBookedDatesList();
+        }
+    }
+
+    function updateCalendarDropdowns() {
+        const monthSelect = document.getElementById('calMonthSelect');
+        const yearSelect = document.getElementById('calYearSelect');
+        if (monthSelect) monthSelect.value = calViewMonth;
+        if (yearSelect) yearSelect.value = calViewYear;
+    }
+
+    function onMonthYearChange() {
+        const monthSelect = document.getElementById('calMonthSelect');
+        const yearSelect = document.getElementById('calYearSelect');
+        if (monthSelect) calViewMonth = parseInt(monthSelect.value, 10);
+        if (yearSelect) calViewYear = parseInt(yearSelect.value, 10);
+        renderCalendarGrid();
+    }
+
+    function navCalendarMonth(step) {
+        calViewMonth += step;
+        if (calViewMonth < 0) {
+            calViewMonth = 11;
+            calViewYear -= 1;
+        } else if (calViewMonth > 11) {
+            calViewMonth = 0;
+            calViewYear += 1;
+        }
+        initCalendarYearSelect();
+        updateCalendarDropdowns();
+        renderCalendarGrid();
+    }
+
+    function jumpCalendarToday() {
+        const today = new Date();
+        calViewYear = today.getFullYear();
+        calViewMonth = today.getMonth();
+        const yStr = calViewYear;
+        const mStr = String(calViewMonth + 1).padStart(2, '0');
+        const dStr = String(today.getDate()).padStart(2, '0');
+        const todayStr = `${yStr}-${mStr}-${dStr}`;
+        
+        selectedCalendarDate = todayStr;
+        initCalendarYearSelect();
+        updateCalendarDropdowns();
+        renderCalendarGrid();
+        updateDayInspector(todayStr);
+    }
+
+    function jumpToLatestBookingDate() {
+        const dates = Object.keys(facilityBookedDates).sort().reverse();
+        if (dates.length > 0) {
+            const latest = dates[0];
+            selectedCalendarDate = latest;
+            calViewYear = parseInt(latest.split('-')[0], 10);
+            calViewMonth = parseInt(latest.split('-')[1], 10) - 1;
+            initCalendarYearSelect();
+            updateCalendarDropdowns();
+            renderCalendarGrid();
+            updateDayInspector(latest);
+        }
+    }
+
+    function renderCalendarGrid() {
+        const container = document.getElementById('calDaysGrid');
+        if (!container) return;
+        container.innerHTML = '';
+
+        const todayObj = new Date();
+        const todayYStr = todayObj.getFullYear();
+        const todayMStr = String(todayObj.getMonth() + 1).padStart(2, '0');
+        const todayDStr = String(todayObj.getDate()).padStart(2, '0');
+        const todayStr = `${todayYStr}-${todayMStr}-${todayDStr}`;
+
+        const firstDayOfMonth = new Date(calViewYear, calViewMonth, 1);
+        const startingDayOfWeek = firstDayOfMonth.getDay();
+        const daysInMonth = new Date(calViewYear, calViewMonth + 1, 0).getDate();
+        const daysInPrevMonth = new Date(calViewYear, calViewMonth, 0).getDate();
+
+        // 1. Previous month days
+        for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+            const dayNum = daysInPrevMonth - i;
+            const prevMonth = calViewMonth === 0 ? 11 : calViewMonth - 1;
+            const prevYear = calViewMonth === 0 ? calViewYear - 1 : calViewYear;
+            const dStr = `${prevYear}-${String(prevMonth + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+            
+            const cell = createDayCell(dayNum, dStr, true);
+            container.appendChild(cell);
+        }
+
+        // 2. Current month days
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dStr = `${calViewYear}-${String(calViewMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const cell = createDayCell(d, dStr, false);
+            container.appendChild(cell);
+        }
+
+        // 3. Next month days
+        const totalCells = startingDayOfWeek + daysInMonth;
+        const remainingCells = (7 - (totalCells % 7)) % 7;
+        for (let nextD = 1; nextD <= remainingCells; nextD++) {
+            const nextMonth = calViewMonth === 11 ? 0 : calViewMonth + 1;
+            const nextYear = calViewMonth === 11 ? calViewYear + 1 : calViewYear;
+            const dStr = `${nextYear}-${String(nextMonth + 1).padStart(2, '0')}-${String(nextD).padStart(2, '0')}`;
+            const cell = createDayCell(nextD, dStr, true);
+            container.appendChild(cell);
+        }
+    }
+
+    function createDayCell(dayNum, dateStr, isOtherMonth) {
+        const todayObj = new Date();
+        const todayStr = `${todayObj.getFullYear()}-${String(todayObj.getMonth() + 1).padStart(2, '0')}-${String(todayObj.getDate()).padStart(2, '0')}`;
+        const isToday = (dateStr === todayStr);
+        const isSelected = (dateStr === selectedCalendarDate);
+        const isPast = (dateStr < todayStr);
+
+        const bookingInfo = facilityBookedDates[dateStr];
+        const hasBookings = !!(bookingInfo && bookingInfo.count > 0);
+
+        const cell = document.createElement('div');
+        cell.className = 'cal-day';
+        if (isOtherMonth) cell.classList.add('other-month');
+        if (isPast) cell.classList.add('is-past');
+        if (isToday) cell.classList.add('is-today');
+        if (isSelected) cell.classList.add('is-selected');
+
+        let badgeHtml = '';
+        if (hasBookings) {
+            const count = bookingInfo.count;
+            const isCompletedOnly = (bookingInfo.completed > 0 && bookingInfo.confirmed === 0);
+            const badgeClass = isCompletedOnly ? 'past-booking' : 'active-booking';
+            const icon = isCompletedOnly ? 'ph-check-circle' : 'ph-tennis-ball';
+            badgeHtml = `
+                <div class="cal-day-badge ${badgeClass}" title="${count} booking(s) on ${dateStr}">
+                    <i class="ph ${icon}"></i>
+                    <span>${count} ${count === 1 ? 'game' : 'games'}</span>
+                </div>
+            `;
+        }
+
+        let todayTagHtml = isToday ? `<span class="cal-day-today-tag">Today</span>` : '';
+
+        cell.innerHTML = `
+            <div class="cal-day-top">
+                <span class="cal-day-num">${dayNum}</span>
+                ${todayTagHtml}
+            </div>
+            <div>
+                ${badgeHtml}
+            </div>
+        `;
+
+        cell.onclick = () => {
+            document.querySelectorAll('.cal-day.is-selected').forEach(el => el.classList.remove('is-selected'));
+            cell.classList.add('is-selected');
+            selectedCalendarDate = dateStr;
+            updateDayInspector(dateStr);
+        };
+
+        cell.ondblclick = () => {
+            navigateToDate(dateStr);
+        };
+
+        return cell;
+    }
+
+    function updateDayInspector(dateStr) {
+        const titleEl = document.getElementById('calSideDateTitle');
+        const subEl = document.getElementById('calSideDateSub');
+        const statusTagEl = document.getElementById('calSideStatusTag');
+        const countEl = document.getElementById('calSideBookingsCount');
+        const revEl = document.getElementById('calSideRevenue');
+        const courtsBadgesEl = document.getElementById('calSideCourtsBadges');
+        const listEl = document.getElementById('calSideBookingsList');
+        const ctaBtn = document.getElementById('calGoToScheduleBtn');
+
+        if (!titleEl) return;
+
+        const parts = dateStr.split('-');
+        const dObj = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        const formatted = dObj.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
+        
+        const todayObj = new Date();
+        const todayStr = `${todayObj.getFullYear()}-${String(todayObj.getMonth() + 1).padStart(2, '0')}-${String(todayObj.getDate()).padStart(2, '0')}`;
+        const isToday = (dateStr === todayStr);
+        const isPast = (dateStr < todayStr);
+
+        titleEl.textContent = formatted;
+        if (subEl) subEl.textContent = dateStr;
+
+        if (statusTagEl) {
+            if (isToday) {
+                statusTagEl.textContent = 'Today';
+                statusTagEl.style.background = 'rgba(59, 130, 246, 0.15)';
+                statusTagEl.style.color = '#2563eb';
+            } else if (isPast) {
+                statusTagEl.textContent = 'Past Date';
+                statusTagEl.style.background = 'rgba(100, 116, 139, 0.15)';
+                statusTagEl.style.color = 'var(--text-muted)';
+            } else {
+                statusTagEl.textContent = 'Upcoming';
+                statusTagEl.style.background = 'rgba(16, 185, 129, 0.15)';
+                statusTagEl.style.color = '#059669';
+            }
+        }
+
+        const info = facilityBookedDates[dateStr];
+        if (info && info.count > 0) {
+            if (countEl) countEl.textContent = info.count;
+            if (revEl) revEl.textContent = `₱${parseFloat(info.revenue || 0).toFixed(2)}`;
+
+            if (courtsBadgesEl) {
+                courtsBadgesEl.innerHTML = (info.courts || []).map(c => 
+                    `<span class="preset-pill" style="font-size: 0.7rem; padding: 2px 8px;">${c}</span>`
+                ).join('');
+            }
+
+            if (listEl) {
+                listEl.innerHTML = (info.items || []).map(item => `
+                    <div class="cal-mini-booking-item">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                            <strong style="color: var(--text-primary); font-size: 0.8rem;">${item.player}</strong>
+                            <span class="res-status-chip ${item.status === 'completed' ? 'res-card-completed' : 'res-card-confirmed'}" style="font-size: 0.65rem; padding: 1px 6px;">
+                                ${item.status.toUpperCase()}
+                            </span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; color: var(--text-muted); font-size: 0.72rem;">
+                            <span><i class="ph ph-map-pin"></i> ${item.court}</span>
+                            <span><i class="ph ph-clock"></i> ${item.time}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        } else {
+            if (countEl) countEl.textContent = '0';
+            if (revEl) revEl.textContent = '₱0.00';
+            if (courtsBadgesEl) courtsBadgesEl.innerHTML = '<span style="font-size: 0.75rem; color: var(--text-muted);">None</span>';
+            if (listEl) {
+                listEl.innerHTML = `
+                    <div style="text-align: center; padding: 24px 12px; color: var(--text-muted);">
+                        <i class="ph ph-calendar-x" style="font-size: 1.8rem; margin-bottom: 6px; display: block; opacity: 0.5;"></i>
+                        <p style="margin: 0; font-size: 0.78rem;">No bookings scheduled on this date.</p>
+                    </div>
+                `;
+            }
+        }
+
+        if (ctaBtn) {
+            ctaBtn.innerHTML = `<span>Open Schedule for ${dObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span> <i class="ph ph-arrow-right"></i>`;
+        }
+    }
+
+    function goToSelectedCalendarDate() {
+        if (!selectedCalendarDate) return;
+        navigateToDate(selectedCalendarDate);
+    }
+
+    function navigateToDate(dStr) {
+        window.location.href = `{{ url_for('facilitystaff.schedule') }}?date=${dStr}`;
+    }
+
+    function renderBookedDatesList() {
+        const container = document.getElementById('calListContainer');
+        if (!container) return;
+
+        const dates = Object.keys(facilityBookedDates).sort().reverse();
+        if (dates.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 48px 20px; color: var(--text-muted);">
+                    <i class="ph ph-calendar-x" style="font-size: 2.5rem; margin-bottom: 12px; display: block; opacity: 0.5;"></i>
+                    <h4>No Bookings Recorded</h4>
+                    <p style="font-size: 0.85rem;">There are no active or historical bookings found for this facility.</p>
+                </div>
+            `;
+            return;
+        }
+
+        const todayObj = new Date();
+        const todayStr = `${todayObj.getFullYear()}-${String(todayObj.getMonth() + 1).padStart(2, '0')}-${String(todayObj.getDate()).padStart(2, '0')}`;
+
+        container.innerHTML = dates.map(dStr => {
+            const info = facilityBookedDates[dStr];
+            const parts = dStr.split('-');
+            const dObj = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+            const formatted = dObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+            
+            const isToday = (dStr === todayStr);
+            const isPast = (dStr < todayStr);
+
+            let statusPill = isToday 
+                ? `<span class="date-status-badge today" style="font-size: 0.7rem; padding: 2px 8px;">Today</span>` 
+                : (isPast 
+                    ? `<span class="date-status-badge past" style="font-size: 0.7rem; padding: 2px 8px;">Past Date</span>` 
+                    : `<span class="date-status-badge future" style="font-size: 0.7rem; padding: 2px 8px;">Upcoming</span>`);
+
+            return `
+                <div class="cal-list-item-card" data-date="${dStr}" data-search="${formatted.toLowerCase()} ${dStr} ${(info.courts || []).join(' ').toLowerCase()}" onclick="navigateToDate('${dStr}')">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(225, 86, 35, 0.12); display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--primary-orange); flex-shrink: 0;">
+                            <span style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase;">${dObj.toLocaleDateString('en-US', { month: 'short' })}</span>
+                            <span style="font-size: 1.05rem; font-weight: 800; line-height: 1;">${dObj.getDate()}</span>
+                        </div>
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <strong style="font-size: 0.95rem; color: var(--text-primary);">${formatted}</strong>
+                                ${statusPill}
+                            </div>
+                            <div style="display: flex; gap: 12px; font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">
+                                <span><i class="ph ph-calendar-check" style="color: var(--primary-orange);"></i> ${info.count} ${info.count === 1 ? 'Booking' : 'Bookings'}</span>
+                                <span><i class="ph ph-currency-circle-dollar" style="color: var(--btn-green);"></i> ₱${parseFloat(info.revenue || 0).toFixed(2)}</span>
+                                <span><i class="ph ph-map-pin"></i> ${(info.courts || []).join(', ') || 'All Courts'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <button type="button" class="desk-action-btn-outline" style="font-size: 0.8rem; padding: 6px 14px; border-color: rgba(225, 86, 35, 0.3); color: var(--primary-orange);">
+                            View Schedule <i class="ph ph-caret-right"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function filterBookedDatesList() {
+        const query = (document.getElementById('calListSearchInput')?.value || '').toLowerCase().trim();
+        const cards = document.querySelectorAll('.cal-list-item-card');
+        let visible = 0;
+        cards.forEach(card => {
+            const searchData = card.getAttribute('data-search') || '';
+            if (!query || searchData.includes(query)) {
+                card.style.display = 'flex';
+                visible++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        const countEl = document.getElementById('calListVisibleCount');
+        if (countEl) countEl.textContent = visible;
+    }
+</script>
 {% endblock %}

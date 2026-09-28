@@ -1,0 +1,893 @@
+<!-- Universal Floating Bookings Cart & Slide-Over Drawer for Player -->
+<style>
+    /* ── Floating Booking Cart Widget (Bottom Right) ── */
+    .floating-res-cart-widget {
+        position: fixed;
+        bottom: 28px;
+        right: 28px;
+        z-index: 990;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 18px;
+        background: var(--card-bg, #ffffff);
+        border: 2px solid var(--primary-orange, #ff5722);
+        border-radius: 50px;
+        box-shadow: 0 10px 30px rgba(225, 86, 35, 0.22), 0 4px 10px rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        backdrop-filter: blur(8px);
+        font-family: inherit;
+        outline: none;
+    }
+
+    .floating-res-cart-widget:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 14px 36px rgba(225, 86, 35, 0.32), 0 6px 14px rgba(0, 0, 0, 0.12);
+        border-color: var(--primary-orange-hover, #ea580c);
+    }
+
+    .floating-res-cart-widget:active {
+        transform: translateY(0) scale(0.98);
+    }
+
+    .floating-res-cart-widget .widget-icon {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--primary-orange, #ff5722);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .floating-res-cart-widget .widget-text {
+        display: flex;
+        flex-direction: column;
+        text-align: left;
+    }
+
+    .floating-res-cart-widget .widget-title {
+        font-size: 0.84rem;
+        font-weight: 800;
+        color: var(--text-primary, #1e293b);
+        line-height: 1.2;
+    }
+
+    .floating-res-cart-widget .widget-status {
+        font-size: 0.72rem;
+        color: var(--text-muted, #64748b);
+        line-height: 1.2;
+        margin-top: 1px;
+    }
+
+    .floating-res-cart-widget .widget-badge {
+        background: var(--btn-navy, #0f172a);
+        color: #fff;
+        font-size: 0.74rem;
+        font-weight: 800;
+        min-width: 22px;
+        height: 22px;
+        padding: 0 7px;
+        border-radius: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Floating Cart Pulse Dots */
+    .cart-pulse-dot {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        border: 2px solid var(--card-bg, #ffffff);
+    }
+
+    .cart-pulse-dot.pending {
+        background: #f59e0b;
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+        animation: cartPulse 1.8s infinite;
+    }
+
+    .cart-pulse-dot.confirmed {
+        background: #16a34a;
+        box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7);
+        animation: cartPulse 1.8s infinite;
+    }
+
+    @keyframes cartPulse {
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+        70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+    }
+
+    /* Mobile offset so floating widget doesn't cover bottom navigation bar */
+    @media (max-width: 768px) {
+        .floating-res-cart-widget {
+            bottom: 84px;
+            right: 16px;
+            padding: 8px 14px;
+        }
+    }
+
+    /* ── Slide-Over Drawer Overlay & Panel ── */
+    #reservationDrawerOverlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.55);
+        backdrop-filter: blur(4px);
+        z-index: 9998;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s;
+    }
+
+    #reservationDrawerOverlay.open {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    #reservationDrawer {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 480px;
+        max-width: 94vw;
+        background: var(--sidebar-bg, #ffffff);
+        border-left: 1px solid var(--border-color, #e2e8f0);
+        box-shadow: -10px 0 40px rgba(0, 0, 0, 0.2);
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        transform: translateX(100%);
+        transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    #reservationDrawer.open {
+        transform: translateX(0);
+    }
+
+    .res-drawer-header {
+        padding: 20px 22px;
+        border-bottom: 1px solid var(--border-color, #e2e8f0);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--card-bg, #ffffff);
+        flex-shrink: 0;
+    }
+
+    .res-drawer-header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .res-drawer-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: var(--primary-orange-light, rgba(255, 87, 34, 0.12));
+        color: var(--primary-orange, #ff5722);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+    }
+
+    .res-drawer-title h3 {
+        font-size: 1.08rem;
+        font-weight: 800;
+        color: var(--text-primary, #1e293b);
+        line-height: 1.2;
+    }
+
+    .res-drawer-title p {
+        font-size: 0.74rem;
+        color: var(--text-muted, #64748b);
+        line-height: 1.2;
+        margin-top: 3px;
+    }
+
+    .res-drawer-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .drawer-btn-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 9px;
+        border: 1px solid var(--border-color, #e2e8f0);
+        background: var(--card-bg, #ffffff);
+        color: var(--text-secondary, #475569);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.15s;
+        font-size: 1.1rem;
+    }
+
+    .drawer-btn-icon:hover {
+        background: var(--input-bg, #f8fafc);
+        color: var(--text-primary, #1e293b);
+        border-color: var(--primary-orange, #ff5722);
+    }
+
+    .res-drawer-tabs {
+        display: flex;
+        gap: 6px;
+        padding: 12px 20px;
+        background: var(--card-bg, #ffffff);
+        border-bottom: 1px solid var(--border-color, #e2e8f0);
+        overflow-x: auto;
+        flex-shrink: 0;
+    }
+
+    .drawer-tab {
+        padding: 6px 13px;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        border: 1px solid var(--border-color, #e2e8f0);
+        background: var(--input-bg, #f8fafc);
+        color: var(--text-secondary, #475569);
+        cursor: pointer;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.15s;
+        font-family: inherit;
+    }
+
+    .drawer-tab:hover {
+        border-color: var(--primary-orange, #ff5722);
+        color: var(--primary-orange, #ff5722);
+    }
+
+    .drawer-tab.active {
+        background: var(--primary-orange, #ff5722);
+        color: #fff;
+        border-color: var(--primary-orange, #ff5722);
+    }
+
+    .drawer-tab-count {
+        background: rgba(0, 0, 0, 0.12);
+        padding: 1px 6px;
+        border-radius: 10px;
+        font-size: 0.7rem;
+    }
+
+    .drawer-tab.active .drawer-tab-count {
+        background: rgba(255, 255, 255, 0.25);
+        color: #fff;
+    }
+
+    .res-drawer-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 18px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .drawer-booking-card {
+        background: var(--card-bg, #ffffff);
+        border: 1.5px solid var(--border-color, #e2e8f0);
+        border-radius: 14px;
+        padding: 16px;
+        transition: all 0.2s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .drawer-booking-card:hover {
+        border-color: rgba(225, 86, 35, 0.45);
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+    }
+
+    .drawer-card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .drawer-card-facility {
+        font-size: 0.92rem;
+        font-weight: 800;
+        color: var(--text-primary, #1e293b);
+        line-height: 1.25;
+    }
+
+    .drawer-card-court {
+        font-size: 0.78rem;
+        color: var(--text-muted, #64748b);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 3px;
+    }
+
+    .badge-status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 4px 9px;
+        border-radius: 20px;
+        letter-spacing: 0.3px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .badge-status-pill.pending-pay {
+        background: rgba(245, 158, 11, 0.14);
+        color: #d97706;
+        border: 1px solid rgba(245, 158, 11, 0.35);
+    }
+
+    .badge-status-pill.pending-verif {
+        background: rgba(234, 88, 12, 0.14);
+        color: #ea580c;
+        border: 1px solid rgba(234, 88, 12, 0.35);
+    }
+
+    .badge-status-pill.accepted {
+        background: rgba(22, 163, 74, 0.14);
+        color: #16a34a;
+        border: 1px solid rgba(22, 163, 74, 0.35);
+    }
+
+    .badge-status-pill.declined {
+        background: rgba(220, 38, 38, 0.14);
+        color: #dc2626;
+        border: 1px solid rgba(220, 38, 38, 0.35);
+    }
+
+    .badge-status-pill.completed {
+        background: rgba(100, 116, 139, 0.14);
+        color: #64748b;
+        border: 1px solid rgba(100, 116, 139, 0.35);
+    }
+
+    .drawer-card-info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        background: var(--input-bg, #f8fafc);
+        border: 1px solid var(--border-color, #e2e8f0);
+        border-radius: 10px;
+        padding: 10px 12px;
+        margin-bottom: 12px;
+    }
+
+    .drawer-card-info-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.76rem;
+        color: var(--text-secondary, #475569);
+    }
+
+    .drawer-card-info-item i {
+        color: var(--primary-orange, #ff5722);
+        font-size: 0.88rem;
+    }
+
+    .drawer-card-info-item strong {
+        color: var(--text-primary, #1e293b);
+    }
+
+    .drawer-card-status-desc {
+        font-size: 0.74rem;
+        padding: 8px 10px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: flex-start;
+        gap: 6px;
+        line-height: 1.35;
+    }
+
+    .drawer-card-status-desc.pending-pay {
+        background: rgba(245, 158, 11, 0.08);
+        color: #b45309;
+        border-left: 3px solid #f59e0b;
+    }
+
+    .drawer-card-status-desc.pending-verif {
+        background: rgba(234, 88, 12, 0.08);
+        color: #c2410c;
+        border-left: 3px solid #ea580c;
+    }
+
+    .drawer-card-status-desc.accepted {
+        background: rgba(22, 163, 74, 0.08);
+        color: #15803d;
+        border-left: 3px solid #16a34a;
+    }
+
+    .drawer-card-status-desc.declined {
+        background: rgba(220, 38, 38, 0.08);
+        color: #b91c1c;
+        border-left: 3px solid #dc2626;
+    }
+
+    .drawer-card-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 4px;
+        padding-top: 10px;
+        border-top: 1px dashed var(--border-color, #e2e8f0);
+    }
+
+    .drawer-price {
+        font-size: 0.96rem;
+        font-weight: 800;
+        color: var(--primary-orange, #ff5722);
+    }
+
+    .drawer-action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 7px 14px;
+        border-radius: 9px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+        transition: all 0.15s;
+        font-family: inherit;
+    }
+
+    .drawer-action-btn.pay {
+        background: var(--primary-orange, #ff5722);
+        color: #fff;
+    }
+
+    .drawer-action-btn.pay:hover {
+        background: var(--primary-orange-hover, #ea580c);
+        transform: translateY(-1px);
+    }
+
+    .drawer-action-btn.cancel {
+        background: transparent;
+        color: #dc2626;
+        border: 1px solid rgba(220, 38, 38, 0.35);
+    }
+
+    .drawer-action-btn.cancel:hover {
+        background: rgba(220, 38, 38, 0.08);
+    }
+
+    .drawer-empty {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--text-muted, #64748b);
+    }
+
+    .drawer-empty-icon {
+        width: 68px;
+        height: 68px;
+        border-radius: 50%;
+        background: var(--input-bg, #f8fafc);
+        border: 1px solid var(--border-color, #e2e8f0);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin: 0 auto 14px;
+        color: var(--text-muted, #64748b);
+    }
+
+    .drawer-footer {
+        padding: 16px 20px;
+        border-top: 1px solid var(--border-color, #e2e8f0);
+        background: var(--card-bg, #ffffff);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+    }
+
+    .drawer-footer-link {
+        font-size: 0.82rem;
+        color: var(--primary-orange, #ff5722);
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .drawer-footer-link:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<!-- Floating Booking Cart Button (Visible on all player pages) -->
+<button type="button" class="floating-res-cart-widget" id="floatingCartWidget" onclick="toggleResDrawer()" title="View Booking Cart & Statuses" aria-label="Open Bookings Cart">
+    <div class="widget-icon">
+        <i class="ph ph-receipt"></i>
+        <span class="cart-pulse-dot pending" id="floatingCartPulseDot" style="display:none;"></span>
+    </div>
+    <div class="widget-text">
+        <span class="widget-title">Bookings Cart</span>
+        <span class="widget-status" id="floatingWidgetStatus">Loading...</span>
+    </div>
+    <span class="widget-badge" id="floatingBadgeCount">0</span>
+</button>
+
+<!-- Slide-Over Drawer Overlay & Panel -->
+<div id="reservationDrawerOverlay" onclick="closeResDrawer()"></div>
+<aside id="reservationDrawer" aria-label="Bookings Cart Drawer">
+    <!-- Header -->
+    <div class="res-drawer-header">
+        <div class="res-drawer-header-left">
+            <div class="res-drawer-icon">
+                <i class="ph ph-shopping-bag-open"></i>
+            </div>
+            <div class="res-drawer-title">
+                <h3>Booking Cart &amp; Status</h3>
+                <p>Live tracking: Pending, Accepted &amp; Declined</p>
+            </div>
+        </div>
+        <div class="res-drawer-actions">
+            <button type="button" class="drawer-btn-icon" onclick="refreshDrawerBookings()" id="btnRefreshDrawer" title="Refresh Bookings" aria-label="Refresh Bookings">
+                <i class="ph ph-arrows-clockwise" id="refreshIcon"></i>
+            </button>
+            <button type="button" class="drawer-btn-icon" onclick="closeResDrawer()" title="Close Drawer" aria-label="Close Drawer">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="res-drawer-tabs">
+        <button type="button" class="drawer-tab active" data-filter="all" onclick="filterDrawerBookings('all', this)">
+            All <span class="drawer-tab-count" id="count-all">0</span>
+        </button>
+        <button type="button" class="drawer-tab" data-filter="pending" onclick="filterDrawerBookings('pending', this)">
+            <i class="ph ph-hourglass-medium" style="color:#f59e0b;"></i> Pending
+            <span class="drawer-tab-count" id="count-pending">0</span>
+        </button>
+        <button type="button" class="drawer-tab" data-filter="confirmed" onclick="filterDrawerBookings('confirmed', this)">
+            <i class="ph ph-check-circle" style="color:#16a34a;"></i> Accepted
+            <span class="drawer-tab-count" id="count-confirmed">0</span>
+        </button>
+        <button type="button" class="drawer-tab" data-filter="cancelled" onclick="filterDrawerBookings('cancelled', this)">
+            <i class="ph ph-x-circle" style="color:#dc2626;"></i> Declined
+            <span class="drawer-tab-count" id="count-cancelled">0</span>
+        </button>
+    </div>
+
+    <!-- Drawer Body -->
+    <div class="res-drawer-body" id="drawerBookingList">
+        <div class="drawer-empty" id="drawerEmptyMsg">
+            <div class="drawer-empty-icon"><i class="ph ph-tennis-ball"></i></div>
+            <h4 style="font-size:1rem;font-weight:700;color:var(--text-primary);margin-bottom:6px;">Loading bookings...</h4>
+            <p style="font-size:0.8rem;line-height:1.4;">Connecting to court reservation system...</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="drawer-footer">
+        <span style="font-size:0.75rem;color:var(--text-muted);"><i class="ph ph-shield-check"></i> Real-time updates</span>
+        <a href="{{ url_for('player.my_reservations') }}" class="drawer-footer-link">
+            Full Reservation History <i class="ph ph-arrow-right"></i>
+        </a>
+    </div>
+</aside>
+
+<script>
+    (function() {
+        let currentDrawerFilter = 'all';
+
+        function getCsrfToken() {
+            const meta = document.querySelector('meta[name="csrf-token"]');
+            return meta ? meta.getAttribute('content') : '';
+        }
+
+        window.toggleResDrawer = function(forceState) {
+            const overlay = document.getElementById('reservationDrawerOverlay');
+            const drawer = document.getElementById('reservationDrawer');
+            if (!overlay || !drawer) return;
+
+            const isOpen = drawer.classList.contains('open');
+            const shouldOpen = typeof forceState === 'boolean' ? forceState : !isOpen;
+
+            if (shouldOpen) {
+                overlay.classList.add('open');
+                drawer.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            } else {
+                overlay.classList.remove('open');
+                drawer.classList.remove('open');
+                document.body.style.overflow = '';
+            }
+        };
+
+        window.closeResDrawer = function() {
+            window.toggleResDrawer(false);
+        };
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') window.closeResDrawer();
+        });
+
+        window.filterDrawerBookings = function(filter, btn) {
+            currentDrawerFilter = filter;
+            document.querySelectorAll('.drawer-tab').forEach(t => t.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
+            const cards = document.querySelectorAll('.drawer-booking-card');
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const status = card.dataset.status;
+                let show = false;
+                if (filter === 'all') {
+                    show = true;
+                } else if (filter === 'pending') {
+                    show = (status === 'pending_payment' || status === 'pending_verification');
+                } else if (filter === 'confirmed') {
+                    show = (status === 'confirmed');
+                } else if (filter === 'cancelled') {
+                    show = (status === 'cancelled' || status === 'declined');
+                }
+                card.style.display = show ? 'block' : 'none';
+                if (show) visibleCount++;
+            });
+
+            const emptyMsg = document.getElementById('drawerEmptyMsg');
+            if (emptyMsg) {
+                emptyMsg.style.display = (cards.length === 0 || visibleCount === 0) ? 'block' : 'none';
+            }
+        };
+
+        window.refreshDrawerBookings = async function() {
+            const icon = document.getElementById('refreshIcon');
+            if (icon) icon.classList.add('ph-spin');
+
+            try {
+                const resp = await fetch('/player/reservation/api/my-bookings');
+                if (!resp.ok) throw new Error('Failed to fetch bookings');
+                const bookings = await resp.json();
+                renderDrawerBookings(bookings);
+            } catch (err) {
+                console.error('Error refreshing bookings:', err);
+            } finally {
+                if (icon) {
+                    setTimeout(() => icon.classList.remove('ph-spin'), 400);
+                }
+            }
+        };
+
+        function formatTime12(s) {
+            if (!s) return '';
+            try {
+                const parts = String(s).split(':');
+                let h = parseInt(parts[0], 10);
+                let m = parseInt(parts[1], 10) || 0;
+                let ampm = (h >= 12 && h < 24) ? 'PM' : 'AM';
+                let h12 = h % 12;
+                if (h12 === 0) h12 = 12;
+                let minStr = m > 0 ? `:${String(m).padStart(2, '0')}` : ':00';
+                return `${h12}${minStr} ${ampm}`;
+            } catch(e) {
+                return s;
+            }
+        }
+
+        window.renderDrawerBookings = function(bookings) {
+            const container = document.getElementById('drawerBookingList');
+            if (!container) return;
+
+            let pendingCount = 0;
+            let confirmedCount = 0;
+            let cancelledCount = 0;
+
+            (bookings || []).forEach(b => {
+                const s = b.display_status || b.status;
+                if (s === 'pending_payment' || s === 'pending_verification') pendingCount++;
+                else if (s === 'confirmed') confirmedCount++;
+                else if (s === 'cancelled' || s === 'declined') cancelledCount++;
+            });
+
+            // Update badge counts
+            const badge1 = document.getElementById('cartCountBadge');
+            const badge2 = document.getElementById('floatingBadgeCount');
+            const cAll = document.getElementById('count-all');
+            const cPending = document.getElementById('count-pending');
+            const cConfirmed = document.getElementById('count-confirmed');
+            const cCancelled = document.getElementById('count-cancelled');
+            const subtext = document.getElementById('headerCartSubtext');
+            const floatStatus = document.getElementById('floatingWidgetStatus');
+            const pulseDot = document.getElementById('floatingCartPulseDot');
+
+            const totalCount = (bookings || []).length;
+            if (badge1) badge1.textContent = totalCount;
+            if (badge2) badge2.textContent = totalCount;
+            if (cAll) cAll.textContent = totalCount;
+            if (cPending) cPending.textContent = pendingCount;
+            if (cConfirmed) cConfirmed.textContent = confirmedCount;
+            if (cCancelled) cCancelled.textContent = cancelledCount;
+
+            // Pulse dot control
+            if (pulseDot) {
+                if (pendingCount > 0) {
+                    pulseDot.style.display = 'block';
+                    pulseDot.className = 'cart-pulse-dot pending';
+                } else if (confirmedCount > 0) {
+                    pulseDot.style.display = 'block';
+                    pulseDot.className = 'cart-pulse-dot confirmed';
+                } else {
+                    pulseDot.style.display = 'none';
+                }
+            }
+
+            // Subtext on reservation page header
+            if (subtext) {
+                if (totalCount === 0) subtext.textContent = 'No active bookings';
+                else if (pendingCount > 0) subtext.innerHTML = `<span style="color:#d97706;font-weight:700;">${pendingCount} Pending</span>`;
+                else if (confirmedCount > 0) subtext.innerHTML = `<span style="color:#16a34a;font-weight:700;">${confirmedCount} Accepted</span>`;
+                else subtext.textContent = `${totalCount} Total`;
+            }
+
+            // Subtext on floating button
+            if (floatStatus) {
+                if (pendingCount > 0) floatStatus.textContent = `${pendingCount} Pending Review`;
+                else if (confirmedCount > 0) floatStatus.textContent = `${confirmedCount} Confirmed`;
+                else floatStatus.textContent = `${totalCount} Active`;
+            }
+
+            if (!bookings || bookings.length === 0) {
+                container.innerHTML = `
+                    <div class="drawer-empty" id="drawerEmptyMsg">
+                        <div class="drawer-empty-icon"><i class="ph ph-tennis-ball"></i></div>
+                        <h4 style="font-size:1rem;font-weight:700;color:var(--text-primary);margin-bottom:6px;">No bookings in cart yet</h4>
+                        <p style="font-size:0.8rem;line-height:1.4;margin-bottom:14px;">Pick a facility, choose a date &amp; court, and place your reservation. It will float right here so you can track its status instantly!</p>
+                        <a href="/player/reservation" class="drawer-action-btn pay" style="display:inline-flex;margin:0 auto;text-decoration:none;"><i class="ph ph-calendar-plus"></i> Book a Court Now</a>
+                    </div>
+                `;
+                return;
+            }
+
+            const csrfToken = getCsrfToken();
+            let html = '';
+            bookings.forEach(r => {
+                const court = r.courts || {};
+                const fac = r.facilities || {};
+                const dispStatus = r.display_status || r.status;
+                const courtName = court.name || 'Court';
+                const facName = fac.name || 'Pickleball Facility';
+                const courtType = court.type ? `&bull; <span style="text-transform:capitalize;">${court.type}</span>` : '';
+                const totalAmt = parseFloat(r.total_amount || 0).toFixed(2);
+                const startTime12 = r.start_time_12 || formatTime12(r.start_time);
+                const endTime12 = r.end_time_12 || formatTime12(r.end_time);
+                const hrs = parseInt(r.total_hours || 1, 10);
+
+                let statusBadge = '';
+                let statusDesc = '';
+
+                if (dispStatus === 'pending_payment') {
+                    statusBadge = '<span class="badge-status-pill pending-pay"><i class="ph ph-hourglass-medium"></i> PENDING PAYMENT</span>';
+                    statusDesc = '<div class="drawer-card-status-desc pending-pay"><i class="ph ph-warning-circle" style="font-size:1rem;flex-shrink:0;"></i><div><strong>GCash payment needed!</strong> Complete payment so the facility owner can confirm your court.</div></div>';
+                } else if (dispStatus === 'pending_verification') {
+                    statusBadge = '<span class="badge-status-pill pending-verif"><i class="ph ph-clock-countdown"></i> PENDING APPROVAL</span>';
+                    statusDesc = `<div class="drawer-card-status-desc pending-verif"><i class="ph ph-clock" style="font-size:1rem;flex-shrink:0;"></i><div><strong>Ref submitted:</strong> ${r.gcash_ref || ''}. Waiting for the manager to verify and approve.</div></div>`;
+                } else if (dispStatus === 'confirmed') {
+                    statusBadge = '<span class="badge-status-pill accepted"><i class="ph ph-check-circle"></i> ACCEPTED</span>';
+                    statusDesc = '<div class="drawer-card-status-desc accepted"><i class="ph ph-check-circle" style="font-size:1rem;flex-shrink:0;"></i><div><strong>Booking accepted!</strong> Your court is reserved and waiting for you.</div></div>';
+                } else if (dispStatus === 'cancelled' || dispStatus === 'declined') {
+                    statusBadge = '<span class="badge-status-pill declined"><i class="ph ph-x-circle"></i> DECLINED</span>';
+                    statusDesc = '<div class="drawer-card-status-desc declined"><i class="ph ph-x-circle" style="font-size:1rem;flex-shrink:0;"></i><div><strong>Booking declined/cancelled.</strong> You can choose another court or time slot anytime.</div></div>';
+                } else {
+                    statusBadge = `<span class="badge-status-pill completed"><i class="ph ph-check"></i> ${(dispStatus||'').toUpperCase()}</span>`;
+                }
+
+                let actionBtns = '';
+                if (dispStatus === 'pending_payment' && !r.gcash_ref) {
+                    actionBtns += `<a href="/player/reservation/payment/${r.id}" class="drawer-action-btn pay"><i class="ph ph-device-mobile-camera"></i> Pay via GCash</a>`;
+                }
+                if (r.can_cancel && (dispStatus === 'pending_payment' || dispStatus === 'confirmed') && !r.gcash_ref) {
+                    actionBtns += `
+                        <form method="POST" action="/player/reservation/cancel/${r.id}" onsubmit="return confirm('Cancel this reservation?');" style="margin:0;">
+                            <input type="hidden" name="csrf_token" value="${csrfToken}">
+                            <button type="submit" class="drawer-action-btn cancel"><i class="ph ph-x"></i> Cancel</button>
+                        </form>
+                    `;
+                }
+
+                html += `
+                    <div class="drawer-booking-card" data-status="${dispStatus}" data-id="${r.id}">
+                        <div class="drawer-card-top">
+                            <div>
+                                <div class="drawer-card-facility">${facName}</div>
+                                <div class="drawer-card-court">
+                                    <i class="ph ph-tennis-ball"></i> ${courtName} ${courtType}
+                                </div>
+                            </div>
+                            ${statusBadge}
+                        </div>
+
+                        <div class="drawer-card-info-grid">
+                            <div class="drawer-card-info-item">
+                                <i class="ph ph-calendar"></i>
+                                <span>${r.date}</span>
+                            </div>
+                            <div class="drawer-card-info-item">
+                                <i class="ph ph-clock"></i>
+                                <span>${startTime12} – ${endTime12}</span>
+                            </div>
+                            <div class="drawer-card-info-item">
+                                <i class="ph ph-hourglass"></i>
+                                <span>${hrs} hr${hrs !== 1 ? 's' : ''}</span>
+                            </div>
+                            <div class="drawer-card-info-item">
+                                <i class="ph ph-currency-circle-dollar"></i>
+                                <span><strong>₱${totalAmt}</strong></span>
+                            </div>
+                        </div>
+
+                        ${statusDesc}
+
+                        <div class="drawer-card-actions">
+                            <div class="drawer-price">₱${totalAmt}</div>
+                            <div style="display:flex;align-items:center;gap:6px;">
+                                ${actionBtns}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            window.filterDrawerBookings(currentDrawerFilter, document.querySelector(`.drawer-tab[data-filter="${currentDrawerFilter}"]`));
+        };
+
+        // Initialize on DOM load
+        document.addEventListener('DOMContentLoaded', () => {
+            window.refreshDrawerBookings();
+
+            // Auto-open if query param is set
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('open_cart') === '1' || urlParams.get('cart') === '1') {
+                setTimeout(() => window.toggleResDrawer(true), 150);
+            }
+
+            // Periodic background check every 30 seconds
+            setInterval(() => {
+                if (!document.hidden) {
+                    window.refreshDrawerBookings();
+                }
+            }, 30000);
+
+            // Refresh when user tabs back
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    window.refreshDrawerBookings();
+                }
+            });
+        });
+    })();
+</script>

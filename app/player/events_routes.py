@@ -35,14 +35,28 @@ def events():
             registered_ids = {r['event_id'] for r in (my_resp.data or [])}
             joined_count = len(registered_ids)
 
+        # Compute summary metrics for filters and quick stats
+        tournament_count = sum(1 for e in events_list if e.get('type') == 'tournament')
+        social_count = sum(1 for e in events_list if e.get('type') == 'social')
+        training_count = sum(1 for e in events_list if e.get('type') == 'training')
+        league_count = sum(1 for e in events_list if e.get('type') == 'league')
+
     except Exception as e:
         flash('An error occurred. Please try again.', 'error')
+        tournament_count = 0
+        social_count = 0
+        training_count = 0
+        league_count = 0
 
     return render_template(
         'player/events.html',
         events=events_list,
         registered_ids=registered_ids,
-        joined_count=joined_count
+        joined_count=joined_count,
+        tournament_count=tournament_count,
+        social_count=social_count,
+        training_count=training_count,
+        league_count=league_count
     )
 
 

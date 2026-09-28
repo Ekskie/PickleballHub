@@ -237,22 +237,78 @@
 {% endblock %}
 
 {% block sidebar_menu %}
-<li class="{% if request.endpoint == 'superadmin.dashboard' %}active{% endif %}"><a
-        href="{{ url_for('superadmin.dashboard') }}"><i class="ph ph-squares-four"></i> Overview</a></li>
-<li class="{% if request.endpoint == 'superadmin.facilities' %}active{% endif %}"><a
-        href="{{ url_for('superadmin.facilities') }}"><i class="ph ph-buildings"></i> Facilities</a></li>
-<li class="{% if request.endpoint == 'superadmin.users' %}active{% endif %}"><a
-        href="{{ url_for('superadmin.users') }}"><i class="ph ph-users"></i> User Management</a></li>
-<li class="{% if request.endpoint == 'superadmin.reports' %}active{% endif %}"><a
-        href="{{ url_for('superadmin.reports') }}"><i class="ph ph-chart-line-up"></i> System Reports</a></li>
-<li class="{% if request.endpoint == 'superadmin.community' %}active{% endif %}"><a
-        href="{{ url_for('superadmin.community') }}"><i class="ph ph-users-three"></i> Community</a></li>
-<li class="{% if request.endpoint == 'superadmin.tutorials' %}active{% endif %}"><a
-        href="{{ url_for('superadmin.tutorials') }}"><i class="ph ph-video"></i> Tutorials</a></li>
-<li class="{% if request.endpoint == 'superadmin.messages' %}active{% endif %}"><a
-        href="{{ url_for('superadmin.messages') }}"><i class="ph ph-chat-circle-dots"></i> Messages</a></li>
-<li class="{% if request.endpoint == 'superadmin.audit_logs' %}active{% endif %}"><a
-        href="{{ url_for('superadmin.audit_logs') }}"><i class="ph ph-scroll"></i> System Logs</a></li>
-<li class="{% if request.endpoint == 'superadmin.settings' %}active{% endif %}"><a
-        href="{{ url_for('superadmin.settings') }}"><i class="ph ph-gear"></i> Settings</a></li>
+<li class="{% if request.endpoint == 'superadmin.dashboard' %}active{% endif %}">
+    <a href="{{ url_for('superadmin.dashboard') }}">
+        <i class="ph ph-squares-four"></i>
+        <span>Overview</span>
+    </a>
+</li>
+
+<!-- Platform Management Dropdown -->
+{% set is_platform_active = request.endpoint in ['superadmin.facilities', 'superadmin.users', 'superadmin.reports'] %}
+<li class="sidebar-dropdown-group {% if is_platform_active %}open active-group{% endif %}" data-group="super-platform">
+    <button type="button" class="sidebar-dropdown-btn" onclick="toggleSidebarDropdown(this)">
+        <span class="dropdown-btn-label">
+            <i class="ph ph-buildings group-icon"></i>
+            <span>Platform & Operations</span>
+        </span>
+        <i class="ph ph-caret-down dropdown-arrow"></i>
+    </button>
+    <ul class="sidebar-subnav">
+        <li class="{% if request.endpoint == 'superadmin.facilities' %}active{% endif %}">
+            <a href="{{ url_for('superadmin.facilities') }}"><i class="ph ph-buildings"></i> <span>Facilities</span></a>
+        </li>
+        <li class="{% if request.endpoint == 'superadmin.users' %}active{% endif %}">
+            <a href="{{ url_for('superadmin.users') }}"><i class="ph ph-users"></i> <span>User Management</span></a>
+        </li>
+        <li class="{% if request.endpoint == 'superadmin.reports' %}active{% endif %}">
+            <a href="{{ url_for('superadmin.reports') }}"><i class="ph ph-chart-line-up"></i> <span>System Reports</span></a>
+        </li>
+    </ul>
+</li>
+
+<!-- Communication & Content Dropdown -->
+{% set is_comm_active = request.endpoint in ['superadmin.community', 'superadmin.messages', 'superadmin.tutorials'] %}
+<li class="sidebar-dropdown-group {% if is_comm_active %}open active-group{% endif %}" data-group="super-comm">
+    <button type="button" class="sidebar-dropdown-btn" onclick="toggleSidebarDropdown(this)">
+        <span class="dropdown-btn-label">
+            <i class="ph ph-chats-circle group-icon"></i>
+            <span>Communication & Content</span>
+        </span>
+        <i class="ph ph-caret-down dropdown-arrow"></i>
+    </button>
+    <ul class="sidebar-subnav">
+        <li class="{% if request.endpoint == 'superadmin.community' %}active{% endif %}">
+            <a href="{{ url_for('superadmin.community') }}"><i class="ph ph-users-three"></i> <span>Community</span></a>
+        </li>
+        <li class="{% if request.endpoint == 'superadmin.messages' %}active{% endif %}">
+            <a href="{{ url_for('superadmin.messages') }}"><i class="ph ph-chat-circle-dots"></i> <span>Messages</span></a>
+        </li>
+        <li class="{% if request.endpoint == 'superadmin.tutorials' %}active{% endif %}">
+            <a href="{{ url_for('superadmin.tutorials') }}"><i class="ph ph-video"></i> <span>Tutorials</span></a>
+        </li>
+    </ul>
+</li>
+
+<li class="sidebar-nav-divider"></li>
+
+<!-- System Dropdown -->
+{% set is_sys_active = request.endpoint in ['superadmin.audit_logs', 'superadmin.settings'] %}
+<li class="sidebar-dropdown-group {% if is_sys_active %}open active-group{% endif %}" data-group="super-sys">
+    <button type="button" class="sidebar-dropdown-btn" onclick="toggleSidebarDropdown(this)">
+        <span class="dropdown-btn-label">
+            <i class="ph ph-gear group-icon"></i>
+            <span>System & Settings</span>
+        </span>
+        <i class="ph ph-caret-down dropdown-arrow"></i>
+    </button>
+    <ul class="sidebar-subnav">
+        <li class="{% if request.endpoint == 'superadmin.audit_logs' %}active{% endif %}">
+            <a href="{{ url_for('superadmin.audit_logs') }}"><i class="ph ph-scroll"></i> <span>System Logs</span></a>
+        </li>
+        <li class="{% if request.endpoint == 'superadmin.settings' %}active{% endif %}">
+            <a href="{{ url_for('superadmin.settings') }}"><i class="ph ph-gear"></i> <span>Settings</span></a>
+        </li>
+    </ul>
+</li>
 {% endblock %}

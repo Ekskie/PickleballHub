@@ -22,6 +22,15 @@ def load_club():
     try:
         resp = db.table('clubs').select('*').eq('admin_id', admin_id).single().execute()
         g.club = resp.data
+        if g.club and not g.club.get('banner_url'):
+            try:
+                from app.db import get_admin_db
+                admin_db = get_admin_db() or db
+                b_res = admin_db.table('platform_settings').select('value').eq('key', f"club_banner_{g.club['id']}").execute()
+                if b_res.data and b_res.data[0].get('value'):
+                    g.club['banner_url'] = b_res.data[0]['value']
+            except Exception:
+                pass
     except Exception:
         g.club = None
 
@@ -147,14 +156,51 @@ def club_setup():
                     update_data['logo_url'] = logo_url
             except Exception as e:
                 flash("Warning: Logo upload failed.", "warning")
+
+        # Handle banner / cover upload
+        banner_file = request.files.get('banner')
+        banner_url = None
+        if banner_file and banner_file.filename:
+            try:
+                from app.upload_utils import validate_and_upload
+                b_url, err = validate_and_upload(db, banner_file, bucket='community-images', prefix='club_banner', owner_id=admin_id)
+                if err:
+                    flash(f"Warning: {err}", "warning")
+                else:
+                    banner_url = b_url
+            except Exception as e:
+                flash("Warning: Banner upload failed.", "warning")
                 
         try:
+            target_club_id = None
             if g.club:
-                db.table('clubs').update(update_data).eq('id', g.club['id']).execute()
+                target_club_id = g.club['id']
+                db.table('clubs').update(update_data).eq('id', target_club_id).execute()
                 flash("Club profile updated.", "success")
             else:
-                db.table('clubs').insert(update_data).execute()
+                ins_res = db.table('clubs').insert(update_data).execute()
+                if ins_res.data:
+                    target_club_id = ins_res.data[0]['id']
                 flash("Club created successfully!", "success")
+                
+            # If banner was uploaded, persist to platform_settings and attempt table update
+            if banner_url and target_club_id:
+                try:
+                    from app.db import get_admin_db
+                    admin_db = get_admin_db() or db
+                    admin_db.table('platform_settings').upsert({
+                        'key': f"club_banner_{target_club_id}",
+                        'value': banner_url
+                    }).execute()
+                    if g.club:
+                        g.club['banner_url'] = banner_url
+                except Exception as ee:
+                    current_app.logger.warning(f"Failed to save banner in settings: {ee}")
+                try:
+                    db.table('clubs').update({'banner_url': banner_url}).eq('id', target_club_id).execute()
+                except Exception:
+                    pass
+
             return redirect(url_for('clubadmin.dashboard'))
         except Exception as e:
             flash('An error occurred. Please try again.', 'error')
@@ -164,25 +210,47 @@ def club_setup():
 @clubadmin_bp.route('/dashboard')
 @require_role('clubadmin')
 def dashboard():
-    db = get_db()
-    stats = {'members': 0, 'events': 0, 'top_player': None, 'recent_members': [], 'activity': []}
+    db = get_admin_db() or get_db()
+    stats = {
+        'members': 0,
+        'events': 0,
+        'top_player': None,
+        'recent_members': [],
+        'activity': [],
+        'total_dues': 0.0,
+        'membership_fee': 0.0
+    }
     active_members = []
+    club_leaderboard = []
+    upcoming_events = []
     
     if g.club:
         try:
+            admin_id = session.get('user_id')
+            
             # Members count
             mem_resp = db.table('club_memberships').select('id, player_id', count='exact').eq('club_id', g.club['id']).eq('status', 'active').execute()
             stats['members'] = mem_resp.count or 0
             
-            # Upcoming Events count
-            admin_id = session.get('user_id')
-            ev_resp = db.table('events').select('id, organizer_id', count='exact').eq('organizer_id', admin_id).in_('status', ['registration_open', 'upcoming', 'full']).execute()
-            stats['events'] = ev_resp.count or 0
+            # Membership fee and dues
+            fee = float(g.club.get('membership_fee') or 0)
+            stats['membership_fee'] = fee
+            stats['total_dues'] = stats['members'] * fee
             
-            # Recent members
+            # Upcoming Events count (active/open registrations)
+            active_ev_resp = db.table('events').select('id', count='exact').eq('organizer_id', admin_id).in_('status', ['registration_open', 'upcoming', 'full']).execute()
+            stats['events'] = active_ev_resp.count or 0
+            
+            # Events list to show (latest 5 events)
+            ev_resp = db.table('events').select(
+                'id, title, type, event_date, start_time, end_time, entry_fee, status, max_players'
+            ).eq('organizer_id', admin_id).order('event_date', desc=True).limit(5).execute()
+            upcoming_events = ev_resp.data or []
+            
+            # Recent members with full profile details
             recent_resp = db.table('club_memberships').select(
-                'id, player_id, status, joined_at, profiles!player_id(first_name, last_name, proficiency)'
-            ).eq('club_id', g.club['id']).order('joined_at', desc=True).limit(5).execute()
+                'id, player_id, status, joined_at, profiles!player_id(first_name, last_name, proficiency, avatar_url, elo, dupr, phone)'
+            ).eq('club_id', g.club['id']).order('joined_at', desc=True).limit(6).execute()
             stats['recent_members'] = recent_resp.data or []
             
             # Activity feed
@@ -191,7 +259,7 @@ def dashboard():
 
             # Fetch active members for casual match logger dropdowns and top player stats
             members_resp = db.table('club_memberships').select(
-                'player_id, profiles!player_id(first_name, last_name, elo, dupr, proficiency)'
+                'player_id, profiles!player_id(first_name, last_name, elo, dupr, proficiency, avatar_url, phone)'
             ).eq('club_id', g.club['id']).eq('status', 'active').execute()
             
             # Find the top rated player (highest elo) from active members
@@ -212,25 +280,47 @@ def dashboard():
                     except ValueError:
                         dupr_val = 0.0
                     
+                    member_data = {
+                        'id': m['player_id'],
+                        'name': f"{prof.get('first_name', '')} {prof.get('last_name', '')}".strip() or 'Unknown Player',
+                        'dupr': f"{dupr_val:.2f}",
+                        'elo': elo or 1200,
+                        'avatar_url': prof.get('avatar_url'),
+                        'proficiency': prof.get('proficiency', 'beginner'),
+                        'phone': prof.get('phone', '')
+                    }
+                    
                     if elo > highest_elo:
                         highest_elo = elo
                         top_player = {
                             'id': m['player_id'],
-                            'name': f"{prof.get('first_name', '')} {prof.get('last_name', '')}".strip(),
-                            'score': f"DUPR: {dupr_val:.2f} | ELO: {elo}"
+                            'name': member_data['name'],
+                            'score': f"DUPR: {dupr_val:.2f} | ELO: {elo}",
+                            'avatar_url': member_data['avatar_url'],
+                            'elo': elo,
+                            'dupr': f"{dupr_val:.2f}"
                         }
                     
-                    active_members.append({
-                        'id': m['player_id'],
-                        'name': f"{prof.get('first_name', '')} {prof.get('last_name', '')}".strip()
-                    })
+                    active_members.append(member_data)
+                    
             stats['top_player'] = top_player
+            
+            # Sort active members alphabetically for dropdowns
             active_members.sort(key=lambda x: x['name'])
+            
+            # Generate club leaderboard (top 5 by ELO)
+            club_leaderboard = sorted(active_members, key=lambda x: x['elo'], reverse=True)[:5]
             
         except Exception as e:
             current_app.logger.error(f"Dashboard error: {e}")
             
-    return render_template('clubadmin/dashboard.html', stats=stats, active_members=active_members)
+    return render_template(
+        'clubadmin/dashboard.html',
+        stats=stats,
+        active_members=active_members,
+        club_leaderboard=club_leaderboard,
+        upcoming_events=upcoming_events
+    )
 
 @clubadmin_bp.route('/log-casual-match', methods=['POST'])
 @require_role('clubadmin')
@@ -407,7 +497,57 @@ def profile():
         except Exception as e:
             flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('clubadmin.profile'))
-    return render_template('clubadmin/profile.html')
+        
+    # Fetch real club administrative statistics
+    stats = {
+        'members': 0,
+        'events': 0,
+        'total_dues': 0.0,
+        'pending': 0,
+        'recent_activity': []
+    }
+    if g.club:
+        try:
+            from app.db import get_admin_db
+            admin_db = get_admin_db() or db
+            # Active members count
+            m_res = admin_db.table('club_memberships').select('id', count='exact').eq('club_id', g.club['id']).eq('status', 'active').execute()
+            stats['members'] = m_res.count or 0
+            
+            # Pending verifications count
+            p_res = admin_db.table('club_memberships').select('id', count='exact').eq('club_id', g.club['id']).eq('status', 'pending').execute()
+            stats['pending'] = p_res.count or 0
+            
+            # Fee and total dues
+            fee = float(g.club.get('membership_fee') or 0)
+            stats['membership_fee'] = fee
+            stats['total_dues'] = stats['members'] * fee
+            
+            # Events organized by this admin
+            e_res = admin_db.table('events').select('id', count='exact').eq('organizer_id', user_id).execute()
+            stats['events'] = e_res.count or 0
+            
+            # Recent administrative activity (notifications or recent memberships)
+            act_res = admin_db.table('notifications').select('*').eq('user_id', user_id).order('created_at', desc=True).limit(5).execute()
+            if act_res.data:
+                stats['recent_activity'] = act_res.data
+            else:
+                recent_mems = admin_db.table('club_memberships').select(
+                    'joined_at, status, profiles!player_id(first_name, last_name)'
+                ).eq('club_id', g.club['id']).order('joined_at', desc=True).limit(4).execute()
+                for rm in (recent_mems.data or []):
+                    p = rm.get('profiles') or {}
+                    pname = f"{p.get('first_name', '')} {p.get('last_name', '')}".strip() or 'Player'
+                    stats['recent_activity'].append({
+                        'title': 'New Member Joined',
+                        'message': f"{pname} joined {g.club['name']}",
+                        'created_at': rm.get('joined_at'),
+                        'type': 'member'
+                    })
+        except Exception as e:
+            current_app.logger.warning(f"Failed to fetch profile stats: {e}")
+            
+    return render_template('clubadmin/profile.html', stats=stats)
 
 @clubadmin_bp.route('/notifications')
 @require_role('clubadmin')

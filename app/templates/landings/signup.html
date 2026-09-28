@@ -13,6 +13,148 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/landing/landing.css') }}">
+    <style>
+        .step-title-badge {
+            font-size: 0.76rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--primary-orange);
+            margin-bottom: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(230, 74, 25, 0.12);
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(230, 74, 25, 0.25);
+        }
+        .step-indicator.small {
+            width: 28px;
+            height: 28px;
+            font-size: 0.78rem;
+        }
+        .step-header {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 2px;
+        }
+        .step-subheader {
+            font-size: 0.76rem;
+            color: #94a3b8;
+            margin-bottom: 12px;
+            line-height: 1.35;
+        }
+        .kyc-upload-box {
+            border: 1.5px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 12px 14px;
+            background: rgba(15, 17, 21, 0.45);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        .kyc-upload-box:hover {
+            border-color: var(--primary-orange);
+            background: rgba(230, 74, 25, 0.08);
+            transform: translateY(-1px);
+        }
+        .kyc-upload-box.has-file {
+            border: 1.5px solid #22c55e;
+            background: rgba(34, 197, 94, 0.08);
+        }
+        .kyc-upload-box .upload-icon {
+            font-size: 1.5rem;
+            color: var(--primary-orange);
+            transition: color 0.2s ease;
+        }
+        .kyc-upload-box.has-file .upload-icon {
+            color: #22c55e;
+        }
+        .kyc-upload-box .upload-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #ffffff;
+            word-break: break-all;
+        }
+        .kyc-upload-box .upload-hint {
+            font-size: 0.7rem;
+            color: #94a3b8;
+        }
+        .kyc-file-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(34, 197, 94, 0.4);
+            color: #86efac;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        .kyc-banner-note {
+            background: rgba(249, 115, 22, 0.1);
+            border: 1px solid rgba(249, 115, 22, 0.25);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.74rem;
+            color: #fed7aa;
+            line-height: 1.35;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        .amenities-chips-wrap {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+        }
+        .amenity-chip {
+            cursor: pointer;
+            user-select: none;
+            display: block;
+            margin: 0;
+        }
+        .amenity-chip input {
+            display: none;
+        }
+        .amenity-chip .chip-content {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            background: rgba(15, 17, 21, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 6px;
+            font-size: 0.74rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            transition: all 0.15s ease;
+        }
+        .amenity-chip:hover .chip-content {
+            border-color: rgba(249, 115, 22, 0.4);
+            color: #ffffff;
+        }
+        .amenity-chip input:checked + .chip-content {
+            background: rgba(249, 115, 22, 0.18);
+            border-color: var(--primary-orange);
+            color: #ffedd5;
+        }
+        .amenity-chip input:checked + .chip-content i {
+            color: var(--primary-orange);
+        }
+    </style>
     <!-- GSAP for page animations -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <!-- Phosphor Icons -->
@@ -95,7 +237,12 @@
                     {% endif %}
                     {% endwith %}
 
-                    <div class="stepper-container" id="signup-stepper" style="margin-bottom: 24px;">
+                    <div class="step-title-badge" id="step-title-badge">
+                        <i class="ph ph-shield-check"></i>
+                        <span id="step-badge-text">Step 1 of 3 · Role Selection</span>
+                    </div>
+
+                    <div class="stepper-container" id="signup-stepper" style="margin-bottom: 20px;">
                         <div class="step-indicator active" id="step-ind-1">1</div>
                         <div class="step-indicator" id="step-ind-2">2</div>
                         <div class="step-indicator" id="step-ind-3">3</div>
@@ -104,7 +251,7 @@
                     <!-- Signup Form wrapper -->
                     <div id="forms-wrapper" style="position: relative; overflow: visible;">
                         <form id="form-signup" class="auth-form active" action="{{ url_for('auth.signup') }}"
-                            method="POST" style="display: flex; flex-direction: column; gap: 16px;">
+                            method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 16px;">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
 
                             <!-- STEP 1: ROLE -->
@@ -164,14 +311,14 @@
                             <div class="signup-step" id="signup-step-2" style="flex-direction: column; gap: 16px;">
                                 <div class="form-row" style="display: flex; gap: 16px;">
                                     <div class="form-group" style="flex: 1; margin-bottom: 0;">
-                                        <label style="margin-bottom: 6px; display: block;">First Name</label>
+                                        <label style="margin-bottom: 6px; display: block;">First Name *</label>
                                         <div class="input-wrapper">
                                             <i class="ph ph-user"></i>
                                             <input type="text" name="first_name" placeholder="John" required>
                                         </div>
                                     </div>
                                     <div class="form-group" style="flex: 1; margin-bottom: 0;">
-                                        <label style="margin-bottom: 6px; display: block;">Last Name</label>
+                                        <label style="margin-bottom: 6px; display: block;">Last Name *</label>
                                         <div class="input-wrapper">
                                             <i class="ph ph-user"></i>
                                             <input type="text" name="last_name" placeholder="Doe" required>
@@ -186,7 +333,7 @@
                                         <select name="proficiency" id="proficiency-input" class="select-input" required
                                             style="background: rgba(15, 17, 21, 0.45); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; width: 100%; padding: 14px 16px 14px 48px; border-radius: 8px; outline: none; appearance: none; -webkit-appearance: none;">
                                             <option value="beginner" selected style="background: #1e2530; color: #fff;">
-                                                Beginner</option>
+                                                 Beginner</option>
                                             <option value="intermediate" style="background: #1e2530; color: #fff;">
                                                 Intermediate</option>
                                             <option value="advanced" style="background: #1e2530; color: #fff;">Advanced
@@ -197,10 +344,10 @@
                                 </div>
 
                                 <div class="form-group" style="margin-bottom: 0;">
-                                    <label style="margin-bottom: 6px; display: block;">Cellphone Number</label>
+                                    <label style="margin-bottom: 6px; display: block;">Cellphone Number *</label>
                                     <div class="input-wrapper">
                                         <i class="ph ph-phone"></i>
-                                        <input type="tel" name="phone" placeholder="e.g. 123-456-7890" required>
+                                        <input type="tel" name="phone" placeholder="e.g. 0917-123-4567" required>
                                     </div>
                                 </div>
 
@@ -214,10 +361,198 @@
                                 </div>
                             </div>
 
-                            <!-- STEP 3: CREDENTIALS -->
-                            <div class="signup-step" id="signup-step-3" style="flex-direction: column; gap: 16px;">
+                            <!-- STEP 3: FIRST FACILITY SETUP (Facility Owner Only) -->
+                            <div class="signup-step" id="signup-step-3" style="flex-direction: column; gap: 14px;">
+                                <div>
+                                    <div class="step-header"><i class="ph ph-buildings" style="color: var(--primary-orange);"></i> First Facility Venue</div>
+                                    <div class="step-subheader">Every question needed to schedule and list your primary facility.</div>
+                                </div>
+
                                 <div class="form-group" style="margin-bottom: 0;">
-                                    <label style="margin-bottom: 6px; display: block;">Email Address</label>
+                                    <label style="margin-bottom: 6px; display: block;">Facility Name *</label>
+                                    <div class="input-wrapper">
+                                        <i class="ph ph-buildings"></i>
+                                        <input type="text" name="facility_name" id="reg-facility-name" placeholder="e.g. Siniloan Sports Hub">
+                                    </div>
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label style="margin-bottom: 6px; display: block;">Address / Location *</label>
+                                    <div class="input-wrapper">
+                                        <i class="ph ph-map-pin"></i>
+                                        <input type="text" name="facility_location" id="reg-facility-location" placeholder="e.g. Barangay Acevida, Siniloan, Laguna">
+                                    </div>
+                                </div>
+
+                                <div class="form-row" style="display: flex; gap: 12px;">
+                                    <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                                        <label style="margin-bottom: 6px; display: block; font-size: 0.8rem;">Open Time</label>
+                                        <div class="input-wrapper">
+                                            <i class="ph ph-sun"></i>
+                                            <input type="time" name="open_time" value="08:00" style="padding-left: 44px;">
+                                        </div>
+                                    </div>
+                                    <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                                        <label style="margin-bottom: 6px; display: block; font-size: 0.8rem;">Close Time</label>
+                                        <div class="input-wrapper">
+                                            <i class="ph ph-moon"></i>
+                                            <input type="time" name="close_time" value="21:00" style="padding-left: 44px;">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-row" style="display: flex; gap: 10px;">
+                                    <div class="form-group" style="flex: 1.2; margin-bottom: 0;">
+                                        <label style="margin-bottom: 6px; display: block; font-size: 0.8rem;">Slot Length</label>
+                                        <div class="input-wrapper">
+                                            <i class="ph ph-timer"></i>
+                                            <select name="slot_duration_minutes" style="background: rgba(15, 17, 21, 0.45); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; width: 100%; padding: 12px 10px 12px 42px; border-radius: 8px; outline: none; font-size: 0.84rem;">
+                                                <option value="30">30 mins</option>
+                                                <option value="60" selected>60 mins (1 hr)</option>
+                                                <option value="90">90 mins</option>
+                                                <option value="120">120 mins</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                                        <label style="margin-bottom: 6px; display: block; font-size: 0.8rem;">Courts</label>
+                                        <div class="input-wrapper">
+                                            <i class="ph ph-squares-four"></i>
+                                            <input type="number" name="num_courts" value="2" min="1" max="20" placeholder="Courts" style="padding-left: 40px;">
+                                        </div>
+                                    </div>
+                                    <div class="form-group" style="flex: 1.2; margin-bottom: 0;">
+                                        <label style="margin-bottom: 6px; display: block; font-size: 0.8rem;">Rate (₱/hr)</label>
+                                        <div class="input-wrapper">
+                                            <i class="ph ph-currency-circle-dollar"></i>
+                                            <input type="number" name="court_hourly_rate" value="300" min="0" step="50" placeholder="₱300" style="padding-left: 40px;">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label style="margin-bottom: 6px; display: block; font-size: 0.8rem;">Court Type & Atmosphere</label>
+                                    <div class="input-wrapper">
+                                        <i class="ph ph-house-line"></i>
+                                        <select name="court_type" style="background: rgba(15, 17, 21, 0.45); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; width: 100%; padding: 12px 12px 12px 44px; border-radius: 8px; outline: none; font-size: 0.84rem;">
+                                            <option value="indoor" selected>Indoor Covered Court (All-weather)</option>
+                                            <option value="outdoor">Outdoor Dedicated Pickleball Court</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label style="margin-bottom: 6px; display: block; font-size: 0.8rem;">Facility Photo (Optional)</label>
+                                    <div class="kyc-upload-box" id="zone-fac-img" onclick="document.getElementById('fac_image_input').click()" style="padding: 10px;">
+                                        <input type="file" id="fac_image_input" name="facility_image" accept="image/png,image/jpeg,image/webp" style="display:none;" onchange="handleFacilityPhotoSelect(this)">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <i class="ph ph-camera upload-icon" style="font-size: 1.2rem;"></i>
+                                            <span class="upload-label" id="label-fac-img" style="font-size: 0.78rem;">Upload facility venue photo</span>
+                                        </div>
+                                        <div id="badge-fac-img" class="kyc-file-badge" style="display:none;"></div>
+                                    </div>
+                                </div>
+
+                                <div class="button-group" style="display: flex; gap: 12px; margin-top: 8px;">
+                                    <button type="button" class="btn-secondary" onclick="prevSignupStep(3)"
+                                        style="flex: 1; padding: 12px; font-size: 0.95rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;"><i class="ph ph-arrow-left"></i> Back</button>
+                                    <button type="button" class="submit-btn primary-orange" onclick="nextSignupStep(3)"
+                                        style="flex: 2; padding: 12px; font-size: 0.95rem; border-radius: 8px;">Next Step <i class="ph ph-arrow-right"></i></button>
+                                </div>
+                            </div>
+
+                            <!-- STEP 4: KYC VERIFICATION & AMENITIES (Facility Owner Only) -->
+                            <div class="signup-step" id="signup-step-4" style="flex-direction: column; gap: 14px;">
+                                <div>
+                                    <div class="step-header">
+                                        <i class="ph ph-shield-check" style="color: #22c55e;"></i> Facility KYC Verification
+                                    </div>
+                                    <div class="step-subheader">Mandatory legal and property ownership compliance before launch.</div>
+                                </div>
+
+                                <div class="kyc-banner-note">
+                                    <i class="ph ph-certificate" style="font-size: 1.2rem; color: var(--primary-orange); flex-shrink: 0; margin-top: 2px;"></i>
+                                    <span>Submit your <strong>Transfer Certificate of Title (TCT) / OCT</strong> and <strong>Business Permit</strong> for admin review.</span>
+                                </div>
+
+                                <!-- Document 1: TCT / OCT -->
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label style="margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem; font-weight: 600; color: #ffffff;">
+                                        <span><i class="ph ph-certificate" style="color: var(--primary-orange);"></i> Transfer Certificate of Title (TCT) / OCT *</span>
+                                        <span style="font-size: 0.68rem; color: #f97316; background: rgba(249,115,22,0.15); padding: 2px 6px; border-radius: 4px;">Required</span>
+                                    </label>
+                                    <div class="kyc-upload-box" id="zone-kyc-tct" onclick="document.getElementById('kyc_tct_input').click()">
+                                        <input type="file" id="kyc_tct_input" name="kyc_tct" accept=".pdf,image/png,image/jpeg,image/webp" style="display:none;" onchange="handleKycFileSelect(this, 'tct')">
+                                        <i class="ph ph-certificate upload-icon" id="icon-kyc-tct"></i>
+                                        <span class="upload-label" id="label-kyc-tct">Click to upload TCT / OCT Title</span>
+                                        <span class="upload-hint" id="hint-kyc-tct">Land or property title document • PDF, PNG, JPG (Max 10MB)</span>
+                                        <div id="badge-kyc-tct" class="kyc-file-badge" style="display:none;"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Document 2: Business Permit -->
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label style="margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem; font-weight: 600; color: #ffffff;">
+                                        <span><i class="ph ph-file-text" style="color: var(--primary-orange);"></i> Business Permit (Mayor's / LGU) *</span>
+                                        <span style="font-size: 0.68rem; color: #f97316; background: rgba(249,115,22,0.15); padding: 2px 6px; border-radius: 4px;">Required</span>
+                                    </label>
+                                    <div class="kyc-upload-box" id="zone-kyc-permit" onclick="document.getElementById('kyc_permit_input').click()">
+                                        <input type="file" id="kyc_permit_input" name="kyc_permit" accept=".pdf,image/png,image/jpeg,image/webp" style="display:none;" onchange="handleKycFileSelect(this, 'permit')">
+                                        <i class="ph ph-file-text upload-icon" id="icon-kyc-permit"></i>
+                                        <span class="upload-label" id="label-kyc-permit">Click to upload Business Permit</span>
+                                        <span class="upload-hint" id="hint-kyc-permit">Mayor's or municipal permit • PDF, PNG, JPG (Max 10MB)</span>
+                                        <div id="badge-kyc-permit" class="kyc-file-badge" style="display:none;"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Venue Amenities -->
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label style="margin-bottom: 6px; display: block; font-size: 0.8rem; font-weight: 600; color: #ffffff;"><i class="ph ph-sparkle" style="color: var(--primary-orange);"></i> Venue Amenities</label>
+                                    <div class="amenities-chips-wrap">
+                                        <label class="amenity-chip">
+                                            <input type="checkbox" name="amenities" value="LED Night Lights">
+                                            <span class="chip-content"><i class="ph ph-lightning"></i> LED Lights</span>
+                                        </label>
+                                        <label class="amenity-chip">
+                                            <input type="checkbox" name="amenities" value="Free Parking">
+                                            <span class="chip-content"><i class="ph ph-car"></i> Parking</span>
+                                        </label>
+                                        <label class="amenity-chip">
+                                            <input type="checkbox" name="amenities" value="Paddle & Ball Rental">
+                                            <span class="chip-content"><i class="ph ph-tennis-ball"></i> Paddle Rental</span>
+                                        </label>
+                                        <label class="amenity-chip">
+                                            <input type="checkbox" name="amenities" value="Restrooms & Lockers">
+                                            <span class="chip-content"><i class="ph ph-toilet"></i> Restrooms</span>
+                                        </label>
+                                        <label class="amenity-chip">
+                                            <input type="checkbox" name="amenities" value="Air-conditioned Lounge">
+                                            <span class="chip-content"><i class="ph ph-snowflake"></i> AC Lounge</span>
+                                        </label>
+                                        <label class="amenity-chip">
+                                            <input type="checkbox" name="amenities" value="High-Speed Wi-Fi">
+                                            <span class="chip-content"><i class="ph ph-wifi-high"></i> Free Wi-Fi</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="button-group" style="display: flex; gap: 12px; margin-top: 8px;">
+                                    <button type="button" class="btn-secondary" onclick="prevSignupStep(4)"
+                                        style="flex: 1; padding: 12px; font-size: 0.95rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;"><i class="ph ph-arrow-left"></i> Back</button>
+                                    <button type="button" class="submit-btn primary-orange" onclick="nextSignupStep(4)"
+                                        style="flex: 2; padding: 12px; font-size: 0.95rem; border-radius: 8px;">Next Step <i class="ph ph-arrow-right"></i></button>
+                                </div>
+                            </div>
+
+                            <!-- STEP 5: CREDENTIALS (Email & Password) -->
+                            <div class="signup-step" id="signup-step-5" style="flex-direction: column; gap: 16px;">
+                                <div>
+                                    <div class="step-header"><i class="ph ph-lock-key" style="color: var(--primary-orange);"></i> Account Credentials</div>
+                                    <div class="step-subheader">Secure your login credentials to access your dashboard.</div>
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label style="margin-bottom: 6px; display: block;">Email Address *</label>
                                     <div class="input-wrapper">
                                         <i class="ph ph-envelope"></i>
                                         <input type="email" name="email" placeholder="john@example.com" required>
@@ -225,20 +560,20 @@
                                 </div>
 
                                 <div class="form-group" style="margin-bottom: 0;">
-                                    <label style="margin-bottom: 6px; display: block;">Password</label>
+                                    <label style="margin-bottom: 6px; display: block;">Password *</label>
                                     <div class="input-wrapper">
                                         <i class="ph ph-lock-key"></i>
                                         <input type="password" name="password" id="signup-password"
-                                            placeholder="Create a strong password" required>
+                                            placeholder="Create a strong password" required minlength="6">
                                         <i class="ph ph-eye hover-icon" onclick="togglePassword('signup-password')"></i>
                                     </div>
                                 </div>
 
                                 <div class="button-group" style="display: flex; gap: 12px; margin-top: 8px;">
-                                    <button type="button" class="btn-secondary" onclick="prevSignupStep(3)"
+                                    <button type="button" class="btn-secondary" onclick="prevSignupStep(5)"
                                         style="flex: 1; padding: 12px; font-size: 0.95rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;"><i
                                             class="ph ph-arrow-left"></i> Back</button>
-                                    <button type="submit" class="submit-btn primary-orange"
+                                    <button type="submit" class="submit-btn primary-orange" id="signup-submit-btn"
                                         onclick="return validateFinalStep()"
                                         style="flex: 2; padding: 12px; font-size: 0.95rem; border-radius: 8px;">Create
                                         Account <i class="ph ph-check"></i></button>

@@ -1,303 +1,1789 @@
 {% extends "owner/base_owner.html" %}
 
-{% block title %}Manage Staff{% endblock %}
+{% block title %}Manage Facility Staff{% endblock %}
 
 {% block extra_head %}
 <style>
-    /* Local style tokens to match premium layout */
-    .btn-sm {
-        padding: 7px 14px;
-        border-radius: 8px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        cursor: pointer;
-        border: none;
-        transition: all 0.2s;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-    }
+/* ── Staff Dashboard Layout ── */
+.staff-page-container {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
 
-    .btn-sm-outline {
-        background: transparent;
-        border: 1px solid var(--border-color);
-        color: var(--text-secondary);
-    }
+/* ── Top Header & Hero Actions ── */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 2px;
+}
 
-    .btn-sm-outline:hover {
-        border-color: var(--text-muted);
-        color: var(--text-primary);
-        background: rgba(255, 255, 255, 0.05);
-    }
+.dashboard-header .header-left h1 {
+    font-size: 1.65rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
-    .btn-sm-primary {
-        background: var(--primary-orange);
-        color: white;
-    }
+.dashboard-header .header-left p {
+    font-size: 0.86rem;
+    color: var(--text-muted);
+    margin: 4px 0 0 0;
+}
 
-    .btn-sm-primary:hover {
-        background: var(--primary-orange-hover);
-    }
+.btn-primary-add {
+    background: linear-gradient(135deg, var(--primary-orange) 0%, #ea580c 100%);
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(225, 86, 35, 0.32);
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    text-decoration: none;
+}
 
-    .btn-sm-danger {
-        background: rgba(239, 68, 68, 0.1);
-        color: #ef4444;
-        border: 1px solid rgba(239, 68, 68, 0.2);
-    }
+.btn-primary-add:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(225, 86, 35, 0.42);
+    filter: brightness(1.05);
+    color: #ffffff;
+}
 
-    .btn-sm-danger:hover {
-        background: rgba(239, 68, 68, 0.2);
-    }
+.btn-primary-add:active {
+    transform: translateY(0);
+}
 
-    /* Modal Form Styles */
-    .form-group {
-        margin-bottom: 16px;
-    }
+/* ── Executive KPI Grid ── */
+.stats-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
 
-    .form-group label {
-        display: block;
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: var(--text-secondary);
-        margin-bottom: 6px;
-    }
+.kpi-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 16px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
 
-    .form-group input,
-    .form-group select {
-        width: 100%;
-        padding: 10px 14px;
-        background: var(--input-bg);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        color: var(--text-primary);
-        font-size: 0.9rem;
-        font-family: inherit;
-        box-sizing: border-box;
-        transition: border-color 0.2s;
-    }
+.kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
+}
 
-    .form-group input:focus,
-    .form-group select:focus {
-        outline: none;
-        border-color: var(--primary-orange);
-    }
+.kpi-icon-badge {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
 
-    .modal-footer {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        margin-top: 22px;
-    }
+.kpi-icon-orange {
+    background: rgba(225, 86, 35, 0.12);
+    color: var(--primary-orange);
+}
 
-    .modal-header h3 {
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: var(--text-primary);
-    }
+.kpi-icon-green {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+}
 
-    .modal-close {
-        background: none;
-        border: none;
-        color: var(--text-muted);
-        cursor: pointer;
-        font-size: 1.3rem;
-        padding: 4px;
-        border-radius: 6px;
-    }
+.kpi-icon-amber {
+    background: rgba(245, 158, 11, 0.12);
+    color: #f59e0b;
+}
 
-    .modal-close:hover {
-        color: var(--text-primary);
+.kpi-icon-blue {
+    background: rgba(59, 130, 246, 0.12);
+    color: #3b82f6;
+}
+
+.kpi-details {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.kpi-label {
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+}
+
+.kpi-value {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.2;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.kpi-value small {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.kpi-subtext {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Coverage Notice Banner ── */
+.coverage-alert-banner {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(225, 86, 35, 0.06) 100%);
+    border: 1px solid rgba(245, 158, 11, 0.28);
+    border-radius: 14px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.coverage-alert-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 260px;
+}
+
+.coverage-alert-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(245, 158, 11, 0.2);
+    color: #d97706;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.coverage-alert-text {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+}
+
+.coverage-alert-text strong {
+    font-weight: 700;
+    color: #b45309;
+}
+
+.coverage-chips-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.coverage-fac-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--card-bg, #ffffff);
+    border: 1px dashed rgba(245, 158, 11, 0.6);
+    color: #b45309;
+    font-size: 0.76rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.coverage-fac-chip:hover {
+    background: rgba(245, 158, 11, 0.15);
+    border-style: solid;
+    transform: translateY(-1px);
+}
+
+.btn-assign-quick {
+    background: #d97706;
+    color: #ffffff;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+
+.btn-assign-quick:hover {
+    background: #b45309;
+}
+
+/* ── Smart Control & Filter Hub ── */
+.control-hub-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 16px;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+}
+
+.search-and-select-group {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    flex: 1;
+    min-width: 280px;
+}
+
+.search-input-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 220px;
+    max-width: 400px;
+}
+
+.search-input-wrap i.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 1rem;
+    pointer-events: none;
+}
+
+.search-input-wrap input {
+    width: 100%;
+    padding: 9px 34px 9px 36px;
+    background: var(--input-bg, #f8fafc);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 10px;
+    font-size: 0.84rem;
+    color: var(--text-primary);
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+
+.search-input-wrap input:focus {
+    outline: none;
+    border-color: var(--primary-orange);
+    background: var(--card-bg);
+    box-shadow: 0 0 0 3px rgba(225, 86, 35, 0.12);
+}
+
+.search-clear-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 4px;
+    border-radius: 4px;
+    display: none;
+}
+
+.search-clear-btn:hover {
+    color: var(--text-primary);
+}
+
+.filter-select {
+    padding: 9px 30px 9px 12px;
+    background: var(--input-bg, #f8fafc);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 10px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2364748b' viewBox='0 0 256 256'%3E%3Cpath d='M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    min-width: 190px;
+}
+
+.filter-select:focus {
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 0 3px rgba(225, 86, 35, 0.12);
+}
+
+.control-hub-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.result-counter-pill {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    background: var(--input-bg, #f8fafc);
+    border: 1px solid var(--border-color, #eaecf0);
+    padding: 6px 12px;
+    border-radius: 20px;
+}
+
+.view-mode-toggle {
+    display: inline-flex;
+    background: var(--input-bg, #f8fafc);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 10px;
+    padding: 3px;
+    gap: 2px;
+}
+
+.toggle-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+}
+
+.toggle-btn:hover {
+    color: var(--text-primary);
+}
+
+.toggle-btn.active {
+    background: var(--card-bg, #ffffff);
+    color: var(--primary-orange);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Staff Cards Grid ── */
+.staff-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+    gap: 20px;
+}
+
+.staff-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 18px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 3px 14px rgba(0, 0, 0, 0.03);
+    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+    position: relative;
+}
+
+.staff-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.07);
+    border-color: rgba(225, 86, 35, 0.35);
+}
+
+.staff-card-header {
+    padding: 20px 20px 14px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.staff-avatar-box {
+    width: 52px;
+    height: 52px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #ffffff;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    position: relative;
+    overflow: hidden;
+}
+
+.staff-avatar-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Vibrant avatar gradients */
+.avatar-grad-0 { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); }
+.avatar-grad-1 { background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); }
+.avatar-grad-2 { background: linear-gradient(135deg, #059669 0%, #0d9488 100%); }
+.avatar-grad-3 { background: linear-gradient(135deg, #d97706 0%, #ea580c 100%); }
+.avatar-grad-4 { background: linear-gradient(135deg, #db2777 0%, #9333ea 100%); }
+
+.staff-header-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.staff-name {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 4px 0;
+    line-height: 1.25;
+    word-break: break-word;
+}
+
+.staff-role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: rgba(59, 130, 246, 0.1);
+    color: #2563eb;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.staff-card-body {
+    padding: 0 20px 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+}
+
+/* Assigned Facility Banner inside card */
+.staff-facility-box {
+    background: var(--input-bg, #f8fafc);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 12px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.staff-fac-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: rgba(225, 86, 35, 0.12);
+    color: var(--primary-orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.staff-fac-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.staff-fac-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--text-muted);
+}
+
+.staff-fac-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
+}
+
+/* Contact info rows */
+.staff-contacts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.staff-contact-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+}
+
+.staff-contact-item i {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+
+.staff-contact-item a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    word-break: break-all;
+    transition: color 0.15s;
+}
+
+.staff-contact-item a:hover {
+    color: var(--primary-orange);
+    text-decoration: underline;
+}
+
+.staff-contact-item .no-data {
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 0.78rem;
+}
+
+/* Card Action Footer */
+.staff-card-footer {
+    padding: 14px 20px;
+    border-top: 1px solid var(--border-color, #eaecf0);
+    background: rgba(0, 0, 0, 0.015);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.btn-card-edit {
+    flex: 1;
+    background: var(--input-bg, #f8fafc);
+    border: 1px solid var(--border-color, #eaecf0);
+    color: var(--text-primary);
+    padding: 8px 12px;
+    border-radius: 9px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+}
+
+.btn-card-edit:hover {
+    background: var(--border-color);
+    color: var(--text-primary);
+}
+
+.btn-card-delete {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    padding: 8px 12px;
+    border-radius: 9px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.btn-card-delete:hover {
+    background: #ef4444;
+    color: #ffffff;
+    border-color: #ef4444;
+}
+
+/* ── Modern Table View ── */
+.staff-table-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.staff-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    text-align: left;
+}
+
+.staff-table th {
+    background: var(--input-bg, #f8fafc);
+    padding: 14px 18px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border-color, #eaecf0);
+    white-space: nowrap;
+}
+
+.staff-table td {
+    padding: 14px 18px;
+    font-size: 0.86rem;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color, #eaecf0);
+    vertical-align: middle;
+    transition: background 0.15s;
+}
+
+.staff-table tr:hover td {
+    background: rgba(225, 86, 35, 0.02);
+}
+
+.staff-table tr:last-child td {
+    border-bottom: none;
+}
+
+.staff-table-ident {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.table-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+.table-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 11px;
+    object-fit: cover;
+}
+
+.staff-table-name {
+    font-weight: 800;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.staff-table-email {
+    font-size: 0.76rem;
+    color: var(--text-muted);
+    margin-top: 1px;
+}
+
+.facility-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(225, 86, 35, 0.08);
+    color: var(--primary-orange);
+    border: 1px solid rgba(225, 86, 35, 0.2);
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 20px;
+}
+
+.staff-table-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+/* ── Empty & No-Match States ── */
+.empty-state-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px dashed var(--border-color, #eaecf0);
+    border-radius: 20px;
+    padding: 56px 24px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.empty-state-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 22px;
+    background: rgba(225, 86, 35, 0.1);
+    color: var(--primary-orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    margin-bottom: 16px;
+}
+
+.empty-state-card h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.empty-state-card p {
+    margin: 0 0 20px 0;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    max-width: 480px;
+    line-height: 1.5;
+}
+
+/* ── Modals High Z-Index & Architecture ── */
+.modal-overlay {
+    display: none;
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: rgba(11, 14, 20, 0.72) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    z-index: 100000 !important;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.modal-overlay.open {
+    display: flex !important;
+}
+
+.modal-box {
+    background: var(--sidebar-bg, #ffffff);
+    border: 1px solid var(--card-border, #eaecf0);
+    border-radius: 18px;
+    padding: 26px;
+    width: 100%;
+    max-width: 540px;
+    max-height: 92vh;
+    overflow-y: auto;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    animation: modalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-sizing: border-box;
+}
+
+@keyframes modalSlideUp {
+    from { transform: translateY(18px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--border-color, #eaecf0);
+}
+
+.modal-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.modal-icon-badge {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(225, 86, 35, 0.12);
+    color: var(--primary-orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+}
+
+.modal-icon-badge.danger {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+}
+
+.modal-header-text h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.modal-header-text p {
+    margin: 3px 0 0 0;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 1.25rem;
+    padding: 6px;
+    border-radius: 8px;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    color: var(--text-primary);
+    background: var(--input-bg);
+}
+
+/* Modal Form Styles */
+.modal-notice-banner {
+    background: rgba(59, 130, 246, 0.08);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.modal-notice-banner i {
+    color: #2563eb;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--input-bg, #f8fafc);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 0.88rem;
+    font-family: inherit;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary-orange);
+    background: var(--card-bg);
+    box-shadow: 0 0 0 3px rgba(225, 86, 35, 0.12);
+}
+
+.form-row-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+@media (max-width: 520px) {
+    .form-row-two-col {
+        grid-template-columns: 1fr;
     }
+}
+
+/* Password Input with Action Addons */
+.password-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input-wrap input {
+    padding-right: 42px;
+}
+
+.btn-toggle-eye {
+    position: absolute;
+    right: 8px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+}
+
+.btn-toggle-eye:hover {
+    color: var(--text-primary);
+}
+
+.password-helper-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 6px;
+}
+
+.btn-generate-pwd {
+    background: none;
+    border: none;
+    color: var(--primary-orange);
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0;
+}
+
+.btn-generate-pwd:hover {
+    text-decoration: underline;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color, #eaecf0);
+}
+
+.btn-modal-cancel {
+    background: transparent;
+    border: 1px solid var(--border-color, #eaecf0);
+    color: var(--text-secondary);
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 0.86rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.btn-modal-cancel:hover {
+    background: var(--input-bg);
+    color: var(--text-primary);
+}
+
+.btn-danger-confirm {
+    background: #ef4444;
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 0.86rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.28);
+    transition: all 0.15s;
+}
+
+.btn-danger-confirm:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-header">
-    <div>
-        <h1 class="page-title">Manage Facility Staff</h1>
-        <p style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">{{ staff|length }} staff member{{ 's' if
-            staff|length != 1 else '' }} assigned</p>
-    </div>
-    <button class="action-box green" style="width:auto;padding:0.5rem 1.1rem;" onclick="openModal('addStaffModal')">
-        <i class="ph ph-plus-circle"></i> Add Staff
-    </button>
-</div>
+<div class="staff-page-container">
 
-<div class="glass-card" style="margin-top: 20px;">
-    <div class="table-container">
-        <table class="data-grid">
-            <thead>
-                <tr>
-                    <th>NAME</th>
-                    <th>CONTACT</th>
-                    <th>FACILITY</th>
-                    <th>ACTIONS</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if staff %}
-                {% for s in staff %}
-                <tr>
-                    <td>
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <div class="avatar"
-                                style="overflow: hidden; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; background: var(--btn-navy); color: white; font-weight: 600; font-size: 0.85rem; flex-shrink: 0; border: 1px solid var(--border-color);">
-                                {% set fn = s.profiles.first_name if (s.profiles and s.profiles.first_name) else 'S' %}
-                                {% set ln = s.profiles.last_name if (s.profiles and s.profiles.last_name) else '' %}
-                                {{ fn[0]|upper }}{{ ln[0]|upper if ln else '' }}
-                            </div>
-                            <div>
-                                <div class="bold" style="color: var(--text-primary);">{{ s.profiles.first_name if
-                                    s.profiles else 'Unknown' }} {{ s.profiles.last_name if s.profiles else '' }}</div>
-                                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">{{
-                                    s.profiles.email if s.profiles else '' }}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>{{ s.profiles.phone if (s.profiles and s.profiles.phone) else 'N/A' }}</td>
-                    <td>
-                        <span class="status-pill"
-                            style="background: var(--primary-orange-light); color: var(--primary-orange); border: 1px solid rgba(225, 86, 35, 0.15);">
-                            <i class="ph ph-buildings" style="margin-right: 4px;"></i> {{ s.facilities.name if
-                            s.facilities else 'Unknown Facility' }}
-                        </span>
-                    </td>
-                    <td>
-                        <div style="display: flex; gap: 8px; align-items: center;">
-                            <button class="btn-sm btn-sm-outline"
-                                onclick="openEditStaffModal('{{ s.id }}', '{{ s.facility_id }}', '{{ s.profiles.first_name if s.profiles else 'Staff' }} {{ s.profiles.last_name if s.profiles else '' }}')">
-                                <i class="ph ph-pencil-simple"></i> Edit
-                            </button>
-                            <form method="POST" action="{{ url_for('owner.remove_staff_assignment', fs_id=s.id) }}"
-                                onsubmit="return confirm('Remove this staff member from the facility?');"
-                                style="margin:0;">
-                                <button type="submit" class="btn-sm btn-sm-danger"><i class="ph ph-trash"></i>
-                                    Remove</button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-                {% else %}
-                <tr>
-                    <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-muted);">
-                        <i class="ph ph-users-three"
-                            style="font-size: 2.5rem; opacity: 0.3; display: block; margin-bottom: 10px;"></i>
-                        No staff assigned yet.
-                    </td>
-                </tr>
-                {% endif %}
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<!-- Add Staff Modal -->
-<div id="addStaffModal" class="modal-overlay">
-    <div class="modal-box">
-        <div class="modal-header">
-            <h3><i class="ph ph-user-plus" style="color:var(--primary-orange); margin-right: 6px;"></i> Add New Staff
-                Member</h3>
-            <button class="modal-close" onclick="closeModal('addStaffModal')"><i class="ph ph-x"></i></button>
+    <!-- ── Dashboard Header ── -->
+    <div class="dashboard-header">
+        <div class="header-left">
+            <h1><i class="ph ph-users-three" style="color: var(--primary-orange);"></i> Manage Facility Staff</h1>
+            <p>Coordinate on-site desk agents, verify booking check-ins, and manage facility operations.</p>
         </div>
-        <form method="POST" action="{{ url_for('owner.add_staff') }}">
+        <button type="button" class="btn-primary-add" onclick="openAddStaffModal()">
+            <i class="ph ph-user-plus"></i> Add Staff Member
+        </button>
+    </div>
+
+    <!-- ── Executive KPI Statistics ── -->
+    <div class="stats-kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-icon-badge kpi-icon-orange">
+                <i class="ph ph-users-three"></i>
+            </div>
+            <div class="kpi-details">
+                <span class="kpi-label">Assigned Staff</span>
+                <span class="kpi-value">{{ stats.total_staff }} <small>members</small></span>
+                <span class="kpi-subtext">Active operational personnel</span>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon-badge kpi-icon-green">
+                <i class="ph ph-buildings"></i>
+            </div>
+            <div class="kpi-details">
+                <span class="kpi-label">Staffed Facilities</span>
+                <span class="kpi-value">{{ stats.facilities_covered }} <small>/ {{ stats.total_facilities }}</small></span>
+                <span class="kpi-subtext">{{ stats.coverage_pct }}% overall venue coverage</span>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon-badge {% if stats.unassigned_facilities|length > 0 %}kpi-icon-amber{% else %}kpi-icon-green{% endif %}">
+                <i class="ph {% if stats.unassigned_facilities|length > 0 %}ph-warning{% else %}ph-check-circle{% endif %}"></i>
+            </div>
+            <div class="kpi-details">
+                <span class="kpi-label">Unstaffed Facilities</span>
+                <span class="kpi-value">{{ stats.unassigned_facilities|length }} <small>venues</small></span>
+                <span class="kpi-subtext">
+                    {% if stats.unassigned_facilities|length > 0 %}
+                    Require on-site team
+                    {% else %}
+                    All facilities currently staffed
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon-badge kpi-icon-blue">
+                <i class="ph ph-identification-card"></i>
+            </div>
+            <div class="kpi-details">
+                <span class="kpi-label">Portal Access</span>
+                <span class="kpi-value">Front Desk</span>
+                <span class="kpi-subtext">QR scan, check-ins & passes</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Coverage Alert Banner (Conditional) ── -->
+    {% if stats.unassigned_facilities|length > 0 %}
+    <div class="coverage-alert-banner">
+        <div class="coverage-alert-left">
+            <div class="coverage-alert-icon">
+                <i class="ph ph-warning-circle"></i>
+            </div>
+            <div>
+                <div class="coverage-alert-text">
+                    <strong>Coverage Notice:</strong> {{ stats.unassigned_facilities|length }} of your {{ stats.total_facilities }} facilities do not have assigned on-site staff. Click a venue below to assign personnel:
+                </div>
+                <div class="coverage-chips-wrap">
+                    {% for uf in stats.unassigned_facilities %}
+                    <span class="coverage-fac-chip" onclick="openAddStaffModal('{{ uf.id }}')">
+                        <i class="ph ph-plus-circle"></i> {{ uf.name }}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <button type="button" class="btn-assign-quick" onclick="openAddStaffModal()">
+            <i class="ph ph-user-plus"></i> Assign Staff
+        </button>
+    </div>
+    {% endif %}
+
+    <!-- ── Smart Control & Filter Hub ── -->
+    <div class="control-hub-card">
+        <div class="search-and-select-group">
+            <div class="search-input-wrap">
+                <i class="ph ph-magnifying-glass search-icon"></i>
+                <input type="text" id="staffSearchInput" placeholder="Search staff by name, email, phone, facility..." autocomplete="off">
+                <button type="button" id="clearSearchBtn" class="search-clear-btn" onclick="clearSearch()" aria-label="Clear search">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+
+            <select id="facilityFilterSelect" class="filter-select" onchange="applyFilters()">
+                <option value="ALL">All Facilities ({{ stats.total_staff }})</option>
+                {% for f in facilities %}
+                <option value="{{ f.id }}">{{ f.name }} ({{ f.staff_count }})</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="control-hub-right">
+            <span class="result-counter-pill" id="resultCounter">{{ staff|length }} staff member{{ 's' if staff|length != 1 else '' }}</span>
+            <div class="view-mode-toggle">
+                <button type="button" class="toggle-btn active" id="viewCardsBtn" onclick="switchView('cards')">
+                    <i class="ph ph-squares-four"></i> Cards
+                </button>
+                <button type="button" class="toggle-btn" id="viewTableBtn" onclick="switchView('table')">
+                    <i class="ph ph-list-dashes"></i> Table
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── View 1: Staff Cards Grid ── -->
+    <div class="staff-cards-grid" id="staffCardsGrid">
+        {% if staff %}
+        {% for s in staff %}
+        {% set fn = s.profiles.first_name if (s.profiles and s.profiles.first_name) else 'Staff' %}
+        {% set ln = s.profiles.last_name if (s.profiles and s.profiles.last_name) else '' %}
+        {% set email = s.profiles.email if (s.profiles and s.profiles.email) else '' %}
+        {% set phone = s.profiles.phone if (s.profiles and s.profiles.phone) else '' %}
+        {% set fac_name = s.facilities.name if s.facilities else 'Unassigned' %}
+        {% set grad_idx = loop.index0 % 5 %}
+
+        <div class="staff-card staff-item-row"
+             data-name="{{ fn }} {{ ln }}"
+             data-email="{{ email }}"
+             data-phone="{{ phone }}"
+             data-facility-id="{{ s.facility_id }}"
+             data-facility-name="{{ fac_name }}">
+
+            <div class="staff-card-header">
+                <div class="staff-avatar-box avatar-grad-{{ grad_idx }}">
+                    {% if s.profiles and s.profiles.avatar_url %}
+                    <img src="{{ s.profiles.avatar_url }}" alt="{{ fn }}">
+                    {% else %}
+                    {{ fn[0]|upper }}{{ ln[0]|upper if ln else '' }}
+                    {% endif %}
+                </div>
+                <div class="staff-header-info">
+                    <h3 class="staff-name">{{ fn }} {{ ln }}</h3>
+                    <span class="staff-role-badge">
+                        <i class="ph ph-shield-check"></i> Front Desk Agent
+                    </span>
+                </div>
+            </div>
+
+            <div class="staff-card-body">
+                <div class="staff-facility-box">
+                    <div class="staff-fac-icon">
+                        <i class="ph ph-buildings"></i>
+                    </div>
+                    <div class="staff-fac-details">
+                        <div class="staff-fac-label">Assigned Facility</div>
+                        <div class="staff-fac-name" title="{{ fac_name }}">{{ fac_name }}</div>
+                    </div>
+                </div>
+
+                <div class="staff-contacts-list">
+                    <div class="staff-contact-item">
+                        <i class="ph ph-envelope"></i>
+                        {% if email %}
+                        <a href="mailto:{{ email }}">{{ email }}</a>
+                        {% else %}
+                        <span class="no-data">No email linked</span>
+                        {% endif %}
+                    </div>
+                    <div class="staff-contact-item">
+                        <i class="ph ph-phone"></i>
+                        {% if phone %}
+                        <a href="tel:{{ phone }}">{{ phone }}</a>
+                        {% else %}
+                        <span class="no-data">No phone number recorded</span>
+                        {% endif %}
+                    </div>
+                    <div class="staff-contact-item" style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
+                        <i class="ph ph-calendar-blank"></i>
+                        <span>Assigned: {{ s.created_at[:10] if s.created_at else 'Active' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="staff-card-footer">
+                <button type="button" class="btn-card-edit"
+                        onclick="openEditStaffModal('{{ s.id }}', '{{ s.facility_id }}', '{{ fn|replace('\'', '\\\'') }}', '{{ ln|replace('\'', '\\\'') }}', '{{ phone|replace('\'', '\\\'') }}', '{{ email|replace('\'', '\\\'') }}')">
+                    <i class="ph ph-pencil-simple"></i> Reassign / Edit
+                </button>
+                <button type="button" class="btn-card-delete"
+                        onclick="openRemoveStaffModal('{{ s.id }}', '{{ fn|replace('\'', '\\\'') }} {{ ln|replace('\'', '\\\'') }}', '{{ fac_name|replace('\'', '\\\'') }}')"
+                        title="Remove staff member">
+                    <i class="ph ph-trash"></i>
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- ── View 2: Data Table View ── -->
+    <div class="staff-table-card" id="staffTableView" style="display: none;">
+        <div class="table-responsive">
+            <table class="staff-table">
+                <thead>
+                    <tr>
+                        <th>STAFF MEMBER</th>
+                        <th>ROLE</th>
+                        <th>ASSIGNED FACILITY</th>
+                        <th>CONTACT NUMBER</th>
+                        <th>ASSIGNED DATE</th>
+                        <th style="text-align: right;">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody id="staffTableBody">
+                    {% if staff %}
+                    {% for s in staff %}
+                    {% set fn = s.profiles.first_name if (s.profiles and s.profiles.first_name) else 'Staff' %}
+                    {% set ln = s.profiles.last_name if (s.profiles and s.profiles.last_name) else '' %}
+                    {% set email = s.profiles.email if (s.profiles and s.profiles.email) else '' %}
+                    {% set phone = s.profiles.phone if (s.profiles and s.profiles.phone) else '' %}
+                    {% set fac_name = s.facilities.name if s.facilities else 'Unassigned' %}
+                    {% set grad_idx = loop.index0 % 5 %}
+
+                    <tr class="staff-item-row"
+                        data-name="{{ fn }} {{ ln }}"
+                        data-email="{{ email }}"
+                        data-phone="{{ phone }}"
+                        data-facility-id="{{ s.facility_id }}"
+                        data-facility-name="{{ fac_name }}">
+                        <td>
+                            <div class="staff-table-ident">
+                                <div class="table-avatar avatar-grad-{{ grad_idx }}">
+                                    {% if s.profiles and s.profiles.avatar_url %}
+                                    <img src="{{ s.profiles.avatar_url }}" alt="{{ fn }}">
+                                    {% else %}
+                                    {{ fn[0]|upper }}{{ ln[0]|upper if ln else '' }}
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div class="staff-table-name">{{ fn }} {{ ln }}</div>
+                                    <div class="staff-table-email">{{ email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="staff-role-badge">
+                                <i class="ph ph-shield-check"></i> Front Desk
+                            </span>
+                        </td>
+                        <td>
+                            <span class="facility-pill">
+                                <i class="ph ph-buildings"></i> {{ fac_name }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if phone %}
+                            <a href="tel:{{ phone }}" style="color:var(--text-primary); text-decoration:none; font-weight:600;">
+                                <i class="ph ph-phone" style="color:var(--text-muted); margin-right:4px;"></i>{{ phone }}
+                            </a>
+                            {% else %}
+                            <span style="color:var(--text-muted); font-size:0.8rem; font-style:italic;">No phone added</span>
+                            {% endif %}
+                        </td>
+                        <td style="color:var(--text-muted); font-size:0.82rem;">
+                            {{ s.created_at[:10] if s.created_at else 'Active' }}
+                        </td>
+                        <td>
+                            <div class="staff-table-actions" style="justify-content: flex-end;">
+                                <button type="button" class="btn-card-edit" style="padding: 6px 12px;"
+                                        onclick="openEditStaffModal('{{ s.id }}', '{{ s.facility_id }}', '{{ fn|replace('\'', '\\\'') }}', '{{ ln|replace('\'', '\\\'') }}', '{{ phone|replace('\'', '\\\'') }}', '{{ email|replace('\'', '\\\'') }}')">
+                                    <i class="ph ph-pencil-simple"></i> Edit
+                                </button>
+                                <button type="button" class="btn-card-delete" style="padding: 6px 10px;"
+                                        onclick="openRemoveStaffModal('{{ s.id }}', '{{ fn|replace('\'', '\\\'') }} {{ ln|replace('\'', '\\\'') }}', '{{ fac_name|replace('\'', '\\\'') }}')"
+                                        title="Remove staff member">
+                                    <i class="ph ph-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── Empty / No Search Results State ── -->
+    <div class="empty-state-card" id="noFilterResults" style="display: none;">
+        <div class="empty-state-icon">
+            <i class="ph ph-magnifying-glass"></i>
+        </div>
+        <h3>No Staff Members Found</h3>
+        <p>No staff matches your current filter or search query. Try clearing your search term or selecting "All Facilities".</p>
+        <button type="button" class="btn-primary-add" onclick="resetFilters()">
+            <i class="ph ph-arrow-counter-clockwise"></i> Reset Filters
+        </button>
+    </div>
+
+    {% if not staff %}
+    <div class="empty-state-card" id="initialEmptyState">
+        <div class="empty-state-icon">
+            <i class="ph ph-users-three"></i>
+        </div>
+        <h3>No Facility Staff Assigned Yet</h3>
+        <p>Empower your venues by creating front desk staff accounts. Staff can check in players with QR codes, handle physical reservations, and monitor court usage.</p>
+        <button type="button" class="btn-primary-add" onclick="openAddStaffModal()">
+            <i class="ph ph-plus-circle"></i> Add Your First Staff Member
+        </button>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block modals %}
+<!-- ═══════════════════════════════════════════════════════════
+     ADD STAFF MODAL
+     ═══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="addStaffModal">
+    <div class="modal-box">
+        <div class="modal-header-hero">
+            <div class="modal-header-left">
+                <div class="modal-icon-badge">
+                    <i class="ph ph-user-plus"></i>
+                </div>
+                <div class="modal-header-text">
+                    <h3>Add New Staff Member</h3>
+                    <p>Create credentials and assign them to an operational facility.</p>
+                </div>
+            </div>
+            <button type="button" class="modal-close" onclick="closeModal('addStaffModal')" aria-label="Close dialog">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+
+        <div class="modal-notice-banner">
+            <i class="ph ph-info"></i>
+            <span>Staff members receive access to the <strong>Front Desk Portal</strong> to verify player QR bookings and oversee court slots.</span>
+        </div>
+
+        <form method="POST" action="{{ url_for('owner.add_staff') }}" id="addStaffForm">
+            <!-- Facility to Assign -->
             <div class="form-group">
-                <label><i class="ph ph-buildings"></i> Facility to Assign</label>
-                <select name="facility_id" required>
-                    <option value="">-- Select Facility --</option>
+                <label><i class="ph ph-buildings" style="margin-right: 4px;"></i> Facility to Assign *</label>
+                <select name="facility_id" id="addStaffFacilitySelect" required>
+                    <option value="">-- Choose Facility --</option>
                     {% for f in facilities %}
-                    <option value="{{ f.id }}">{{ f.name }}</option>
+                    <option value="{{ f.id }}">{{ f.name }}{% if f.location %} ({{ f.location }}){% endif %}</option>
                     {% endfor %}
                 </select>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <!-- Name Fields (2 Columns) -->
+            <div class="form-row-two-col">
                 <div class="form-group">
-                    <label>First Name</label>
-                    <input type="text" name="first_name" placeholder="e.g. John" required>
+                    <label>First Name *</label>
+                    <input type="text" name="first_name" placeholder="e.g. Maria" required autocomplete="given-name">
                 </div>
                 <div class="form-group">
-                    <label>Last Name</label>
-                    <input type="text" name="last_name" placeholder="e.g. Doe" required>
+                    <label>Last Name *</label>
+                    <input type="text" name="last_name" placeholder="e.g. Santos" required autocomplete="family-name">
                 </div>
             </div>
 
+            <!-- Email Address -->
             <div class="form-group">
-                <label><i class="ph ph-envelope"></i> Email Address</label>
-                <input type="email" name="email" placeholder="e.g. john.doe@example.com" required>
+                <label><i class="ph ph-envelope" style="margin-right: 4px;"></i> Staff Login Email *</label>
+                <input type="email" name="email" placeholder="e.g. staff.maria@example.com" required autocomplete="email">
             </div>
 
+            <!-- Contact Phone (Optional) -->
             <div class="form-group">
-                <label><i class="ph ph-key"></i> Temporary Password</label>
-                <input type="text" name="password" required minlength="6"
-                    placeholder="Provide this to the staff member">
+                <label><i class="ph ph-phone" style="margin-right: 4px;"></i> Mobile / Contact Number (Optional)</label>
+                <input type="tel" name="phone" placeholder="e.g. +63 912 345 6789" autocomplete="tel">
+            </div>
+
+            <!-- Temporary Password with eye toggle & auto-generator -->
+            <div class="form-group">
+                <label><i class="ph ph-key" style="margin-right: 4px;"></i> Temporary Password *</label>
+                <div class="password-input-wrap">
+                    <input type="password" name="password" id="addStaffPassword" required minlength="6" placeholder="Provide this to your staff member">
+                    <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('addStaffPassword', this)" aria-label="Toggle password view">
+                        <i class="ph ph-eye"></i>
+                    </button>
+                </div>
+                <div class="password-helper-row">
+                    <span style="font-size: 0.74rem; color: var(--text-muted);">Must be at least 6 characters</span>
+                    <button type="button" class="btn-generate-pwd" onclick="generateStaffPassword('addStaffPassword')">
+                        <i class="ph ph-sparkle"></i> Generate Secure Password
+                    </button>
+                </div>
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn-sm btn-sm-outline"
-                    onclick="closeModal('addStaffModal')">Cancel</button>
-                <button type="submit" class="btn-sm btn-sm-primary"><i class="ph ph-check"></i> Create Account</button>
+                <button type="button" class="btn-modal-cancel" onclick="closeModal('addStaffModal')">Cancel</button>
+                <button type="submit" class="btn-primary-add">
+                    <i class="ph ph-check-circle"></i> Create Staff Account
+                </button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- Edit Staff Modal -->
-<div id="editStaffModal" class="modal-overlay">
+<!-- ═══════════════════════════════════════════════════════════
+     EDIT STAFF MODAL
+     ═══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="editStaffModal">
     <div class="modal-box">
-        <div class="modal-header">
-            <h3><i class="ph ph-pencil-simple" style="color:var(--primary-orange); margin-right: 6px;"></i> Edit Staff
-                Assignment</h3>
-            <button class="modal-close" onclick="closeModal('editStaffModal')"><i class="ph ph-x"></i></button>
-        </div>
-        <form method="POST" id="editStaffForm" action="">
-            <div class="form-group">
-                <label>Staff Member</label>
-                <input type="text" id="editStaffName" readonly
-                    style="opacity: 0.7; cursor: not-allowed; background: var(--border-color);">
+        <div class="modal-header-hero">
+            <div class="modal-header-left">
+                <div class="modal-icon-badge">
+                    <i class="ph ph-pencil-simple"></i>
+                </div>
+                <div class="modal-header-text">
+                    <h3>Edit Staff Member</h3>
+                    <p>Update assigned facility and personal contact details.</p>
+                </div>
             </div>
+            <button type="button" class="modal-close" onclick="closeModal('editStaffModal')" aria-label="Close dialog">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+
+        <form method="POST" id="editStaffForm" action="">
+            <!-- Facility Re-assignment -->
             <div class="form-group">
-                <label><i class="ph ph-buildings"></i> Facility to Assign</label>
+                <label><i class="ph ph-buildings" style="margin-right: 4px;"></i> Assigned Facility *</label>
                 <select name="facility_id" id="editStaffFacility" required>
                     {% for f in facilities %}
-                    <option value="{{ f.id }}">{{ f.name }}</option>
+                    <option value="{{ f.id }}">{{ f.name }}{% if f.location %} ({{ f.location }}){% endif %}</option>
                     {% endfor %}
                 </select>
             </div>
 
+            <!-- Name Fields (Editable) -->
+            <div class="form-row-two-col">
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" name="first_name" id="editStaffFirstName" placeholder="First Name">
+                </div>
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" name="last_name" id="editStaffLastName" placeholder="Last Name">
+                </div>
+            </div>
+
+            <!-- Phone Number (Editable) -->
+            <div class="form-group">
+                <label><i class="ph ph-phone" style="margin-right: 4px;"></i> Mobile / Contact Number</label>
+                <input type="tel" name="phone" id="editStaffPhone" placeholder="e.g. +63 912 345 6789">
+            </div>
+
+            <!-- Readonly Email notice -->
+            <div class="form-group">
+                <label><i class="ph ph-envelope" style="margin-right: 4px;"></i> Staff Login Email (Read Only)</label>
+                <input type="email" id="editStaffEmail" readonly style="opacity: 0.7; cursor: not-allowed; background: var(--input-bg);">
+                <small style="font-size:0.72rem; color:var(--text-muted); margin-top:3px; display:block;">
+                    Email is linked to Supabase authentication credentials and cannot be changed here.
+                </small>
+            </div>
+
             <div class="modal-footer">
-                <button type="button" class="btn-sm btn-sm-outline"
-                    onclick="closeModal('editStaffModal')">Cancel</button>
-                <button type="submit" class="btn-sm btn-sm-primary"><i class="ph ph-check"></i> Update
-                    Assignment</button>
+                <button type="button" class="btn-modal-cancel" onclick="closeModal('editStaffModal')">Cancel</button>
+                <button type="submit" class="btn-primary-add">
+                    <i class="ph ph-check"></i> Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     REMOVE STAFF CONFIRMATION MODAL
+     ═══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="removeStaffModal">
+    <div class="modal-box" style="max-width: 460px;">
+        <div class="modal-header-hero">
+            <div class="modal-header-left">
+                <div class="modal-icon-badge danger">
+                    <i class="ph ph-warning-octagon"></i>
+                </div>
+                <div class="modal-header-text">
+                    <h3>Remove Staff Assignment</h3>
+                    <p>Revoke operational access for this venue.</p>
+                </div>
+            </div>
+            <button type="button" class="modal-close" onclick="closeModal('removeStaffModal')" aria-label="Close dialog">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+
+        <div style="margin: 12px 0 20px 0; font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;">
+            Are you sure you want to remove <strong id="removeStaffNameText" style="color: var(--text-primary);"></strong> from <strong id="removeStaffFacilityText" style="color: var(--text-primary);"></strong>?
+            <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 10px; padding: 10px 14px; margin-top: 14px; font-size: 0.8rem; color: #ef4444;">
+                <i class="ph ph-shield-warning" style="margin-right: 4px;"></i>
+                They will immediately lose access to front desk check-in controls for this facility. Their user account will remain registered in the system.
+            </div>
+        </div>
+
+        <form method="POST" id="removeStaffForm" action="">
+            <div class="modal-footer">
+                <button type="button" class="btn-modal-cancel" onclick="closeModal('removeStaffModal')">Keep Staff</button>
+                <button type="submit" class="btn-danger-confirm">
+                    <i class="ph ph-trash"></i> Yes, Remove Staff
+                </button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
-    function openModal(id) {
-        document.getElementById(id).classList.add('open');
+/* ── Modal Orchestration ── */
+function openModal(id) {
+    const modal = document.getElementById(id);
+    if (!modal) return;
+    if (modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
     }
+    const tc = document.getElementById('toast-container');
+    if (tc) document.body.appendChild(tc);
 
-    function closeModal(id) {
-        document.getElementById(id).classList.remove('open');
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+    const modal = document.getElementById(id);
+    if (modal) modal.classList.remove('open');
+    if (!document.querySelector('.modal-overlay.open')) {
+        document.body.style.overflow = '';
     }
+}
 
-    function openEditStaffModal(fsId, currentFacilityId, staffName) {
-        document.getElementById('editStaffForm').action = `/owner/staff/${fsId}/edit`;
-        document.getElementById('editStaffName').value = staffName;
-        document.getElementById('editStaffFacility').value = currentFacilityId;
-        openModal('editStaffModal');
-    }
-
-    // Close modal when clicking outside the box
-    document.querySelectorAll('.modal-overlay').forEach(overlay => {
-        overlay.addEventListener('click', function (e) {
-            if (e.target === this) {
-                closeModal(this.id);
-            }
-        });
+document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', e => {
+        if (e.target === o) closeModal(o.id);
     });
+});
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.open').forEach(m => closeModal(m.id));
+    }
+});
+
+/* ── Open Specific Modals ── */
+function openAddStaffModal(preselectedFacId = null) {
+    const form = document.getElementById('addStaffForm');
+    if (form) form.reset();
+    const pwdInput = document.getElementById('addStaffPassword');
+    if (pwdInput) pwdInput.type = 'password';
+
+    if (preselectedFacId) {
+        const select = document.getElementById('addStaffFacilitySelect');
+        if (select) select.value = preselectedFacId;
+    }
+    openModal('addStaffModal');
+}
+
+function openEditStaffModal(fsId, currentFacId, firstName, lastName, phone, email) {
+    document.getElementById('editStaffForm').action = `/owner/staff/${fsId}/edit`;
+    document.getElementById('editStaffFacility').value = currentFacId;
+    document.getElementById('editStaffFirstName').value = firstName || '';
+    document.getElementById('editStaffLastName').value = lastName || '';
+    document.getElementById('editStaffPhone').value = phone || '';
+    document.getElementById('editStaffEmail').value = email || '';
+    openModal('editStaffModal');
+}
+
+function openRemoveStaffModal(fsId, staffName, facilityName) {
+    document.getElementById('removeStaffForm').action = `/owner/staff/${fsId}/delete`;
+    document.getElementById('removeStaffNameText').textContent = staffName;
+    document.getElementById('removeStaffFacilityText').textContent = facilityName;
+    openModal('removeStaffModal');
+}
+
+/* ── Password Helpers ── */
+function togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        if (icon) icon.className = 'ph ph-eye-slash';
+    } else {
+        input.type = 'password';
+        if (icon) icon.className = 'ph ph-eye';
+    }
+}
+
+function generateStaffPassword(inputId) {
+    const pool = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#$!';
+    let pwd = '';
+    for (let i = 0; i < 9; i++) {
+        pwd += pool.charAt(Math.floor(Math.random() * pool.length));
+    }
+    const input = document.getElementById(inputId);
+    if (input) {
+        input.value = pwd;
+        input.type = 'text';
+        const toggleBtn = input.parentElement.querySelector('.btn-toggle-eye i');
+        if (toggleBtn) toggleBtn.className = 'ph ph-eye-slash';
+    }
+}
+
+/* ── Filter & Search Logic ── */
+const searchInput = document.getElementById('staffSearchInput');
+const clearSearchBtn = document.getElementById('clearSearchBtn');
+const facilityFilter = document.getElementById('facilityFilterSelect');
+const resultCounter = document.getElementById('resultCounter');
+const noFilterResults = document.getElementById('noFilterResults');
+
+function applyFilters() {
+    const query = (searchInput ? searchInput.value : '').toLowerCase().trim();
+    const selectedFac = facilityFilter ? facilityFilter.value : 'ALL';
+
+    if (clearSearchBtn) {
+        clearSearchBtn.style.display = query ? 'block' : 'none';
+    }
+
+    const rows = document.querySelectorAll('.staff-item-row');
+    let visibleCount = 0;
+
+    // Track visible items per container
+    const visibleCards = new Set();
+
+    rows.forEach(row => {
+        const name = (row.getAttribute('data-name') || '').toLowerCase();
+        const email = (row.getAttribute('data-email') || '').toLowerCase();
+        const phone = (row.getAttribute('data-phone') || '').toLowerCase();
+        const facId = row.getAttribute('data-facility-id') || '';
+        const facName = (row.getAttribute('data-facility-name') || '').toLowerCase();
+
+        const matchesQuery = !query ||
+            name.includes(query) ||
+            email.includes(query) ||
+            phone.includes(query) ||
+            facName.includes(query);
+
+        const matchesFac = (selectedFac === 'ALL') || (facId === selectedFac);
+
+        if (matchesQuery && matchesFac) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    // Count distinct visible entities (each staff member is in both card and table)
+    const distinctVisible = Math.round(visibleCount / 2);
+
+    if (resultCounter) {
+        resultCounter.textContent = `${distinctVisible} staff member${distinctVisible !== 1 ? 's' : ''}`;
+    }
+
+    if (noFilterResults) {
+        noFilterResults.style.display = (distinctVisible === 0 && rows.length > 0) ? 'flex' : 'none';
+    }
+}
+
+if (searchInput) {
+    searchInput.addEventListener('input', applyFilters);
+}
+
+function clearSearch() {
+    if (searchInput) {
+        searchInput.value = '';
+        applyFilters();
+        searchInput.focus();
+    }
+}
+
+function resetFilters() {
+    if (searchInput) searchInput.value = '';
+    if (facilityFilter) facilityFilter.value = 'ALL';
+    applyFilters();
+}
+
+/* ── View Switcher (Cards vs Table) ── */
+function switchView(view) {
+    const cardsGrid = document.getElementById('staffCardsGrid');
+    const tableView = document.getElementById('staffTableView');
+    const cardsBtn = document.getElementById('viewCardsBtn');
+    const tableBtn = document.getElementById('viewTableBtn');
+
+    if (view === 'table') {
+        if (cardsGrid) cardsGrid.style.display = 'none';
+        if (tableView) tableView.style.display = 'block';
+        if (cardsBtn) cardsBtn.classList.remove('active');
+        if (tableBtn) tableBtn.classList.add('active');
+        localStorage.setItem('staff_view_mode', 'table');
+    } else {
+        if (cardsGrid) cardsGrid.style.display = 'grid';
+        if (tableView) tableView.style.display = 'none';
+        if (cardsBtn) cardsBtn.classList.add('active');
+        if (tableBtn) tableBtn.classList.remove('active');
+        localStorage.setItem('staff_view_mode', 'cards');
+    }
+}
+
+// Restore user view preference
+document.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('staff_view_mode');
+    if (saved === 'table') {
+        switchView('table');
+    }
+});
 </script>
 {% endblock %}

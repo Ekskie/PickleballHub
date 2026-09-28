@@ -1,72 +1,933 @@
 {% extends "adminstaff/base_adminstaff.html" %}
-{% block title %}Verifications{% endblock %}
-{% block content %}
+{% block title %}Facility & Court Verifications{% endblock %}
 
+{% block extra_head %}
+{{ super() }}
+<style>
+    /* ── VERIFICATIONS PAGE REFINEMENTS ── */
+    .verif-header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .verif-title-group h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0 0 6px 0;
+        letter-spacing: -0.02em;
+    }
+
+    .verif-subtitle {
+        color: var(--text-secondary);
+        font-size: 0.88rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* ── STATS SUMMARY BAR ── */
+    .stats-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .stat-pill-card {
+        padding: 16px 20px !important;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        border-radius: 14px !important;
+        cursor: pointer;
+        user-select: none;
+        transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-pill-card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(255, 87, 34, 0.3) !important;
+    }
+
+    .stat-pill-card.filter-active {
+        border-color: var(--primary-orange) !important;
+        box-shadow: 0 0 0 2px rgba(255, 87, 34, 0.2) !important;
+    }
+
+    .stat-icon-circle {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+
+    .stat-pill-info h4 {
+        margin: 0;
+        font-size: 0.72rem;
+        color: var(--text-card-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 700;
+    }
+
+    .stat-pill-info p {
+        margin: 3px 0 0 0;
+        font-size: 1.45rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1.1;
+    }
+
+    /* ── FILTER & SEARCH BAR ── */
+    .filter-search-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .search-input-wrapper {
+        flex: 1;
+        min-width: 280px;
+        max-width: 460px;
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .search-input-wrapper i {
+        position: absolute;
+        left: 14px;
+        color: var(--text-card-muted);
+        font-size: 1.1rem;
+        pointer-events: none;
+    }
+
+    .search-field {
+        width: 100%;
+        padding: 10px 14px 10px 42px;
+        border-radius: 10px;
+        border: 1px solid var(--border-color-soft);
+        background: var(--input-bg, rgba(0, 0, 0, 0.02));
+        color: var(--text-primary);
+        font-size: 0.88rem;
+        outline: none;
+        transition: all 0.2s ease;
+    }
+
+    .search-field:focus {
+        border-color: var(--primary-orange);
+        box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.12);
+        background: var(--card-bg-elevated);
+    }
+
+    .filter-selects-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .filter-dropdown {
+        padding: 10px 14px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        font-weight: 600;
+        outline: none;
+        border: 1px solid var(--border-color-soft);
+        border-radius: 10px;
+        background: var(--card-bg-elevated);
+        color: var(--text-primary);
+        transition: all 0.2s ease;
+    }
+
+    .filter-dropdown:focus {
+        border-color: var(--primary-orange);
+    }
+
+    /* ── TABLE ROW & DETAILS STYLES ── */
+    .facility-row {
+        cursor: pointer;
+        transition: background 0.15s ease;
+    }
+
+    .facility-row:hover td {
+        background: var(--table-row-hover) !important;
+    }
+
+    .facility-avatar-box {
+        width: 46px;
+        height: 46px;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid var(--border-color-soft);
+        background: var(--stat-icon-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: var(--shadow-sm);
+        position: relative;
+    }
+
+    .facility-avatar-box img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .btn-toggle-inspect {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.74rem;
+        font-weight: 600;
+        background: var(--action-box-bg);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color-soft);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-toggle-inspect:hover, .btn-toggle-inspect.active {
+        background: rgba(255, 87, 34, 0.1);
+        border-color: rgba(255, 87, 34, 0.3);
+        color: var(--primary-orange);
+    }
+
+    .btn-toggle-inspect i.caret {
+        transition: transform 0.2s ease;
+    }
+
+    .btn-toggle-inspect.active i.caret {
+        transform: rotate(180deg);
+    }
+
+    /* ── ACTION BUTTON GROUP ── */
+    .action-button-group {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        justify-content: flex-end;
+    }
+
+    .btn-action-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: all 0.18s ease;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .btn-action-pill.approve {
+        background: rgba(16, 185, 129, 0.12);
+        color: #10b981;
+        border-color: rgba(16, 185, 129, 0.25);
+    }
+
+    .btn-action-pill.approve:hover {
+        background: #10b981;
+        color: #ffffff;
+        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-action-pill.reject {
+        background: rgba(239, 68, 68, 0.12);
+        color: #ef4444;
+        border-color: rgba(239, 68, 68, 0.25);
+    }
+
+    .btn-action-pill.reject:hover {
+        background: #ef4444;
+        color: #ffffff;
+        box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-action-pill.reset {
+        background: var(--action-box-bg);
+        color: var(--text-card-muted);
+        border-color: var(--border-color-soft);
+    }
+
+    .btn-action-pill.reset:hover {
+        background: rgba(0, 0, 0, 0.08);
+        color: var(--text-primary);
+    }
+
+    .btn-action-pill.inspect-btn {
+        background: rgba(99, 102, 241, 0.1);
+        color: #818cf8;
+        border-color: rgba(99, 102, 241, 0.25);
+    }
+
+    .btn-action-pill.inspect-btn:hover {
+        background: #6366f1;
+        color: #ffffff;
+    }
+
+    /* ── EXPANDED DOSSIER DRAWER ROW ── */
+    .dossier-expanded-cell {
+        padding: 0 !important;
+        border-bottom: 2px solid var(--border-color-soft) !important;
+        background: var(--action-box-bg) !important;
+    }
+
+    .dossier-inner-panel {
+        padding: 20px 24px;
+        animation: slideDown 0.22s ease-out;
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .dossier-layout-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 20px;
+    }
+
+    .dossier-card-block {
+        background: var(--card-bg-elevated);
+        border: 1px solid var(--border-color-soft);
+        border-radius: 14px;
+        padding: 18px 20px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .dossier-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--border-color-soft);
+    }
+
+    .dossier-card-title {
+        margin: 0;
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .facility-chips-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+    .facility-chip-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        background: var(--action-box-bg);
+        border: 1px solid var(--border-color-soft);
+        font-size: 0.8rem;
+    }
+
+    .facility-chip-item i {
+        font-size: 1rem;
+        color: var(--primary-orange);
+        flex-shrink: 0;
+    }
+
+    .facility-chip-label {
+        font-size: 0.72rem;
+        color: var(--text-card-muted);
+        text-transform: uppercase;
+        display: block;
+        line-height: 1;
+        margin-bottom: 2px;
+    }
+
+    .facility-chip-value {
+        font-size: 0.84rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        display: block;
+    }
+
+    /* ── COURTS CARDS WITHIN DOSSIER ── */
+    .courts-list-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .court-item-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 14px;
+        border-radius: 10px;
+        background: var(--action-box-bg);
+        border: 1px solid var(--border-color-soft);
+        transition: border-color 0.2s ease, transform 0.15s ease;
+    }
+
+    .court-item-card:hover {
+        border-color: rgba(255, 87, 34, 0.25);
+        transform: translateX(2px);
+    }
+
+    .court-item-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .court-type-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: 20px;
+        text-transform: uppercase;
+    }
+
+    .court-type-pill.outdoor {
+        background: rgba(245, 158, 11, 0.12);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    .court-type-pill.indoor {
+        background: rgba(99, 102, 241, 0.12);
+        color: #818cf8;
+        border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+
+    .court-rate-tag {
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    /* ── KYC DOCUMENT PREVIEW CARD ── */
+    .kyc-doc-box {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        border-radius: 10px;
+        background: var(--action-box-bg);
+        border: 1px solid var(--border-color-soft);
+        margin-top: 12px;
+    }
+
+    .kyc-doc-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    /* ── DOCUMENT PREVIEW LIGHTBOX MODAL ── */
+    .lightbox-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.75);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        z-index: 10000;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+    }
+
+    .lightbox-modal.open {
+        display: flex;
+    }
+
+    .lightbox-modal-content {
+        max-width: 960px;
+        width: 95%;
+        max-height: 92vh;
+        background: #ffffff !important;
+        color: #0f172a !important;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        border-radius: 18px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.4);
+        animation: popUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    html.dark-mode .lightbox-modal-content {
+        background: #181d28 !important;
+        color: #f8fafc !important;
+        border-color: rgba(255, 255, 255, 0.14);
+        box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7);
+    }
+
+    .lightbox-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 18px 24px;
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    html.dark-mode .lightbox-header {
+        background: #141720;
+        border-bottom-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .lightbox-title-text {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    html.dark-mode .lightbox-title-text {
+        color: #f8fafc;
+    }
+
+    .modal-close-icon-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.06);
+        color: #475569;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+        font-size: 1.1rem;
+        transition: all 0.2s ease;
+    }
+
+    html.dark-mode .modal-close-icon-btn {
+        background: rgba(255, 255, 255, 0.08);
+        color: #cbd5e1;
+        border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .modal-close-icon-btn:hover {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+        transform: rotate(90deg);
+    }
+
+    .lightbox-body {
+        padding: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 380px;
+        max-height: 68vh;
+        overflow: auto;
+        background: #f1f5f9;
+    }
+
+    html.dark-mode .lightbox-body {
+        background: #0f1218;
+    }
+
+    .lightbox-body img {
+        max-width: 100%;
+        max-height: 62vh;
+        object-fit: contain;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .lightbox-footer {
+        padding: 14px 24px;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    html.dark-mode .lightbox-footer {
+        background: #141720;
+        border-top-color: rgba(255, 255, 255, 0.08);
+    }
+
+    /* ── CUSTOM CONFIRMATION MODAL ── */
+    .confirm-modal-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.7);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        z-index: 11000;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .confirm-modal-backdrop.open {
+        display: flex;
+    }
+
+    .confirm-modal-card {
+        width: 100%;
+        max-width: 460px;
+        background: #ffffff !important;
+        color: #0f172a !important;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        border-radius: 20px;
+        padding: 30px 26px 24px 26px;
+        text-align: center;
+        box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.45);
+        animation: popUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+    }
+
+    html.dark-mode .confirm-modal-card {
+        background: #181d28 !important;
+        color: #f8fafc !important;
+        border-color: rgba(255, 255, 255, 0.14);
+        box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.7);
+    }
+
+    .confirm-icon-ring {
+        width: 68px;
+        height: 68px;
+        border-radius: 50%;
+        margin: 0 auto 18px auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.1rem;
+        position: relative;
+        animation: pulseRing 1.8s infinite cubic-bezier(0.45, 0, 0.55, 1);
+    }
+
+    @keyframes pulseRing {
+        0% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+        70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+        100% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .confirm-icon-ring.approve {
+        background: rgba(16, 185, 129, 0.12);
+        color: #10b981;
+        border: 2px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .confirm-icon-ring.reject {
+        background: rgba(239, 68, 68, 0.12);
+        color: #ef4444;
+        border: 2px solid rgba(239, 68, 68, 0.3);
+        animation-name: pulseRingRed;
+    }
+
+    @keyframes pulseRingRed {
+        0% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+        70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+        100% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+    .confirm-icon-ring.reset {
+        background: rgba(245, 158, 11, 0.12);
+        color: #f59e0b;
+        border: 2px solid rgba(245, 158, 11, 0.3);
+        animation-name: pulseRingAmber;
+    }
+
+    @keyframes pulseRingAmber {
+        0% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+        70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+        100% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+    }
+
+    .confirm-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin: 0 0 10px 0;
+        color: #0f172a;
+    }
+
+    html.dark-mode .confirm-title {
+        color: #f8fafc;
+    }
+
+    .confirm-desc {
+        font-size: 0.9rem;
+        line-height: 1.5;
+        color: #475569;
+        margin: 0 0 24px 0;
+    }
+
+    html.dark-mode .confirm-desc {
+        color: #94a3b8;
+    }
+
+    .confirm-actions-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+    }
+
+    .btn-dialog {
+        flex: 1;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+    }
+
+    .btn-dialog.cancel {
+        background: #f1f5f9;
+        color: #475569;
+        border-color: #e2e8f0;
+    }
+
+    html.dark-mode .btn-dialog.cancel {
+        background: #1e2430;
+        color: #cbd5e1;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-dialog.cancel:hover {
+        background: #e2e8f0;
+        color: #0f172a;
+    }
+
+    html.dark-mode .btn-dialog.cancel:hover {
+        background: #283040;
+        color: #ffffff;
+    }
+
+    .btn-dialog.approve {
+        background: #10b981;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+    }
+
+    .btn-dialog.approve:hover {
+        background: #059669;
+        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.45);
+    }
+
+    .btn-dialog.reject {
+        background: #ef4444;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+    }
+
+    .btn-dialog.reject:hover {
+        background: #dc2626;
+        box-shadow: 0 6px 16px rgba(239, 68, 68, 0.45);
+    }
+
+    .btn-dialog.reset {
+        background: #f59e0b;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+    }
+
+    .btn-dialog.reset:hover {
+        background: #d97706;
+        box-shadow: 0 6px 16px rgba(245, 158, 11, 0.45);
+    }
+
+    /* ── FLOATING TOAST NOTIFICATION ── */
+    .verif-toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        padding: 12px 20px;
+        border-radius: 12px;
+        background: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        color: #0f172a;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        z-index: 12000;
+        transform: translateY(100px);
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    html.dark-mode .verif-toast {
+        background: #181d28;
+        border-color: rgba(255, 255, 255, 0.12);
+        color: #f8fafc;
+    }
+
+    .verif-toast.show {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    .verif-toast.success i { color: #10b981; font-size: 1.2rem; }
+    .verif-toast.error i { color: #ef4444; font-size: 1.2rem; }
+
+    @keyframes popUp {
+        from { transform: scale(0.95); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    @media (max-width: 1024px) {
+        .stats-summary-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .dossier-layout-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .stats-summary-grid {
+            grid-template-columns: 1fr;
+        }
+        .facility-chips-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
 {% set total_facilities = facilities|length %}
 {% set pending_kyc = facilities | selectattr('kyc_status', 'equalto', 'pending_approval') | list | length %}
 {% set verified_kyc = facilities | selectattr('kyc_status', 'equalto', 'verified') | list | length %}
 {% set rejected_kyc = facilities | selectattr('kyc_status', 'equalto', 'rejected') | list | length %}
+{% set unverified_kyc = facilities | selectattr('kyc_status', 'equalto', 'unverified') | list | length %}
 
-<div class="dashboard-header" style="margin-bottom: 24px;">
-    <h1 class="page-title">Facility KYC Verifications</h1>
-    <small style="color:var(--text-secondary); font-size: 0.85rem; font-weight: 500;">Review documents, inspect court registrations, and manage approval statuses</small>
+<!-- Header -->
+<div class="verif-header-container">
+    <div class="verif-title-group">
+        <h1>Facility &amp; Court Verifications</h1>
+        <div class="verif-subtitle">
+            <span>Inspect court infrastructure, review registered operating hours &amp; KYC documentation</span>
+        </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:10px;">
+        <button type="button" class="btn-action-pill" style="background:var(--card-bg-elevated); color:var(--text-primary); border:1px solid var(--border-color-soft); padding:8px 14px;" onclick="location.reload()">
+            <i class="ph ph-arrows-clockwise"></i> Refresh List
+        </button>
+        <a href="{{ url_for('adminstaff.dashboard') }}" class="btn-action-pill" style="background:var(--primary-orange); color:#ffffff; padding:8px 16px;">
+            <i class="ph ph-squares-four"></i> Operations Dashboard
+        </a>
+    </div>
 </div>
 
 <!-- Facilities Stats Summary Bar -->
-<div class="stats-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px;">
-    <div class="glass-card" style="padding: 16px; display: flex; align-items: center; gap: 14px; border-radius: 12px !important; box-shadow: var(--shadow-sm) !important; transform: none !important; border-color: var(--border-color-soft) !important;">
-        <div style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--primary-orange); background: rgba(255,87,34,0.08); border: 1px solid rgba(255,87,34,0.15); flex-shrink: 0;">
+<div class="stats-summary-grid">
+    <div class="glass-card stat-pill-card" id="card-filter-all" onclick="setKycFilter('all', this)">
+        <div class="stat-icon-circle" style="background:rgba(255,87,34,0.1); color:var(--primary-orange); border:1px solid rgba(255,87,34,0.2);">
             <i class="ph ph-buildings"></i>
         </div>
-        <div>
-            <h4 style="margin: 0; font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Total Facilities</h4>
-            <p style="margin: 2px 0 0 0; font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">{{ total_facilities }}</p>
+        <div class="stat-pill-info">
+            <h4>Total Facilities</h4>
+            <p id="statTotalCount">{{ total_facilities }}</p>
         </div>
     </div>
-    <div class="glass-card" style="padding: 16px; display: flex; align-items: center; gap: 14px; border-radius: 12px !important; box-shadow: var(--shadow-sm) !important; transform: none !important; border-color: var(--border-color-soft) !important;">
-        <div style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #10b981; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.15); flex-shrink: 0;">
+
+    <div class="glass-card stat-pill-card" id="card-filter-verified" onclick="setKycFilter('verified', this)">
+        <div class="stat-icon-circle" style="background:rgba(16,185,129,0.1); color:#10b981; border:1px solid rgba(16,185,129,0.2);">
             <i class="ph ph-shield-check"></i>
         </div>
-        <div>
-            <h4 style="margin: 0; font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Verified KYC</h4>
-            <p style="margin: 2px 0 0 0; font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">{{ verified_kyc }}</p>
+        <div class="stat-pill-info">
+            <h4>Verified KYC</h4>
+            <p id="statVerifiedCount">{{ verified_kyc }}</p>
         </div>
     </div>
-    <div class="glass-card" style="padding: 16px; display: flex; align-items: center; gap: 14px; border-radius: 12px !important; box-shadow: var(--shadow-sm) !important; transform: none !important; border-color: var(--border-color-soft) !important;">
-        <div style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #f59e0b; background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.15); flex-shrink: 0;">
+
+    <div class="glass-card stat-pill-card {% if pending_kyc > 0 %}filter-active{% endif %}" id="card-filter-pending" onclick="setKycFilter('pending_approval', this)">
+        <div class="stat-icon-circle" style="background:rgba(245,158,11,0.1); color:#f59e0b; border:1px solid rgba(245,158,11,0.2);">
             <i class="ph ph-hourglass-high"></i>
         </div>
-        <div>
-            <h4 style="margin: 0; font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Pending Review</h4>
-            <p style="margin: 2px 0 0 0; font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">{{ pending_kyc }}</p>
+        <div class="stat-pill-info">
+            <h4>Pending Review</h4>
+            <p id="statPendingCount">{{ pending_kyc }}</p>
         </div>
     </div>
-    <div class="glass-card" style="padding: 16px; display: flex; align-items: center; gap: 14px; border-radius: 12px !important; box-shadow: var(--shadow-sm) !important; transform: none !important; border-color: var(--border-color-soft) !important;">
-        <div style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #ef4444; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.15); flex-shrink: 0;">
+
+    <div class="glass-card stat-pill-card" id="card-filter-rejected" onclick="setKycFilter('rejected', this)">
+        <div class="stat-icon-circle" style="background:rgba(239,68,68,0.1); color:#ef4444; border:1px solid rgba(239,68,68,0.2);">
             <i class="ph ph-shield-warning"></i>
         </div>
-        <div>
-            <h4 style="margin: 0; font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Rejected KYC</h4>
-            <p style="margin: 2px 0 0 0; font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">{{ rejected_kyc }}</p>
+        <div class="stat-pill-info">
+            <h4>Rejected KYC</h4>
+            <p id="statRejectedCount">{{ rejected_kyc }}</p>
         </div>
     </div>
 </div>
 
+<!-- Main Table Container -->
 <div class="glass-card" style="padding: 24px;">
     <!-- Filter and Search Header -->
-    <div class="widget-header" style="display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color-soft); padding-bottom: 16px;">
-        <div style="flex: 1; max-width: 400px; position: relative; display: flex; align-items: center;">
-            <i class="ph ph-magnifying-glass" style="position: absolute; left: 14px; color: var(--text-muted); font-size: 1.1rem; z-index: 10;"></i>
-            <input type="text" id="facilitySearchInput" placeholder="Search facilities by name or owner..."
-                   style="width: 100%; padding: 10px 14px 10px 42px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-primary); font-size: 0.9rem; outline: none; transition: all 0.2s;">
+    <div class="filter-search-toolbar">
+        <div class="search-input-wrapper">
+            <i class="ph ph-magnifying-glass"></i>
+            <input type="text" id="facilitySearchInput" class="search-field"
+                   placeholder="Search facility name, courts, owner, or location...">
         </div>
-        <div class="filter-actions" style="display: flex; gap: 10px;">
-            <select id="kycFilter" class="dropdown-trigger" style="padding: 10px 14px; cursor: pointer; font-size: 0.85rem; outline: none; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary);">
+        
+        <div class="filter-selects-group">
+            <select id="kycFilter" class="filter-dropdown">
                 <option value="all">All KYC Statuses</option>
-                <option value="verified">Verified</option>
-                <option value="pending_approval">Pending Approval</option>
-                <option value="rejected">Rejected</option>
-                <option value="unverified">Unverified</option>
+                <option value="pending_approval" {% if pending_kyc > 0 %}selected{% endif %}>Pending Approval ({{ pending_kyc }})</option>
+                <option value="verified">Verified ({{ verified_kyc }})</option>
+                <option value="rejected">Rejected ({{ rejected_kyc }})</option>
+                <option value="unverified">Unverified ({{ unverified_kyc }})</option>
+            </select>
+
+            <select id="courtCountFilter" class="filter-dropdown">
+                <option value="all">All Court Capacities</option>
+                <option value="has_courts">Has Registered Courts (&gt; 0)</option>
+                <option value="no_courts">Zero Courts (0)</option>
             </select>
         </div>
     </div>
@@ -76,66 +937,105 @@
         <table class="data-grid" id="verificationsTable">
             <thead>
                 <tr>
-                    <th>FACILITY NAME</th>
-                    <th>OWNER</th>
-                    <th>CREATED AT</th>
-                    <th>DOCUMENTS</th>
-                    <th>STATUS</th>
-                    <th style="text-align: right; padding-right: 24px !important;">ACTIONS</th>
+                    <th style="width: 32%;">FACILITY &amp; REGISTERED COURTS</th>
+                    <th style="width: 20%;">OWNER &amp; CONTACT</th>
+                    <th style="width: 14%;">LOCATION</th>
+                    <th style="width: 12%;">KYC DOCUMENT</th>
+                    <th style="width: 10%;">STATUS</th>
+                    <th style="width: 12%; text-align: right; padding-right: 20px !important;">ACTIONS</th>
                 </tr>
             </thead>
             <tbody>
                 {% for f in facilities %}
+                {% set court_count = f.courts|length if f.courts else 0 %}
+                {% set court_names = f.courts | map(attribute='name') | join(' ') | lower if f.courts else '' %}
+                
                 <tr class="facility-row" 
+                    id="fac-main-row-{{ f.id }}"
                     data-row-id="{{ f.id }}"
                     data-name="{{ f.name | lower }}" 
-                    data-owner="{{ (f.profiles.first_name ~ ' ' ~ f.profiles.last_name) | lower if f.profiles else '' }}"
-                    data-kyc="{{ f.kyc_status }}">
+                    data-location="{{ (f.location or '') | lower }}"
+                    data-owner="{{ (f.profiles.first_name ~ ' ' ~ f.profiles.last_name ~ ' ' ~ (f.profiles.email or '')) | lower if f.profiles else '' }}"
+                    data-courts="{{ court_names }}"
+                    data-court-count="{{ court_count }}"
+                    data-kyc="{{ f.kyc_status }}"
+                    onclick="toggleFacilityDossier('{{ f.id }}', event)">
+                    
+                    <!-- Facility Name & Courts Quick Badge -->
                     <td class="bold">
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <div style="width: 44px; height: 44px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color-soft); background: var(--stat-icon-bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: var(--shadow-sm);">
+                        <div style="display: flex; align-items: center; gap: 14px;">
+                            <div class="facility-avatar-box">
                                 {% if f.image_url %}
-                                <img src="{{ f.image_url }}" alt="{{ f.name }}" style="width: 100%; height: 100%; object-fit: cover; cursor: zoom-in;" onclick="openImageModal(this.src)">
+                                <img src="{{ f.image_url }}" alt="{{ f.name }}" onclick="openImagePreview('{{ f.name }}', '{{ f.image_url }}', '{{ f.kyc_status }}', '{{ f.id }}', event)">
                                 {% else %}
-                                <i class="ph ph-buildings" style="font-size: 1.3rem; color: var(--primary-orange);"></i>
+                                <i class="ph ph-buildings" style="font-size: 1.4rem; color: var(--primary-orange);"></i>
                                 {% endif %}
                             </div>
-                            <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
-                                <span>{{ f.name }}</span>
-                                {% if f.courts %}
-                                <button class="dropdown-trigger" 
-                                        style="padding: 2px 8px; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 4px; border-radius: 6px; background: rgba(0,0,0,0.03); color: var(--text-primary); cursor: pointer; border: 1px solid var(--border-color-soft); font-weight: 600;"
-                                        data-count="{{ f.courts|length }}"
-                                        onclick="toggleCourtsRow(event, '{{ f.id }}')">
-                                    <i class="ph ph-squares-four"></i> View Courts ({{ f.courts|length }})
+                            <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                                <span style="color: var(--text-primary); font-size: 0.94rem; font-weight: 700;">{{ f.name }}</span>
+                                <button type="button" class="btn-toggle-inspect" id="btn-toggle-{{ f.id }}" onclick="toggleFacilityDossier('{{ f.id }}', event)">
+                                    <i class="ph ph-squares-four"></i>
+                                    <span>Courts &amp; Facility Details ({{ court_count }})</span>
+                                    <i class="ph ph-caret-down caret" id="caret-{{ f.id }}"></i>
                                 </button>
-                                {% else %}
-                                <span style="font-size: 0.72rem; color: var(--text-muted); padding-left: 2px; font-weight: 500;">
-                                    <i class="ph ph-squares-four"></i> 0 courts
-                                </span>
-                                {% endif %}
                             </div>
                         </div>
                     </td>
-                    <td>{{ f.profiles.first_name }} {{ f.profiles.last_name if f.profiles else '' }}</td>
-                    <td style="color: var(--text-secondary); font-size: 0.85rem;">{{ f.created_at | community_timeago }}</td>
+
+                    <!-- Owner Details -->
                     <td>
-                        {% if f.kyc_document_url %}
-                            {% set is_img = f.kyc_document_url.lower().endswith(('.png', '.jpg', '.jpeg', '.webp', '.gif')) %}
-                            {% if is_img %}
-                            <a href="#" class="action-link" style="color: var(--primary-orange); display: inline-flex; align-items: center; gap: 4px;" onclick="openImageModal('{{ f.kyc_document_url }}'); return false;">
-                                <i class="ph ph-image"></i> View Document
-                            </a>
-                            {% else %}
-                            <a href="{{ f.kyc_document_url }}" target="_blank" class="action-link" style="color: var(--primary-orange); display: inline-flex; align-items: center; gap: 4px;">
-                                <i class="ph ph-file-text"></i> View Document
-                            </a>
+                        {% if f.profiles %}
+                            <div style="font-weight: 600; color: var(--text-primary); font-size: 0.88rem;">
+                                {{ f.profiles.first_name }} {{ f.profiles.last_name }}
+                            </div>
+                            <div style="font-size: 0.76rem; color: var(--text-card-muted); display:flex; align-items:center; gap:4px; margin-top:1px;">
+                                <i class="ph ph-envelope"></i> {{ f.profiles.email or 'No email' }}
+                            </div>
+                            {% if f.profiles.phone %}
+                            <div style="font-size: 0.74rem; color: var(--text-card-muted); display:flex; align-items:center; gap:4px;">
+                                <i class="ph ph-phone"></i> {{ f.profiles.phone }}
+                            </div>
                             {% endif %}
                         {% else %}
-                        <span style="color: var(--text-muted); font-size: 0.85rem;">None provided</span>
+                            <span style="color: var(--text-card-muted); font-size: 0.84rem;">—</span>
                         {% endif %}
                     </td>
+
+                    <!-- Location -->
+                    <td style="color: var(--text-secondary); font-size: 0.84rem;">
+                        <span style="display: inline-flex; align-items: center; gap: 4px;">
+                            <i class="ph ph-map-pin" style="color: var(--primary-orange);"></i>
+                            {{ f.location or 'Not specified' }}
+                        </span>
+                    </td>
+
+                    <!-- Documents -->
                     <td>
+                        {% set kyc_data = f.kyc_document_url | parse_kyc %}
+                        {% if kyc_data.tct_url or kyc_data.permit_url %}
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                {% if kyc_data.tct_url %}
+                                    <button type="button" class="btn-action-pill inspect-btn" style="padding: 3px 8px; font-size: 0.72rem; white-space: nowrap;" onclick="openDocPreviewModal('{{ f.name }}', '{{ kyc_data.tct_url }}', '{{ f.kyc_status }}', '{{ f.id }}', event, 'TCT / OCT Title')">
+                                        <i class="ph ph-certificate"></i> TCT / OCT Title
+                                    </button>
+                                {% endif %}
+                                {% if kyc_data.permit_url %}
+                                    <button type="button" class="btn-action-pill inspect-btn" style="padding: 3px 8px; font-size: 0.72rem; white-space: nowrap; background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.4); color: #93c5fd;" onclick="openDocPreviewModal('{{ f.name }}', '{{ kyc_data.permit_url }}', '{{ f.kyc_status }}', '{{ f.id }}', event, 'Business Permit')">
+                                        <i class="ph ph-file-text"></i> Business Permit
+                                    </button>
+                                {% endif %}
+                            </div>
+                        {% elif f.kyc_document_url %}
+                            <button type="button" class="btn-action-pill inspect-btn" style="padding: 4px 8px; font-size: 0.75rem;" onclick="openDocPreviewModal('{{ f.name }}', '{{ f.kyc_document_url }}', '{{ f.kyc_status }}', '{{ f.id }}', event, 'KYC Document')">
+                                <i class="ph ph-file-text"></i> View Document
+                            </button>
+                        {% else %}
+                            <span style="color: var(--text-card-muted); font-size: 0.8rem; font-style: italic;">None provided</span>
+                        {% endif %}
+                    </td>
+
+                    <!-- Status Pill -->
+                    <td id="status-cell-{{ f.id }}">
                         {% if f.kyc_status == 'verified' %}
                             <span class="status-pill success"><i class="ph ph-shield-check"></i> Verified</span>
                         {% elif f.kyc_status == 'pending_approval' %}
@@ -143,75 +1043,276 @@
                         {% elif f.kyc_status == 'rejected' %}
                             <span class="status-pill danger"><i class="ph ph-shield-warning"></i> Rejected</span>
                         {% else %}
-                            <span class="status-pill" style="background: rgba(255,255,255,0.1);"><i class="ph ph-shield-warning"></i> Unverified</span>
+                            <span class="status-pill" style="background: rgba(255,255,255,0.08); color: var(--text-card-muted);"><i class="ph ph-shield-warning"></i> Unverified</span>
                         {% endif %}
                     </td>
-                    <td style="text-align: right; padding-right: 24px !important;">
-                        <form method="POST" action="{{ url_for('adminstaff.update_kyc_status', facility_id=f.id) }}" style="display:inline-block; margin:0;">
-                            <input type="hidden" name="status" value="verified">
-                            <button type="submit" class="action-box green" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto;" onclick="return confirm('Approve this facility?');"><i class="ph ph-check"></i> Approve</button>
-                        </form>
-                        <form method="POST" action="{{ url_for('adminstaff.update_kyc_status', facility_id=f.id) }}" style="display:inline-block; margin:0;">
-                            <input type="hidden" name="status" value="rejected">
-                            <button type="submit" class="action-box red" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto; background: rgba(239, 68, 68, 0.12); color: #ef4444;" onclick="return confirm('Reject this facility?');"><i class="ph ph-x"></i> Reject</button>
-                        </form>
-                        <form method="POST" action="{{ url_for('adminstaff.update_kyc_status', facility_id=f.id) }}" style="display:inline-block; margin:0;">
-                            <input type="hidden" name="status" value="unverified">
-                            <button type="submit" class="action-box" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; width: auto; background: rgba(255, 255, 255, 0.05); color: var(--text-primary); border: 1px solid var(--border-color-soft);" onclick="return confirm('Reset status to Unverified?');"><i class="ph ph-arrow-counter-clockwise"></i> Reset</button>
-                        </form>
+
+                    <!-- Actions -->
+                    <td style="text-align: right; padding-right: 20px !important;">
+                        <div class="action-button-group" onclick="event.stopPropagation()">
+                            <button type="button" class="btn-action-pill approve" title="Approve Facility KYC" onclick="promptFacilityKycDecision('{{ f.id }}', 'verified', '{{ f.name }}')">
+                                <i class="ph ph-check"></i> Approve
+                            </button>
+                            <button type="button" class="btn-action-pill reject" title="Reject Facility KYC" onclick="promptFacilityKycDecision('{{ f.id }}', 'rejected', '{{ f.name }}')">
+                                <i class="ph ph-x"></i> Reject
+                            </button>
+                            <button type="button" class="btn-action-pill reset" title="Reset to Unverified" onclick="promptFacilityKycDecision('{{ f.id }}', 'unverified', '{{ f.name }}')">
+                                <i class="ph ph-arrow-counter-clockwise"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>
-                {% if f.courts %}
-                <tr id="courts-row-{{ f.id }}" class="courts-detail-row" style="display: none;">
-                    <td colspan="6" style="padding: 16px 24px !important; background: var(--action-box-bg); border-bottom: 1px solid var(--table-border-color) !important;">
-                        <div style="padding: 14px; background: var(--table-bg); border-radius: 10px; border: 1px solid var(--border-color-soft); box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
-                            <div style="font-weight: 600; font-size: 0.85rem; color: var(--text-primary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
-                                <i class="ph ph-squares-four" style="color: var(--primary-orange);"></i> Registered Courts ({{ f.courts|length }})
-                            </div>
-                            <div style="overflow-x: auto;">
-                                <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem;">
-                                    <thead>
-                                        <tr style="border-bottom: 2px solid var(--table-border-color);">
-                                            <th style="padding: 8px 12px; text-align: left; color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 600; background: transparent !important; border-bottom: 2px solid var(--table-border-color) !important;">Court Name</th>
-                                            <th style="padding: 8px 12px; text-align: left; color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 600; background: transparent !important; border-bottom: 2px solid var(--table-border-color) !important;">Type</th>
-                                            <th style="padding: 8px 12px; text-align: left; color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 600; background: transparent !important; border-bottom: 2px solid var(--table-border-color) !important;">Hourly Rate</th>
-                                            <th style="padding: 8px 12px; text-align: left; color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 600; background: transparent !important; border-bottom: 2px solid var(--table-border-color) !important;">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for court in f.courts %}
-                                        <tr style="border-bottom: 1px solid var(--table-border-color); background: transparent !important;">
-                                            <td style="padding: 8px 12px; font-weight: 500; color: var(--text-primary); border-bottom: 1px solid var(--table-border-color) !important;">
-                                                <div style="display: flex; align-items: center; gap: 10px;">
-                                                    <div style="width: 32px; height: 32px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color-soft); background: var(--action-box-bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: var(--shadow-sm);">
-                                                        {% if court.image_url %}
-                                                        <img src="{{ court.image_url }}" alt="{{ court.name }}" style="width: 100%; height: 100%; object-fit: cover; cursor: zoom-in;" onclick="openImageModal(this.src)">
-                                                        {% else %}
-                                                        <i class="ph ph-squares-four" style="font-size: 0.95rem; color: var(--text-secondary);"></i>
-                                                        {% endif %}
-                                                    </div>
-                                                    <span>{{ court.name }}</span>
-                                                </div>
-                                            </td>
-                                            <td style="padding: 8px 12px; color: var(--text-secondary); text-transform: capitalize; border-bottom: 1px solid var(--table-border-color) !important;">{{ court.type }}</td>
-                                            <td style="padding: 8px 12px; color: var(--text-secondary); border-bottom: 1px solid var(--table-border-color) !important;">₱{{ "{:,.2f}".format(court.hourly_rate) }}</td>
-                                            <td style="padding: 8px 12px; border-bottom: 1px solid var(--table-border-color) !important;">
-                                                <span class="status-pill {% if court.status == 'active' %}success{% else %}warning{% endif %}" style="font-size: 0.7rem; padding: 2px 6px; text-transform: uppercase; font-weight: 600;">
-                                                    {{ court.status }}
+
+                <!-- Expanded Facility & Courts Intelligence Dossier -->
+                <tr id="dossier-row-{{ f.id }}" class="courts-detail-row" style="display: none;">
+                    <td colspan="6" class="dossier-expanded-cell">
+                        <div class="dossier-inner-panel">
+                            <div class="dossier-layout-grid">
+                                
+                                <!-- Left Column: Complete Facility Details -->
+                                <div class="dossier-card-block">
+                                    <div class="dossier-card-header">
+                                        <h4 class="dossier-card-title">
+                                            <i class="ph ph-buildings" style="color: var(--primary-orange);"></i>
+                                            Facility Intelligence Dossier
+                                        </h4>
+                                        <span class="status-pill {% if f.status == 'active' %}success{% else %}warning{% endif %}" style="font-size:0.7rem; padding:2px 8px;">
+                                            Facility {{ (f.status or 'active') | title }}
+                                        </span>
+                                    </div>
+
+                                    <!-- Facility Specs & Operations Grid -->
+                                    <div class="facility-chips-grid">
+                                        <div class="facility-chip-item">
+                                            <i class="ph ph-clock"></i>
+                                            <div>
+                                                <span class="facility-chip-label">Operating Hours</span>
+                                                <span class="facility-chip-value">
+                                                    {{ f.open_time[:5] if f.open_time else '08:00' }} – {{ f.close_time[:5] if f.close_time else '22:00' }}
                                                 </span>
-                                            </td>
-                                        </tr>
+                                            </div>
+                                        </div>
+
+                                        <div class="facility-chip-item">
+                                            <i class="ph ph-timer"></i>
+                                            <div>
+                                                <span class="facility-chip-label">Slot Duration</span>
+                                                <span class="facility-chip-value">{{ f.slot_duration_minutes or 60 }} mins / session</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="facility-chip-item">
+                                            <i class="ph ph-map-pin"></i>
+                                            <div>
+                                                <span class="facility-chip-label">Address / Area</span>
+                                                <span class="facility-chip-value">{{ f.location or 'Location not specified' }}</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="facility-chip-item">
+                                            <i class="ph ph-navigation-arrow"></i>
+                                            <div>
+                                                <span class="facility-chip-label">Coordinates</span>
+                                                {% if f.latitude and f.longitude %}
+                                                <a href="https://www.google.com/maps?q={{ f.latitude }},{{ f.longitude }}" target="_blank" style="color:var(--primary-orange); text-decoration:none; font-weight:600; font-size:0.82rem; display:inline-flex; align-items:center; gap:3px;">
+                                                    {{ f.latitude | round(4) }}, {{ f.longitude | round(4) }}
+                                                    <i class="ph ph-arrow-square-out" style="font-size:0.75rem;"></i>
+                                                </a>
+                                                {% else %}
+                                                <span class="facility-chip-value" style="color:var(--text-card-muted);">Not pinpointed</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Facility Description -->
+                                    <div style="margin-bottom: 14px;">
+                                        <span style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-card-muted); font-weight: 700; display: block; margin-bottom: 4px;">
+                                            Facility Description &amp; Bio
+                                        </span>
+                                        <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; background: var(--action-box-bg); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-color-soft);">
+                                            {{ f.description if f.description else 'No special description provided by the facility owner.' }}
+                                        </p>
+                                    </div>
+
+                                    <!-- Amenities -->
+                                    <div style="margin-bottom: 14px;">
+                                        <span style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-card-muted); font-weight: 700; display: block; margin-bottom: 6px;">
+                                            Amenities &amp; Court Features
+                                        </span>
+                                        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                            {% if f.amenities and f.amenities|length > 0 %}
+                                                {% for amen in f.amenities %}
+                                                <span style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 6px; background: rgba(255, 87, 34, 0.08); color: var(--primary-orange); border: 1px solid rgba(255, 87, 34, 0.2); font-size: 0.75rem; font-weight: 600;">
+                                                    <i class="ph ph-check"></i> {{ amen }}
+                                                </span>
+                                                {% endfor %}
+                                            {% else %}
+                                                <span style="color: var(--text-card-muted); font-size: 0.8rem; font-style: italic;">Standard facilities (Restrooms, Netting, Perimeter)</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <!-- KYC Document Preview & Quick Decision -->
+                                    {% set kyc_data = f.kyc_document_url | parse_kyc %}
+                                    <div class="kyc-doc-box" style="flex-direction: column; align-items: stretch; gap: 10px;">
+                                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                                            <div class="kyc-doc-left">
+                                                <div style="width: 38px; height: 38px; border-radius: 8px; background: rgba(255,87,34,0.1); color: var(--primary-orange); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                                                    <i class="ph ph-shield-check"></i>
+                                                </div>
+                                                <div>
+                                                    <span style="font-size: 0.84rem; font-weight: 700; color: var(--text-primary); display: block;">KYC Verification Documents</span>
+                                                    <span style="font-size: 0.74rem; color: var(--text-card-muted);">
+                                                        {% if kyc_data.tct_url and kyc_data.permit_url %}
+                                                            TCT/OCT Title &amp; Business Permit on file
+                                                        {% elif kyc_data.tct_url or kyc_data.permit_url or f.kyc_document_url %}
+                                                            Document(s) on file
+                                                        {% else %}
+                                                            No documents uploaded
+                                                        {% endif %}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px;">
+                                            {% if kyc_data.tct_url %}
+                                            <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 6px;">
+                                                <span style="font-size: 0.78rem; color: var(--text-secondary); display: flex; align-items: center; gap: 6px;">
+                                                    <i class="ph ph-certificate" style="color: var(--primary-orange);"></i>
+                                                    <strong>TCT / OCT Title:</strong> {{ kyc_data.tct_filename or 'Property Title' }}
+                                                </span>
+                                                <div style="display: flex; gap: 6px;">
+                                                    <button type="button" class="btn-action-pill inspect-btn" style="padding: 4px 8px; font-size: 0.74rem;" onclick="openDocPreviewModal('{{ f.name }}', '{{ kyc_data.tct_url }}', '{{ f.kyc_status }}', '{{ f.id }}', event, 'TCT / OCT Document')">
+                                                        <i class="ph ph-magnifying-glass-plus"></i> Inspect
+                                                    </button>
+                                                    <a href="{{ kyc_data.tct_url }}" target="_blank" class="btn-action-pill reset" style="padding: 4px 8px; font-size: 0.74rem;" onclick="event.stopPropagation()">
+                                                        <i class="ph ph-arrow-square-out"></i> Full
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+
+                                            {% if kyc_data.permit_url %}
+                                            <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 6px;">
+                                                <span style="font-size: 0.78rem; color: var(--text-secondary); display: flex; align-items: center; gap: 6px;">
+                                                    <i class="ph ph-file-text" style="color: #60a5fa;"></i>
+                                                    <strong>Business Permit:</strong> {{ kyc_data.permit_filename or 'Mayor\'s Permit' }}
+                                                </span>
+                                                <div style="display: flex; gap: 6px;">
+                                                    <button type="button" class="btn-action-pill inspect-btn" style="padding: 4px 8px; font-size: 0.74rem; background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.4); color: #93c5fd;" onclick="openDocPreviewModal('{{ f.name }}', '{{ kyc_data.permit_url }}', '{{ f.kyc_status }}', '{{ f.id }}', event, 'Business Permit')">
+                                                        <i class="ph ph-magnifying-glass-plus"></i> Inspect
+                                                    </button>
+                                                    <a href="{{ kyc_data.permit_url }}" target="_blank" class="btn-action-pill reset" style="padding: 4px 8px; font-size: 0.74rem;" onclick="event.stopPropagation()">
+                                                        <i class="ph ph-arrow-square-out"></i> Full
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+
+                                            {% if not kyc_data.tct_url and not kyc_data.permit_url and f.kyc_document_url %}
+                                            <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 6px;">
+                                                <span style="font-size: 0.78rem; color: var(--text-secondary); display: flex; align-items: center; gap: 6px;">
+                                                    <i class="ph ph-file-text"></i>
+                                                    <strong>Document:</strong> File on record
+                                                </span>
+                                                <div style="display: flex; gap: 6px;">
+                                                    <button type="button" class="btn-action-pill inspect-btn" style="padding: 4px 8px; font-size: 0.74rem;" onclick="openDocPreviewModal('{{ f.name }}', '{{ f.kyc_document_url }}', '{{ f.kyc_status }}', '{{ f.id }}', event, 'KYC Document')">
+                                                        <i class="ph ph-magnifying-glass-plus"></i> Inspect
+                                                    </button>
+                                                    <a href="{{ f.kyc_document_url }}" target="_blank" class="btn-action-pill reset" style="padding: 4px 8px; font-size: 0.74rem;" onclick="event.stopPropagation()">
+                                                        <i class="ph ph-arrow-square-out"></i> Full
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Right Column: Registered Courts List -->
+                                <div class="dossier-card-block">
+                                    <div class="dossier-card-header">
+                                        <h4 class="dossier-card-title">
+                                            <i class="ph ph-squares-four" style="color: #6366f1;"></i>
+                                            Registered Courts ({{ court_count }})
+                                        </h4>
+                                        <span style="font-size: 0.78rem; color: var(--text-card-muted);">
+                                            {% if court_count > 0 %}{{ court_count }} Active Court{% if court_count > 1 %}s{% endif %}{% else %}0 Courts{% endif %}
+                                        </span>
+                                    </div>
+
+                                    {% if f.courts and f.courts|length > 0 %}
+                                    <div class="courts-list-container">
+                                        {% for c in f.courts %}
+                                        <div class="court-item-card">
+                                            <div class="court-item-left">
+                                                <div style="width: 38px; height: 38px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color-soft); background: var(--stat-icon-bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                                    {% if c.image_url %}
+                                                    <img src="{{ c.image_url }}" alt="{{ c.name }}" style="width: 100%; height: 100%; object-fit: cover; cursor: zoom-in;" onclick="openImagePreview('{{ c.name }}', '{{ c.image_url }}', '{{ c.status }}', null, event)">
+                                                    {% else %}
+                                                    <i class="ph ph-squares-four" style="font-size: 1.1rem; color: var(--text-card-muted);"></i>
+                                                    {% endif %}
+                                                </div>
+                                                <div>
+                                                    <div style="font-weight: 700; color: var(--text-primary); font-size: 0.88rem; display: flex; align-items: center; gap: 8px;">
+                                                        {{ c.name }}
+                                                        <span class="court-type-pill {% if c.type == 'indoor' %}indoor{% else %}outdoor{% endif %}">
+                                                            <i class="ph {% if c.type == 'indoor' %}ph-house-line{% else %}ph-sun{% endif %}"></i>
+                                                            {{ c.type }}
+                                                        </span>
+                                                    </div>
+                                                    <span style="font-size: 0.74rem; color: var(--text-card-muted);">
+                                                        Added {{ c.created_at[:10] if c.created_at else 'Recent' }}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div style="text-align: right;">
+                                                <div class="court-rate-tag">
+                                                    ₱{{ "{:,.2f}".format(c.hourly_rate or 0) }}
+                                                    <span style="font-size: 0.72rem; font-weight: normal; color: var(--text-card-muted);">/hr</span>
+                                                </div>
+                                                <span class="status-pill {% if c.status == 'active' %}success{% else %}warning{% endif %}" style="font-size: 0.68rem; padding: 2px 6px;">
+                                                    {{ c.status | title }}
+                                                </span>
+                                            </div>
+                                        </div>
                                         {% endfor %}
-                                    </tbody>
-                                </table>
+                                    </div>
+                                    {% else %}
+                                    <div style="text-align: center; padding: 30px 10px; color: var(--text-card-muted);">
+                                        <i class="ph ph-squares-four" style="font-size: 2rem; display: block; margin-bottom: 8px; opacity: 0.5;"></i>
+                                        <p style="margin: 0; font-size: 0.85rem;">No courts have been registered under this facility yet.</p>
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- Fast Decision Bar inside Dossier -->
+                                    <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-color-soft); display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="font-size: 0.78rem; color: var(--text-card-muted); font-weight: 600;">Update KYC Status:</span>
+                                        <div style="display: flex; gap: 8px;">
+                                            <button type="button" class="btn-action-pill approve" onclick="promptFacilityKycDecision('{{ f.id }}', 'verified', '{{ f.name }}')">
+                                                <i class="ph ph-check"></i> Approve Facility
+                                            </button>
+                                            <button type="button" class="btn-action-pill reject" onclick="promptFacilityKycDecision('{{ f.id }}', 'rejected', '{{ f.name }}')">
+                                                <i class="ph ph-x"></i> Reject
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                </div>
+
                             </div>
                         </div>
                     </td>
                 </tr>
-                {% endif %}
                 {% else %}
                 <tr>
-                    <td colspan="6" style="text-align:center; padding:2rem; color:var(--text-muted);">No facilities found.</td>
+                    <td colspan="6" style="text-align:center; padding:3rem; color:var(--text-card-muted);">
+                        <i class="ph ph-buildings" style="font-size: 2.2rem; display: block; margin-bottom: 8px; opacity: 0.5;"></i>
+                        No facilities found matching your criteria.
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -219,65 +1320,432 @@
     </div>
 </div>
 
+<!-- High-Contrast Document Inspection Lightbox Modal -->
+<div class="lightbox-modal" id="docLightboxModal" onclick="closeDocModal(event)">
+    <div class="lightbox-modal-content" onclick="event.stopPropagation()">
+        <!-- Header -->
+        <div class="lightbox-header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <h4 class="lightbox-title-text">
+                    <i class="ph ph-file-text" style="color:var(--primary-orange); font-size: 1.3rem;"></i>
+                    <span id="lightboxTitle">KYC Document Inspection</span>
+                </h4>
+                <span class="status-pill warning" id="lightboxDocStatusBadge" style="font-size: 0.72rem; padding: 2px 8px;">
+                    Pending
+                </span>
+            </div>
+            <button type="button" class="modal-close-icon-btn" onclick="closeDocModal()" title="Close Preview">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+
+        <!-- Body Image Preview -->
+        <div class="lightbox-body" id="lightboxBody">
+            <img src="" id="lightboxImage" alt="Document Preview">
+        </div>
+
+        <!-- Footer Actions with Decisions -->
+        <div class="lightbox-footer">
+            <a href="#" id="lightboxDirectLink" target="_blank" class="btn-action-pill inspect-btn">
+                <i class="ph ph-arrow-square-out"></i> Open Original in Full Resolution
+            </a>
+
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <button type="button" class="btn-action-pill approve" id="lightboxBtnApprove">
+                    <i class="ph ph-check"></i> Approve KYC
+                </button>
+                <button type="button" class="btn-action-pill reject" id="lightboxBtnReject">
+                    <i class="ph ph-x"></i> Reject
+                </button>
+                <button type="button" class="btn-action-pill reset" onclick="closeDocModal()">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Confirmation Modal (Replaces Native Alert/Confirm) -->
+<div class="confirm-modal-backdrop" id="customConfirmModal" onclick="closeConfirmDialog(event)">
+    <div class="confirm-modal-card" onclick="event.stopPropagation()">
+        <div class="confirm-icon-ring approve" id="confirmModalIcon">
+            <i class="ph ph-shield-check"></i>
+        </div>
+        <h3 class="confirm-title" id="confirmModalTitle">Approve Facility KYC</h3>
+        <p class="confirm-desc" id="confirmModalMessage">
+            Are you sure you want to approve this facility?
+        </p>
+        <div class="confirm-actions-row">
+            <button type="button" class="btn-dialog cancel" onclick="closeConfirmDialog()">
+                Cancel
+            </button>
+            <button type="button" class="btn-dialog approve" id="confirmModalActionBtn" onclick="executeConfirmedAction()">
+                <i class="ph ph-check"></i>
+                <span id="confirmModalActionText">Yes, Approve Facility</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Toast Notification -->
+<div class="verif-toast" id="verifToast">
+    <i class="ph ph-check-circle"></i>
+    <span id="verifToastMsg">Action completed successfully.</span>
+</div>
+
 <script>
-const searchInput = document.getElementById('facilitySearchInput');
-const kycFilter = document.getElementById('kycFilter');
-const rows = document.querySelectorAll('.facility-row');
+    // ── CSRF Token Helper ──
+    function getCsrfToken() {
+        const meta = document.querySelector('meta[name="csrf-token"]');
+        if (meta) return meta.getAttribute('content');
+        const input = document.querySelector('input[name="csrf_token"]');
+        if (input) return input.value;
+        return '';
+    }
 
-function filterTable() {
-    const query = searchInput.value.toLowerCase().trim();
-    const kycVal = kycFilter.value;
+    // ── Toast Notification System ──
+    let toastTimeout = null;
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('verifToast');
+        const msg = document.getElementById('verifToastMsg');
+        if (!toast || !msg) return;
 
-    rows.forEach(row => {
-        const name = row.dataset.name;
-        const owner = row.dataset.owner;
-        const kyc = row.dataset.kyc;
-        const rowId = row.dataset.rowId;
+        toast.className = `verif-toast ${type} show`;
+        msg.textContent = message;
 
-        const matchesSearch = !query || name.includes(query) || owner.includes(query);
-        const matchesKYC = kycVal === 'all' || kyc === kycVal;
+        const icon = toast.querySelector('i');
+        if (icon) {
+            icon.className = type === 'success' ? 'ph ph-check-circle' : 'ph ph-warning-circle';
+        }
 
-        const detailRow = document.getElementById(`courts-row-${rowId}`);
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3600);
+    }
 
-        if (matchesSearch && matchesKYC) {
-            row.style.display = '';
+    // ── Custom Confirmation Modal Logic (No Native Alert/Confirm) ──
+    let activeConfirmCallback = null;
+
+    function showConfirmDialog({
+        title,
+        message,
+        type = 'approve', // 'approve' | 'reject' | 'reset'
+        confirmText = 'Confirm',
+        onConfirm
+    }) {
+        const modal = document.getElementById('customConfirmModal');
+        const titleEl = document.getElementById('confirmModalTitle');
+        const msgEl = document.getElementById('confirmModalMessage');
+        const iconWrapper = document.getElementById('confirmModalIcon');
+        const btn = document.getElementById('confirmModalActionBtn');
+        const btnText = document.getElementById('confirmModalActionText');
+
+        if (!modal) return;
+
+        titleEl.textContent = title;
+        msgEl.innerHTML = message;
+
+        iconWrapper.className = `confirm-icon-ring ${type}`;
+        btn.className = `btn-dialog ${type}`;
+        btnText.textContent = confirmText;
+
+        const icon = btn.querySelector('i');
+        if (type === 'approve') {
+            iconWrapper.innerHTML = '<i class="ph ph-shield-check"></i>';
+            if (icon) icon.className = 'ph ph-check';
+        } else if (type === 'reject') {
+            iconWrapper.innerHTML = '<i class="ph ph-shield-warning"></i>';
+            if (icon) icon.className = 'ph ph-x';
         } else {
-            row.style.display = 'none';
-            if (detailRow) {
-                detailRow.style.display = 'none';
-                const btn = row.querySelector(`button[onclick*="toggleCourtsRow"]`);
-                if (btn) {
-                    const count = btn.dataset.count;
-                    btn.innerHTML = `<i class="ph ph-squares-four"></i> View Courts (${count})`;
-                    btn.style.background = 'rgba(0,0,0,0.03)';
-                    btn.style.color = 'var(--text-primary)';
-                }
+            iconWrapper.innerHTML = '<i class="ph ph-arrow-counter-clockwise"></i>';
+            if (icon) icon.className = 'ph ph-arrow-counter-clockwise';
+        }
+
+        activeConfirmCallback = onConfirm;
+        modal.classList.add('open');
+    }
+
+    function closeConfirmDialog(event) {
+        if (event && event.target && !event.target.classList.contains('confirm-modal-backdrop') && !event.target.classList.contains('cancel')) {
+            return;
+        }
+        const modal = document.getElementById('customConfirmModal');
+        if (modal) modal.classList.remove('open');
+        activeConfirmCallback = null;
+    }
+
+    function executeConfirmedAction() {
+        if (activeConfirmCallback) {
+            const cb = activeConfirmCallback;
+            const modal = document.getElementById('customConfirmModal');
+            if (modal) modal.classList.remove('open');
+            activeConfirmCallback = null;
+            cb();
+        }
+    }
+
+    // ── Confirmation Prompt Trigger ──
+    function promptFacilityKycDecision(facilityId, status, facilityName) {
+        let title, message, confirmText;
+        if (status === 'verified') {
+            title = 'Approve Facility KYC';
+            message = `Are you sure you want to approve KYC verification for <strong>"${facilityName}"</strong>? The facility will be marked as verified and will receive an official verification badge.`;
+            confirmText = 'Yes, Approve Facility';
+        } else if (status === 'rejected') {
+            title = 'Reject KYC Application';
+            message = `Are you sure you want to reject the KYC application for <strong>"${facilityName}"</strong>? The facility owner will be prompted to resubmit compliant permits.`;
+            confirmText = 'Yes, Reject Application';
+        } else {
+            title = 'Reset Status to Unverified';
+            message = `Are you sure you want to reset <strong>"${facilityName}"</strong> back to Unverified status?`;
+            confirmText = 'Yes, Reset Status';
+        }
+
+        showConfirmDialog({
+            title: title,
+            message: message,
+            type: status === 'verified' ? 'approve' : (status === 'rejected' ? 'reject' : 'reset'),
+            confirmText: confirmText,
+            onConfirm: () => updateFacilityKycAjax(facilityId, status, facilityName)
+        });
+    }
+
+    // ── Toggle Expandable Facility & Courts Dossier ──
+    function toggleFacilityDossier(facilityId, event) {
+        if (event) {
+            const target = event.target;
+            if (target.closest('button:not(.btn-toggle-inspect)') || target.closest('a') || target.tagName === 'INPUT') {
+                return;
             }
         }
-    });
-}
 
-if (searchInput) searchInput.addEventListener('input', filterTable);
-if (kycFilter) kycFilter.addEventListener('change', filterTable);
+        const detailRow = document.getElementById(`dossier-row-${facilityId}`);
+        const btn = document.getElementById(`btn-toggle-${facilityId}`);
+        const caret = document.getElementById(`caret-${facilityId}`);
+        if (!detailRow) return;
 
-function toggleCourtsRow(event, rowId) {
-    event.stopPropagation();
-    const detailRow = document.getElementById(`courts-row-${rowId}`);
-    const btn = event.currentTarget;
-    if (!detailRow) return;
+        const isHidden = (detailRow.style.display === 'none' || detailRow.style.display === '');
 
-    if (detailRow.style.display === 'none' || detailRow.style.display === '') {
-        detailRow.style.display = 'table-row';
-        btn.innerHTML = `<i class="ph ph-caret-up"></i> Hide Courts`;
-        btn.style.background = 'rgba(255, 87, 34, 0.1)';
-        btn.style.color = 'var(--primary-orange)';
-    } else {
-        detailRow.style.display = 'none';
-        const count = btn.dataset.count;
-        btn.innerHTML = `<i class="ph ph-squares-four"></i> View Courts (${count})`;
-        btn.style.background = 'rgba(0,0,0,0.03)';
-        btn.style.color = 'var(--text-primary)';
+        if (isHidden) {
+            detailRow.style.display = 'table-row';
+            if (btn) btn.classList.add('active');
+            if (caret) caret.style.transform = 'rotate(180deg)';
+        } else {
+            detailRow.style.display = 'none';
+            if (btn) btn.classList.remove('active');
+            if (caret) caret.style.transform = 'rotate(0deg)';
+        }
     }
-}
+
+    // ── Search & Filter Logic ──
+    const searchInput = document.getElementById('facilitySearchInput');
+    const kycFilter = document.getElementById('kycFilter');
+    const courtCountFilter = document.getElementById('courtCountFilter');
+    const rows = document.querySelectorAll('.facility-row');
+
+    function filterTable() {
+        const query = searchInput.value.toLowerCase().trim();
+        const kycVal = kycFilter.value;
+        const courtVal = courtCountFilter.value;
+
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const name = row.dataset.name || '';
+            const owner = row.dataset.owner || '';
+            const location = row.dataset.location || '';
+            const courts = row.dataset.courts || '';
+            const kyc = row.dataset.kyc || '';
+            const courtCount = parseInt(row.dataset.courtCount) || 0;
+            const rowId = row.dataset.rowId;
+
+            const matchesSearch = !query || 
+                name.includes(query) || 
+                owner.includes(query) || 
+                location.includes(query) || 
+                courts.includes(query);
+
+            const matchesKYC = (kycVal === 'all') || (kyc === kycVal);
+
+            let matchesCourt = true;
+            if (courtVal === 'has_courts') matchesCourt = courtCount > 0;
+            else if (courtVal === 'no_courts') matchesCourt = courtCount === 0;
+
+            const detailRow = document.getElementById(`dossier-row-${rowId}`);
+
+            if (matchesSearch && matchesKYC && matchesCourt) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+                if (detailRow) detailRow.style.display = 'none';
+                const btn = document.getElementById(`btn-toggle-${rowId}`);
+                if (btn) btn.classList.remove('active');
+                const caret = document.getElementById(`caret-${rowId}`);
+                if (caret) caret.style.transform = 'rotate(0deg)';
+            }
+        });
+
+        // Update active stat pill highlight
+        document.querySelectorAll('.stat-pill-card').forEach(c => c.classList.remove('filter-active'));
+        if (kycVal === 'all') {
+            document.getElementById('card-filter-all')?.classList.add('filter-active');
+        } else if (kycVal === 'verified') {
+            document.getElementById('card-filter-verified')?.classList.add('filter-active');
+        } else if (kycVal === 'pending_approval') {
+            document.getElementById('card-filter-pending')?.classList.add('filter-active');
+        } else if (kycVal === 'rejected') {
+            document.getElementById('card-filter-rejected')?.classList.add('filter-active');
+        }
+    }
+
+    if (searchInput) searchInput.addEventListener('input', filterTable);
+    if (kycFilter) kycFilter.addEventListener('change', filterTable);
+    if (courtCountFilter) courtCountFilter.addEventListener('change', filterTable);
+
+    function setKycFilter(val, cardEl) {
+        if (kycFilter) {
+            kycFilter.value = val;
+            filterTable();
+        }
+    }
+
+    // ── Fast AJAX KYC Status Update ──
+    async function updateFacilityKycAjax(facilityId, status, facilityName) {
+        try {
+            const resp = await fetch(`/adminstaff/verifications/${facilityId}/status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCsrfToken(),
+                    'X-CSRF-Token': getCsrfToken()
+                },
+                body: JSON.stringify({ status: status })
+            });
+
+            const data = await resp.json();
+            if (data.success) {
+                showToast(`Facility "${facilityName}" marked as ${status.replace('_', ' ').toUpperCase()}.`, 'success');
+
+                // Update data-kyc attribute on the row
+                const row = document.getElementById(`fac-main-row-${facilityId}`);
+                if (row) {
+                    row.dataset.kyc = status;
+                }
+
+                // Update status cell pill
+                const statusCell = document.getElementById(`status-cell-${facilityId}`);
+                if (statusCell) {
+                    let pillHtml = '';
+                    if (status === 'verified') {
+                        pillHtml = '<span class="status-pill success"><i class="ph ph-shield-check"></i> Verified</span>';
+                    } else if (status === 'pending_approval') {
+                        pillHtml = '<span class="status-pill warning"><i class="ph ph-hourglass-high"></i> Pending</span>';
+                    } else if (status === 'rejected') {
+                        pillHtml = '<span class="status-pill danger"><i class="ph ph-shield-warning"></i> Rejected</span>';
+                    } else {
+                        pillHtml = '<span class="status-pill" style="background: rgba(255,255,255,0.08); color: var(--text-card-muted);"><i class="ph ph-shield-warning"></i> Unverified</span>';
+                    }
+                    statusCell.innerHTML = pillHtml;
+                }
+
+                // Update badge in lightbox if open
+                const docBadge = document.getElementById('lightboxDocStatusBadge');
+                if (docBadge) {
+                    docBadge.textContent = status.replace('_', ' ').toUpperCase();
+                    docBadge.className = `status-pill ${status === 'verified' ? 'success' : (status === 'rejected' ? 'danger' : 'warning')}`;
+                }
+
+                // Recount and update stats bar
+                recalculateKycCounts();
+            } else {
+                showToast(data.message || 'Error updating status.', 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('Network error while updating KYC status.', 'error');
+        }
+    }
+
+    function recalculateKycCounts() {
+        let verified = 0, pending = 0, rejected = 0;
+        document.querySelectorAll('.facility-row').forEach(r => {
+            const st = r.dataset.kyc;
+            if (st === 'verified') verified++;
+            else if (st === 'pending_approval') pending++;
+            else if (st === 'rejected') rejected++;
+        });
+
+        const vEl = document.getElementById('statVerifiedCount');
+        const pEl = document.getElementById('statPendingCount');
+        const rEl = document.getElementById('statRejectedCount');
+        if (vEl) vEl.textContent = verified;
+        if (pEl) pEl.textContent = pending;
+        if (rEl) rEl.textContent = rejected;
+    }
+
+    // ── High-Contrast Document Lightbox Modal ──
+    function openDocPreviewModal(facilityName, docUrl, currentStatus, facilityId, event, docTitle) {
+        if (event) event.stopPropagation();
+        const modal = document.getElementById('docLightboxModal');
+        const title = document.getElementById('lightboxTitle');
+        const body = document.getElementById('lightboxBody');
+        const link = document.getElementById('lightboxDirectLink');
+        const badge = document.getElementById('lightboxDocStatusBadge');
+        const btnApprove = document.getElementById('lightboxBtnApprove');
+        const btnReject = document.getElementById('lightboxBtnReject');
+
+        title.textContent = docTitle ? `${facilityName} — ${docTitle}` : `${facilityName} — KYC Document`;
+        link.href = docUrl;
+
+        // Render PDF in iframe or image in img
+        if (docUrl.toLowerCase().includes('.pdf')) {
+            body.innerHTML = `<iframe src="${docUrl}" style="width:100%; height:72vh; border:none; border-radius:8px; background:#ffffff;"></iframe>`;
+        } else {
+            body.innerHTML = `<img src="${docUrl}" id="lightboxImage" alt="Document Preview" style="max-width:100%; max-height:72vh; object-fit:contain; border-radius:8px;">`;
+        }
+
+        // Status badge
+        const formattedStatus = (currentStatus || 'pending').replace('_', ' ').toUpperCase();
+        badge.textContent = formattedStatus;
+        badge.className = `status-pill ${currentStatus === 'verified' ? 'success' : (currentStatus === 'rejected' ? 'danger' : 'warning')}`;
+
+        // Hook approve and reject buttons
+        if (facilityId) {
+            btnApprove.style.display = 'inline-flex';
+            btnReject.style.display = 'inline-flex';
+            btnApprove.onclick = () => {
+                promptFacilityKycDecision(facilityId, 'verified', facilityName);
+            };
+            btnReject.onclick = () => {
+                promptFacilityKycDecision(facilityId, 'rejected', facilityName);
+            };
+        } else {
+            btnApprove.style.display = 'none';
+            btnReject.style.display = 'none';
+        }
+
+        modal.classList.add('open');
+    }
+
+    function openImagePreview(facilityName, imageUrl, status, facilityId, event) {
+        openDocPreviewModal(facilityName, imageUrl, status, facilityId, event);
+    }
+
+    function closeDocModal(event) {
+        if (event && event.target && !event.target.classList.contains('lightbox-modal') && !event.target.classList.contains('modal-close-icon-btn') && !event.target.closest('.btn-action-pill.reset')) {
+            return;
+        }
+        const modal = document.getElementById('docLightboxModal');
+        if (modal) modal.classList.remove('open');
+    }
+
+    // Initialize initial active filter highlight
+    document.addEventListener('DOMContentLoaded', () => {
+        filterTable();
+    });
 </script>
 {% endblock %}

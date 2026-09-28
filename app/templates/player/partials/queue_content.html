@@ -1,54 +1,172 @@
 {% set fac_list = facilities_queues.values() | list %}
 
-<!-- ===== YOUR POSITION BANNER ===== -->
-<div class="queue-position-card glass-card">
-    {% if my_queue %}
-    <div class="queue-circle">#{{ my_queue.position }}</div>
-    <div class="queue-details">
-        <h2>Your Queue Position</h2>
-        <p style="margin-bottom: 6px;">
-            <i class="ph ph-buildings" style="color: var(--primary-orange); margin-right: 4px;"></i>
-            <strong>{{ my_queue.facilities.name if my_queue.facilities else 'Unknown Facility' }}</strong>
-        </p>
-        <p style="display: flex; align-items: center; gap: 12px;">
-            <span>
-                <i class="ph ph-layout" style="color: var(--text-muted); margin-right: 4px;"></i>
-                Court: <strong>{{ my_queue.courts.name if my_queue.courts else 'Pending' }}</strong>
-            </span>
-            <span>
-                <i class="ph ph-clock" style="color: var(--text-muted); margin-right: 4px;"></i>
-                Est. Wait: <strong class="wait-time-display" data-target-time="{{ my_queue.target_time }}" data-time-type="{{ my_queue.time_type }}">~{{ my_queue.estimated_wait_mins }} min</strong>
-            </span>
-        </p>
-    </div>
-    {% else %}
-    <div class="queue-circle" style="font-size: 1.25rem;">--</div>
-    <div class="queue-details">
-        <h2>Not in Queue</h2>
-        <p style="color: var(--text-muted);">You are not currently in any court queue. Book a court slot or contact staff to join the waitlist.</p>
-    </div>
-    {% endif %}
-</div>
-
-<!-- ===== FACILITY TABS ===== -->
-{% if fac_list %}
-<div class="fac-tabs-wrapper">
-    <div class="fac-tabs" id="facilityTabs" role="tablist">
-        {% for fac in fac_list %}
-        <button
-            class="fac-tab {% if loop.first %}active{% endif %}"
-            data-target="fac-panel-{{ loop.index }}"
-            role="tab"
-            aria-selected="{{ 'true' if loop.first else 'false' }}"
-        >
-            <i class="ph ph-map-pin"></i>
-            {{ fac.facility_name }}
-            {% if fac.my_queue %}
-            <span class="fac-tab-you-dot" title="You are in this queue"></span>
+<!-- ===== YOUR QUEUE POSITION TICKET ===== -->
+{% if my_queue %}
+<div class="queue-ticket-card glass-card">
+    <div class="ticket-header-strip">
+        <div class="ticket-type-label">
+            <i class="ph ph-ticket" style="color: var(--primary-orange);"></i>
+            <span>Active Match Queue Ticket</span>
+        </div>
+        <div class="ticket-status-pill">
+            {% if my_queue.status == 'playing' %}
+                <span class="status-pill playing">
+                    <span class="pulse-dot-emerald"></span>
+                    <span>On Court &mdash; Match in Progress</span>
+                </span>
+            {% elif my_queue.status == 'next' %}
+                <span class="status-pill next">
+                    <i class="ph ph-fire"></i>
+                    <span>Up Next &mdash; Paddle Ready!</span>
+                </span>
+            {% else %}
+                <span class="status-pill waiting">
+                    <i class="ph ph-hourglass-simple"></i>
+                    <span>In Line &mdash; Position #{{ my_queue.position }}</span>
+                </span>
             {% endif %}
-            <span class="fac-tab-badge">{{ fac.queues | length }}</span>
-        </button>
-        {% endfor %}
+        </div>
+    </div>
+
+    <div class="ticket-main-grid">
+        <!-- Col 1: Position Badge -->
+        <div class="ticket-pos-col">
+            <div class="ticket-pos-ring">
+                <span class="pos-hash">#</span><span class="pos-num">{{ my_queue.position }}</span>
+            </div>
+            <span class="pos-label">Venue Turn</span>
+        </div>
+
+        <!-- Col 2: Match & Facility Info -->
+        <div class="ticket-info-col">
+            <div class="ticket-facility-name">
+                <i class="ph ph-map-pin" style="color: var(--primary-orange);"></i>
+                <strong>{{ my_queue.facilities.name if my_queue.facilities else 'Sports Complex' }}</strong>
+            </div>
+
+            <div class="ticket-meta-grid">
+                <div class="meta-item">
+                    <span class="meta-label"><i class="ph ph-layout"></i> Assigned Court</span>
+                    <span class="meta-val highlight-court">{{ my_queue.courts.name if my_queue.courts else 'Pending Assignment' }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label"><i class="ph ph-calendar-blank"></i> Scheduled Slot</span>
+                    <span class="meta-val">{{ my_queue.slot_time_str if my_queue.slot_time_str else 'Today' }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label"><i class="ph ph-timer"></i> Estimated Turn</span>
+                    <span class="meta-val countdown-chip">
+                        <strong class="wait-time-display" data-target-time="{{ my_queue.target_time }}" data-time-type="{{ my_queue.time_type }}">
+                            {{ my_queue.formatted_wait }}
+                        </strong>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Col 3: Visual Stepper -->
+        <div class="ticket-stepper-col">
+            <div class="queue-stepper">
+                <div class="step-item completed">
+                    <div class="step-icon"><i class="ph ph-check"></i></div>
+                    <span class="step-text">Reserved</span>
+                </div>
+                <div class="step-line {% if my_queue.status in ['waiting', 'next', 'playing'] %}filled{% endif %}"></div>
+                <div class="step-item {% if my_queue.status == 'waiting' %}current{% elif my_queue.status in ['next', 'playing'] %}completed{% endif %}">
+                    <div class="step-icon">
+                        {% if my_queue.status in ['next', 'playing'] %}<i class="ph ph-check"></i>{% else %}2{% endif %}
+                    </div>
+                    <span class="step-text">In Line</span>
+                </div>
+                <div class="step-line {% if my_queue.status in ['next', 'playing'] %}filled{% endif %}"></div>
+                <div class="step-item {% if my_queue.status == 'next' %}current pulse-amber{% elif my_queue.status == 'playing' %}completed{% endif %}">
+                    <div class="step-icon">
+                        {% if my_queue.status == 'playing' %}<i class="ph ph-check"></i>{% else %}3{% endif %}
+                    </div>
+                    <span class="step-text">Up Next</span>
+                </div>
+                <div class="step-line {% if my_queue.status == 'playing' %}filled{% endif %}"></div>
+                <div class="step-item {% if my_queue.status == 'playing' %}current pulse-emerald{% endif %}">
+                    <div class="step-icon">4</div>
+                    <span class="step-text">On Court</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ticket Footer Banner -->
+    <div class="ticket-footer-strip">
+        <div class="footer-tip">
+            {% if my_queue.status == 'next' %}
+                <i class="ph ph-bell-ringing" style="color: #f59e0b;"></i>
+                <span><strong>Your turn is almost here!</strong> Please head to the entrance of <strong>{{ my_queue.courts.name if my_queue.courts else 'your assigned court' }}</strong>.</span>
+            {% elif my_queue.status == 'playing' %}
+                <i class="ph ph-tennis-ball" style="color: #10b981;"></i>
+                <span><strong>Have a great match!</strong> Games auto-conclude 15 minutes after reservation end time.</span>
+            {% else %}
+                <i class="ph ph-info" style="color: var(--primary-orange);"></i>
+                <span>You are <strong>#{{ my_queue.position }}</strong> in queue. We will automatically alert you with a chime when you're called next.</span>
+            {% endif %}
+        </div>
+        <div class="footer-actions">
+            <a href="{{ url_for('player.my_reservations') }}" class="ticket-link-btn">
+                <i class="ph ph-receipt"></i>
+                <span>View Booking Details</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% else %}
+<!-- EMPTY STATE TICKET -->
+<div class="queue-empty-card glass-card">
+    <div class="empty-icon-wrap">
+        <div class="empty-icon-ring">
+            <i class="ph ph-tennis-ball"></i>
+        </div>
+    </div>
+    <div class="empty-content">
+        <h3>You're Not Currently in Any Court Queue</h3>
+        <p>You don't have an active waitlist spot today. Book a court slot or join an open play matchmaker lobby to secure your turn on the court.</p>
+        <div class="empty-actions">
+            <a href="{{ url_for('player.reservation') }}" class="empty-btn primary">
+                <i class="ph ph-calendar-plus"></i>
+                <span>Reserve a Court Slot</span>
+            </a>
+            <a href="{{ url_for('player.matchmaker') }}" class="empty-btn secondary">
+                <i class="ph ph-handshake"></i>
+                <span>Find Open Play Lobby</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- ===== FACILITY TABS & QUEUE TABLES ===== -->
+{% if fac_list %}
+<div class="fac-tabs-wrapper glass-card">
+    <div class="fac-tabs-header">
+        <div class="fac-tabs" id="facilityTabs" role="tablist">
+            {% for fac in fac_list %}
+            <button
+                class="fac-tab {% if loop.first %}active{% endif %}"
+                data-target="fac-panel-{{ loop.index }}"
+                role="tab"
+                aria-selected="{{ 'true' if loop.first else 'false' }}"
+            >
+                <div class="fac-tab-inner">
+                    <i class="ph ph-map-pin"></i>
+                    <span class="fac-tab-name">{{ fac.facility_name }}</span>
+                    {% if fac.my_queue %}
+                    <span class="fac-tab-you-chip" title="You have an active spot here">
+                        <span class="mini-pulse-dot"></span>
+                        <span>Your Queue</span>
+                    </span>
+                    {% endif %}
+                    <span class="fac-tab-counter">{{ fac.queues | length }}</span>
+                </div>
+            </button>
+            {% endfor %}
+        </div>
     </div>
 
     {% for fac in fac_list %}
@@ -57,93 +175,181 @@
         id="fac-panel-{{ loop.index }}"
         role="tabpanel"
     >
-        <!-- Per-facility "your position" mini-alert -->
+        <!-- Per-facility Quick Stats Ribbon -->
+        <div class="fac-meta-ribbon">
+            <div class="ribbon-stat">
+                <i class="ph ph-users-three"></i>
+                <span><strong>{{ fac.queues | length }}</strong> Player{{ 's' if (fac.queues | length) != 1 else '' }} in Line</span>
+            </div>
+            <div class="ribbon-stat-divider"></div>
+            <div class="ribbon-stat">
+                <i class="ph ph-tennis-ball"></i>
+                <span><strong>{{ fac.playing_count }}</strong> Currently Playing</span>
+            </div>
+            <div class="ribbon-stat-divider"></div>
+            <div class="ribbon-stat">
+                <i class="ph ph-hourglass-simple"></i>
+                <span><strong>{{ fac.waiting_count }}</strong> Waiting</span>
+            </div>
+            <div class="ribbon-stat-divider"></div>
+            <div class="ribbon-stat">
+                <i class="ph ph-layout"></i>
+                <span><strong>{{ fac.courts_count }}</strong> Active Court{{ 's' if fac.courts_count != 1 else '' }}</span>
+            </div>
+        </div>
+
+        <!-- Per-facility "your position" announcement -->
         {% if fac.my_queue %}
-        <div class="fac-my-position-bar">
-            <i class="ph ph-star-four" style="color: var(--primary-orange);"></i>
-            <span>You are <strong>#{{ fac.my_queue.position }}</strong> in this facility's queue &mdash;</span>
-            {% if fac.my_queue.status == 'playing' %}
-            <span style="color: var(--primary-orange); font-weight: 700; display: inline-flex; align-items: center; gap: 4px;"><span class="dot-indicator bg-orange animate-pulse"></span>Currently Playing!</span>
-            {% else %}
-            <span>Est. Wait: <strong class="wait-time-display" data-target-time="{{ fac.my_queue.target_time }}" data-time-type="{{ fac.my_queue.time_type }}">~{{ fac.my_queue.estimated_wait_mins }} min</strong></span>
-            {% endif %}
+        <div class="fac-my-position-banner">
+            <div class="my-banner-left">
+                <div class="star-badge-icon"><i class="ph ph-star-four"></i></div>
+                <div>
+                    <h4 class="banner-title">
+                        You are <strong>#{{ fac.my_queue.position }}</strong> in line at {{ fac.facility_name }}
+                    </h4>
+                    <p class="banner-sub">
+                        Court: <strong>{{ fac.my_queue.courts.name if fac.my_queue.courts else 'Pending' }}</strong> &bull; Scheduled: <strong>{{ fac.my_queue.slot_time_str }}</strong>
+                    </p>
+                </div>
+            </div>
+            <div class="my-banner-right">
+                {% if fac.my_queue.status == 'playing' %}
+                    <span class="status-pill playing large">
+                        <span class="pulse-dot-emerald"></span>
+                        <span>Now Playing</span>
+                    </span>
+                {% elif fac.my_queue.status == 'next' %}
+                    <span class="status-pill next large">
+                        <i class="ph ph-fire"></i>
+                        <span>Up Next &mdash; Ready!</span>
+                    </span>
+                {% else %}
+                    <div class="banner-countdown-box">
+                        <span class="box-label">Est. Turnaround</span>
+                        <span class="wait-time-display box-time" data-target-time="{{ fac.my_queue.target_time }}" data-time-type="{{ fac.my_queue.time_type }}">
+                            {{ fac.my_queue.formatted_wait }}
+                        </span>
+                    </div>
+                {% endif %}
+            </div>
         </div>
         {% endif %}
 
-        <div class="table-container" style="overflow-x: auto;">
-            <table class="queue-table premium-table">
+        <!-- Modern Queue Table -->
+        <div class="table-responsive-container">
+            <table class="premium-queue-table">
                 <thead>
                     <tr>
-                        <th style="width: 80px; text-align: center;">POSITION</th>
-                        <th>PLAYER</th>
-                        <th>COURT</th>
-                        <th>STATUS</th>
-                        <th>EST. WAIT</th>
+                        <th style="width: 80px; text-align: center;">#</th>
+                        <th>Player</th>
+                        <th>Court Assignment</th>
+                        <th>Status</th>
+                        <th>Estimated Turn / Slot</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for q in fac.queues %}
                     <tr class="queue-row-item {% if my_queue and q.id == my_queue.id %}queue-row-you{% endif %}">
-                        <td class="bold" style="text-align: center;">
+                        <!-- Position -->
+                        <td class="pos-cell" style="text-align: center;">
                             {% if q.status == 'playing' %}
-                                <span class="playing-dash">-</span>
+                                <span class="badge-playing-icon" title="Match in Progress">
+                                    <i class="ph ph-play-circle"></i>
+                                </span>
+                            {% elif q.status == 'next' %}
+                                <span class="position-bubble next" title="Up Next">
+                                    {{ q.position }}
+                                </span>
                             {% else %}
-                                <span class="position-number">{{ q.position }}</span>
+                                <span class="position-bubble" title="Queue Position">
+                                    {{ q.position }}
+                                </span>
                             {% endif %}
                         </td>
-                        <td>
-                            <div style="display: inline-flex; align-items: center; gap: 10px;">
+
+                        <!-- Player Info -->
+                        <td class="player-cell">
+                            <div class="player-profile-block">
                                 {% if q.player_id %}
-                                    <div class="player-avatar-mini" onclick="openPlayerDrawer('{{ q.player_id }}')" title="View profile & history" style="cursor: pointer;">
-                                        {% if q.profiles.avatar_url %}
+                                    <div class="player-avatar-mini" onclick="openPlayerDrawer('{{ q.player_id }}')" title="View player card">
+                                        {% if q.profiles and q.profiles.avatar_url %}
                                             <img src="{{ q.profiles.avatar_url }}" alt="Avatar">
                                         {% else %}
                                             <div class="player-initials-mini">
-                                                {{ ((q.profiles.first_name or 'P')[0] + (q.profiles.last_name or '')[0]).upper() }}
+                                                {{ (((q.profiles.first_name if q.profiles else 'P') or 'P')[0] + ((q.profiles.last_name if q.profiles else '') or '')[0]).upper() }}
                                             </div>
                                         {% endif %}
                                     </div>
-                                    <div style="display: flex; flex-direction: column;">
-                                        <span class="player-name-link" onclick="openPlayerDrawer('{{ q.player_id }}')" title="View profile & history" style="cursor: pointer;">
-                                            {{ q.profiles.first_name }} {{ q.profiles.last_name }}
-                                            {% if my_queue and q.id == my_queue.id %}<span class="you-label">(You)</span>{% endif %}
-                                        </span>
+                                    <div class="player-text-block">
+                                        <div class="player-name-row">
+                                            <span class="player-name-link" onclick="openPlayerDrawer('{{ q.player_id }}')">
+                                                {{ q.profiles.first_name if q.profiles else 'Player' }} {{ q.profiles.last_name if q.profiles else '' }}
+                                            </span>
+                                            {% if my_queue and q.id == my_queue.id %}
+                                                <span class="you-tag"><i class="ph ph-check-circle"></i> You</span>
+                                            {% endif %}
+                                        </div>
+                                        <span class="player-sub-info">Member Booking</span>
                                     </div>
                                 {% else %}
                                     <div class="player-initials-mini walkin-avatar">
-                                        W
+                                        <i class="ph ph-user"></i>
                                     </div>
-                                    <div style="display: flex; flex-direction: column;">
-                                        <span class="guest-name-text">
-                                            {{ q.guest_name }}
-                                        </span>
-                                        <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 500;">Walk-in Guest</span>
+                                    <div class="player-text-block">
+                                        <span class="guest-name-text">{{ q.guest_name or 'Walk-in Player' }}</span>
+                                        <span class="player-sub-info walkin">On-site Walk-in</span>
                                     </div>
                                 {% endif %}
                             </div>
                         </td>
-                        <td>
-                            <div style="display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-weight: 500;">
-                                <i class="ph ph-layout" style="font-size: 1.1rem; color: var(--text-muted);"></i>
-                                <span>{{ q.courts.name if q.courts else 'Any Available' }}</span>
+
+                        <!-- Court Assignment -->
+                        <td class="court-cell">
+                            <div class="court-pill-wrapper">
+                                <i class="ph ph-layout"></i>
+                                <span>{{ q.courts.name if q.courts else 'General Waitlist' }}</span>
                             </div>
                         </td>
-                        <td>
+
+                        <!-- Status -->
+                        <td class="status-cell">
                             {% if q.status == 'playing' %}
-                                <span class="status-badge orange-glow"><span class="dot-indicator bg-orange"></span>Playing</span>
+                                <span class="status-pill playing">
+                                    <span class="pulse-dot-emerald"></span>
+                                    <span>Playing</span>
+                                </span>
                             {% elif q.status == 'next' %}
-                                <span class="status-badge green-glow"><span class="dot-indicator bg-green"></span>Next Up</span>
+                                <span class="status-pill next">
+                                    <i class="ph ph-fire"></i>
+                                    <span>Up Next</span>
+                                </span>
                             {% else %}
-                                <span class="status-badge gray-glow"><span class="dot-indicator bg-gray"></span>Waiting</span>
+                                <span class="status-pill waiting">
+                                    <i class="ph ph-hourglass-simple"></i>
+                                    <span>Waiting</span>
+                                </span>
                             {% endif %}
                         </td>
-                        <td>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <i class="ph ph-clock" style="font-size: 1.1rem; color: var(--text-muted);"></i>
-                                {% if q.status == 'playing' %}
-                                    <span class="wait-time-display font-bold" style="color: var(--primary-orange);" data-target-time="{{ q.target_time }}" data-time-type="Remaining">{{ q.estimated_wait_mins }} min left</span>
-                                {% else %}
-                                    <span class="wait-time-display font-medium" style="color: var(--text-primary);" data-target-time="{{ q.target_time }}" data-time-type="Wait">~{{ q.estimated_wait_mins }} min</span>
+
+                        <!-- Estimated Turn / Slot -->
+                        <td class="time-cell">
+                            <div class="turn-time-box">
+                                <div class="primary-time">
+                                    <i class="ph ph-clock"></i>
+                                    {% if q.status == 'playing' %}
+                                        <span class="wait-time-display text-emerald font-bold" data-target-time="{{ q.target_time }}" data-time-type="Remaining">
+                                            {{ q.formatted_wait }}
+                                        </span>
+                                    {% else %}
+                                        <span class="wait-time-display text-primary font-bold" data-target-time="{{ q.target_time }}" data-time-type="Wait">
+                                            {{ q.formatted_wait }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                {% if q.slot_time_str %}
+                                <div class="secondary-slot">
+                                    <span>Slot: {{ q.slot_time_str }}</span>
+                                </div>
                                 {% endif %}
                             </div>
                         </td>
@@ -156,9 +362,84 @@
     {% endfor %}
 </div>
 {% else %}
-<div class="glass-card" style="text-align: center; padding: 50px;">
-    <i class="ph ph-user-list" style="font-size: 3.5rem; color: var(--text-muted); margin-bottom: 15px; display: block; opacity: 0.8;"></i>
-    <h3 style="margin-bottom: 10px; font-weight: 700; color: var(--text-primary);">No Active Queues</h3>
-    <p style="color: var(--text-muted); max-width: 400px; margin: 0 auto; line-height: 1.5;">There are no players currently in the court waitlists. Make a court booking to reserve your slot!</p>
+<div class="queue-empty-card glass-card">
+    <div class="empty-icon-wrap">
+        <div class="empty-icon-ring">
+            <i class="ph ph-users-three"></i>
+        </div>
+    </div>
+    <div class="empty-content">
+        <h3>No Active Queues Right Now</h3>
+        <p>All courts are currently open or have concluded for today. Check court availability and reserve your slot!</p>
+        <div class="empty-actions">
+            <a href="{{ url_for('player.reservation') }}" class="empty-btn primary">
+                <i class="ph ph-calendar-plus"></i>
+                <span>Book Court Now</span>
+            </a>
+        </div>
+    </div>
 </div>
 {% endif %}
+
+<!-- ===== QUEUE ETIQUETTE & GUIDELINES ===== -->
+<div class="queue-guidelines-grid">
+    <div class="guide-card glass-card">
+        <div class="guide-header">
+            <i class="ph ph-info" style="color: var(--primary-orange);"></i>
+            <h4>Court Queue Etiquette</h4>
+        </div>
+        <ul class="guide-list">
+            <li>
+                <div class="guide-icon"><i class="ph ph-clock-countdown"></i></div>
+                <div>
+                    <strong>Arrive 10 Minutes Early</strong>
+                    <p>Be at the venue ahead of your scheduled match start so court transitions flow seamlessly.</p>
+                </div>
+            </li>
+            <li>
+                <div class="guide-icon"><i class="ph ph-speaker-high"></i></div>
+                <div>
+                    <strong>Keep Audio Alerts Active</strong>
+                    <p>Keep this tab open; an audible chime sounds whenever you are marked <em>Up Next</em> or <em>Playing</em>.</p>
+                </div>
+            </li>
+            <li>
+                <div class="guide-icon"><i class="ph ph-tennis-ball"></i></div>
+                <div>
+                    <strong>Paddle Ready for "Up Next"</strong>
+                    <p>When your status turns amber ("Up Next"), head to your assigned court sidelines.</p>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <div class="guide-card glass-card">
+        <div class="guide-header">
+            <i class="ph ph-shield-check" style="color: #10b981;"></i>
+            <h4>Fair Play & Turnover Rules</h4>
+        </div>
+        <ul class="guide-list">
+            <li>
+                <div class="guide-icon"><i class="ph ph-timer"></i></div>
+                <div>
+                    <strong>Automated Game Turnover</strong>
+                    <p>Standard court sessions run for the duration of the reservation with a 15-minute grace period.</p>
+                </div>
+            </li>
+            <li>
+                <div class="guide-icon"><i class="ph ph-user-circle-gear"></i></div>
+                <div>
+                    <strong>Staff Assistance</strong>
+                    <p>Need to swap courts or report an issue? Check in with the front desk facility staff.</p>
+                </div>
+            </li>
+            <li>
+                <div class="guide-icon"><i class="ph ph-calendar-check"></i></div>
+                <div>
+                    <strong>Manage Your Booking</strong>
+                    <p>View your upcoming schedule or cancel reservations directly from <a href="{{ url_for('player.my_reservations') }}">My Bookings</a>.</p>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>

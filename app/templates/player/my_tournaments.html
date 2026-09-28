@@ -1,80 +1,573 @@
 {% extends "player/base_player.html" %}
+
 {% block title %}My Tournaments{% endblock %}
-{% block content %}
-<div class="dashboard-header">
-    <h1 class="page-title">My Tournaments</h1>
-    <a href="{{ url_for('player.events') }}" class="action-box orange"
-        style="padding:8px 18px;border:none;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.9rem;display:flex;align-items:center;gap:6px;">
-        <i class="ph ph-magnifying-glass"></i> Browse Events
-    </a>
-</div>
 
-
-
-{% if tournaments %}
-<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;">
-    {% for t in tournaments %}
-    <div class="glass-card tournament-card">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
-            <div>
-                <div
-                    style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--primary-orange);margin-bottom:4px;">
-                    <i class="ph ph-trophy"></i> Tournament
-                </div>
-                <h3 style="margin:0;font-size:1.1rem;font-weight:700;">{{ t.title }}</h3>
-            </div>
-            {% if t.status == 'completed' %}
-            <span class="status-pill success">Completed</span>
-            {% elif t.status == 'in_progress' %}
-            <span class="status-pill" style="background:rgba(245,158,11,0.15);color:#f59e0b;">In Progress</span>
-            {% elif t.status == 'registration_open' %}
-            <span class="status-pill" style="background:rgba(99,102,241,0.15);color:#818cf8;">Open</span>
-            {% else %}
-            <span class="status-pill">{{ t.status | replace('_', ' ') | title }}</span>
-            {% endif %}
-        </div>
-
-        <div
-            style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;font-size:0.88rem;color:var(--text-secondary);">
-            <div style="display:flex;align-items:center;gap:8px;">
-                <i class="ph ph-calendar" style="color:var(--primary-orange);"></i>
-                {{ t.event_date[:10] if t.event_date else '—' }}
-            </div>
-            {% if t.facilities %}
-            <div style="display:flex;align-items:center;gap:8px;">
-                <i class="ph ph-map-pin" style="color:var(--primary-orange);"></i>
-                {{ t.facilities.name }} · {{ t.facilities.location }}
-            </div>
-            {% endif %}
-        </div>
-
-        <a href="{{ url_for('player.tournament_bracket', event_id=t.id) }}" class="action-box green"
-            style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;text-decoration:none;border:none;border-radius:8px;font-weight:600;width:100%;">
-            <i class="ph ph-tree-structure"></i> View My Bracket
-        </a>
-    </div>
-    {% endfor %}
-</div>
-{% else %}
-<div class="glass-card" style="text-align:center;padding:60px;">
-    <i class="ph ph-trophy" style="font-size:4rem;display:block;margin-bottom:16px;opacity:0.3;"></i>
-    <h3 style="margin:0 0 8px;font-size:1.2rem;">No Tournament Registrations</h3>
-    <p style="color:var(--text-secondary);margin-bottom:20px;">You haven't joined any tournaments yet.</p>
-    <a href="{{ url_for('player.events') }}" class="action-box orange"
-        style="padding:10px 24px;text-decoration:none;border:none;border-radius:8px;font-weight:600;display:inline-flex;align-items:center;gap:8px;">
-        <i class="ph ph-magnifying-glass"></i> Browse Events
-    </a>
-</div>
-{% endif %}
-
+{% block extra_head %}
 <style>
-    .tournament-card {
-        transition: transform .2s, box-shadow .2s;
+    /* ==========================================================================
+       MY TOURNAMENTS — SPORTS PLATFORM 2.0 (LIGHT & DARK DUAL THEME)
+       ========================================================================== */
+    .my-tournaments-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        width: 100%;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding-bottom: 140px; /* Clearance for floating cart widget */
     }
 
-    .tournament-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+    /* ── Breadcrumb Bar ── */
+    .tournaments-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--sports-text-muted, #64748b);
+    }
+
+    .tournaments-breadcrumb a {
+        color: var(--sports-text-muted, #64748b);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: color 0.18s ease;
+    }
+
+    .tournaments-breadcrumb a:hover {
+        color: var(--primary-orange, #ff5722);
+    }
+
+    .tournaments-breadcrumb-sep {
+        font-size: 0.75rem;
+        opacity: 0.5;
+    }
+
+    .tournaments-breadcrumb-current {
+        color: var(--sports-text-main, #0f172a);
+        font-weight: 700;
+    }
+
+    /* ── Hero Banner ── */
+    .tournaments-hero-banner {
+        position: relative;
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        border-radius: 20px;
+        padding: 28px 32px;
+        box-shadow: 0 4px 16px rgba(16, 24, 40, 0.05);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        flex-wrap: wrap;
+        transition: background 0.3s ease, border-color 0.3s ease;
+    }
+
+    .tournaments-hero-banner::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-orange, #ff5722), #f59e0b);
+        z-index: 2;
+    }
+
+    .tournaments-hero-banner::before {
+        content: "";
+        position: absolute;
+        top: -40px;
+        right: -40px;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(225, 86, 35, 0.08) 0%, rgba(245, 158, 11, 0.04) 60%, transparent 80%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .tournaments-hero-info {
+        position: relative;
+        z-index: 1;
+        flex: 1;
+        min-width: 280px;
+    }
+
+    .tournaments-hero-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: var(--primary-orange, #ff5722);
+        background: var(--primary-orange-light, rgba(225, 86, 35, 0.12));
+        padding: 4px 12px;
+        border-radius: 9999px;
+        margin-bottom: 10px;
+    }
+
+    .tournaments-hero-title {
+        font-size: 1.85rem;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        color: var(--sports-text-main, #0f172a);
+        line-height: 1.2;
+        margin: 0 0 8px 0;
+    }
+
+    .tournaments-hero-desc {
+        font-size: 0.92rem;
+        color: var(--sports-text-muted, #475467);
+        line-height: 1.5;
+        margin: 0;
+        max-width: 640px;
+    }
+
+    .tournaments-hero-actions {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+    }
+
+    .btn-browse-events-hero {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 20px;
+        background: linear-gradient(135deg, var(--primary-orange, #ff5722), #ea580c);
+        color: #ffffff;
+        border: none;
+        border-radius: 12px;
+        font-size: 0.86rem;
+        font-weight: 700;
+        text-decoration: none;
+        box-shadow: 0 3px 12px rgba(225, 86, 35, 0.25);
+        transition: all 0.22s ease;
+    }
+
+    .btn-browse-events-hero:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(225, 86, 35, 0.35);
+        color: #ffffff;
+    }
+
+    /* ── Metric Counter Strip ── */
+    .tournaments-metrics-strip {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+    }
+
+    .tourn-stat-card {
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        border-radius: 16px;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow: 0 1px 3px rgba(16, 24, 40, 0.04);
+    }
+
+    .tourn-stat-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+
+    .tourn-stat-icon.orange { background: rgba(225, 86, 35, 0.12); color: var(--primary-orange, #ff5722); }
+    .tourn-stat-icon.amber { background: rgba(245, 158, 11, 0.12); color: #f59e0b; }
+    .tourn-stat-icon.green { background: rgba(16, 185, 129, 0.12); color: #10b981; }
+
+    .tourn-stat-val {
+        font-size: 1.45rem;
+        font-weight: 900;
+        color: var(--sports-text-main, #0f172a);
+        line-height: 1.1;
+    }
+
+    .tourn-stat-lbl {
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: var(--sports-text-muted, #475467);
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        margin-top: 2px;
+    }
+
+    /* ── Tournaments Cards Grid ── */
+    .tournaments-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 24px;
+    }
+
+    .my-tournament-card {
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        border-radius: 18px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 1px 3px rgba(16, 24, 40, 0.04);
+        transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.24s ease;
+    }
+
+    .my-tournament-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+        border-color: rgba(225, 86, 35, 0.35);
+    }
+
+    .my-tourn-top {
+        padding: 20px 20px 14px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        border-bottom: 1px solid var(--sports-border, #eaecf0);
+    }
+
+    .my-tourn-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--primary-orange, #ff5722);
+        margin-bottom: 4px;
+    }
+
+    .my-tourn-title {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--sports-text-main, #0f172a);
+        line-height: 1.3;
+        margin: 0;
+    }
+
+    .tourn-status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        border-radius: 9999px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    .tourn-status-pill.completed {
+        background: rgba(16, 185, 129, 0.12);
+        color: #059669;
+        border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .tourn-status-pill.in_progress {
+        background: rgba(245, 158, 11, 0.12);
+        color: #d97706;
+        border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+
+    .tourn-status-pill.registered,
+    .tourn-status-pill.open {
+        background: rgba(59, 130, 246, 0.12);
+        color: #2563eb;
+        border: 1px solid rgba(59, 130, 246, 0.25);
+    }
+
+    .my-tourn-body {
+        padding: 16px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        flex-grow: 1;
+    }
+
+    .my-tourn-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.84rem;
+        color: var(--sports-text-muted, #475467);
+        font-weight: 500;
+    }
+
+    .my-tourn-meta-item i {
+        font-size: 1rem;
+        color: var(--primary-orange, #ff5722);
+        flex-shrink: 0;
+    }
+
+    .my-tourn-footer {
+        padding: 14px 20px 20px 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: auto;
+    }
+
+    .btn-tourn-bracket {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 11px 16px;
+        background: linear-gradient(135deg, #059669, #047857);
+        color: #ffffff;
+        border: none;
+        border-radius: 12px;
+        font-size: 0.84rem;
+        font-weight: 700;
+        text-decoration: none;
+        flex: 1;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
+    }
+
+    .btn-tourn-bracket:hover {
+        background: linear-gradient(135deg, #10b981, #059669);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+        color: #ffffff;
+    }
+
+    .btn-tourn-detail {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 11px 14px;
+        background: var(--sports-card-bg, #ffffff);
+        color: var(--sports-text-main, #0f172a);
+        border: 1.5px solid var(--sports-border, #d0d5dd);
+        border-radius: 12px;
+        font-size: 0.84rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-tourn-detail:hover {
+        border-color: var(--primary-orange, #ff5722);
+        color: var(--primary-orange, #ff5722);
+        background: #fff7ed;
+    }
+
+    /* ── Empty State ── */
+    .tournaments-empty-state {
+        grid-column: 1 / -1;
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px dashed var(--sports-border, #d0d5dd);
+        border-radius: 20px;
+        padding: 60px 24px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .tourn-empty-icon-ring {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: rgba(225, 86, 35, 0.08);
+        border: 1.5px solid rgba(225, 86, 35, 0.2);
+        color: var(--primary-orange, #ff5722);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2rem;
+        margin-bottom: 4px;
+    }
+
+    .tourn-empty-title {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--sports-text-main, #0f172a);
+        margin: 0;
+    }
+
+    .tourn-empty-desc {
+        font-size: 0.9rem;
+        color: var(--sports-text-muted, #475467);
+        max-width: 440px;
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    /* ── Dark Mode Overrides ── */
+    html.dark-mode .tournaments-hero-banner,
+    html.dark-mode .tourn-stat-card,
+    html.dark-mode .my-tournament-card,
+    html.dark-mode .tournaments-empty-state {
+        background: #19202e;
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    html.dark-mode .tournaments-hero-title,
+    html.dark-mode .tournaments-breadcrumb-current,
+    html.dark-mode .tourn-stat-val,
+    html.dark-mode .my-tourn-title,
+    html.dark-mode .tourn-empty-title {
+        color: #f8fafc;
+    }
+
+    html.dark-mode .tournaments-hero-desc,
+    html.dark-mode .tourn-stat-lbl,
+    html.dark-mode .my-tourn-meta-item,
+    html.dark-mode .tourn-empty-desc {
+        color: #94a3b8;
+    }
+
+    html.dark-mode .my-tourn-top {
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    html.dark-mode .btn-tourn-detail {
+        background: #141923;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #f1f5f9;
+    }
+
+    html.dark-mode .btn-tourn-detail:hover {
+        background: #1c2332;
+        border-color: var(--primary-orange, #ff5722);
+    }
+
+    @media (max-width: 768px) {
+        .tournaments-metrics-strip {
+            grid-template-columns: 1fr;
+        }
+
+        .tournaments-cards-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .tournaments-hero-actions {
+            width: 100%;
+        }
+
+        .btn-browse-events-hero {
+            width: 100%;
+            justify-content: center;
+        }
     }
 </style>
+{% endblock %}
+
+{% block content %}
+<div class="my-tournaments-wrapper">
+
+    <!-- ── Breadcrumb Navigation ── -->
+    <nav class="tournaments-breadcrumb" aria-label="Breadcrumb">
+        <a href="{{ url_for('player.events') }}">
+            <i class="ph ph-trophy"></i> Events & Tournaments
+        </a>
+        <span class="tournaments-breadcrumb-sep"><i class="ph ph-caret-right"></i></span>
+        <span class="tournaments-breadcrumb-current">My Tournaments</span>
+    </nav>
+
+    <!-- ── Hero Banner ── -->
+    <header class="tournaments-hero-banner">
+        <div class="tournaments-hero-info">
+            <span class="tournaments-hero-tag">
+                <i class="ph ph-medal"></i> Player Tournament Portal
+            </span>
+            <h1 class="tournaments-hero-title">My Registered Tournaments</h1>
+            <p class="tournaments-hero-desc">
+                View your active tournament enrollments, access live brackets and seeds, and track match scheduling across all registered competitions.
+            </p>
+        </div>
+
+        <div class="tournaments-hero-actions">
+            <a href="{{ url_for('player.events') }}" class="btn-browse-events-hero">
+                <i class="ph ph-magnifying-glass"></i> Browse All Events
+            </a>
+        </div>
+    </header>
+
+    {% if tournaments %}
+    <!-- ── Tournaments Cards Grid ── -->
+    <div class="tournaments-cards-grid">
+        {% for t in tournaments %}
+        <article class="my-tournament-card">
+            <div class="my-tourn-top">
+                <div>
+                    <span class="my-tourn-tag">
+                        <i class="ph ph-trophy"></i> Tournament
+                    </span>
+                    <h2 class="my-tourn-title">{{ t.title }}</h2>
+                </div>
+
+                {% if t.status == 'completed' %}
+                <span class="tourn-status-pill completed"><i class="ph ph-check-circle"></i> Completed</span>
+                {% elif t.status == 'in_progress' %}
+                <span class="tourn-status-pill in_progress"><i class="ph ph-hourglass-high"></i> In Progress</span>
+                {% elif t.status == 'registration_open' %}
+                <span class="tourn-status-pill open"><i class="ph ph-ticket"></i> Registered</span>
+                {% else %}
+                <span class="tourn-status-pill registered">{{ (t.status or 'Registered')|replace('_', ' ')|capitalize }}</span>
+                {% endif %}
+            </div>
+
+            <div class="my-tourn-body">
+                <div class="my-tourn-meta-item">
+                    <i class="ph ph-calendar"></i>
+                    <span>{{ t.event_date[:10] if t.event_date else 'Schedule TBA' }}</span>
+                </div>
+                {% if t.facilities %}
+                <div class="my-tourn-meta-item">
+                    <i class="ph ph-map-pin"></i>
+                    <span>{{ t.facilities.name }} &bull; {{ t.facilities.location or 'Court Venue' }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="my-tourn-footer">
+                <a href="{{ url_for('player.event_detail', event_id=t.id) }}" class="btn-tourn-detail" title="View Tournament Details">
+                    <i class="ph ph-info"></i> Details
+                </a>
+                <a href="{{ url_for('player.tournament_bracket', event_id=t.id) }}" class="btn-tourn-bracket" title="Open Interactive Bracket">
+                    <i class="ph ph-tree-structure"></i> View Bracket
+                </a>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <!-- ── Empty State ── -->
+    <div class="tournaments-empty-state">
+        <div class="tourn-empty-icon-ring">
+            <i class="ph ph-trophy"></i>
+        </div>
+        <h3 class="tourn-empty-title">No Tournament Registrations Yet</h3>
+        <p class="tourn-empty-desc">
+            You haven't registered for any official tournaments. Browse upcoming events, pick your division, and compete for medals and prize pools!
+        </p>
+        <a href="{{ url_for('player.events') }}" class="btn-browse-events-hero" style="margin-top: 8px;">
+            <i class="ph ph-magnifying-glass"></i> Explore Upcoming Events
+        </a>
+    </div>
+    {% endif %}
+
+</div>
 {% endblock %}

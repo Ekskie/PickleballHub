@@ -14,40 +14,96 @@ superadmin_bp = Blueprint('superadmin', __name__, url_prefix='/superadmin')
 @require_role('superadmin')
 def dashboard():
     db = get_db()
-    stats = {'total_players': 0, 'total_facilities': 0, 'total_revenue': 0, 'pending_kyc': 0}
+    stats = {
+        'total_players': 0,
+        'total_users': 0,
+        'total_facilities': 0,
+        'total_courts': 0,
+        'total_revenue': 0,
+        'total_bookings': 0,
+        'pending_kyc': 0,
+        'open_tickets': 0,
+        'open_disputes': 0,
+    }
     recent_facilities = []
     user_role_chart = {'labels': [], 'data': []}
+    revenue_trend_chart = {'labels': [], 'revenue': [], 'bookings': []}
+    recent_audit_logs = []
 
     try:
-        # Total players
-        p_resp = db.table('profiles').select('id', count='exact').eq('role', 'player').execute()
-        stats['total_players'] = p_resp.count or 0
+        # 1. Total profiles & role breakdown
+        all_prof = db.table('profiles').select('id, role').execute()
+        all_profiles = all_prof.data or []
+        stats['total_users'] = len(all_profiles)
+        role_counts = {}
+        for p in all_profiles:
+            r = (p.get('role') or 'unknown').strip()
+            role_counts[r] = role_counts.get(r, 0) + 1
+        stats['total_players'] = role_counts.get('player', 0)
+        user_role_chart = {'labels': list(role_counts.keys()), 'data': list(role_counts.values())}
 
-        # Active facilities
+        # 2. Active facilities & courts
         f_resp = db.table('facilities').select('id', count='exact').eq('status', 'active').execute()
         stats['total_facilities'] = f_resp.count or 0
 
-        # Total platform revenue
-        rev_resp = db.table('court_reservations').select('total_amount').in_('status', ['confirmed', 'completed']).execute()
-        stats['total_revenue'] = sum((r.get('total_amount') or 0) for r in (rev_resp.data or []))
-
-        # Pending KYC
         kyc_resp = db.table('facilities').select('id', count='exact').eq('kyc_status', 'pending_approval').execute()
         stats['pending_kyc'] = kyc_resp.count or 0
 
-        # Recent facility registrations
+        c_resp = db.table('courts').select('id', count='exact').execute()
+        stats['total_courts'] = c_resp.count or 0
+
+        # 3. Reservations & platform revenue
+        rev_resp = db.table('court_reservations').select('id, total_amount, status, created_at').in_('status', ['confirmed', 'completed']).execute()
+        confirmed_reservations = rev_resp.data or []
+        stats['total_revenue'] = sum((r.get('total_amount') or 0) for r in confirmed_reservations)
+        stats['total_bookings'] = len(confirmed_reservations)
+
+        # 4. Revenue & booking velocity trend (last 6 months)
+        now = datetime.now(PH_TZ)
+        month_buckets = {}
+        for i in range(5, -1, -1):
+            m_dt = now - timedelta(days=i * 30)
+            key = m_dt.strftime('%Y-%m')
+            month_buckets[key] = {'label': m_dt.strftime('%b %Y'), 'revenue': 0.0, 'bookings': 0}
+        for r in confirmed_reservations:
+            key = (r.get('created_at') or '')[:7]
+            if key in month_buckets:
+                month_buckets[key]['revenue'] += (r.get('total_amount') or 0)
+                month_buckets[key]['bookings'] += 1
+
+        revenue_trend_chart = {
+            'labels': [v['label'] for v in month_buckets.values()],
+            'revenue': [round(v['revenue'], 2) for v in month_buckets.values()],
+            'bookings': [v['bookings'] for v in month_buckets.values()]
+        }
+
+        # 5. Open tickets & disputes
+        try:
+            tkt_resp = db.table('tickets').select('id', count='exact').eq('status', 'open').execute()
+            stats['open_tickets'] = tkt_resp.count or 0
+        except Exception:
+            pass
+
+        try:
+            disp_resp = db.table('disputes').select('id', count='exact').eq('status', 'open').execute()
+            stats['open_disputes'] = disp_resp.count or 0
+        except Exception:
+            pass
+
+        # 6. Recent facility registrations (with courts, owner, and kyc_document_url)
         rf_resp = db.table('facilities').select(
-            'id, name, location, status, kyc_status, created_at, profiles!owner_id(first_name, last_name), courts(*)'
-        ).order('created_at', desc=True).limit(6).execute()
+            'id, name, location, status, kyc_status, kyc_document_url, created_at, profiles!owner_id(id, first_name, last_name, phone), courts(*)'
+        ).order('created_at', desc=True).limit(8).execute()
         recent_facilities = rf_resp.data or []
 
-        # User distribution by role
-        all_prof = db.table('profiles').select('role').execute()
-        role_counts = {}
-        for p in (all_prof.data or []):
-            r = (p.get('role') or 'unknown').strip()
-            role_counts[r] = role_counts.get(r, 0) + 1
-        user_role_chart = {'labels': list(role_counts.keys()), 'data': list(role_counts.values())}
+        # 7. Recent platform audit activity
+        try:
+            al_resp = db.table('audit_logs').select(
+                'id, action, target_resource, details, ip_address, created_at, actor:profiles!actor_id(first_name, last_name, role)'
+            ).order('created_at', desc=True).limit(6).execute()
+            recent_audit_logs = al_resp.data or []
+        except Exception:
+            recent_audit_logs = []
 
     except Exception as e:
         print(f"Superadmin dashboard error: {e}")
@@ -55,7 +111,9 @@ def dashboard():
     return render_template('superadmin/dashboard.html',
                            stats=stats,
                            recent_facilities=recent_facilities,
-                           user_role_chart=user_role_chart)
+                           user_role_chart=user_role_chart,
+                           revenue_trend_chart=revenue_trend_chart,
+                           recent_audit_logs=recent_audit_logs)
 
 @superadmin_bp.route('/facilities')
 @require_role('superadmin')
@@ -75,7 +133,7 @@ def update_kyc_status(facility_id):
     status = request.form.get('status')
     if status not in ['verified', 'rejected', 'unverified']:
         flash('Invalid status.', 'error')
-        return redirect(url_for('superadmin.facilities'))
+        return redirect(request.referrer or url_for('superadmin.facilities'))
     db = get_db()
     try:
         db.table('facilities').update({'kyc_status': status}).eq('id', facility_id).execute()
@@ -83,7 +141,7 @@ def update_kyc_status(facility_id):
         flash(f'Facility KYC status updated to {status}.', 'success')
     except Exception as e:
         flash('An error occurred. Please try again.', 'error')
-    return redirect(url_for('superadmin.facilities'))
+    return redirect(request.referrer or url_for('superadmin.facilities'))
 
 @superadmin_bp.route('/facilities/<facility_id>/platform_status', methods=['POST'])
 @require_role('superadmin')
@@ -91,7 +149,7 @@ def update_platform_status(facility_id):
     status = request.form.get('status')
     if status not in ['active', 'suspended', 'pending']:
         flash('Invalid status.', 'error')
-        return redirect(url_for('superadmin.facilities'))
+        return redirect(request.referrer or url_for('superadmin.facilities'))
     db = get_db()
     try:
         db.table('facilities').update({'status': status}).eq('id', facility_id).execute()
@@ -99,7 +157,7 @@ def update_platform_status(facility_id):
         flash(f'Facility platform status updated to {status}.', 'success')
     except Exception as e:
         flash('An error occurred. Please try again.', 'error')
-    return redirect(url_for('superadmin.facilities'))
+    return redirect(request.referrer or url_for('superadmin.facilities'))
 
 
 @superadmin_bp.route('/users')
@@ -134,13 +192,13 @@ def add_adminstaff():
     password = request.form.get('password', '').strip()
     if not all([first_name, email, password]):
         flash('Please fill all required fields.', 'error')
-        return redirect(url_for('superadmin.users'))
+        return redirect(request.referrer or url_for('superadmin.users'))
     db = get_db()
     try:
         admin_db = get_admin_db()
         if not admin_db:
             flash("Admin client not available.", "error")
-            return redirect(url_for('superadmin.users'))
+            return redirect(request.referrer or url_for('superadmin.users'))
         new_user = admin_db.auth.admin.create_user({
             "email": email, "password": password, "email_confirm": True,
             "user_metadata": {"first_name": first_name, "last_name": last_name, "role": "adminstaff"}
@@ -153,7 +211,7 @@ def add_adminstaff():
         flash(f'Admin Staff account for {first_name} created successfully!', 'success')
     except Exception as e:
         flash('An error occurred. Please try again.', 'error')
-    return redirect(url_for('superadmin.users'))
+    return redirect(request.referrer or url_for('superadmin.users'))
 
 # ── Reports with real data ──────────────────────────────────────────────────────
 @superadmin_bp.route('/reports')

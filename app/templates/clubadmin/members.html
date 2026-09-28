@@ -1,161 +1,1746 @@
 {% extends "clubadmin/base_clubadmin.html" %}
-{% block title %}Club Members{% endblock %}
+{% block title %}Club Members - {{ g.club.name if g.club else 'Club' }}{% endblock %}
+
+{% block extra_head %}
+<style>
+/* ── Club Members Management Styles ── */
+.members-page-container {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+/* ── Header Row ── */
+.page-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.page-title-left {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.page-title-text {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.page-title-desc {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.header-action-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-primary-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, var(--primary-orange) 0%, #ea580c 100%);
+    color: #ffffff !important;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 18px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(234, 88, 12, 0.25);
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.btn-primary-action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(234, 88, 12, 0.35);
+}
+
+.btn-secondary-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--card-bg, #ffffff);
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.btn-secondary-action:hover {
+    background: var(--input-bg);
+    border-color: var(--text-muted);
+}
+
+/* ── KPI Roster Intelligence Grid ── */
+.kpi-roster-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+@media (max-width: 992px) {
+    .kpi-roster-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 520px) {
+    .kpi-roster-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.kpi-roster-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 16px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kpi-roster-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.kpi-icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.45rem;
+    flex-shrink: 0;
+}
+
+.kpi-icon-orange { background: rgba(249, 115, 22, 0.12); color: var(--primary-orange); }
+.kpi-icon-green  { background: rgba(16, 185, 129, 0.12); color: #059669; }
+.kpi-icon-amber  { background: rgba(245, 158, 11, 0.12); color: #d97706; }
+.kpi-icon-blue   { background: rgba(37, 99, 235, 0.12); color: #2563eb; }
+
+.kpi-meta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.kpi-meta-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.kpi-meta-val {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.2;
+    margin-top: 2px;
+}
+
+.kpi-meta-sub {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    margin-top: 3px;
+}
+
+/* ── Filter & Search Control Center ── */
+.control-hub-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 16px;
+    padding: 16px 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.control-hub-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.search-box-wrapper {
+    position: relative;
+    flex: 1;
+    min-width: 260px;
+}
+
+.search-box-wrapper i.search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+.search-box-wrapper input {
+    width: 100%;
+    padding: 10px 14px 10px 42px;
+    background: var(--input-bg, #f8fafc);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 12px;
+    font-size: 0.88rem;
+    color: var(--text-primary);
+    outline: none;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.search-box-wrapper input:focus {
+    border-color: var(--primary-orange);
+    background: var(--card-bg, #ffffff);
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12);
+}
+
+.clear-search-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    display: none;
+}
+
+.filter-selects-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.custom-select-ctrl {
+    padding: 9px 14px;
+    background: var(--input-bg, #f8fafc);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 10px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.custom-select-ctrl:focus {
+    border-color: var(--primary-orange);
+}
+
+/* View Switcher */
+.view-mode-toggle {
+    display: flex;
+    background: var(--input-bg, #f1f5f9);
+    padding: 3px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color, #e2e8f0);
+}
+
+.view-btn {
+    padding: 6px 12px;
+    border-radius: 7px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.view-btn.active {
+    background: var(--card-bg, #ffffff);
+    color: var(--primary-orange);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Table View Design ── */
+.members-table-container {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.club-roster-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.88rem;
+}
+
+.club-roster-table th {
+    background: var(--input-bg, #f8fafc);
+    padding: 14px 18px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    border-bottom: 1px solid var(--border-color, #eaecf0);
+    white-space: nowrap;
+}
+
+.club-roster-table td {
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--border-color, #f1f5f9);
+    vertical-align: middle;
+}
+
+.club-roster-table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.club-roster-table tbody tr:hover {
+    background-color: rgba(249, 115, 22, 0.025);
+}
+
+/* Player Column */
+.player-profile-cell {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.player-avatar-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    font-weight: 800;
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.player-avatar-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.player-info-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.player-name-link {
+    font-size: 0.94rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.player-name-link:hover {
+    color: var(--primary-orange);
+}
+
+.player-contact-sub {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Skill Pills */
+.skill-badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+.skill-badge-pill.beginner {
+    background: rgba(14, 165, 233, 0.12);
+    color: #0284c7;
+    border: 1px solid rgba(14, 165, 233, 0.25);
+}
+
+.skill-badge-pill.intermediate {
+    background: rgba(59, 130, 246, 0.12);
+    color: #2563eb;
+    border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.skill-badge-pill.advanced {
+    background: rgba(139, 92, 246, 0.12);
+    color: #7c3aed;
+    border: 1px solid rgba(139, 92, 246, 0.25);
+}
+
+.skill-badge-pill.pro {
+    background: rgba(245, 158, 11, 0.15);
+    color: #b45309;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* Rating Stack */
+.rating-dual-stack {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.badge-dupr-score {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.badge-elo-score {
+    background: var(--input-bg);
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+
+/* Status Badges */
+.status-pill-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.74rem;
+    font-weight: 700;
+}
+
+.status-pill-badge.active {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+    border: 1px solid rgba(16, 185, 129, 0.28);
+}
+
+.status-pill-badge.pending {
+    background: rgba(245, 158, 11, 0.12);
+    color: #b45309;
+    border: 1px solid rgba(245, 158, 11, 0.28);
+}
+
+.status-pill-badge.expired {
+    background: rgba(239, 68, 68, 0.12);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.28);
+}
+
+.status-dot-pulse {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* Actions Cell */
+.actions-cell-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.table-action-icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+}
+
+.btn-act-inspect {
+    background: rgba(59, 130, 246, 0.1);
+    color: #2563eb;
+    border-color: rgba(59, 130, 246, 0.2);
+}
+.btn-act-inspect:hover {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.btn-act-chat {
+    background: rgba(14, 165, 233, 0.1);
+    color: #0284c7;
+    border-color: rgba(14, 165, 233, 0.2);
+}
+.btn-act-chat:hover {
+    background: #0284c7;
+    color: #ffffff;
+}
+
+.btn-act-approve {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+    border-color: rgba(16, 185, 129, 0.28);
+    padding: 6px 10px;
+    width: auto;
+    font-size: 0.78rem;
+    font-weight: 700;
+    gap: 4px;
+}
+.btn-act-approve:hover {
+    background: #059669;
+    color: #ffffff;
+}
+
+.btn-act-delete {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.2);
+}
+.btn-act-delete:hover {
+    background: #ef4444;
+    color: #ffffff;
+}
+
+/* ── Directory Cards Grid View ── */
+.cards-directory-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 16px;
+}
+
+.member-dir-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+}
+
+.member-dir-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.dir-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.dir-card-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    font-weight: 800;
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dir-card-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.dir-card-title-meta {
+    flex: 1;
+    min-width: 0;
+}
+
+.dir-card-name {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 4px 0;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dir-card-name:hover {
+    color: var(--primary-orange);
+}
+
+.dir-card-stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    background: var(--input-bg, #f8fafc);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 10px;
+    padding: 10px 12px;
+    text-align: center;
+}
+
+.dir-stat-item span.lbl {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.dir-stat-item span.val {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.dir-card-details-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.dir-detail-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dir-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color, #f1f5f9);
+}
+
+/* ── Modals ── */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(6px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.modal-overlay.open {
+    display: flex;
+}
+
+.modal-box-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 20px;
+    padding: 26px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    box-sizing: border-box;
+}
+
+@keyframes modalPop {
+    from { opacity: 0; transform: scale(0.96) translateY(8px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-header-flex {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.modal-close-icon {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    transition: all 0.15s ease;
+}
+
+.modal-close-icon:hover {
+    color: var(--text-primary);
+    background: var(--input-bg);
+}
+
+.drawer-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--border-color);
+    border-top-color: var(--primary-orange);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="dashboard-header">
-    <h1 class="page-title">Club Members</h1>
-    <span style="color:var(--text-secondary);font-size:0.9rem;">{{ members|length }} member(s)</span>
-</div>
+<div class="members-page-container">
 
-<div class="glass-card">
-    <div class="widget-header" style="margin-bottom:16px;">
-        <div class="header-search" style="flex:1;max-width:360px;">
-            <i class="ph ph-magnifying-glass"></i>
-            <input type="text" id="memberSearch" placeholder="Search by name or phone..." oninput="filterMembers()">
+    <!-- ── Header Section ── -->
+    <div class="page-title-row">
+        <div class="page-title-left">
+            <h1 class="page-title-text">
+                <i class="ph ph-users-three" style="color: var(--primary-orange);"></i>
+                Club Members Roster
+            </h1>
+            <p class="page-title-desc">
+                Manage registered players, verify new membership applications, and track club skill levels for {{ g.club.name if g.club else 'your club' }}.
+            </p>
         </div>
-        <div class="filter-actions" style="display:flex;gap:8px;">
-            <select id="statusFilter" onchange="filterMembers()"
-                style="padding:0.5rem 10px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);cursor:pointer;border-radius:8px;font-size:0.85rem;">
-                <option value="all">All Statuses</option>
-                <option value="active">Active</option>
-                <option value="pending">Pending</option>
-                <option value="expired">Expired</option>
-            </select>
-            <select id="skillFilter" onchange="filterMembers()"
-                style="padding:0.5rem 10px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);cursor:pointer;border-radius:8px;font-size:0.85rem;">
-                <option value="all">All Skill Levels</option>
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
-                <option value="pro">Pro</option>
-            </select>
+        <div class="header-action-group">
+            <button type="button" class="btn-secondary-action" onclick="exportMembersCSV()">
+                <i class="ph ph-export"></i> Export CSV
+            </button>
+            <button type="button" class="btn-primary-action" onclick="openInviteModal()">
+                <i class="ph ph-user-plus"></i> Invite Member
+            </button>
         </div>
     </div>
 
-    <div class="table-container">
-        <table class="data-grid">
-            <thead>
-                <tr>
-                    <th>MEMBER</th>
-                    <th>SKILL LEVEL</th>
-                    <th style="text-align:center;">RATING</th>
-                    <th>PHONE</th>
-                    <th>JOIN DATE</th>
-                    <th>STATUS</th>
-                    <th>ACTIONS</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if members %}
+    <!-- ── KPI Summary Statistics ── -->
+    <div class="kpi-roster-grid">
+        <!-- 1. Total Members -->
+        <div class="kpi-roster-card">
+            <div class="kpi-icon-box kpi-icon-orange">
+                <i class="ph ph-users-three"></i>
+            </div>
+            <div class="kpi-meta">
+                <span class="kpi-meta-label">Total Roster</span>
+                <span class="kpi-meta-val">{{ stats.total }}</span>
+                <span class="kpi-meta-sub">Enrolled club players</span>
+            </div>
+        </div>
+
+        <!-- 2. Active Members -->
+        <div class="kpi-roster-card">
+            <div class="kpi-icon-box kpi-icon-green">
+                <i class="ph ph-shield-check"></i>
+            </div>
+            <div class="kpi-meta">
+                <span class="kpi-meta-label">Active Members</span>
+                <span class="kpi-meta-val">{{ stats.active }}</span>
+                <span class="kpi-meta-sub">Eligible for tournaments</span>
+            </div>
+        </div>
+
+        <!-- 3. Pending Verification -->
+        <div class="kpi-roster-card">
+            <div class="kpi-icon-box kpi-icon-amber">
+                <i class="ph ph-hourglass-high"></i>
+            </div>
+            <div class="kpi-meta">
+                <span class="kpi-meta-label">Pending Approval</span>
+                <span class="kpi-meta-val" {% if stats.pending > 0 %}style="color: #d97706;"{% endif %}>
+                    {{ stats.pending }}
+                </span>
+                <span class="kpi-meta-sub">
+                    {% if stats.pending > 0 %}
+                    <span style="font-weight: 700; color: #d97706;">Action required</span>
+                    {% else %}
+                    No pending requests
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <!-- 4. Average DUPR -->
+        <div class="kpi-roster-card">
+            <div class="kpi-icon-box kpi-icon-blue">
+                <i class="ph ph-chart-line-up"></i>
+            </div>
+            <div class="kpi-meta">
+                <span class="kpi-meta-label">Club Avg DUPR</span>
+                <span class="kpi-meta-val">{{ stats.avg_dupr }}</span>
+                <span class="kpi-meta-sub">Across all members</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Filter & Search Control Center ── -->
+    <div class="control-hub-card">
+        <div class="control-hub-top">
+            <!-- Search Input -->
+            <div class="search-box-wrapper">
+                <i class="ph ph-magnifying-glass search-icon"></i>
+                <input type="text" id="memberSearch" placeholder="Search members by name, phone, or email..." oninput="handleSearchInput()">
+                <button type="button" class="clear-search-btn" id="clearSearchBtn" onclick="clearSearch()" aria-label="Clear search">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+
+            <!-- Filters & Views -->
+            <div class="filter-selects-row">
+                <!-- Status Filter -->
+                <select id="statusFilter" class="custom-select-ctrl" onchange="filterMembers()">
+                    <option value="all">All Statuses ({{ stats.total }})</option>
+                    <option value="active">Active Only ({{ stats.active }})</option>
+                    <option value="pending">Pending Approval ({{ stats.pending }})</option>
+                    <option value="expired">Expired ({{ stats.expired }})</option>
+                </select>
+
+                <!-- Skill Filter -->
+                <select id="skillFilter" class="custom-select-ctrl" onchange="filterMembers()">
+                    <option value="all">All Skill Levels</option>
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                    <option value="pro">Pro</option>
+                </select>
+
+                <!-- Sort Filter -->
+                <select id="sortFilter" class="custom-select-ctrl" onchange="sortMembers()">
+                    <option value="date-desc">Newest Joined</option>
+                    <option value="date-asc">Oldest Joined</option>
+                    <option value="name-asc">Name (A-Z)</option>
+                    <option value="dupr-desc">Highest DUPR</option>
+                </select>
+
+                <!-- View Switcher -->
+                <div class="view-mode-toggle">
+                    <button type="button" class="view-btn active" id="btnTableView" onclick="switchView('table')" title="Table View">
+                        <i class="ph ph-table"></i>
+                    </button>
+                    <button type="button" class="view-btn" id="btnCardsView" onclick="switchView('cards')" title="Directory Cards View">
+                        <i class="ph ph-grid-four"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── View 1: Data Table View ── -->
+    <div class="members-table-container" id="tableViewContainer">
+        <div class="table-responsive">
+            <table class="club-roster-table" id="membersTable">
+                <thead>
+                    <tr>
+                        <th>MEMBER</th>
+                        <th>SKILL LEVEL</th>
+                        <th>RATINGS</th>
+                        <th>CONTACT PHONE</th>
+                        <th>JOIN DATE</th>
+                        <th>MEMBERSHIP STATUS</th>
+                        <th style="text-align: right;">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody id="membersTableBody">
+                    {% if members %}
                     {% for m in members %}
+                    {% set fn = m.profiles.first_name if m.profiles else 'Player' %}
+                    {% set ln = m.profiles.last_name if m.profiles else '' %}
+                    {% set skill = (m.profiles.proficiency or 'beginner')|lower %}
                     <tr class="member-row"
-                        data-name="{{ (m.profiles.first_name ~ ' ' ~ m.profiles.last_name)|lower }}"
+                        data-name="{{ (fn ~ ' ' ~ ln)|lower }}"
+                        data-phone="{{ (m.profiles.phone or '')|lower }}"
+                        data-email="{{ (m.profiles.email or '')|lower }}"
                         data-status="{{ m.status }}"
-                        data-skill="{{ (m.profiles.proficiency or 'beginner')|lower }}">
-                        <td class="bold">
-                            <div style="display:flex;align-items:center;gap:12px;">
-                                <div style="width:36px;height:36px;border-radius:50%;background:var(--btn-navy);color:white;display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;flex-shrink:0;overflow:hidden;">
-                                    {% if m.profiles.avatar_url %}
-                                        <img src="{{ m.profiles.avatar_url }}" style="width:100%;height:100%;object-fit:cover;">
+                        data-skill="{{ skill }}"
+                        data-dupr="{{ m.profiles.dupr|float if m.profiles and m.profiles.dupr else 0 }}"
+                        data-date="{{ m.joined_at[:10] if m.joined_at else '' }}">
+                        
+                        <!-- Member Profile Cell -->
+                        <td>
+                            <div class="player-profile-cell">
+                                <div class="player-avatar-circle">
+                                    {% if m.profiles and m.profiles.avatar_url %}
+                                    <img src="{{ m.profiles.avatar_url }}" alt="{{ fn }}">
                                     {% else %}
-                                        {{ m.profiles.initials }}
+                                    {{ m.profiles.initials if m.profiles else fn[:2]|upper }}
                                     {% endif %}
                                 </div>
-                                <div>
-                                    <div class="clickable-name" onclick="openMemberDrawer('{{ m.player_id }}')">{{ m.profiles.first_name }} {{ m.profiles.last_name }}</div>
-                                    <div style="font-size:0.75rem;color:var(--text-muted);font-weight:normal;">ID: {{ m.player_id[:8] }}...</div>
+                                <div class="player-info-meta">
+                                    <span class="player-name-link" onclick="openMemberDrawer('{{ m.player_id }}')">
+                                        {{ fn }} {{ ln }}
+                                    </span>
+                                    <span class="player-contact-sub">
+                                        {% if m.profiles and m.profiles.email %}
+                                        <i class="ph ph-envelope-simple"></i> {{ m.profiles.email }}
+                                        {% else %}
+                                        <i class="ph ph-identification-badge"></i> Member
+                                        {% endif %}
+                                    </span>
                                 </div>
                             </div>
                         </td>
+
+                        <!-- Skill Level -->
                         <td>
-                            {% set skill = (m.profiles.proficiency or 'beginner')|lower %}
-                            <span class="status-pill {{ skill }}">{{ (m.profiles.proficiency or 'Beginner') | title }}</span>
-                        </td>
-                        <td style="text-align:center;">
-                            <span style="font-weight:700;color:var(--btn-green);font-size:0.95rem;display:block;">
-                                {{ "%.2f"|format(m.profiles.dupr|float) }}
-                            </span>
-                            <span style="font-size:0.7rem;color:var(--text-secondary);">
-                                {{ m.profiles.elo }} Elo
+                            <span class="skill-badge-pill {{ skill }}">
+                                {{ (m.profiles.proficiency or 'beginner')|title }}
                             </span>
                         </td>
-                        <td style="color:var(--text-secondary);font-size:0.85rem;">{{ m.profiles.phone or '—' }}</td>
-                        <td>{{ m.joined_at.split('T')[0] }}</td>
+
+                        <!-- Ratings Stack -->
+                        <td>
+                            <div class="rating-dual-stack">
+                                <span class="badge-dupr-score">
+                                    DUPR {{ "%.2f"|format(m.profiles.dupr|float) if m.profiles and m.profiles.dupr else '3.00' }}
+                                </span>
+                                <span class="badge-elo-score">
+                                    {{ m.profiles.elo or 1200 }} ELO
+                                </span>
+                            </div>
+                        </td>
+
+                        <!-- Phone -->
+                        <td style="color: var(--text-secondary); font-size: 0.85rem;">
+                            {% if m.profiles and m.profiles.phone %}
+                            <a href="tel:{{ m.profiles.phone }}" style="color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
+                                <i class="ph ph-phone" style="opacity: 0.5;"></i> {{ m.profiles.phone }}
+                            </a>
+                            {% else %}
+                            <span style="color: var(--text-muted); font-style: italic;">No phone</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Join Date -->
+                        <td style="color: var(--text-secondary); font-size: 0.85rem; white-space: nowrap;">
+                            {{ m.joined_at[:10] if m.joined_at else '—' }}
+                        </td>
+
+                        <!-- Membership Status -->
                         <td>
                             {% if m.status == 'active' %}
-                                <span class="status-pill success">Active</span>
+                            <span class="status-pill-badge active">
+                                <span class="status-dot-pulse"></span> Active
+                            </span>
                             {% elif m.status == 'pending' %}
-                                <span class="status-pill pending">
-                                    Pending
-                                    {% if m.gcash_ref %}
-                                    <br><small style="color:var(--text-muted);font-size:0.7rem;">Ref: {{ m.gcash_ref }}</small>
-                                    {% endif %}
-                                    {% if m.receipt_url %}
-                                    <br><a href="#" onclick="showReceipt('{{ m.receipt_url }}', '{{ m.gcash_ref }}'); return false;" style="color:#00c6ff;text-decoration:underline;font-size:0.75rem;display:inline-flex;align-items:center;gap:4px;margin-top:4px;"><i class="ph ph-image"></i> View Receipt</a>
-                                    {% endif %}
-                                </span>
+                            <span class="status-pill-badge pending">
+                                <span class="status-dot-pulse"></span> Pending Review
+                            </span>
+                            {% if m.receipt_url %}
+                            <button type="button" onclick="showReceipt('{{ m.receipt_url }}', '{{ m.gcash_ref }}')" 
+                                    style="margin-left: 6px; background: rgba(14, 165, 233, 0.1); color: #0284c7; border: 1px solid rgba(14, 165, 233, 0.2); border-radius: 6px; padding: 2px 7px; font-size: 0.72rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                <i class="ph ph-receipt"></i> Receipt
+                            </button>
+                            {% endif %}
                             {% elif m.status == 'expired' %}
-                                <span class="status-pill expired">Expired</span>
+                            <span class="status-pill-badge expired">
+                                <span class="status-dot-pulse"></span> Expired
+                            </span>
                             {% else %}
-                                <span class="status-pill {{ m.status }}">{{ m.status|title }}</span>
+                            <span class="status-pill-badge" style="background: var(--input-bg); color: var(--text-secondary);">
+                                {{ m.status|title }}
+                            </span>
                             {% endif %}
                         </td>
-                        <td style="display:flex;gap:8px;align-items:center;">
-                            {% if m.status == 'pending' %}
-                            <form action="{{ url_for('clubadmin.approve_member', membership_id=m.id) }}" method="POST" style="margin:0;">
-                                <button type="submit" title="Approve Member"
-                                    style="background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3);border-radius:6px;padding:6px 10px;cursor:pointer;font-size:0.8rem;display:inline-flex;align-items:center;gap:4px;">
-                                    <i class="ph ph-check-circle"></i> Approve
+
+                        <!-- Actions -->
+                        <td style="text-align: right;">
+                            <div class="actions-cell-group" style="justify-content: flex-end;">
+                                {% if m.status == 'pending' %}
+                                <form action="{{ url_for('clubadmin.approve_member', membership_id=m.id) }}" method="POST" style="margin:0;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="table-action-icon-btn btn-act-approve" title="Approve Membership">
+                                        <i class="ph ph-check"></i> Approve
+                                    </button>
+                                </form>
+                                {% endif %}
+
+                                <button type="button" class="table-action-icon-btn btn-act-inspect" title="View Full Dossier" onclick="openMemberDrawer('{{ m.player_id }}')">
+                                    <i class="ph ph-user-focus"></i>
                                 </button>
-                            </form>
-                            {% endif %}
-                            <a href="{{ url_for('clubadmin.messages') }}?chat_user={{ m.player_id }}" title="Send Message"
-                               style="background:rgba(0,198,255,0.12);color:#00c6ff;border:1px solid rgba(0,198,255,0.2);border-radius:6px;padding:6px 10px;cursor:pointer;font-size:0.8rem;display:inline-flex;align-items:center;text-decoration:none;">
-                                <i class="ph ph-chat-circle-dots"></i>
-                            </a>
-                            <form action="{{ url_for('clubadmin.remove_member', membership_id=m.id) }}" method="POST" style="margin:0;"
-                                  onsubmit="return confirm('Remove {{ m.profiles.first_name }} from the club?');">
-                                <button type="submit" title="Remove Member"
-                                    style="background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.2);border-radius:6px;padding:6px 10px;cursor:pointer;font-size:0.8rem;display:inline-flex;align-items:center;gap:4px;">
+
+                                <a href="{{ url_for('clubadmin.messages') }}?chat_user={{ m.player_id }}" class="table-action-icon-btn btn-act-chat" title="Send Direct Message">
+                                    <i class="ph ph-chat-circle-dots"></i>
+                                </a>
+
+                                <button type="button" class="table-action-icon-btn btn-act-delete" title="Remove Member" 
+                                        onclick="confirmRemoveMember('{{ m.id }}', '{{ fn }} {{ ln }}')">
                                     <i class="ph ph-trash"></i>
                                 </button>
-                            </form>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
-                {% else %}
+                    {% else %}
                     <tr>
-                        <td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted);">
-                            <i class="ph ph-users" style="font-size:2rem;display:block;margin-bottom:8px;opacity:0.4;"></i>
-                            No members yet.
+                        <td colspan="7" style="text-align: center; padding: 48px; color: var(--text-muted);">
+                            <i class="ph ph-users" style="font-size: 2.5rem; opacity: 0.4; display: block; margin-bottom: 8px;"></i>
+                            No members registered yet. Use <strong>Invite Member</strong> above to recruit players!
                         </td>
                     </tr>
-                {% endif %}
-            </tbody>
-        </table>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <div id="noResultsMsg" style="display:none;text-align:center;padding:30px;color:var(--text-muted);">
-        <i class="ph ph-magnifying-glass" style="font-size:1.5rem;display:block;margin-bottom:6px;opacity:0.4;"></i>
-        No members match your search.
+    <!-- ── View 2: Directory Cards Grid View ── -->
+    <div class="cards-directory-grid" id="cardsViewContainer" style="display: none;">
+        {% if members %}
+        {% for m in members %}
+        {% set fn = m.profiles.first_name if m.profiles else 'Player' %}
+        {% set ln = m.profiles.last_name if m.profiles else '' %}
+        {% set skill = (m.profiles.proficiency or 'beginner')|lower %}
+        <div class="member-dir-card member-card-item"
+             data-name="{{ (fn ~ ' ' ~ ln)|lower }}"
+             data-phone="{{ (m.profiles.phone or '')|lower }}"
+             data-email="{{ (m.profiles.email or '')|lower }}"
+             data-status="{{ m.status }}"
+             data-skill="{{ skill }}"
+             data-dupr="{{ m.profiles.dupr|float if m.profiles and m.profiles.dupr else 0 }}"
+             data-date="{{ m.joined_at[:10] if m.joined_at else '' }}">
+
+            <div class="dir-card-header">
+                <div class="dir-card-avatar">
+                    {% if m.profiles and m.profiles.avatar_url %}
+                    <img src="{{ m.profiles.avatar_url }}" alt="{{ fn }}">
+                    {% else %}
+                    {{ m.profiles.initials if m.profiles else fn[:2]|upper }}
+                    {% endif %}
+                </div>
+                <div class="dir-card-title-meta">
+                    <h3 class="dir-card-name" onclick="openMemberDrawer('{{ m.player_id }}')">
+                        {{ fn }} {{ ln }}
+                    </h3>
+                    <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                        <span class="skill-badge-pill {{ skill }}">{{ (m.profiles.proficiency or 'beginner')|title }}</span>
+                        {% if m.status == 'active' %}
+                        <span class="status-pill-badge active" style="font-size: 0.68rem; padding: 2px 7px;">Active</span>
+                        {% elif m.status == 'pending' %}
+                        <span class="status-pill-badge pending" style="font-size: 0.68rem; padding: 2px 7px;">Pending</span>
+                        {% else %}
+                        <span class="status-pill-badge expired" style="font-size: 0.68rem; padding: 2px 7px;">{{ m.status|title }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Stack -->
+            <div class="dir-card-stats-row">
+                <div class="dir-stat-item">
+                    <span class="lbl">DUPR Rating</span>
+                    <span class="val" style="color: #059669;">{{ "%.2f"|format(m.profiles.dupr|float) if m.profiles and m.profiles.dupr else '3.00' }}</span>
+                </div>
+                <div class="dir-stat-item">
+                    <span class="lbl">Club ELO</span>
+                    <span class="val" style="color: #ea580c;">{{ m.profiles.elo or 1200 }}</span>
+                </div>
+            </div>
+
+            <!-- Details List -->
+            <div class="dir-card-details-list">
+                <div class="dir-detail-row">
+                    <span><i class="ph ph-phone" style="opacity: 0.5;"></i> Phone:</span>
+                    <strong style="color: var(--text-primary);">{{ m.profiles.phone if m.profiles and m.profiles.phone else '—' }}</strong>
+                </div>
+                <div class="dir-detail-row">
+                    <span><i class="ph ph-calendar" style="opacity: 0.5;"></i> Joined:</span>
+                    <span>{{ m.joined_at[:10] if m.joined_at else 'Active' }}</span>
+                </div>
+            </div>
+
+            <!-- Action Row -->
+            <div class="dir-card-actions">
+                <button type="button" class="btn-secondary-action" style="flex: 1; padding: 7px 10px; font-size: 0.78rem; justify-content: center;" onclick="openMemberDrawer('{{ m.player_id }}')">
+                    <i class="ph ph-user-focus"></i> Details
+                </button>
+                <a href="{{ url_for('clubadmin.messages') }}?chat_user={{ m.player_id }}" class="table-action-icon-btn btn-act-chat" title="Message">
+                    <i class="ph ph-chat-circle-dots"></i>
+                </a>
+                {% if m.status == 'pending' %}
+                <form action="{{ url_for('clubadmin.approve_member', membership_id=m.id) }}" method="POST" style="margin:0;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="table-action-icon-btn btn-act-approve" title="Approve">
+                        <i class="ph ph-check"></i>
+                    </button>
+                </form>
+                {% endif %}
+                <button type="button" class="table-action-icon-btn btn-act-delete" title="Remove Member" onclick="confirmRemoveMember('{{ m.id }}', '{{ fn }} {{ ln }}')">
+                    <i class="ph ph-trash"></i>
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- No Search Results -->
+    <div id="noResultsMsg" style="display: none; text-align: center; padding: 48px 20px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px;">
+        <i class="ph ph-magnifying-glass" style="font-size: 2.2rem; color: var(--text-muted); opacity: 0.4; display: block; margin-bottom: 8px;"></i>
+        <h3 style="font-size: 1.1rem; color: var(--text-primary); margin: 0 0 6px 0;">No members found</h3>
+        <p style="font-size: 0.86rem; color: var(--text-muted); margin: 0 0 16px 0;">Try adjusting your search query or filter selection.</p>
+        <button type="button" class="btn-secondary-action" onclick="clearSearch()">
+            Reset All Filters
+        </button>
+    </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     ALL MODALS & SCRIPT CONTROLLER (DIRECTLY EMBEDDED)
+     ═══════════════════════════════════════════════════════════ -->
+
+<!-- 1. INVITE MEMBERS MODAL -->
+<div class="modal-overlay" id="inviteModal">
+    <div class="modal-box-card">
+        <div class="modal-header-flex">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(249, 115, 22, 0.12); color: var(--primary-orange); display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+                    <i class="ph ph-user-plus"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--text-primary);">Invite Players</h3>
+                    <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">Direct recruitment link for {{ g.club.name if g.club else 'your club' }}</p>
+                </div>
+            </div>
+            <button type="button" class="modal-close-icon" onclick="closeInviteModal()">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+
+        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45; margin-bottom: 14px;">
+            Share this direct link with pickleball players in your local area. When they visit this page, they can review club benefits, tournaments, and submit their registration.
+        </p>
+
+        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <input type="text" id="inviteLinkInput" readonly 
+                   value="{{ url_for('player.club_detail', club_id=g.club.id, _external=True) if g.club else 'No Club Set' }}"
+                   style="flex: 1; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 10px; background: var(--input-bg); color: var(--text-primary); font-size: 0.84rem; outline: none;"
+                   onclick="this.select()">
+            <button type="button" class="btn-primary-action" onclick="copyInviteLink()" id="copyLinkBtn">
+                <i class="ph ph-copy"></i> Copy
+            </button>
+        </div>
+
+        <div id="copyFeedback" style="display: none; color: #10b981; font-size: 0.8rem; font-weight: 700; align-items: center; gap: 5px;">
+            <i class="ph ph-check-circle"></i> Invite link copied to clipboard!
+        </div>
+    </div>
+</div>
+
+<!-- 2. CONFIRM REMOVE MEMBER MODAL -->
+<div class="modal-overlay" id="removeMemberModal">
+    <div class="modal-box-card" style="max-width: 440px;">
+        <div class="modal-header-flex">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(239, 68, 68, 0.12); color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+                    <i class="ph ph-warning"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--text-primary);">Remove Member</h3>
+                    <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">Confirm roster removal</p>
+                </div>
+            </div>
+            <button type="button" class="modal-close-icon" onclick="closeRemoveModal()">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+
+        <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.45; margin-bottom: 20px;">
+            Are you sure you want to remove <strong id="removeMemberTargetName" style="color: var(--text-primary);">this member</strong> from {{ g.club.name if g.club else 'the club' }}? This will revoke their club membership benefits and access to club-exclusive events.
+        </p>
+
+        <form id="removeMemberForm" method="POST" action="">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div style="display: flex; gap: 10px;">
+                <button type="button" class="btn-secondary-action" style="flex: 1; justify-content: center;" onclick="closeRemoveModal()">
+                    Cancel
+                </button>
+                <button type="submit" class="btn-primary-action" style="flex: 1; justify-content: center; background: #ef4444; box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);">
+                    <i class="ph ph-trash"></i> Remove Player
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 3. MEMBER DETAILS DOSSIER MODAL -->
+<div class="modal-overlay" id="memberDetailsModal">
+    <div class="modal-box-card" style="max-width: 540px; max-height: 88vh; overflow-y: auto;">
+        <div class="modal-header-flex">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(59, 130, 246, 0.12); color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+                    <i class="ph ph-user-focus"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--text-primary);">Member Dossier</h3>
+                    <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">Official player profile & tournament history</p>
+                </div>
+            </div>
+            <button type="button" class="modal-close-icon" onclick="closeMemberDetailsModal()">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+
+        <div id="memberDossierLoading" style="text-align: center; padding: 40px; color: var(--text-muted);">
+            <div class="drawer-spinner" style="margin: 0 auto 12px;"></div>
+            <span>Loading player details...</span>
+        </div>
+
+        <div id="memberDossierContent" style="display: none; flex-direction: column; gap: 16px;">
+            <!-- Profile Header -->
+            <div style="display: flex; align-items: center; gap: 16px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 16px;">
+                <div id="dossierAvatar" style="width: 60px; height: 60px; border-radius: 16px; background: #1e293b; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 800; overflow: hidden; flex-shrink: 0;">
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                    <h3 id="dossierName" style="margin: 0 0 4px 0; font-size: 1.15rem; font-weight: 800; color: var(--text-primary);">Player</h3>
+                    <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                        <span id="dossierSkill" class="skill-badge-pill beginner">Beginner</span>
+                        <span id="dossierStatus" class="status-pill-badge active">Active</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ratings Grid -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div style="background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; text-align: center;">
+                    <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">DUPR Rating</span>
+                    <div id="dossierDupr" style="font-size: 1.35rem; font-weight: 800; color: #059669; margin-top: 2px;">3.00</div>
+                </div>
+                <div style="background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; text-align: center;">
+                    <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Club ELO</span>
+                    <div id="dossierElo" style="font-size: 1.35rem; font-weight: 800; color: #ea580c; margin-top: 2px;">1200</div>
+                </div>
+            </div>
+
+            <!-- Contact & Membership Details -->
+            <div style="background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 16px; font-size: 0.84rem; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-muted);"><i class="ph ph-phone"></i> Phone:</span>
+                    <strong id="dossierPhone" style="color: var(--text-primary);">—</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-muted);"><i class="ph ph-envelope-simple"></i> Email:</span>
+                    <strong id="dossierEmail" style="color: var(--text-primary);">—</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-muted);"><i class="ph ph-calendar"></i> Member Since:</span>
+                    <span id="dossierJoined" style="color: var(--text-primary);">—</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-muted);"><i class="ph ph-hourglass"></i> Membership Expiry:</span>
+                    <span id="dossierExpires" style="color: var(--text-primary);">Lifetime</span>
+                </div>
+                <div id="dossierGcashRow" style="display: none; justify-content: space-between; border-top: 1px dashed var(--border-color); padding-top: 8px; margin-top: 4px;">
+                    <span style="color: var(--text-muted);"><i class="ph ph-hash"></i> GCash Reference:</span>
+                    <strong id="dossierGcashRef" style="font-family: monospace; color: var(--text-primary);">—</strong>
+                </div>
+            </div>
+
+            <!-- Active Registrations Section -->
+            <div style="border-top: 1px solid var(--border-color); padding-top: 12px;">
+                <h4 style="margin: 0 0 8px 0; font-size: 0.88rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+                    <i class="ph ph-calendar-star" style="color: #2563eb;"></i> Active Event Registrations
+                </h4>
+                <div id="dossierRegistrationsList" style="display: flex; flex-direction: column; gap: 8px;">
+                </div>
+            </div>
+
+            <!-- Tournament Matches Section -->
+            <div style="border-top: 1px solid var(--border-color); padding-top: 12px;">
+                <h4 style="margin: 0 0 8px 0; font-size: 0.88rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+                    <i class="ph ph-sword" style="color: #ea580c;"></i> Recent Tournament Matches
+                </h4>
+                <div id="dossierMatchesList" style="display: flex; flex-direction: column; gap: 8px;">
+                </div>
+            </div>
+
+            <!-- Actions Footer -->
+            <div style="display: flex; gap: 10px; margin-top: 8px;">
+                <a id="dossierChatLink" href="#" class="btn-secondary-action" style="flex: 1; justify-content: center;">
+                    <i class="ph ph-chat-circle-dots"></i> Message Player
+                </a>
+                <button type="button" class="btn-secondary-action" style="flex: 1; justify-content: center;" onclick="closeMemberDetailsModal()">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 4. RECEIPT PREVIEW LIGHTBOX MODAL -->
+<div class="modal-overlay" id="receiptPreviewModal">
+    <div class="modal-box-card" style="max-width: 480px;">
+        <div class="modal-header-flex">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(14, 165, 233, 0.12); color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+                    <i class="ph ph-receipt"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--text-primary);">Receipt Screenshot</h3>
+                    <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">GCash payment confirmation</p>
+                </div>
+            </div>
+            <button type="button" class="modal-close-icon" onclick="closeReceiptPreview()">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+
+        <div style="background: #0f172a; border-radius: 14px; overflow: hidden; margin-bottom: 14px; text-align: center; border: 1px solid var(--border-color); max-height: 48vh; display: flex; align-items: center; justify-content: center;">
+            <img id="previewReceiptImg" src="" alt="Receipt" style="max-width: 100%; max-height: 46vh; object-fit: contain;">
+        </div>
+
+        <div style="background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 14px; margin-bottom: 16px; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: var(--text-muted);"><i class="ph ph-hash"></i> GCash Reference:</span>
+            <strong id="previewRefCode" style="font-family: monospace; color: var(--text-primary); font-size: 0.95rem;">-</strong>
+        </div>
+
+        <button type="button" class="btn-secondary-action" style="width: 100%; justify-content: center;" onclick="closeReceiptPreview()">
+            Close Receipt
+        </button>
     </div>
 </div>
 
 <script>
-function filterMembers() {
-    const query = document.getElementById('memberSearch').value.toLowerCase();
-    const status = document.getElementById('statusFilter').value;
-    const skill = document.getElementById('skillFilter').value;
-    let visible = 0;
-    document.querySelectorAll('.member-row').forEach(row => {
-        const matchName   = row.dataset.name.includes(query);
-        const matchStatus = status === 'all' || row.dataset.status === status;
-        const matchSkill  = skill === 'all' || row.dataset.skill === skill;
-        const show = matchName && matchStatus && matchSkill;
-        row.style.display = show ? '' : 'none';
-        if (show) visible++;
-    });
-    document.getElementById('noResultsMsg').style.display = visible === 0 ? 'block' : 'none';
+/* ── Modal Architecture ── */
+function openModal(id) {
+    const modal = document.getElementById(id);
+    if (!modal) return;
+    if (modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+    }
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
 }
+
+function closeModal(id) {
+    const modal = document.getElementById(id);
+    if (modal) modal.classList.remove('open');
+    if (!document.querySelector('.modal-overlay.open')) {
+        document.body.style.overflow = '';
+    }
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', e => {
+        if (e.target === o) closeModal(o.id);
+    });
+});
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.open').forEach(m => closeModal(m.id));
+    }
+});
+
+/* ── Invite Modal Handlers ── */
+function openInviteModal() {
+    openModal('inviteModal');
+    const feedback = document.getElementById('copyFeedback');
+    if (feedback) feedback.style.display = 'none';
+}
+
+function closeInviteModal() {
+    closeModal('inviteModal');
+}
+
+function copyInviteLink() {
+    const input = document.getElementById('inviteLinkInput');
+    if (!input) return;
+    input.select();
+    navigator.clipboard.writeText(input.value).then(() => {
+        const feedback = document.getElementById('copyFeedback');
+        if (feedback) feedback.style.display = 'flex';
+    }).catch(err => {
+        console.error('Could not copy link:', err);
+    });
+}
+
+/* ── Confirm Member Removal ── */
+function confirmRemoveMember(membershipId, memberName) {
+    const targetEl = document.getElementById('removeMemberTargetName');
+    if (targetEl) targetEl.textContent = memberName || 'this member';
+    
+    const form = document.getElementById('removeMemberForm');
+    if (form) {
+        form.action = `/clubadmin/members/${membershipId}/remove`;
+    }
+    openModal('removeMemberModal');
+}
+
+function closeRemoveModal() {
+    closeModal('removeMemberModal');
+}
+
+/* ── Member Dossier Drawer Modal ── */
+function openMemberDrawer(playerId) {
+    if (!playerId) return;
+    openModal('memberDetailsModal');
+    
+    const loading = document.getElementById('memberDossierLoading');
+    const content = document.getElementById('memberDossierContent');
+    if (loading) {
+        loading.style.display = 'block';
+        loading.innerHTML = '<div class="drawer-spinner" style="margin: 0 auto 12px;"></div><span>Loading player details...</span>';
+    }
+    if (content) content.style.display = 'none';
+    
+    fetch(`/clubadmin/members/${playerId}/details`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                if (loading) loading.innerHTML = `<p style="color:#ef4444;"><i class="ph ph-warning" style="font-size:1.5rem; display:block; margin-bottom:6px;"></i> Error loading details</p>`;
+                return;
+            }
+            if (loading) loading.style.display = 'none';
+            if (content) content.style.display = 'flex';
+            
+            document.getElementById('dossierName').textContent = `${data.first_name || ''} ${data.last_name || ''}`.trim() || 'Player';
+            document.getElementById('dossierPhone').textContent = data.phone || '—';
+            document.getElementById('dossierEmail').textContent = data.email || '—';
+            document.getElementById('dossierJoined').textContent = data.joined_at || '—';
+            document.getElementById('dossierExpires').textContent = data.expires_at || 'Lifetime';
+            document.getElementById('dossierDupr').textContent = parseFloat(data.dupr || 0).toFixed(2);
+            document.getElementById('dossierElo').textContent = data.elo || 1200;
+            
+            const skillEl = document.getElementById('dossierSkill');
+            if (skillEl) {
+                const sk = (data.proficiency || 'beginner').toLowerCase();
+                skillEl.className = `skill-badge-pill ${sk}`;
+                skillEl.textContent = (data.proficiency || 'Beginner');
+            }
+            
+            const statusEl = document.getElementById('dossierStatus');
+            if (statusEl) {
+                statusEl.className = `status-pill-badge ${data.status || 'active'}`;
+                statusEl.textContent = (data.status || 'active').charAt(0).toUpperCase() + (data.status || 'active').slice(1);
+            }
+            
+            const avatarEl = document.getElementById('dossierAvatar');
+            if (avatarEl) {
+                if (data.avatar_url) {
+                    avatarEl.innerHTML = `<img src="${data.avatar_url}" alt="Player" style="width:100%;height:100%;object-fit:cover;">`;
+                } else {
+                    const initials = (((data.first_name || ' ')[0]) + ((data.last_name || ' ')[0])).toUpperCase().trim() || '?';
+                    avatarEl.textContent = initials;
+                }
+            }
+            
+            // GCash Reference
+            const gcashRow = document.getElementById('dossierGcashRow');
+            if (data.gcash_ref) {
+                gcashRow.style.display = 'flex';
+                document.getElementById('dossierGcashRef').textContent = data.gcash_ref;
+            } else {
+                gcashRow.style.display = 'none';
+            }
+            
+            // Registrations
+            const regsEl = document.getElementById('dossierRegistrationsList');
+            if (regsEl) {
+                if (data.registrations && data.registrations.length > 0) {
+                    regsEl.innerHTML = data.registrations.map(r => `
+                        <div style="background:var(--input-bg); border:1px solid var(--border-color); border-radius:8px; padding:8px 12px; display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">
+                            <div>
+                                <strong>${r.title || 'Event'}</strong>
+                                <div style="color:var(--text-muted); font-size:0.72rem;">${r.date || 'Upcoming'} • ${(r.type || '').toUpperCase()}</div>
+                            </div>
+                            <span class="status-pill-badge active" style="font-size:0.7rem; padding:2px 8px;">${r.status || 'Registered'}</span>
+                        </div>
+                    `).join('');
+                } else {
+                    regsEl.innerHTML = '<div style="color:var(--text-muted); font-size:0.78rem; font-style:italic;">No active event registrations</div>';
+                }
+            }
+            
+            // Matches
+            const matchesEl = document.getElementById('dossierMatchesList');
+            if (matchesEl) {
+                if (data.matches && data.matches.length > 0) {
+                    matchesEl.innerHTML = data.matches.map(m => {
+                        const isWin = (m.result || '').toUpperCase() === 'WIN';
+                        return `
+                            <div style="background:var(--input-bg); border:1px solid var(--border-color); border-radius:8px; padding:8px 12px; display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">
+                                <div>
+                                    <strong>vs. ${m.opponent || 'Opponent'}</strong>
+                                    <div style="color:var(--text-muted); font-size:0.72rem;">${m.event_title || 'Match'} • Score: ${m.score}</div>
+                                </div>
+                                <span class="status-pill-badge ${isWin ? 'active' : 'expired'}" style="font-size:0.7rem; padding:2px 8px;">
+                                    ${m.result || 'Finished'}
+                                </span>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    matchesEl.innerHTML = '<div style="color:var(--text-muted); font-size:0.78rem; font-style:italic;">No recorded tournament matches</div>';
+                }
+            }
+            
+            // Chat link
+            const chatLink = document.getElementById('dossierChatLink');
+            if (chatLink) {
+                chatLink.href = `/clubadmin/messages?chat_user=${playerId}`;
+            }
+        })
+        .catch(err => {
+            console.error('Dossier error:', err);
+            if (loading) loading.innerHTML = `<p style="color:#ef4444;"><i class="ph ph-warning" style="font-size:1.5rem; display:block; margin-bottom:6px;"></i> Error loading details</p>`;
+        });
+}
+
+function closeMemberDetailsModal() {
+    closeModal('memberDetailsModal');
+}
+
+/* ── Receipt Lightbox Helper ── */
+function showReceipt(url, ref) {
+    const img = document.getElementById('previewReceiptImg');
+    const refCode = document.getElementById('previewRefCode');
+    if (img) img.src = url || '';
+    if (refCode) refCode.textContent = ref || 'None';
+    openModal('receiptPreviewModal');
+}
+
+function closeReceiptPreview() {
+    closeModal('receiptPreviewModal');
+}
+
+/* ── View Switcher: Table vs Cards ── */
+function switchView(mode) {
+    const tableView = document.getElementById('tableViewContainer');
+    const cardsView = document.getElementById('cardsViewContainer');
+    const btnTable = document.getElementById('btnTableView');
+    const btnCards = document.getElementById('btnCardsView');
+    
+    if (!tableView || !cardsView) return;
+    
+    if (mode === 'cards') {
+        tableView.style.display = 'none';
+        cardsView.style.display = 'grid';
+        if (btnCards) btnCards.classList.add('active');
+        if (btnTable) btnTable.classList.remove('active');
+        try { localStorage.setItem('club_members_view', 'cards'); } catch(e){}
+    } else {
+        tableView.style.display = 'block';
+        cardsView.style.display = 'none';
+        if (btnTable) btnTable.classList.add('active');
+        if (btnCards) btnCards.classList.remove('active');
+        try { localStorage.setItem('club_members_view', 'table'); } catch(e){}
+    }
+}
+
+/* ── Real-Time Multi-Factor Filtering ── */
+function handleSearchInput() {
+    const query = document.getElementById('memberSearch').value;
+    const clearBtn = document.getElementById('clearSearchBtn');
+    if (clearBtn) clearBtn.style.display = query ? 'block' : 'none';
+    filterMembers();
+}
+
+function clearSearch() {
+    document.getElementById('memberSearch').value = '';
+    const clearBtn = document.getElementById('clearSearchBtn');
+    if (clearBtn) clearBtn.style.display = 'none';
+    document.getElementById('statusFilter').value = 'all';
+    document.getElementById('skillFilter').value = 'all';
+    filterMembers();
+}
+
+function filterMembers() {
+    const query = (document.getElementById('memberSearch')?.value || '').toLowerCase().trim();
+    const status = document.getElementById('statusFilter')?.value || 'all';
+    const skill = document.getElementById('skillFilter')?.value || 'all';
+    
+    let visibleCount = 0;
+    
+    // Filter Table Rows
+    document.querySelectorAll('.member-row').forEach(row => {
+        const name = row.dataset.name || '';
+        const phone = row.dataset.phone || '';
+        const email = row.dataset.email || '';
+        const rowStatus = row.dataset.status || '';
+        const rowSkill = row.dataset.skill || '';
+        
+        const matchQuery = !query || name.includes(query) || phone.includes(query) || email.includes(query);
+        const matchStatus = status === 'all' || rowStatus === status;
+        const matchSkill = skill === 'all' || rowSkill === skill;
+        
+        const show = matchQuery && matchStatus && matchSkill;
+        row.style.display = show ? '' : 'none';
+        if (show) visibleCount++;
+    });
+    
+    // Filter Cards
+    document.querySelectorAll('.member-card-item').forEach(card => {
+        const name = card.dataset.name || '';
+        const phone = card.dataset.phone || '';
+        const email = card.dataset.email || '';
+        const cardStatus = card.dataset.status || '';
+        const cardSkill = card.dataset.skill || '';
+        
+        const matchQuery = !query || name.includes(query) || phone.includes(query) || email.includes(query);
+        const matchStatus = status === 'all' || cardStatus === status;
+        const matchSkill = skill === 'all' || cardSkill === skill;
+        
+        const show = matchQuery && matchStatus && matchSkill;
+        card.style.display = show ? 'flex' : 'none';
+    });
+    
+    // Toggle Empty State
+    const noResults = document.getElementById('noResultsMsg');
+    const tableView = document.getElementById('tableViewContainer');
+    const cardsView = document.getElementById('cardsViewContainer');
+    
+    if (visibleCount === 0) {
+        if (noResults) noResults.style.display = 'block';
+        if (tableView) tableView.style.display = 'none';
+        if (cardsView) cardsView.style.display = 'none';
+    } else {
+        if (noResults) noResults.style.display = 'none';
+        let currentView = 'table';
+        try { currentView = localStorage.getItem('club_members_view') || 'table'; } catch(e){}
+        if (currentView === 'cards') {
+            if (cardsView) cardsView.style.display = 'grid';
+            if (tableView) tableView.style.display = 'none';
+        } else {
+            if (tableView) tableView.style.display = 'block';
+            if (cardsView) cardsView.style.display = 'none';
+        }
+    }
+}
+
+/* ── Sorting Logic ── */
+function sortMembers() {
+    const sortVal = document.getElementById('sortFilter')?.value || 'date-desc';
+    const tbody = document.getElementById('membersTableBody');
+    if (!tbody) return;
+    const rows = Array.from(tbody.querySelectorAll('.member-row'));
+    
+    const cardsContainer = document.getElementById('cardsViewContainer');
+    const cards = cardsContainer ? Array.from(cardsContainer.querySelectorAll('.member-card-item')) : [];
+    
+    const comparator = (a, b) => {
+        if (sortVal === 'date-desc') {
+            return (b.dataset.date || '').localeCompare(a.dataset.date || '');
+        } else if (sortVal === 'date-asc') {
+            return (a.dataset.date || '').localeCompare(b.dataset.date || '');
+        } else if (sortVal === 'name-asc') {
+            return (a.dataset.name || '').localeCompare(b.dataset.name || '');
+        } else if (sortVal === 'dupr-desc') {
+            return parseFloat(b.dataset.dupr || 0) - parseFloat(a.dataset.dupr || 0);
+        }
+        return 0;
+    };
+    
+    rows.sort(comparator).forEach(r => tbody.appendChild(r));
+    cards.sort(comparator).forEach(c => cardsContainer.appendChild(c));
+}
+
+/* ── CSV Export ── */
+function exportMembersCSV() {
+    const rows = document.querySelectorAll('.member-row');
+    if (!rows.length) {
+        alert('No members to export.');
+        return;
+    }
+    
+    let csvContent = "data:text/csv;charset=utf-8,Member Name,Skill Level,DUPR,ELO,Phone,Join Date,Status\n";
+    rows.forEach(r => {
+        const name = `"${r.dataset.name || ''}"`;
+        const skill = `"${r.dataset.skill || ''}"`;
+        const dupr = r.dataset.dupr || '';
+        const phone = `"${r.dataset.phone || ''}"`;
+        const date = r.dataset.date || '';
+        const status = `"${r.dataset.status || ''}"`;
+        const elo = r.querySelector('.badge-elo-score')?.textContent.trim() || '1200';
+        csvContent += `${name},${skill},${dupr},${elo},${phone},${date},${status}\n`;
+    });
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `club_members_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// Restore user view preference on load
+document.addEventListener('DOMContentLoaded', () => {
+    let pref = 'table';
+    try { pref = localStorage.getItem('club_members_view') || 'table'; } catch(e){}
+    switchView(pref);
+});
 </script>
 {% endblock %}

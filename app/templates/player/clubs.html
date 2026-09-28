@@ -2,75 +2,1384 @@
 
 {% block title %}Browse Clubs{% endblock %}
 
-{% block content %}
-<div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center;">
-    <div>
-        <h1 class="page-title">Browse Clubs</h1>
-        <p style="color: var(--text-muted); margin-top: 5px;">Discover and join local pickleball clubs.</p>
-    </div>
-    <a href="{{ url_for('player.my_clubs') }}" class="action-box navy" style="padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">
-        <i class="ph ph-list-dashes"></i> My Clubs
-    </a>
-</div>
+{% block extra_head %}
+<style>
+    /* ==========================================================================
+       BROWSE CLUBS — SPORTS PLATFORM 2.0 STYLING
+       ========================================================================== */
+    .clubs-container {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        width: 100%;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding-bottom: 120px; /* Safe space above floating bookings cart widget */
+    }
 
-<div class="clubs-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
-    {% if clubs %}
-        {% for club in clubs %}
-        <div class="glass-card" style="display: flex; flex-direction: column; gap: 15px; padding: 20px;">
-            <a href="{{ url_for('player.club_detail', club_id=club.id) }}" style="text-decoration: none; display: flex; align-items: center; gap: 15px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1.0'">
-                {% if club.logo_url %}
-                <img src="{{ club.logo_url }}" alt="Logo" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">
-                {% else %}
-                <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--text-muted); flex-shrink: 0;">
+    /* ── Hero Banner ── */
+    .clubs-hero-banner {
+        position: relative;
+        background: var(--sports-card-bg, #ffffff);
+        border: 1px solid var(--sports-border, #e2e8f0);
+        border-radius: 20px;
+        padding: 28px 32px;
+        box-shadow: var(--sports-shadow-md, 0 4px 16px rgba(15, 23, 42, 0.05));
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        flex-wrap: wrap;
+    }
+
+    /* Subtle Athletic Court Watermark */
+    .clubs-hero-banner::before {
+        content: "";
+        position: absolute;
+        top: -40px;
+        right: -40px;
+        width: 320px;
+        height: 320px;
+        background: radial-gradient(circle, rgba(225, 86, 35, 0.09) 0%, rgba(16, 185, 129, 0.04) 60%, transparent 80%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .clubs-hero-info {
+        position: relative;
+        z-index: 1;
+        flex: 1;
+        min-width: 280px;
+    }
+
+    .clubs-hero-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: var(--primary-orange, #ff5722);
+        background: var(--primary-orange-light, rgba(225, 86, 35, 0.12));
+        padding: 4px 12px;
+        border-radius: 9999px;
+        margin-bottom: 10px;
+    }
+
+    .clubs-hero-title {
+        font-size: 1.85rem;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        color: var(--sports-text-main, #0f172a);
+        line-height: 1.2;
+        margin: 0 0 8px 0;
+    }
+
+    .clubs-hero-desc {
+        font-size: 0.92rem;
+        color: var(--sports-text-muted, #64748b);
+        line-height: 1.5;
+        margin: 0;
+        max-width: 680px;
+    }
+
+    .clubs-hero-actions {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+    }
+
+    .btn-my-clubs-hero {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 20px;
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #e2e8f0);
+        border-radius: 14px;
+        color: var(--sports-text-main, #0f172a);
+        text-decoration: none;
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: var(--sports-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.04));
+    }
+
+    .btn-my-clubs-hero:hover {
+        border-color: var(--primary-orange, #ff5722);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(225, 86, 35, 0.15);
+    }
+
+    .my-clubs-hero-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, var(--btn-navy, #1a213b), #2c3859);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        position: relative;
+        flex-shrink: 0;
+    }
+
+    .my-clubs-badge-dot {
+        position: absolute;
+        top: -3px;
+        right: -3px;
+        width: 10px;
+        height: 10px;
+        background: #10b981;
+        border-radius: 50%;
+        border: 2px solid var(--sports-card-bg, #ffffff);
+    }
+
+    .my-clubs-hero-text {
+        display: flex;
+        flex-direction: column;
+        text-align: left;
+    }
+
+    .my-clubs-hero-title {
+        font-size: 0.88rem;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+
+    .my-clubs-hero-sub {
+        font-size: 0.74rem;
+        color: var(--sports-text-muted, #64748b);
+        line-height: 1.2;
+        margin-top: 2px;
+    }
+
+    /* ── Metric Stat Tiles Row ── */
+    .clubs-metrics-strip {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+    }
+
+    .metric-filter-card {
+        background: var(--sports-card-bg, #ffffff);
+        border: 1px solid var(--sports-border, #e2e8f0);
+        border-radius: 16px;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        cursor: pointer;
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: var(--sports-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.04));
+        user-select: none;
+    }
+
+    .metric-filter-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--sports-shadow-md, 0 4px 16px rgba(0, 0, 0, 0.06));
+        border-color: var(--primary-orange, #ff5722);
+    }
+
+    .metric-filter-card.active {
+        border-color: var(--primary-orange, #ff5722);
+        background: var(--primary-orange-light, rgba(225, 86, 35, 0.08));
+    }
+
+    .metric-icon-box {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+
+    .metric-icon-box.orange {
+        background: rgba(225, 86, 35, 0.12);
+        color: var(--primary-orange, #ff5722);
+    }
+
+    .metric-icon-box.green {
+        background: rgba(16, 185, 129, 0.12);
+        color: #10b981;
+    }
+
+    .metric-icon-box.blue {
+        background: rgba(59, 130, 246, 0.12);
+        color: #3b82f6;
+    }
+
+    .metric-icon-box.amber {
+        background: rgba(245, 158, 11, 0.12);
+        color: #f59e0b;
+    }
+
+    .metric-text-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .metric-val {
+        font-size: 1.45rem;
+        font-weight: 900;
+        color: var(--sports-text-main, #0f172a);
+        line-height: 1.1;
+    }
+
+    .metric-lbl {
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: var(--sports-text-muted, #64748b);
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        margin-top: 2px;
+    }
+
+    /* ── Controls & Filter Bar ── */
+    .clubs-toolbar-card {
+        background: var(--sports-card-bg, #ffffff);
+        border: 1px solid var(--sports-border, #e2e8f0);
+        border-radius: 18px;
+        padding: 16px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        box-shadow: var(--sports-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.04));
+    }
+
+    .clubs-toolbar-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    /* Search Box */
+    .clubs-search-wrap {
+        position: relative;
+        flex: 1;
+        min-width: 260px;
+    }
+
+    .clubs-search-wrap i.search-prefix {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.15rem;
+        color: var(--sports-text-dim, #94a3b8);
+        pointer-events: none;
+    }
+
+    .clubs-search-input {
+        width: 100%;
+        padding: 11px 40px 11px 42px;
+        background: var(--input-bg, #f8fafc);
+        border: 1.5px solid var(--sports-border, #e2e8f0);
+        border-radius: 12px;
+        font-size: 0.88rem;
+        color: var(--sports-text-main, #0f172a);
+        transition: all 0.2s ease;
+        outline: none;
+    }
+
+    .clubs-search-input:focus {
+        border-color: var(--primary-orange, #ff5722);
+        background: var(--sports-card-bg, #ffffff);
+        box-shadow: 0 0 0 3px rgba(225, 86, 35, 0.12);
+    }
+
+    .clubs-search-clear {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--sports-text-dim, #94a3b8);
+        cursor: pointer;
+        padding: 4px;
+        display: none;
+        font-size: 1.1rem;
+        border-radius: 50%;
+        transition: color 0.15s ease;
+    }
+
+    .clubs-search-clear:hover {
+        color: var(--primary-orange, #ff5722);
+    }
+
+    /* Filter Pills */
+    .filter-pills-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .filter-pill-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 9999px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        border: 1.5px solid var(--sports-border, #e2e8f0);
+        background: var(--sports-card-bg, #ffffff);
+        color: var(--sports-text-muted, #64748b);
+        transition: all 0.2s ease;
+        user-select: none;
+    }
+
+    .filter-pill-btn:hover:not(.active) {
+        border-color: var(--primary-orange, #ff5722);
+        color: var(--primary-orange, #ff5722);
+    }
+
+    .filter-pill-btn.active {
+        background: var(--primary-orange, #ff5722);
+        border-color: var(--primary-orange, #ff5722);
+        color: #ffffff;
+        box-shadow: 0 3px 12px rgba(225, 86, 35, 0.25);
+    }
+
+    .filter-pill-badge {
+        font-size: 0.72rem;
+        padding: 1px 7px;
+        border-radius: 9999px;
+        background: rgba(0, 0, 0, 0.08);
+        font-weight: 800;
+    }
+
+    .filter-pill-btn.active .filter-pill-badge {
+        background: rgba(255, 255, 255, 0.25);
+        color: #ffffff;
+    }
+
+    /* Sort Box */
+    .sort-control-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .sort-select-label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--sports-text-muted, #64748b);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .clubs-sort-select {
+        padding: 9px 34px 9px 12px;
+        background: var(--input-bg, #f8fafc) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 12px center;
+        border: 1.5px solid var(--sports-border, #e2e8f0);
+        border-radius: 12px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--sports-text-main, #0f172a);
+        cursor: pointer;
+        outline: none;
+        appearance: none;
+        transition: border-color 0.2s ease;
+    }
+
+    .clubs-sort-select:focus {
+        border-color: var(--primary-orange, #ff5722);
+    }
+
+    /* Status Readout Bar */
+    .results-status-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.82rem;
+        color: var(--sports-text-muted, #64748b);
+        padding-top: 4px;
+        border-top: 1px solid var(--sports-border, #e2e8f0);
+    }
+
+    .results-count-bold {
+        font-weight: 700;
+        color: var(--sports-text-main, #0f172a);
+    }
+
+    .reset-filters-link {
+        color: var(--primary-orange, #ff5722);
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .reset-filters-link:hover {
+        text-decoration: underline;
+    }
+
+    /* ── Clubs Grid ── */
+    .clubs-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 24px;
+    }
+
+    /* ── Individual Club Card ── */
+    .club-card-pro {
+        background: var(--sports-card-bg, #ffffff);
+        border: 1px solid var(--sports-border, #e2e8f0);
+        border-radius: 18px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: var(--sports-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.04));
+        transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.24s ease;
+        position: relative;
+    }
+
+    .club-card-pro:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--sports-shadow-lg, 0 12px 28px rgba(15, 23, 42, 0.08));
+        border-color: rgba(225, 86, 35, 0.35);
+    }
+
+    /* Card Banner */
+    .club-card-banner {
+        height: 82px;
+        position: relative;
+        background: linear-gradient(135deg, #1e293b, #0f172a);
+        overflow: hidden;
+    }
+
+    .club-card-banner.grad-0 { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); }
+    .club-card-banner.grad-1 { background: linear-gradient(135deg, #064e3b 0%, #0f766e 100%); }
+    .club-card-banner.grad-2 { background: linear-gradient(135deg, #1e3a8a 0%, #0369a1 100%); }
+    .club-card-banner.grad-3 { background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 100%); }
+    .club-card-banner.grad-4 { background: linear-gradient(135deg, #78350f 0%, #b45309 100%); }
+
+    /* Subtle court lines in banner */
+    .club-card-banner::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: 
+            radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.12) 0%, transparent 60%),
+            linear-gradient(45deg, rgba(255, 255, 255, 0.04) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.04) 50%, rgba(255, 255, 255, 0.04) 75%, transparent 75%, transparent);
+        background-size: 100% 100%, 20px 20px;
+        opacity: 0.8;
+    }
+
+    /* Badges placed on banner */
+    .club-banner-badges {
+        position: absolute;
+        top: 12px;
+        left: 14px;
+        right: 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 2;
+    }
+
+    .badge-fee-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        border-radius: 9999px;
+        font-size: 0.74rem;
+        font-weight: 800;
+        letter-spacing: 0.2px;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+    }
+
+    .badge-fee-pill.free {
+        background: rgba(16, 185, 129, 0.9);
+        color: #ffffff;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-fee-pill.paid {
+        background: rgba(245, 158, 11, 0.95);
+        color: #ffffff;
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+    }
+
+    .badge-member-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        border-radius: 9999px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+    }
+
+    .badge-member-status.active {
+        background: rgba(16, 185, 129, 0.9);
+        color: #ffffff;
+    }
+
+    .badge-member-status.pending {
+        background: rgba(245, 158, 11, 0.95);
+        color: #ffffff;
+    }
+
+    /* Card Content Body */
+    .club-card-body {
+        padding: 0 22px 20px 22px;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
+    /* Avatar & Title Row */
+    .club-avatar-overlap {
+        margin-top: -34px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: flex-end;
+        position: relative;
+        z-index: 3;
+    }
+
+    .club-logo-circle {
+        width: 66px;
+        height: 66px;
+        border-radius: 50%;
+        border: 3.5px solid var(--sports-card-bg, #ffffff);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        background: var(--sports-card-bg, #ffffff);
+        overflow: hidden;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .club-logo-circle img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .club-fallback-avatar {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        font-weight: 900;
+        color: #ffffff;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        user-select: none;
+    }
+
+    .club-fallback-avatar.avatar-grad-0 { background: linear-gradient(135deg, #ff5722, #ea580c); }
+    .club-fallback-avatar.avatar-grad-1 { background: linear-gradient(135deg, #10b981, #059669); }
+    .club-fallback-avatar.avatar-grad-2 { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+    .club-fallback-avatar.avatar-grad-3 { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+    .club-fallback-avatar.avatar-grad-4 { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+    /* Title & Location */
+    .club-name-link {
+        text-decoration: none;
+        color: var(--sports-text-main, #0f172a);
+        font-size: 1.15rem;
+        font-weight: 800;
+        line-height: 1.3;
+        margin-bottom: 4px;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        transition: color 0.18s ease;
+    }
+
+    .club-name-link:hover {
+        color: var(--primary-orange, #ff5722);
+    }
+
+    .club-location-tag {
+        font-size: 0.82rem;
+        color: var(--sports-text-muted, #64748b);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-bottom: 8px;
+    }
+
+    .club-location-tag i {
+        color: var(--primary-orange, #ff5722);
+        font-size: 0.95rem;
+        flex-shrink: 0;
+    }
+
+    .club-admin-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.75rem;
+        color: var(--sports-text-muted, #64748b);
+        margin-bottom: 12px;
+    }
+
+    .club-admin-pill i {
+        color: var(--sports-text-dim, #94a3b8);
+    }
+
+    .club-admin-name {
+        font-weight: 600;
+        color: var(--sports-text-main, #0f172a);
+    }
+
+    /* Description */
+    .club-desc-text {
+        font-size: 0.86rem;
+        color: var(--sports-text-muted, #64748b);
+        line-height: 1.5;
+        margin: 0 0 16px 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        flex-grow: 1;
+        min-height: 2.6em;
+    }
+
+    /* Meta Divider & Stats */
+    .club-card-divider {
+        height: 1px;
+        background: var(--sports-border, #e2e8f0);
+        margin-bottom: 14px;
+    }
+
+    .club-meta-stats-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.82rem;
+        color: var(--sports-text-muted, #64748b);
+        margin-bottom: 16px;
+    }
+
+    .meta-stat-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .meta-stat-item i {
+        font-size: 1rem;
+        color: var(--sports-text-dim, #94a3b8);
+    }
+
+    .meta-stat-item strong {
+        color: var(--sports-text-main, #0f172a);
+        font-weight: 700;
+    }
+
+    /* Card Action Footer Tray */
+    .club-actions-tray {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: auto;
+    }
+
+    .btn-club-details {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: var(--sports-text-main, #0f172a);
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #e2e8f0);
+        text-decoration: none;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .btn-club-details:hover {
+        border-color: var(--sports-text-dim, #94a3b8);
+        background: var(--sports-card-hover, #fafbfc);
+    }
+
+    .btn-club-main {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 10px 18px;
+        border-radius: 12px;
+        font-size: 0.84rem;
+        font-weight: 700;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        flex: 1;
+        white-space: nowrap;
+        font-family: inherit;
+    }
+
+    /* Action variations */
+    .btn-club-main.join-free {
+        background: linear-gradient(135deg, var(--primary-orange, #ff5722), #ea580c);
+        color: #ffffff;
+        box-shadow: 0 3px 12px rgba(225, 86, 35, 0.25);
+    }
+
+    .btn-club-main.join-free:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(225, 86, 35, 0.35);
+        background: linear-gradient(135deg, #ea580c, #c2410c);
+    }
+
+    .btn-club-main.join-paid {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: #ffffff;
+        box-shadow: 0 3px 12px rgba(245, 158, 11, 0.25);
+    }
+
+    .btn-club-main.join-paid:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(245, 158, 11, 0.35);
+    }
+
+    .btn-club-main.open-club {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: #ffffff;
+        box-shadow: 0 3px 12px rgba(16, 185, 129, 0.25);
+    }
+
+    .btn-club-main.open-club:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35);
+    }
+
+    .btn-club-main.pending-status {
+        background: rgba(245, 158, 11, 0.12);
+        color: #b45309;
+        border: 1.5px solid rgba(245, 158, 11, 0.35);
+    }
+
+    .btn-club-main.pending-status:hover {
+        background: rgba(245, 158, 11, 0.18);
+    }
+
+    /* ── Empty State ── */
+    .clubs-empty-state {
+        grid-column: 1 / -1;
+        background: var(--sports-card-bg, #ffffff);
+        border: 1px dashed var(--sports-border, #e2e8f0);
+        border-radius: 20px;
+        padding: 56px 24px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        box-shadow: var(--sports-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.04));
+    }
+
+    .empty-state-icon-ring {
+        width: 76px;
+        height: 76px;
+        border-radius: 50%;
+        background: rgba(225, 86, 35, 0.08);
+        border: 1.5px solid rgba(225, 86, 35, 0.2);
+        color: var(--primary-orange, #ff5722);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2rem;
+        margin-bottom: 4px;
+    }
+
+    .empty-state-title {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--sports-text-main, #0f172a);
+        margin: 0;
+    }
+
+    .empty-state-desc {
+        font-size: 0.9rem;
+        color: var(--sports-text-muted, #64748b);
+        max-width: 440px;
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    .btn-empty-reset {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #ffffff;
+        background: var(--primary-orange, #ff5722);
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-empty-reset:hover {
+        background: var(--primary-orange-hover, #ea580c);
+        transform: translateY(-2px);
+    }
+
+    /* ── Dark Mode Overrides ── */
+    html.dark-mode .clubs-hero-banner,
+    html.dark-mode .metric-filter-card,
+    html.dark-mode .clubs-toolbar-card,
+    html.dark-mode .club-card-pro,
+    html.dark-mode .clubs-empty-state {
+        background: #19202e;
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    html.dark-mode .clubs-search-input,
+    html.dark-mode .clubs-sort-select {
+        background-color: #0f131a;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #f1f5f9;
+    }
+
+    html.dark-mode .filter-pill-btn {
+        background: #141923;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #94a3b8;
+    }
+
+    html.dark-mode .filter-pill-btn:hover:not(.active) {
+        border-color: var(--primary-orange, #ff5722);
+        color: var(--primary-orange, #ff5722);
+    }
+
+    html.dark-mode .filter-pill-btn.active {
+        background: var(--primary-orange, #ff5722);
+        color: #ffffff;
+    }
+
+    html.dark-mode .btn-my-clubs-hero,
+    html.dark-mode .btn-club-details {
+        background: #141923;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #f1f5f9;
+    }
+
+    html.dark-mode .btn-my-clubs-hero:hover,
+    html.dark-mode .btn-club-details:hover {
+        background: #1c2332;
+        border-color: var(--primary-orange, #ff5722);
+    }
+
+    html.dark-mode .club-logo-circle {
+        border-color: #19202e;
+        background: #141923;
+    }
+
+    html.dark-mode .club-card-divider,
+    html.dark-mode .results-status-bar {
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    html.dark-mode .metric-filter-card.active {
+        background: rgba(225, 86, 35, 0.15);
+    }
+
+    html.dark-mode .btn-club-main.pending-status {
+        background: rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+        border-color: rgba(245, 158, 11, 0.4);
+    }
+
+    /* ── Responsive Queries ── */
+    @media (max-width: 1024px) {
+        .clubs-metrics-strip {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .clubs-hero-banner {
+            padding: 22px 20px;
+        }
+
+        .clubs-hero-title {
+            font-size: 1.55rem;
+        }
+
+        .clubs-hero-actions {
+            width: 100%;
+        }
+
+        .btn-my-clubs-hero {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .clubs-metrics-strip {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .metric-filter-card {
+            padding: 12px 14px;
+            gap: 10px;
+        }
+
+        .metric-val {
+            font-size: 1.25rem;
+        }
+
+        .clubs-toolbar-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .sort-control-wrap {
+            justify-content: space-between;
+        }
+
+        .clubs-cards-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="clubs-container">
+
+    <!-- ── 1. ATHLETIC HERO & COMMAND BANNER ── -->
+    <header class="clubs-hero-banner animate-entry">
+        <div class="clubs-hero-info">
+            <span class="clubs-hero-tag">
+                <i class="ph ph-shield-star"></i> Pickleball Communities
+            </span>
+            <h1 class="clubs-hero-title">Browse & Join Clubs</h1>
+            <p class="clubs-hero-desc">
+                Discover active pickleball clubs, connect with regional players, and unlock member-exclusive tournaments, court sessions, and ranked matchmaking.
+            </p>
+        </div>
+
+        <div class="clubs-hero-actions">
+            <a href="{{ url_for('player.my_clubs') }}" class="btn-my-clubs-hero" title="View all clubs you have joined or applied to">
+                <div class="my-clubs-hero-icon">
+                    <i class="ph ph-shield-check"></i>
+                    {% if active_joined_count > 0 %}
+                    <span class="my-clubs-badge-dot" title="{{ active_joined_count }} Active Memberships"></span>
+                    {% endif %}
+                </div>
+                <div class="my-clubs-hero-text">
+                    <span class="my-clubs-hero-title">My Clubs</span>
+                    <span class="my-clubs-hero-sub">{{ joined_count }} Joined / Pending</span>
+                </div>
+                <i class="ph ph-caret-right" style="color: var(--sports-text-dim); margin-left: 4px;"></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- ── 2. SEARCH, FILTERS & SORT TOOLBAR ── -->
+    <section class="clubs-toolbar-card" aria-label="Clubs Navigation and Filters">
+        <div class="clubs-toolbar-row">
+            <!-- Search Input -->
+            <div class="clubs-search-wrap">
+                <i class="ph ph-magnifying-glass search-prefix"></i>
+                <input type="text" id="clubSearchInput" class="clubs-search-input" placeholder="Search clubs by name, location, or admin..." autocomplete="off">
+                <button type="button" id="clubSearchClear" class="clubs-search-clear" onclick="clearClubSearch()" aria-label="Clear Search">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+
+            <!-- Filter Pills -->
+            <div class="filter-pills-wrap" role="tablist">
+                <button type="button" class="filter-pill-btn active" data-filter="all" onclick="setClubFilter('all')" role="tab">
+                    <i class="ph ph-squares-four"></i>
+                    <span>All</span>
+                    <span class="filter-pill-badge">{{ clubs|length }}</span>
+                </button>
+                <button type="button" class="filter-pill-btn" data-filter="my-clubs" onclick="setClubFilter('my-clubs')" role="tab">
+                    <i class="ph ph-shield-check"></i>
+                    <span>My Clubs</span>
+                    <span class="filter-pill-badge">{{ joined_count }}</span>
+                </button>
+                <button type="button" class="filter-pill-btn" data-filter="free" onclick="setClubFilter('free')" role="tab">
+                    <i class="ph ph-sparkle"></i>
+                    <span>Free</span>
+                    <span class="filter-pill-badge">{{ free_count }}</span>
+                </button>
+                <button type="button" class="filter-pill-btn" data-filter="paid" onclick="setClubFilter('paid')" role="tab">
+                    <i class="ph ph-tag"></i>
+                    <span>Paid</span>
+                    <span class="filter-pill-badge">{{ paid_count }}</span>
+                </button>
+            </div>
+
+            <!-- Sort Dropdown -->
+            <div class="sort-control-wrap">
+                <label for="clubSortSelect" class="sort-select-label">
+                    <i class="ph ph-arrows-down-up"></i> Sort:
+                </label>
+                <select id="clubSortSelect" class="clubs-sort-select" onchange="applyClubFiltersAndSort()">
+                    <option value="members-desc">Most Members</option>
+                    <option value="name-asc">Alphabetical (A - Z)</option>
+                    <option value="newest">Newest Added</option>
+                    <option value="fee-asc">Lowest Fee</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Status & Results Count Bar -->
+        <div class="results-status-bar">
+            <span>Showing <span class="results-count-bold" id="resultsCount">{{ clubs|length }}</span> of {{ clubs|length }} clubs</span>
+            <a href="javascript:void(0)" id="resetFiltersBtn" class="reset-filters-link" onclick="resetAllFilters()" style="display: none;">
+                <i class="ph ph-arrow-counter-clockwise"></i> Reset Filters
+            </a>
+        </div>
+    </section>
+
+    <!-- ── 4. CLUBS CARDS GRID ── -->
+    <div class="clubs-cards-grid" id="clubsGridContainer">
+        {% if clubs %}
+            {% for club in clubs %}
+            {% set grad_index = loop.index0 % 5 %}
+            {% set words = (club.name or 'PB').split() %}
+            {% if words|length >= 2 %}
+                {% set initials = (words[0][0] + words[1][0])|upper %}
+            {% else %}
+                {% set initials = (words[0][:2])|upper %}
+            {% endif %}
+
+            <article class="club-card-pro"
+                     data-id="{{ club.id }}"
+                     data-name="{{ (club.name or '')|lower }}"
+                     data-location="{{ (club.location or '')|lower }}"
+                     data-desc="{{ (club.description or '')|lower }}"
+                     data-admin="{{ ((club.profiles.first_name ~ ' ' ~ (club.profiles.last_name or '')) if club.profiles else '')|lower }}"
+                     data-status="{{ club.my_status or 'none' }}"
+                     data-type="{{ club.membership_type }}"
+                     data-fee="{{ club.membership_fee or 0 }}"
+                     data-members="{{ club.member_count or 0 }}"
+                     data-index="{{ loop.index0 }}">
+
+                <!-- Card Banner Strip -->
+                <div class="club-card-banner {% if not club.banner_url %}grad-{{ grad_index }}{% endif %}"
+                     {% if club.banner_url %}style="background: url('{{ club.banner_url }}') center/cover no-repeat; position: relative;"{% endif %}>
+                    {% if club.banner_url %}
+                    <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15, 23, 42, 0.3) 0%, rgba(15, 23, 42, 0.6) 100%); pointer-events: none; border-top-left-radius: 18px; border-top-right-radius: 18px;"></div>
+                    {% endif %}
+                    <div class="club-banner-badges" style="position: relative; z-index: 2;">
+                        <!-- Fee Badge -->
+                        {% if club.membership_type == 'free' %}
+                        <span class="badge-fee-pill free" title="Free Membership">
+                            <i class="ph ph-sparkle"></i> Free to Join
+                        </span>
+                        {% else %}
+                        <span class="badge-fee-pill paid" title="Membership Fee">
+                            <i class="ph ph-coins"></i> ₱{{ "%.2f"|format(club.membership_fee) }}
+                        </span>
+                        {% endif %}
+
+                        <!-- Member Status Badge -->
+                        {% if club.my_status == 'active' %}
+                        <span class="badge-member-status active" title="You are an active member">
+                            <i class="ph ph-check-circle-fill"></i> Joined
+                        </span>
+                        {% elif club.my_status == 'pending' %}
+                        <span class="badge-member-status pending" title="Your membership is pending approval">
+                            <i class="ph ph-hourglass-high"></i> Pending
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Card Body -->
+                <div class="club-card-body">
+                    <!-- Overlapping Avatar -->
+                    <div class="club-avatar-overlap">
+                        <div class="club-logo-circle">
+                            {% if club.logo_url %}
+                            <img src="{{ club.logo_url }}" 
+                                 alt="{{ club.name }} Logo" 
+                                 loading="lazy" 
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="club-fallback-avatar avatar-grad-{{ grad_index }}" style="display: none;">
+                                {{ initials }}
+                            </div>
+                            {% else %}
+                            <div class="club-fallback-avatar avatar-grad-{{ grad_index }}" style="display: flex;">
+                                {{ initials }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Club Title & Link -->
+                    <a href="{{ url_for('player.club_detail', club_id=club.id) }}" class="club-name-link" title="{{ club.name }}">
+                        {{ club.name }}
+                    </a>
+
+                    <!-- Location Tag -->
+                    <div class="club-location-tag">
+                        <i class="ph ph-map-pin"></i>
+                        <span>{{ club.location or 'Laguna, Philippines' }}</span>
+                    </div>
+
+                    <!-- Admin Organizer -->
+                    {% if club.profiles and club.profiles.first_name %}
+                    <div class="club-admin-pill">
+                        <i class="ph ph-user-circle"></i>
+                        <span>Admin: <strong class="club-admin-name">{{ club.profiles.first_name }} {{ club.profiles.last_name or '' }}</strong></span>
+                    </div>
+                    {% endif %}
+
+                    <!-- Description -->
+                    <p class="club-desc-text" title="{{ club.description or '' }}">
+                        {{ club.description or 'A welcoming community for pickleball players to train, connect, and enjoy the sport together.' }}
+                    </p>
+
+                    <!-- Divider -->
+                    <div class="club-card-divider"></div>
+
+                    <!-- Meta / Community Stats -->
+                    <div class="club-meta-stats-row">
+                        <div class="meta-stat-item" title="Active club members">
+                            <i class="ph ph-users"></i>
+                            <span><strong>{{ club.member_count }}</strong> Members</span>
+                        </div>
+                        <div class="meta-stat-item" title="Club access type">
+                            <i class="ph ph-tennis-ball"></i>
+                            <span>{{ 'Open Access' if club.membership_type == 'free' else 'Paid Tier' }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Action Tray -->
+                    <div class="club-actions-tray">
+                        <a href="{{ url_for('player.club_detail', club_id=club.id) }}" class="btn-club-details" title="View club details, roster & schedule">
+                            <i class="ph ph-info"></i> Details
+                        </a>
+
+                        {% if club.my_status == 'active' %}
+                            <a href="{{ url_for('player.club_detail', club_id=club.id) }}" class="btn-club-main open-club" title="Go to club dashboard">
+                                <i class="ph ph-arrow-right"></i> Open Club
+                            </a>
+                        {% elif club.my_status == 'pending' %}
+                            <a href="{{ url_for('player.my_clubs') }}" class="btn-club-main pending-status" title="View pending application in My Clubs">
+                                <i class="ph ph-hourglass"></i> Pending Approval
+                            </a>
+                        {% elif club.membership_type == 'free' %}
+                            <form action="{{ url_for('player.join_club', club_id=club.id) }}" method="POST" style="margin: 0; flex: 1;">
+                                <button type="submit" class="btn-club-main join-free" style="width: 100%;" title="Join this free club immediately">
+                                    <i class="ph ph-user-plus"></i> Join Club
+                                </button>
+                            </form>
+                        {% else %}
+                            <a href="{{ url_for('player.club_payment', club_id=club.id) }}" class="btn-club-main join-paid" title="Complete membership registration & payment">
+                                <i class="ph ph-credit-card"></i> Join Club
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        {% else %}
+            <!-- Initial Empty State if No Clubs in Database -->
+            <div class="clubs-empty-state">
+                <div class="empty-state-icon-ring">
                     <i class="ph ph-shield"></i>
                 </div>
-                {% endif %}
-                <div>
-                    <h3 style="margin: 0; font-size: 1.2rem; color: var(--text-primary);">{{ club.name }}</h3>
-                    <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">
-                        <i class="ph ph-map-pin"></i> {{ club.location or 'No location' }}
-                    </p>
-                </div>
-            </a>
-
-            <p style="font-size: 0.9rem; color: var(--text-secondary); margin: 0; flex-grow: 1;">
-                {{ club.description or 'No description provided.' }}
-            </p>
-
-            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid var(--border-color); padding-top: 15px; margin-top: auto;">
-                <span><i class="ph ph-users"></i> {{ club.member_count }} Members</span>
-                
-                {% if club.membership_type == 'free' %}
-                <span style="background: rgba(74, 222, 128, 0.15); color: #4ade80; padding: 4px 10px; border-radius: 20px; font-weight: 600;">Free</span>
-                {% else %}
-                <span style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; padding: 4px 10px; border-radius: 20px; font-weight: 600;">₱{{ "%.2f"|format(club.membership_fee) }}</span>
-                {% endif %}
+                <h3 class="empty-state-title">No Clubs Available Yet</h3>
+                <p class="empty-state-desc">There are no active pickleball clubs listed right now. Check back soon as new local communities launch!</p>
             </div>
+        {% endif %}
 
-            <div style="margin-top: 10px;">
-                {% if club.my_status == 'active' %}
-                    <button disabled class="btn-cancel" style="width: 100%; padding: 10px; border-radius: 8px; font-weight: 600; cursor: not-allowed; border: 1px solid var(--btn-green); color: var(--btn-green); background: transparent;">
-                        <i class="ph ph-check"></i> Joined
-                    </button>
-                {% elif club.my_status == 'pending' %}
-                    <button disabled class="btn-cancel" style="width: 100%; padding: 10px; border-radius: 8px; font-weight: 600; cursor: not-allowed; border: 1px solid #f59e0b; color: #f59e0b; background: transparent;">
-                        <i class="ph ph-hourglass"></i> Pending Approval
-                    </button>
-                {% else %}
-                    <form action="{{ url_for('player.join_club', club_id=club.id) }}" method="POST">
-                        <button type="submit" class="action-box orange" style="width: 100%; padding: 10px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
-                            Join Club
-                        </button>
-                    </form>
-                {% endif %}
+        <!-- Client-Side Filter Zero Matches Empty State (hidden by default) -->
+        <div id="filterEmptyState" class="clubs-empty-state" style="display: none;">
+            <div class="empty-state-icon-ring">
+                <i class="ph ph-magnifying-glass"></i>
             </div>
+            <h3 class="empty-state-title">No Matching Clubs Found</h3>
+            <p class="empty-state-desc">We couldn't find any pickleball clubs matching your current search terms or filter selection.</p>
+            <button type="button" class="btn-empty-reset" onclick="resetAllFilters()">
+                <i class="ph ph-arrow-counter-clockwise"></i> Reset All Filters
+            </button>
         </div>
-        {% endfor %}
-    {% else %}
-        <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-muted);">
-            <i class="ph ph-shield" style="font-size: 3rem; margin-bottom: 10px; display: block;"></i>
-            <p>No clubs available at the moment.</p>
-        </div>
-    {% endif %}
+    </div>
+
 </div>
+
+<!-- ── CLIENT-SIDE INTERACTIVITY SCRIPT (ZERO DEPENDENCY) ── -->
+<script>
+    let currentFilter = 'all';
+
+    function setClubFilter(filterType, element) {
+        currentFilter = filterType;
+
+        // Update filter pills active state
+        document.querySelectorAll('.filter-pill-btn').forEach(btn => {
+            if (btn.getAttribute('data-filter') === filterType) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+
+        applyClubFiltersAndSort();
+    }
+
+    function clearClubSearch() {
+        const input = document.getElementById('clubSearchInput');
+        if (input) {
+            input.value = '';
+            document.getElementById('clubSearchClear').style.display = 'none';
+            applyClubFiltersAndSort();
+        }
+    }
+
+    function resetAllFilters() {
+        const input = document.getElementById('clubSearchInput');
+        if (input) input.value = '';
+        const sort = document.getElementById('clubSortSelect');
+        if (sort) sort.value = 'members-desc';
+        setClubFilter('all');
+    }
+
+    function applyClubFiltersAndSort() {
+        const searchInput = document.getElementById('clubSearchInput');
+        const clearBtn = document.getElementById('clubSearchClear');
+        const query = (searchInput ? searchInput.value : '').trim().toLowerCase();
+        
+        if (clearBtn) {
+            clearBtn.style.display = query.length > 0 ? 'block' : 'none';
+        }
+
+        const sortSelect = document.getElementById('clubSortSelect');
+        const sortValue = sortSelect ? sortSelect.value : 'members-desc';
+
+        const cards = Array.from(document.querySelectorAll('.club-card-pro'));
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+            const name = card.getAttribute('data-name') || '';
+            const location = card.getAttribute('data-location') || '';
+            const desc = card.getAttribute('data-desc') || '';
+            const admin = card.getAttribute('data-admin') || '';
+            const status = card.getAttribute('data-status') || 'none';
+            const type = card.getAttribute('data-type') || '';
+
+            // 1. Text Search matching
+            let matchesSearch = true;
+            if (query.length > 0) {
+                matchesSearch = name.includes(query) || location.includes(query) || desc.includes(query) || admin.includes(query);
+            }
+
+            // 2. Tab Filter matching
+            let matchesFilter = true;
+            if (currentFilter === 'my-clubs') {
+                matchesFilter = (status === 'active' || status === 'pending');
+            } else if (currentFilter === 'free') {
+                matchesFilter = (type === 'free');
+            } else if (currentFilter === 'paid') {
+                matchesFilter = (type === 'paid');
+            }
+
+            if (matchesSearch && matchesFilter) {
+                card.style.display = 'flex';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // 3. Sorting
+        const grid = document.getElementById('clubsGridContainer');
+        if (grid && cards.length > 0) {
+            cards.sort((a, b) => {
+                if (sortValue === 'members-desc') {
+                    const memA = parseInt(a.getAttribute('data-members') || '0', 10);
+                    const memB = parseInt(b.getAttribute('data-members') || '0', 10);
+                    return memB - memA;
+                } else if (sortValue === 'name-asc') {
+                    const nameA = a.getAttribute('data-name') || '';
+                    const nameB = b.getAttribute('data-name') || '';
+                    return nameA.localeCompare(nameB);
+                } else if (sortValue === 'fee-asc') {
+                    const feeA = parseFloat(a.getAttribute('data-fee') || '0');
+                    const feeB = parseFloat(b.getAttribute('data-fee') || '0');
+                    return feeA - feeB;
+                } else if (sortValue === 'newest') {
+                    const idxA = parseInt(a.getAttribute('data-index') || '0', 10);
+                    const idxB = parseInt(b.getAttribute('data-index') || '0', 10);
+                    return idxA - idxB;
+                }
+                return 0;
+            });
+
+            cards.forEach(card => grid.appendChild(card));
+        }
+
+        // 4. Update Result Count
+        const countSpan = document.getElementById('resultsCount');
+        if (countSpan) countSpan.textContent = visibleCount;
+
+        // 5. Toggle Empty State & Reset Link
+        const emptyState = document.getElementById('filterEmptyState');
+        const resetLink = document.getElementById('resetFiltersBtn');
+        const isFiltered = query.length > 0 || currentFilter !== 'all';
+
+        if (resetLink) {
+            resetLink.style.display = isFiltered ? 'inline-flex' : 'none';
+        }
+
+        if (emptyState) {
+            if (visibleCount === 0 && cards.length > 0) {
+                emptyState.style.display = 'flex';
+                grid.appendChild(emptyState);
+            } else {
+                emptyState.style.display = 'none';
+            }
+        }
+    }
+
+    // Attach listeners on DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('clubSearchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', applyClubFiltersAndSort);
+        }
+        applyClubFiltersAndSort();
+    });
+</script>
 {% endblock %}

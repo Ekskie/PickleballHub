@@ -1,343 +1,2128 @@
 {% extends "facilitystaff/base_facilitystaff.html" %}
 
-{% block title %}Operations Desk{% endblock %}
+{% block title %}Operations Desk • PickleballHub{% endblock %}
 
 {% block extra_head %}
 <style>
-    /* Stats layout overrides */
-    .stat-box {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        padding: 15px;
+    /* ==========================================================================
+       OPERATIONS DESK COMMAND CENTER STYLES
+       ========================================================================== */
+    
+    /* Layout & Header */
+    .desk-hero-banner {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
     }
 
-    .stat-info h3 {
-        font-size: 0.9rem;
+    .desk-hero-banner::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-orange) 0%, #f97316 40%, var(--btn-green) 100%);
+    }
+
+    .desk-header-flex {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .desk-venue-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
         color: var(--text-secondary);
+        margin-bottom: 10px;
+    }
+
+    .live-pulse-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: var(--btn-green);
+        box-shadow: 0 0 0 rgba(34, 197, 94, 0.7);
+        animation: livePulse 1.8s infinite;
+        display: inline-block;
+    }
+
+    @keyframes livePulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+        }
+        70% {
+            box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+        }
+    }
+
+    .desk-title-group h1 {
+        font-size: 1.85rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        letter-spacing: -0.5px;
+        margin: 0 0 6px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .desk-subtitle {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
         margin: 0;
     }
 
-    .stat-value {
-        font-size: 1.8rem;
-        font-weight: 700;
-        margin: 5px 0;
-        color: var(--text-primary);
-    }
-
-    .stat-change {
-        font-size: 0.8rem;
-        font-weight: 600;
-    }
-
-    .stat-change.positive {
-        color: #4ade80;
-    }
-
-    .stat-change.negative {
-        color: #f87171;
-    }
-
-    /* Modal and layout styles */
-    .btn-sm {
-        padding: 7px 14px;
-        border-radius: 8px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        cursor: pointer;
-        border: none;
-        transition: all 0.2s;
-        display: inline-flex;
+    .desk-meta-right {
+        display: flex;
         align-items: center;
-        gap: 5px;
+        gap: 16px;
+        flex-wrap: wrap;
     }
 
-    .btn-sm-outline {
-        background: transparent;
+    .desk-clock-card {
+        background: var(--input-bg);
         border: 1px solid var(--border-color);
+        padding: 10px 18px;
+        border-radius: 12px;
+        text-align: right;
+    }
+
+    .desk-clock-time {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.5px;
+    }
+
+    .desk-clock-date {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    .desk-quick-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* Operations Pulse KPI Cards */
+    .ops-pulse-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    @media (max-width: 1024px) {
+        .ops-pulse-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 640px) {
+        .ops-pulse-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .ops-kpi-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        padding: 18px 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        transition: transform 0.2s, box-shadow 0.2s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .ops-kpi-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+    }
+
+    .kpi-icon-wrap {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.45rem;
+        flex-shrink: 0;
+    }
+
+    .kpi-icon-wrap.green {
+        background: rgba(34, 197, 94, 0.12);
+        color: #16a34a;
+        border: 1px solid rgba(34, 197, 94, 0.25);
+    }
+
+    .kpi-icon-wrap.orange {
+        background: rgba(249, 115, 22, 0.12);
+        color: var(--primary-orange);
+        border: 1px solid rgba(249, 115, 22, 0.25);
+    }
+
+    .kpi-icon-wrap.blue {
+        background: rgba(59, 130, 246, 0.12);
+        color: #2563eb;
+        border: 1px solid rgba(59, 130, 246, 0.25);
+    }
+
+    .kpi-icon-wrap.purple {
+        background: rgba(168, 85, 247, 0.12);
+        color: #9333ea;
+        border: 1px solid rgba(168, 85, 247, 0.25);
+    }
+
+    .kpi-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .kpi-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-muted);
+        margin-bottom: 4px;
+    }
+
+    .kpi-value {
+        font-size: 1.65rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        line-height: 1.1;
+        margin-bottom: 4px;
+    }
+
+    .kpi-footnote {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Dispute Alert Banner */
+    .dispute-alert-banner {
+        background: rgba(239, 68, 68, 0.08);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 12px;
+        padding: 14px 18px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        animation: pulseWarning 3s infinite;
+    }
+
+    @keyframes pulseWarning {
+        0%, 100% { border-color: rgba(239, 68, 68, 0.3); }
+        50% { border-color: rgba(239, 68, 68, 0.6); }
+    }
+
+    .dispute-alert-content {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .dispute-alert-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    /* Section Headers & Filter Tabs */
+    .section-bar-flex {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .section-title-wrap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .section-badge-counter {
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 700;
         color: var(--text-secondary);
     }
 
-    .btn-sm-outline:hover {
-        border-color: var(--text-muted);
-        color: var(--text-primary);
-        background: rgba(255, 255, 255, 0.05);
+    .court-filter-tabs {
+        display: flex;
+        background: var(--input-bg);
+        padding: 4px;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        gap: 4px;
     }
 
-    .btn-sm-primary {
-        background: var(--primary-orange);
-        color: white;
+    .court-tab-btn {
+        background: transparent;
+        border: none;
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.2s;
     }
 
-    .btn-sm-primary:hover {
-        background: var(--primary-orange-hover);
+    .court-tab-btn.active {
+        background: var(--card-bg);
+        color: var(--primary-orange);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     }
 
-    .modal-header h3 {
-        font-size: 1.1rem;
+    /* Live Court Cards Grid */
+    .courts-rack-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+        gap: 18px;
+        margin-bottom: 28px;
+    }
+
+    .court-rack-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        overflow: hidden;
+        transition: all 0.25s ease;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+    }
+
+    .court-rack-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .court-rack-card.status-available {
+        border-top: 4px solid #22c55e;
+    }
+
+    .court-rack-card.status-in-use {
+        border-top: 4px solid var(--primary-orange);
+    }
+
+    .court-rack-card.status-maintenance {
+        border-top: 4px solid #f59e0b;
+        opacity: 0.85;
+    }
+
+    .court-card-head {
+        padding: 16px 18px 12px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .court-card-name {
+        font-size: 1.05rem;
         font-weight: 700;
         color: var(--text-primary);
+        margin: 0 0 4px 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .court-card-type-tag {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .court-status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .court-status-pill.available {
+        background: rgba(34, 197, 94, 0.12);
+        color: #16a34a;
+        border: 1px solid rgba(34, 197, 94, 0.25);
+    }
+
+    .court-status-pill.in-use {
+        background: rgba(249, 115, 22, 0.12);
+        color: var(--primary-orange);
+        border: 1px solid rgba(249, 115, 22, 0.25);
+    }
+
+    .court-status-pill.maintenance {
+        background: rgba(245, 158, 11, 0.12);
+        color: #d97706;
+        border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+
+    .court-card-body {
+        padding: 16px 18px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .court-session-info {
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 14px;
+    }
+
+    .court-session-player {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+
+    .session-player-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--primary-orange-light);
+        color: var(--primary-orange);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.8rem;
+        border: 1px solid rgba(225, 86, 35, 0.2);
+        overflow: hidden;
+    }
+
+    .session-player-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .session-player-name {
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: var(--text-primary);
+        line-height: 1.2;
+    }
+
+    .session-time-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.78rem;
+        color: var(--text-secondary);
+    }
+
+    .countdown-timer-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--primary-orange);
+        background: rgba(249, 115, 22, 0.1);
+        padding: 3px 8px;
+        border-radius: 8px;
+    }
+
+    .court-available-view {
+        text-align: center;
+        padding: 14px 10px;
+        background: rgba(34, 197, 94, 0.03);
+        border-radius: 10px;
+        border: 1px dashed rgba(34, 197, 94, 0.25);
+        margin-bottom: 14px;
+    }
+
+    .court-available-icon {
+        font-size: 1.8rem;
+        color: #22c55e;
+        margin-bottom: 4px;
+    }
+
+    .court-available-text {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 2px;
+    }
+
+    .court-rate-text {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+    }
+
+    .court-card-footer {
+        padding: 12px 18px 16px;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        gap: 8px;
+    }
+
+    /* Desk Actions & Quick Command Dock */
+    .desk-action-btn-primary {
+        background: var(--primary-orange);
+        color: white;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+        box-shadow: 0 4px 12px rgba(225, 86, 35, 0.25);
+    }
+
+    .desk-action-btn-primary:hover {
+        background: var(--primary-orange-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(225, 86, 35, 0.35);
+    }
+
+    .desk-action-btn-green {
+        background: #16a34a;
+        color: white;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+    }
+
+    .desk-action-btn-green:hover {
+        background: #15803d;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(22, 163, 74, 0.35);
+    }
+
+    .desk-action-btn-outline {
+        background: transparent;
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        padding: 9px 16px;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s;
+    }
+
+    .desk-action-btn-outline:hover {
+        background: var(--input-bg);
+        border-color: var(--text-muted);
+    }
+
+    /* Waitlist Table Styling */
+    .queue-hub-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 22px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    }
+
+    .desk-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: 10px;
+    }
+
+    .desk-table th {
+        background: var(--input-bg);
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border-color);
+        text-align: left;
+    }
+
+    .desk-table th:first-child {
+        border-top-left-radius: 10px;
+        border-bottom-left-radius: 10px;
+    }
+
+    .desk-table th:last-child {
+        border-top-right-radius: 10px;
+        border-bottom-right-radius: 10px;
+    }
+
+    .desk-table td {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border-color);
+        vertical-align: middle;
+        font-size: 0.88rem;
+    }
+
+    .desk-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .desk-table tr:hover td {
+        background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .pos-circle {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.8rem;
+        color: var(--text-primary);
+    }
+
+    .pos-circle.top-priority {
+        background: rgba(225, 86, 35, 0.12);
+        color: var(--primary-orange);
+        border-color: rgba(225, 86, 35, 0.3);
+    }
+
+    .player-row-flex {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .player-avatar-desk {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: var(--primary-orange-light);
+        color: var(--primary-orange);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.85rem;
+        border: 1px solid rgba(225, 86, 35, 0.2);
+        flex-shrink: 0;
+        overflow: hidden;
+    }
+
+    .player-avatar-desk img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .player-desk-meta {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .player-desk-name {
+        font-weight: 700;
+        color: var(--text-primary);
+        font-size: 0.92rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .walkin-pill {
+        font-size: 0.68rem;
+        font-weight: 700;
+        background: var(--input-bg);
+        color: var(--text-muted);
+        padding: 2px 6px;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+    }
+
+    /* Modal Stacking & Backdrop (Superior to all bars, header, and sidebar) */
+    .modal-overlay {
+        position: fixed !important;
+        inset: 0 !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background: rgba(11, 14, 20, 0.82) !important;
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        z-index: 2147483640 !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        transition: opacity 0.25s ease, visibility 0.25s ease !important;
+        padding: 20px !important;
+        box-sizing: border-box !important;
+    }
+
+    .modal-overlay.open {
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+    }
+
+    .modal-box {
+        background: var(--card-bg) !important;
+        border: 1px solid var(--border-color) !important;
+        border-radius: 20px !important;
+        width: 100% !important;
+        max-width: 580px !important;
+        max-height: 90vh !important;
+        overflow-y: auto !important;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+        transform: translateY(20px) scale(0.97) !important;
+        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        position: relative !important;
+        z-index: 2147483641 !important;
+    }
+
+    .modal-overlay.open .modal-box {
+        transform: translateY(0) scale(1) !important;
+    }
+
+    .modal-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
 
     .modal-close {
-        background: none;
-        border: none;
-        color: var(--text-muted);
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         cursor: pointer;
-        font-size: 1.3rem;
-        padding: 4px;
-        border-radius: 6px;
+        font-size: 1.15rem;
+        transition: all 0.2s ease;
     }
 
     .modal-close:hover {
+        background: rgba(239, 68, 68, 0.1);
+        border-color: rgba(239, 68, 68, 0.3);
+        color: #ef4444;
+        transform: rotate(90deg);
+    }
+
+    .modal-body {
+        padding: 24px;
+    }
+
+    .modal-footer {
+        padding: 16px 24px;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        background: var(--input-bg);
+        border-bottom-left-radius: 20px;
+        border-bottom-right-radius: 20px;
+    }
+
+    .field-label {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 700;
         color: var(--text-primary);
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
     }
 
-    @keyframes scanLaser {
-        0% {
-            transform: translateY(-100px);
-        }
-
-        50% {
-            transform: translateY(100px);
-        }
-
-        100% {
-            transform: translateY(-100px);
-        }
+    .field-input {
+        width: 100%;
+        padding: 11px 14px;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        background: var(--input-bg);
+        color: var(--text-primary);
+        font-size: 0.92rem;
+        box-sizing: border-box;
+        transition: border-color 0.2s, box-shadow 0.2s;
     }
 
-    .chat-shortcut:hover {
+    .field-input:focus {
+        outline: none;
+        border-color: var(--primary-orange);
+        box-shadow: 0 0 0 3px rgba(225, 86, 35, 0.15);
+    }
+
+    /* Walk-in Payment Chips */
+    .walkin-pm-chip {
+        padding: 12px 8px;
+        border: 1.5px solid var(--border-color);
+        background: var(--input-bg);
+        border-radius: 12px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 0.88rem;
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        user-select: none;
+    }
+
+    .walkin-pm-chip:hover {
+        border-color: var(--primary-orange);
+        background: rgba(225, 86, 35, 0.05);
+    }
+
+    .walkin-pm-chip.active {
+        border-color: var(--primary-orange) !important;
+        background: rgba(225, 86, 35, 0.1) !important;
         color: var(--primary-orange) !important;
+        box-shadow: 0 0 0 3px rgba(225, 86, 35, 0.18);
+    }
+
+    .walkin-total-card {
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(16, 185, 129, 0.14) 100%);
+        border: 1.5px solid rgba(34, 197, 94, 0.35);
+        border-radius: 14px;
+        padding: 16px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 6px;
+    }
+
+    .walkin-total-badge {
+        font-size: 1.7rem;
+        font-weight: 800;
+        color: #16a34a;
+        letter-spacing: -0.5px;
+    }
+
+    /* Scanner Viewfinder */
+    .scan-viewfinder {
+        width: 220px;
+        height: 220px;
+        margin: 0 auto 20px;
+        border: 2px dashed var(--primary-orange);
+        border-radius: 16px;
+        position: relative;
+        overflow: hidden;
+        background: #0f172a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .scan-laser-line {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: #ef4444;
+        box-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444;
+        animation: laserScan 2s infinite ease-in-out;
+    }
+
+    @keyframes laserScan {
+        0% { top: 5%; opacity: 0.8; }
+        50% { top: 90%; opacity: 1; }
+        100% { top: 5%; opacity: 0.8; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-header">
-    <h1 class="page-title">Operations Desk</h1>
-</div>
+<div class="desk-container">
 
-<div class="dashboard-grid">
-    <!-- Main Area -->
-    <div class="dashboard-main">
-        <!-- Court Status Grid -->
-        <div class="glass-card full-width">
-            <div class="widget-header">
-                <h3>Live Court Status</h3>
-            </div>
-            <div class="stats-grid"
-                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
-                {% for court in court_status_list %}
-                <div class="glass-card stat-box"
-                    style="background: {% if court.color == 'negative' %}rgba(239, 68, 68, 0.05){% elif court.color == 'positive' %}rgba(74, 222, 128, 0.05){% else %}rgba(245, 158, 11, 0.05){% endif %}; border-left: 4px solid {% if court.color == 'negative' %}#ef4444{% elif court.color == 'positive' %}#4ade80{% else %}#f59e0b{% endif %};">
-                    <div class="stat-info">
-                        <h3>{{ court.name }}</h3>
-                        <p class="stat-value" style="font-size: 1.2rem;">{{ court.status }}</p>
-                        <span class="stat-change {{ court.color }}">{{ court.sub_text }}</span>
-                    </div>
+    <!-- 1. OPERATIONS DESK HERO BANNER -->
+    <div class="desk-hero-banner">
+        <div class="desk-header-flex">
+            <div>
+                <div class="desk-venue-badge">
+                    <span class="live-pulse-dot"></span>
+                    <i class="ph ph-buildings"></i>
+                    <span>{{ facility_name }}</span>
+                    <span style="opacity: 0.4;">|</span>
+                    <span style="color: #22c55e;">Live Front Desk</span>
                 </div>
-                {% else %}
-                <p>No courts assigned to your facility.</p>
-                {% endfor %}
+                <div class="desk-title-group">
+                    <h1>
+                        <i class="ph ph-squares-four" style="color: var(--primary-orange);"></i>
+                        Operations Desk
+                    </h1>
+                    <p class="desk-subtitle">Real-time court status board, walk-in dispatcher, and priority waitlist queue hub.</p>
+                </div>
             </div>
-        </div>
 
-        <!-- Waitlist / Queue -->
-        <div class="glass-card">
-            <div class="widget-header">
-                <h3>Waitlist / Queue</h3>
-                <a href="{{ url_for('facilitystaff.queue') }}" class="view-all">Manage Queue</a>
-            </div>
-            <div class="table-container">
-                <table class="data-grid">
-                    <thead>
-                        <tr>
-                            <th>POS</th>
-                            <th>PLAYER</th>
-                            <th>PARTY SIZE</th>
-                            <th>WAIT TIME</th>
-                            <th>ACTION</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for q in queues %}
-                        <tr>
-                            <td class="bold">{{ loop.index }}</td>
-                            <td>
-                                <div style="display: inline-flex; align-items: center; gap: 8px;">
-                                    <span>
-                                        {{ q.profiles.first_name if q.player_id else q.guest_name }}
-                                        {{ q.profiles.last_name if q.player_id else '(Walk-in)' }}
-                                    </span>
-                                    {% if q.player_id %}
-                                    <a href="{{ url_for('facilitystaff.messages') }}?chat_user={{ q.player_id }}"
-                                        class="chat-shortcut" title="Chat with Player"
-                                        style="color: var(--text-muted); transition: color 0.2s; display: inline-flex; align-items: center; margin-top: 1px;"><i
-                                            class="ph ph-chat-circle-dots" style="font-size: 1.05rem;"></i></a>
-                                    {% endif %}
-                                </div>
-                            </td>
-                            <td>{{ q.party_size | default(1) }}</td>
-                            <td>
-                                <span
-                                    class="status-pill {% if q.status == 'playing' %}success{% elif q.status == 'next' %}warning{% else %}disabled{% endif %}">
-                                    {% if q.status == 'playing' %}Playing{% else %}{{ q.estimated_wait_mins }} mins{%
-                                    endif %}
-                                </span>
-                            </td>
-                            <td>
-                                <div style="display: flex; gap: 8px; align-items: center;">
-                                    {% if q.status == 'waiting' %}
-                                    <button type="button" class="action-link"
-                                        onclick="updateQueue('{{ q.id }}', 'next', this)"
-                                        style="border:none; background:none; cursor:pointer;">Call Next</button>
-                                    {% endif %}
-                                    {% if q.status == 'next' %}
-                                    <button type="button" class="action-link"
-                                        onclick="updateQueue('{{ q.id }}', 'playing', this)"
-                                        style="border:none; background:none; cursor:pointer; color: var(--btn-green); font-weight: 600;">Start
-                                        Game</button>
-                                    {% if q.player_id %}
-                                    <button type="button" onclick="nudgePlayer('{{ q.player_id }}', this)"
-                                        title="Nudge Player"
-                                        style="border:none; background:none; cursor:pointer; color: var(--primary-orange); display: inline-flex; align-items: center; font-size: 1.05rem; padding: 2px;"><i
-                                            class="ph ph-bell"></i></button>
-                                    {% endif %}
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="5" style="text-align: center; padding: 20px; color: var(--text-muted);">Queue
-                                is empty.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <div class="desk-meta-right">
+                <!-- Live Clock Card -->
+                <div class="desk-clock-card">
+                    <div id="liveDeskClock" class="desk-clock-time">--:--:-- --</div>
+                    <div id="liveDeskDate" class="desk-clock-date">Loading date...</div>
+                </div>
+
+                <!-- Fast Actions -->
+                <div class="desk-quick-actions">
+                    <button type="button" class="desk-action-btn-primary" onclick="openModal('quickWalkinModal')">
+                        <i class="ph ph-user-plus" style="font-size: 1.15rem;"></i>
+                        <span>Walk-In</span>
+                    </button>
+                    <button type="button" class="desk-action-btn-green" onclick="openModal('scanPassModal')">
+                        <i class="ph ph-qr-code" style="font-size: 1.15rem;"></i>
+                        <span>Scan Pass</span>
+                    </button>
+                    <button type="button" class="desk-action-btn-outline" onclick="refreshDeskData()" title="Refresh Operations">
+                        <i id="refreshIcon" class="ph ph-arrows-clockwise" style="font-size: 1.15rem;"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Sidebar Area -->
-    <div class="dashboard-side">
-        <div class="glass-card">
-            <h3 class="widget-title">Desk Actions</h3>
-            <div class="action-grid" style="margin-top: 15px;">
-                <a href="{{ url_for('facilitystaff.walkin') }}" style="text-decoration: none;">
-                    <button class="action-box orange" style="width: 100%;">
-                        <i class="ph ph-user-plus"></i>
-                        <span>Walk-In</span>
-                    </button>
+    <!-- 2. URGENT DISPUTE / MEDIATION ALERT BANNER (IF ANY) -->
+    {% if disputed_lobbies and disputed_lobbies|length > 0 %}
+    <div class="dispute-alert-banner">
+        <div class="dispute-alert-content">
+            <div class="dispute-alert-icon">
+                <i class="ph ph-warning-circle"></i>
+            </div>
+            <div>
+                <strong style="color: #ef4444; font-size: 0.95rem;">
+                    Attention Front Desk: {{ disputed_lobbies|length }} Match Dispute(s) Awaiting Staff Resolution
+                </strong>
+                <p style="margin: 3px 0 0 0; font-size: 0.82rem; color: var(--text-secondary);">
+                    Match <strong>{{ disputed_lobbies[0].title }}</strong> on {{ disputed_lobbies[0].court_name }} has reported score conflict ({{ disputed_lobbies[0].reported_score }}).
+                </p>
+            </div>
+        </div>
+        <a href="{{ url_for('facilitystaff.mediation_desk') }}" class="desk-action-btn-outline" style="border-color: rgba(239, 68, 68, 0.4); color: #ef4444; white-space: nowrap;">
+            <i class="ph ph-gavel"></i>
+            <span>Open Mediation Desk</span>
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- 3. OPERATIONS PULSE (KPI METRIC CARDS) -->
+    <div class="ops-pulse-grid">
+        <!-- Courts Available -->
+        <div class="ops-kpi-card">
+            <div class="kpi-icon-wrap green">
+                <i class="ph ph-check-circle"></i>
+            </div>
+            <div class="kpi-content">
+                <div class="kpi-label">Courts Ready</div>
+                <div class="kpi-value" style="color: #16a34a;">
+                    {{ stats.available_courts }} <span style="font-size: 0.95rem; font-weight: 600; color: var(--text-muted);">/ {{ stats.total_courts }}</span>
+                </div>
+                <div class="kpi-footnote">
+                    <i class="ph ph-sparkle"></i> Immediate walk-in ready
+                </div>
+            </div>
+        </div>
+
+        <!-- Courts In Play -->
+        <div class="ops-kpi-card">
+            <div class="kpi-icon-wrap orange">
+                <i class="ph ph-tennis-ball"></i>
+            </div>
+            <div class="kpi-content">
+                <div class="kpi-label">Courts In Play</div>
+                <div class="kpi-value" style="color: var(--primary-orange);">
+                    {{ stats.in_use_courts }}
+                </div>
+                <div class="kpi-footnote">
+                    <i class="ph ph-clock"></i> Active sessions ongoing
+                </div>
+            </div>
+        </div>
+
+        <!-- Waitlist Queue -->
+        <div class="ops-kpi-card">
+            <div class="kpi-icon-wrap blue">
+                <i class="ph ph-users-three"></i>
+            </div>
+            <div class="kpi-content">
+                <div class="kpi-label">Waitlist Queue</div>
+                <div class="kpi-value" style="color: #2563eb;">
+                    {{ stats.waiting_count }}
+                </div>
+                <div class="kpi-footnote">
+                    {% if stats.next_count > 0 %}
+                    <span style="color: #d97706; font-weight: 700;">{{ stats.next_count }} called up</span>
+                    {% else %}
+                    <span>Estimated wait: ~0m</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Maintenance & Ledger Overview -->
+        <div class="ops-kpi-card">
+            <div class="kpi-icon-wrap purple">
+                <i class="ph ph-receipt"></i>
+            </div>
+            <div class="kpi-content">
+                <div class="kpi-label">Desk Operations</div>
+                <div class="kpi-value" style="color: #9333ea;">
+                    {{ stats.queue_total }}
+                </div>
+                <div class="kpi-footnote">
+                    <a href="{{ url_for('facilitystaff.payment_ledger') }}" style="color: inherit; text-decoration: underline;">View payment ledger</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. LIVE COURT STATUS RACK (CORE SECTION) -->
+    <div class="section-bar-flex">
+        <div class="section-title-wrap">
+            <h2 class="section-title">Live Court Status Rack</h2>
+            <span class="section-badge-counter">{{ court_status_list|length }} Courts</span>
+        </div>
+        
+        <!-- Filter Tabs -->
+        <div class="court-filter-tabs">
+            <button type="button" class="court-tab-btn active" onclick="filterCourts('all', this)">All ({{ stats.total_courts }})</button>
+            <button type="button" class="court-tab-btn" onclick="filterCourts('Available', this)">Ready ({{ stats.available_courts }})</button>
+            <button type="button" class="court-tab-btn" onclick="filterCourts('In Use', this)">In Play ({{ stats.in_use_courts }})</button>
+            {% if stats.maintenance_courts > 0 %}
+            <button type="button" class="court-tab-btn" onclick="filterCourts('Maintenance', this)">Maintenance ({{ stats.maintenance_courts }})</button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Courts Grid -->
+    <div class="courts-rack-grid" id="courtsContainer">
+        {% for court in court_status_list %}
+        <div class="court-rack-card status-{{ court.status|lower|replace(' ', '-') }}" data-status="{{ court.status }}">
+            <!-- Court Header -->
+            <div class="court-card-head">
+                <div>
+                    <h3 class="court-card-name">
+                        {{ court.name }}
+                    </h3>
+                    <span class="court-card-type-tag">
+                        {{ court.type }} Court • ₱{{ court.hourly_rate|int }}/hr
+                    </span>
+                </div>
+                <div>
+                    {% if court.status == 'Available' %}
+                    <span class="court-status-pill available">
+                        <span class="live-pulse-dot" style="width:6px; height:6px;"></span> Available
+                    </span>
+                    {% elif court.status == 'In Use' %}
+                    <span class="court-status-pill in-use">
+                        <i class="ph ph-tennis-ball"></i> In Play
+                    </span>
+                    {% else %}
+                    <span class="court-status-pill maintenance">
+                        <i class="ph ph-wrench"></i> Maintenance
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Court Body -->
+            <div class="court-card-body">
+                {% if court.status == 'Available' %}
+                <div class="court-available-view">
+                    <div class="court-available-icon">
+                        <i class="ph ph-tennis-ball"></i>
+                    </div>
+                    <div class="court-available-text">Ready for Immediate Play</div>
+                    <div class="court-rate-text">
+                        {% if court.next_booking %}
+                        <i class="ph ph-calendar-blank"></i> {{ court.next_booking }}
+                        {% else %}
+                        No upcoming reservations scheduled
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% elif court.status == 'In Use' %}
+                <div class="court-session-info">
+                    <div class="court-session-player">
+                        <div class="session-player-avatar">
+                            {% if court.current_player_avatar %}
+                            <img src="{{ court.current_player_avatar }}" alt="{{ court.current_player }}">
+                            {% else %}
+                            {{ court.current_player[:2]|upper }}
+                            {% endif %}
+                        </div>
+                        <div style="flex:1; min-width:0;">
+                            <div class="session-player-name">{{ court.current_player }}</div>
+                            <div style="font-size:0.75rem; color:var(--text-muted);">Active Match / Reservation</div>
+                        </div>
+                    </div>
+                    <div class="session-time-row">
+                        <span><i class="ph ph-clock"></i> {{ court.start_time }} - {{ court.end_time }}</span>
+                        {% if court.rem_mins is not none %}
+                        <span class="countdown-timer-badge">
+                            <i class="ph ph-hourglass-high"></i> {{ court.rem_mins }}m left
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% else %}
+                <div class="court-available-view" style="background: rgba(245, 158, 11, 0.04); border-color: rgba(245, 158, 11, 0.3);">
+                    <div class="court-available-icon" style="color: #f59e0b;">
+                        <i class="ph ph-wrench"></i>
+                    </div>
+                    <div class="court-available-text" style="color: #d97706;">Court Under Maintenance</div>
+                    <div class="court-rate-text">Temporarily taken offline by desk staff</div>
+                </div>
+                {% endif %}
+
+                <!-- Card Subtext / Quick Metadata -->
+                <div style="font-size: 0.78rem; color: var(--text-secondary); display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
+                    <span>Shift Status: <strong>{{ court.sub_text }}</strong></span>
+                    <span style="font-size: 0.72rem; color: var(--text-muted);">ID: {{ court.id[:6] }}</span>
+                </div>
+            </div>
+
+            <!-- Court Actions Footer -->
+            <div class="court-card-footer">
+                {% if court.status == 'Available' %}
+                <button type="button" class="desk-action-btn-primary" style="flex: 1; padding: 8px 12px; font-size: 0.8rem; justify-content: center;"
+                        onclick="openWalkinForCourt('{{ court.id }}', '{{ court.name }}')">
+                    <i class="ph ph-user-plus"></i> Walk-In
+                </button>
+                {% if queues|length > 0 %}
+                <button type="button" class="desk-action-btn-green" style="padding: 8px 12px; font-size: 0.8rem;"
+                        title="Assign top queued player to this court"
+                        onclick="assignNextToCourt('{{ court.id }}', '{{ court.name }}')">
+                    <i class="ph ph-lightning"></i> Assign Next
+                </button>
+                {% endif %}
+                <button type="button" class="desk-action-btn-outline" style="padding: 8px 10px; font-size: 0.8rem;"
+                        title="Take court down for maintenance"
+                        onclick="toggleMaintenance('{{ court.id }}')">
+                    <i class="ph ph-wrench"></i>
+                </button>
+
+                {% elif court.status == 'In Use' %}
+                <button type="button" class="desk-action-btn-outline" style="flex: 1; padding: 8px 12px; font-size: 0.8rem; justify-content: center; color: var(--btn-green); border-color: rgba(34, 197, 94, 0.3);"
+                        onclick="freeCourtAction('{{ court.id }}', '{{ court.name }}')">
+                    <i class="ph ph-check-circle"></i> Free Court
+                </button>
+                <a href="{{ url_for('facilitystaff.schedule') }}" class="desk-action-btn-outline" style="padding: 8px 10px; font-size: 0.8rem; text-decoration: none;" title="View Schedule">
+                    <i class="ph ph-calendar"></i>
                 </a>
-                <button class="action-box green" onclick="openModal('scanPassModal')">
+
+                {% else %}
+                <button type="button" class="desk-action-btn-green" style="flex: 1; padding: 8px 12px; font-size: 0.8rem; justify-content: center;"
+                        onclick="toggleMaintenance('{{ court.id }}')">
+                    <i class="ph ph-arrow-counter-clockwise"></i> Reactivate Court
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div style="grid-column: 1 / -1; padding: 40px; text-align: center; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px;">
+            <i class="ph ph-court-ball" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 12px; display: block;"></i>
+            <h3 style="font-size: 1.1rem; color: var(--text-primary); margin: 0 0 6px 0;">No Courts Assigned</h3>
+            <p style="color: var(--text-secondary); font-size: 0.88rem; margin: 0;">Contact the facility owner to assign courts to your staff profile.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- 5. LIVE WAITLIST / QUEUE STREAM -->
+    <div class="queue-hub-card">
+        <div class="section-bar-flex" style="margin-bottom: 12px;">
+            <div class="section-title-wrap">
+                <h2 class="section-title">
+                    <i class="ph ph-list-numbers" style="color: var(--primary-orange);"></i>
+                    Waitlist & Queue Stream
+                </h2>
+                <span class="section-badge-counter">{{ queues|length }} in Queue</span>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <a href="{{ url_for('facilitystaff.queue') }}" class="desk-action-btn-outline" style="text-decoration: none; font-size: 0.8rem; padding: 6px 12px;">
+                    <span>Open Full Queue Manager</span>
+                    <i class="ph ph-arrow-up-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table class="desk-table">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">POS</th>
+                        <th>PLAYER / GUEST</th>
+                        <th style="width: 110px;">PARTY SIZE</th>
+                        <th style="width: 140px;">WAIT TIME</th>
+                        <th style="width: 180px;">ASSIGNED COURT</th>
+                        <th style="width: 220px; text-align: right;">DESK ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for q in queues %}
+                    <tr>
+                        <!-- POS -->
+                        <td>
+                            <span class="pos-circle {% if loop.index == 1 %}top-priority{% endif %}">
+                                {{ loop.index }}
+                            </span>
+                        </td>
+
+                        <!-- Player Identity -->
+                        <td>
+                            <div class="player-row-flex">
+                                <div class="player-avatar-desk">
+                                    {% if q.profiles and q.profiles.avatar_url %}
+                                    <img src="{{ q.profiles.avatar_url }}" alt="{{ q.display_name|default('Player') }}">
+                                    {% else %}
+                                    {{ (q.display_name|default(q.guest_name|default('PL')))[:2]|upper }}
+                                    {% endif %}
+                                </div>
+                                <div class="player-desk-meta">
+                                    <div class="player-desk-name">
+                                        <span>{{ q.display_name|default(q.guest_name|default('Player')) }}</span>
+                                        {% if q.is_walkin %}
+                                        <span class="walkin-pill">Walk-in</span>
+                                        {% endif %}
+                                    </div>
+                                    <div style="display: flex; gap: 8px; font-size: 0.75rem; color: var(--text-muted); align-items: center;">
+                                        {% if q.profiles and q.profiles.phone %}
+                                        <span><i class="ph ph-phone"></i> {{ q.profiles.phone }}</span>
+                                        {% endif %}
+                                        {% if q.player_id %}
+                                        <a href="{{ url_for('facilitystaff.messages') }}?chat_user={{ q.player_id }}" 
+                                           style="color: var(--primary-orange); display: inline-flex; align-items: center; gap: 3px; text-decoration: none;" title="Send Direct Message">
+                                            <i class="ph ph-chat-circle-dots"></i> Message
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Party Size -->
+                        <td>
+                            <span style="font-weight: 600; color: var(--text-primary); display: inline-flex; align-items: center; gap: 4px;">
+                                <i class="ph ph-users" style="color: var(--text-muted);"></i>
+                                {{ q.party_size|default(1) }} {{ 'Player' if q.party_size == 1 else 'Players' }}
+                            </span>
+                        </td>
+
+                        <!-- Wait Time / Status -->
+                        <td>
+                            {% if q.status == 'playing' %}
+                            <span class="court-status-pill in-use">
+                                <span class="live-pulse-dot" style="width:6px; height:6px;"></span> On Court
+                            </span>
+                            {% elif q.status == 'next' %}
+                            <span class="court-status-pill in-use" style="background: rgba(245, 158, 11, 0.15); color: #d97706; border-color: rgba(245, 158, 11, 0.3);">
+                                <i class="ph ph-megaphone-simple"></i> Called Next
+                            </span>
+                            {% else %}
+                            <span class="court-status-pill available" style="background: var(--input-bg); color: var(--text-primary); border-color: var(--border-color);">
+                                <i class="ph ph-hourglass"></i> {{ q.estimated_wait_mins }} mins
+                            </span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Assigned Court -->
+                        <td>
+                            <span style="font-weight: 600; font-size: 0.85rem; color: var(--text-secondary);">
+                                {{ q.assigned_court_name or 'Auto / Unassigned' }}
+                            </span>
+                        </td>
+
+                        <!-- Actions -->
+                        <td style="text-align: right;">
+                            <div style="display: inline-flex; gap: 8px; align-items: center; justify-content: flex-end;">
+                                {% if q.status == 'waiting' %}
+                                <button type="button" class="desk-action-btn-primary" style="padding: 6px 12px; font-size: 0.78rem;"
+                                        onclick="updateQueueStatus('{{ q.id }}', 'next', this)">
+                                    <i class="ph ph-megaphone"></i> Call Next
+                                </button>
+                                <button type="button" class="desk-action-btn-outline" style="padding: 6px 10px; font-size: 0.78rem;"
+                                        title="Assign to specific court and start"
+                                        onclick="openAssignModal('{{ q.id }}', '{{ (q.display_name|default(q.guest_name|default("Player")))|e }}')">
+                                    <i class="ph ph-tennis-ball"></i> Assign Court
+                                </button>
+
+                                {% elif q.status == 'next' %}
+                                <button type="button" class="desk-action-btn-green" style="padding: 6px 12px; font-size: 0.78rem;"
+                                        onclick="updateQueueStatus('{{ q.id }}', 'playing', this)">
+                                    <i class="ph ph-play"></i> Start Game
+                                </button>
+                                {% if q.player_id %}
+                                <button type="button" class="desk-action-btn-outline" style="padding: 6px 10px; font-size: 0.78rem; color: var(--primary-orange); border-color: rgba(225, 86, 35, 0.3);"
+                                        title="Nudge Player Device"
+                                        onclick="nudgePlayerAction('{{ q.player_id }}', this)">
+                                    <i class="ph ph-bell"></i> Nudge
+                                </button>
+                                {% endif %}
+
+                                {% elif q.status == 'playing' %}
+                                <button type="button" class="desk-action-btn-outline" style="padding: 6px 10px; font-size: 0.78rem; color: var(--btn-green);"
+                                        title="Finish Game & Free Court"
+                                        onclick="updateQueueStatus('{{ q.id }}', 'completed', this)">
+                                    <i class="ph ph-check"></i> Complete
+                                </button>
+                                {% endif %}
+
+                                <button type="button" class="desk-action-btn-outline" style="padding: 6px 8px; font-size: 0.78rem; color: #ef4444;"
+                                        title="Cancel Queue Entry"
+                                        onclick="if(confirm('Cancel this queue entry?')) updateQueueStatus('{{ q.id }}', 'cancelled', this)">
+                                    <i class="ph ph-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 36px 20px;">
+                            <div style="max-width: 320px; margin: 0 auto; color: var(--text-muted);">
+                                <i class="ph ph-users" style="font-size: 2.5rem; color: var(--text-muted); margin-bottom: 8px; display: block;"></i>
+                                <strong style="color: var(--text-primary); font-size: 0.95rem; display: block; margin-bottom: 4px;">Queue is Currently Clear</strong>
+                                <span style="font-size: 0.82rem;">No players are currently waiting. Register a walk-in or scan player pass to dispatch players to courts.</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block modals %}
+<!-- ==========================================================================
+     MODAL 1: SCAN PASS & DIGITAL CHECK-IN
+     ========================================================================== -->
+<div id="scanPassModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(225, 86, 35, 0.12); display: flex; align-items: center; justify-content: center; color: var(--primary-orange); font-size: 1.3rem; flex-shrink: 0;">
                     <i class="ph ph-qr-code"></i>
-                    <span>Scan Pass</span>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">Digital Pass & Booking Verification</h3>
+                    <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">Scan player QR code or verify reservation reference</p>
+                </div>
+            </div>
+            <button type="button" class="modal-close" onclick="closeModal('scanPassModal')" aria-label="Close modal">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <!-- Animated Laser Viewfinder -->
+            <div class="scan-viewfinder">
+                <div class="scan-laser-line"></div>
+                <i class="ph ph-camera" style="font-size: 3.2rem; color: rgba(255, 255, 255, 0.4); z-index: 1;"></i>
+            </div>
+            <p style="text-align: center; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px;">
+                Hold the player's QR pass or booking barcode in front of the terminal camera.
+            </p>
+
+            <!-- Manual Code Lookup Box -->
+            <div style="background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                <label class="field-label">Manual Pass Code / Booking Ref</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="manualPassInput" class="field-input" placeholder="e.g. 32473acb or Player Name" onkeypress="if(event.key==='Enter') verifyPassCode()">
+                    <button type="button" class="desk-action-btn-primary" onclick="verifyPassCode()" style="white-space: nowrap;">
+                        <i class="ph ph-magnifying-glass"></i> Verify
+                    </button>
+                </div>
+            </div>
+
+            <!-- Pass Result Container -->
+            <div id="passResultBox" style="display: none; padding: 14px; border-radius: 10px; margin-bottom: 12px;"></div>
+
+            <!-- Simulation Shortcut -->
+            <div style="text-align: center; border-top: 1px solid var(--border-color); padding-top: 16px;">
+                <button type="button" class="desk-action-btn-outline" style="width: 100%; justify-content: center;" onclick="simulateFastPassScan()">
+                    <i class="ph ph-lightning"></i> Test Pass Check-In (Demo Simulation)
                 </button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Scan Pass Modal -->
-<div id="scanPassModal" class="modal-overlay">
+<!-- ==========================================================================
+     MODAL 2: QUICK WALK-IN REGISTRATION (UPGRADED)
+     ========================================================================== -->
+<div id="quickWalkinModal" class="modal-overlay">
     <div class="modal-box">
-        <div class="modal-header">
-            <h3><i class="ph ph-qr-code" style="color:var(--primary-orange); margin-right: 6px;"></i> Scan Player Pass
-            </h3>
-            <button class="modal-close" onclick="closeModal('scanPassModal')"><i class="ph ph-x"></i></button>
-        </div>
-        <div style="text-align: center; padding: 20px 0;">
-            <div
-                style="width: 200px; height: 200px; border: 2px dashed var(--primary-orange); border-radius: 12px; margin: 0 auto; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; background: var(--input-bg);">
-                <div
-                    style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, rgba(225, 86, 35, 0) 0%, rgba(225, 86, 35, 0.15) 50%, rgba(225, 86, 35, 0) 100%); animation: scanLaser 2s infinite ease-in-out;">
-                </div>
-                <i class="ph ph-camera" style="font-size: 3rem; color: var(--text-muted); z-index: 1;"></i>
-            </div>
-            <p style="margin-top: 15px; font-size: 0.85rem; color: var(--text-secondary);">Position the player's QR Pass
-                inside the frame to scan.</p>
+        <form method="POST" action="{{ url_for('facilitystaff.walkin') }}" id="quickWalkinForm" onsubmit="handleQuickWalkinSubmit(event)">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="redirect_to" value="dashboard">
 
-            <div
-                style="margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 15px; display: flex; flex-direction: column; gap: 10px; align-items: center;">
-                <button type="button" class="btn-sm btn-sm-primary" onclick="simulateScan()"
-                    style="width: 100%; justify-content: center; padding: 10px;"><i class="ph ph-sparkles"></i> Simulate
-                    Scan Success</button>
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(225, 86, 35, 0.12); display: flex; align-items: center; justify-content: center; color: var(--primary-orange); font-size: 1.35rem; flex-shrink: 0;">
+                        <i class="ph ph-user-plus"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">Quick Walk-In Registration</h3>
+                        <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">Direct court dispatch with instant payment logging</p>
+                    </div>
+                </div>
+                <button type="button" class="modal-close" onclick="closeModal('quickWalkinModal')" aria-label="Close modal">
+                    <i class="ph ph-x"></i>
+                </button>
             </div>
-        </div>
+            
+            <div class="modal-body">
+                <!-- In-Modal Alert / Error Banner -->
+                <div id="walkinModalAlert" style="display: none;"></div>
+
+                <!-- Guest Info -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+                    <div>
+                        <label class="field-label">Guest Name *</label>
+                        <input type="text" name="guest_name" id="modalGuestName" required class="field-input" placeholder="e.g. Maria Santos" autocomplete="off">
+                    </div>
+                    <div>
+                        <label class="field-label">Phone (Optional)</label>
+                        <input type="tel" name="guest_phone" id="modalGuestPhone" class="field-input" placeholder="0912 345 6789">
+                    </div>
+                </div>
+
+                <!-- Court Selection -->
+                <div style="margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label class="field-label" style="margin-bottom: 0;">Select Court *</label>
+                        <span id="selectedCourtBadge" style="font-size: 0.75rem; font-weight: 600; color: #16a34a; background: rgba(34, 197, 94, 0.1); padding: 2px 8px; border-radius: 6px;">Ready For Dispatch</span>
+                    </div>
+                    <select name="court_id" id="modalCourtSelect" required class="field-input" onchange="calculateWalkinTotal()">
+                        <option value="" data-rate="0">-- Select Court --</option>
+                        {% for court in courts %}
+                        <option value="{{ court.id }}" data-rate="{{ court.hourly_rate }}">{{ court.name }} — ₱{{ court.hourly_rate|int }}/hr</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Duration & Party Size -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+                    <div>
+                        <label class="field-label">Duration</label>
+                        <select name="duration" id="modalDurationSelect" class="field-input" onchange="calculateWalkinTotal()">
+                            <option value="1">1 Hour</option>
+                            <option value="1.5">1.5 Hours</option>
+                            <option value="2">2 Hours</option>
+                            <option value="3">3 Hours</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="field-label">Party Size</label>
+                        <input type="number" name="party_size" id="modalPartySize" value="1" min="1" max="16" required class="field-input">
+                    </div>
+                </div>
+
+                <!-- Payment Method Selection -->
+                <div style="margin-bottom: 16px;">
+                    <label class="field-label">Payment Method *</label>
+                    <div style="display: flex; gap: 10px;">
+                        <label style="flex: 1; cursor: pointer;">
+                            <input type="radio" name="payment_method" value="cash" checked style="display: none;" onchange="toggleGcashRef(false)">
+                            <div class="walkin-pm-chip active" id="pm-chip-cash">
+                                <i class="ph ph-money" style="font-size: 1.25rem;"></i>
+                                <span>Cash</span>
+                            </div>
+                        </label>
+                        <label style="flex: 1; cursor: pointer;">
+                            <input type="radio" name="payment_method" value="gcash" style="display: none;" onchange="toggleGcashRef(true)">
+                            <div class="walkin-pm-chip" id="pm-chip-gcash">
+                                <i class="ph ph-device-mobile" style="font-size: 1.25rem;"></i>
+                                <span>GCash</span>
+                            </div>
+                        </label>
+                        <label style="flex: 1; cursor: pointer;">
+                            <input type="radio" name="payment_method" value="qr_ph" style="display: none;" onchange="toggleGcashRef(true)">
+                            <div class="walkin-pm-chip" id="pm-chip-qr">
+                                <i class="ph ph-qr-code" style="font-size: 1.25rem;"></i>
+                                <span>QR Ph</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- GCash / QR Payment Drawer -->
+                <div id="modalGcashRefSection" style="display: none; margin-bottom: 16px;">
+                    <div style="display: flex; gap: 16px; align-items: center; background: var(--input-bg); border: 1px solid var(--border-color); padding: 14px; border-radius: 12px; margin-bottom: 12px;">
+                        <div style="width: 80px; height: 80px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); background: white; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                            <img src="{{ url_for('static', filename='images/gcash_qr.png') }}" alt="Counter QR" style="width: 100%; height: 100%; object-fit: contain;">
+                        </div>
+                        <div>
+                            <div style="font-size: 0.88rem; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">Front Desk Merchant QR</div>
+                            <div style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.35;">Have customer scan QR code with GCash / Maya / banking app, then enter reference code below.</div>
+                        </div>
+                    </div>
+                    <label class="field-label">Reference Number (Optional)</label>
+                    <input type="text" name="gcash_ref" id="modalGcashRef" class="field-input" placeholder="e.g. 1029 3847 56">
+                </div>
+
+                <!-- Live Total Fee Due Card -->
+                <div class="walkin-total-card">
+                    <div>
+                        <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); letter-spacing: 0.5px;">Total Amount Due</div>
+                        <div id="modalCalcSummary" style="font-size: 0.84rem; color: var(--text-secondary); margin-top: 3px; font-weight: 600;">₱0.00 × 1h = ₱0.00</div>
+                    </div>
+                    <div id="modalTotalDue" class="walkin-total-badge">₱0.00</div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="desk-action-btn-outline" onclick="closeModal('quickWalkinModal')">Cancel</button>
+                <button type="submit" id="walkinSubmitBtn" class="desk-action-btn-green" style="min-width: 220px; justify-content: center;">
+                    <i class="ph ph-check-circle" id="walkinBtnIcon"></i>
+                    <span id="walkinBtnText">Confirm Walk-In & Dispatch</span>
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
+<!-- ==========================================================================
+     MODAL 3: ASSIGN QUEUE PLAYER TO COURT
+     ========================================================================== -->
+<div id="assignCourtModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(225, 86, 35, 0.12); display: flex; align-items: center; justify-content: center; color: var(--primary-orange); font-size: 1.3rem; flex-shrink: 0;">
+                    <i class="ph ph-tennis-ball"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">Assign Player to Court</h3>
+                    <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">Direct dispatch waiting player to open court</p>
+                </div>
+            </div>
+            <button type="button" class="modal-close" onclick="closeModal('assignCourtModal')" aria-label="Close modal">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="assignTargetQueueId">
+            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 16px;">
+                Assign <strong id="assignTargetPlayerName" style="color: var(--text-primary);">Player</strong> to an available court and immediately start session:
+            </p>
+            <div style="margin-bottom: 20px;">
+                <label class="field-label">Available Courts</label>
+                <select id="assignTargetCourtSelect" class="field-input">
+                    {% for court in court_status_list %}
+                    <option value="{{ court.id }}" {% if court.status != 'Available' %}disabled{% endif %}>
+                        {{ court.name }} — {{ court.status }} {% if court.status == 'Available' %}(Ready){% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="desk-action-btn-outline" onclick="closeModal('assignCourtModal')">Cancel</button>
+            <button type="button" class="desk-action-btn-green" onclick="confirmAssignToCourt()">
+                <i class="ph ph-play"></i> Start Match on Court
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- ==========================================================================
+     OPERATIONS DESK INTERACTIVE JAVASCRIPT LOGIC
+     ========================================================================== -->
 <script>
+    // CSRF Token Helper
+    function getCsrfToken() {
+        const meta = document.querySelector('meta[name="csrf-token"]');
+        return meta ? meta.getAttribute('content') : '';
+    }
+
+    // Live Digital Clock & Date
+    function updateClock() {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+        const dateStr = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+        
+        const clockEl = document.getElementById('liveDeskClock');
+        const dateEl = document.getElementById('liveDeskDate');
+        if (clockEl) clockEl.textContent = timeStr;
+        if (dateEl) dateEl.textContent = dateStr;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Modal Handlers (Move to document.body so modals are ALWAYS frontmost)
     function openModal(id) {
-        document.getElementById(id).classList.add('open');
+        const m = document.getElementById(id);
+        if (m) {
+            if (m.parentElement !== document.body) {
+                document.body.appendChild(m);
+            }
+            m.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
     }
 
     function closeModal(id) {
-        document.getElementById(id).classList.remove('open');
+        const m = document.getElementById(id);
+        if (m) {
+            m.classList.remove('open');
+            if (!document.querySelector('.modal-overlay.open')) {
+                document.body.style.overflow = '';
+            }
+        }
     }
 
-    // Close modal when clicking outside the box
-    document.querySelectorAll('.modal-overlay').forEach(overlay => {
-        overlay.addEventListener('click', function (e) {
-            if (e.target === this) {
-                closeModal(this.id);
+    // Move modals to body on DOM ready
+    document.addEventListener('DOMContentLoaded', function() {
+        ['scanPassModal', 'quickWalkinModal', 'assignCourtModal'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el && el.parentElement !== document.body) {
+                document.body.appendChild(el);
             }
         });
+
+        // Initialize total calculation
+        calculateWalkinTotal();
     });
 
-    async function updateQueue(queueId, nextStatus, button) {
-        if (button) button.disabled = true;
+    // Close on overlay backdrop click
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.classList && e.target.classList.contains('modal-overlay')) {
+            closeModal(e.target.id);
+        }
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal-overlay.open').forEach(m => closeModal(m.id));
+        }
+    });
+
+    // Court Rack Filter Tabs
+    function filterCourts(status, btn) {
+        document.querySelectorAll('.court-tab-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+
+        const cards = document.querySelectorAll('.court-rack-card');
+        cards.forEach(card => {
+            const cardStatus = card.getAttribute('data-status');
+            if (status === 'all' || cardStatus === status) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    // Refresh Desk Data
+    function refreshDeskData() {
+        const icon = document.getElementById('refreshIcon');
+        if (icon) icon.style.animation = 'spin 0.6s linear infinite';
+        setTimeout(() => {
+            window.location.reload();
+        }, 300);
+    }
+
+    // Walk-In Price Calculator
+    function calculateWalkinTotal() {
+        const courtSelect = document.getElementById('modalCourtSelect');
+        const durationSelect = document.getElementById('modalDurationSelect');
+        const summaryEl = document.getElementById('modalCalcSummary');
+        const totalEl = document.getElementById('modalTotalDue');
+
+        if (!courtSelect || !durationSelect) return;
+
+        const selectedOption = courtSelect.options[courtSelect.selectedIndex];
+        const hourlyRate = parseFloat(selectedOption ? selectedOption.getAttribute('data-rate') : 0) || 0;
+        const duration = parseFloat(durationSelect.value) || 1;
+        const total = hourlyRate * duration;
+
+        if (summaryEl) summaryEl.textContent = `₱${hourlyRate.toFixed(2)} × ${duration}h = ₱${total.toFixed(2)}`;
+        if (totalEl) totalEl.textContent = `₱${total.toFixed(2)}`;
+    }
+
+    function openWalkinForCourt(courtId, courtName) {
+        const select = document.getElementById('modalCourtSelect');
+        if (select) {
+            select.value = courtId;
+            calculateWalkinTotal();
+        }
+        const alertBox = document.getElementById('walkinModalAlert');
+        if (alertBox) {
+            alertBox.style.display = 'none';
+            alertBox.innerHTML = '';
+        }
+        openModal('quickWalkinModal');
+    }
+
+    function toggleGcashRef(show) {
+        const sec = document.getElementById('modalGcashRefSection');
+        if (sec) sec.style.display = show ? 'block' : 'none';
+
+        const cashChip = document.getElementById('pm-chip-cash');
+        const gcashChip = document.getElementById('pm-chip-gcash');
+        const qrChip = document.getElementById('pm-chip-qr');
+
+        [cashChip, gcashChip, qrChip].forEach(c => c && c.classList.remove('active'));
+
+        const selected = document.querySelector('input[name="payment_method"]:checked');
+        if (selected) {
+            const val = selected.value;
+            const targetChip = val === 'cash' ? cashChip : (val === 'gcash' ? gcashChip : qrChip);
+            if (targetChip) targetChip.classList.add('active');
+        }
+    }
+
+    // Walk-In Dispatch Submission Handler
+    async function handleQuickWalkinSubmit(e) {
+        if (e) e.preventDefault();
+
+        const form = document.getElementById('quickWalkinForm');
+        const alertBox = document.getElementById('walkinModalAlert');
+        const submitBtn = document.getElementById('walkinSubmitBtn');
+        const btnIcon = document.getElementById('walkinBtnIcon');
+        const btnText = document.getElementById('walkinBtnText');
+
+        if (alertBox) {
+            alertBox.style.display = 'none';
+            alertBox.innerHTML = '';
+        }
+
+        const guestName = form.guest_name.value.trim();
+        const guestPhone = form.guest_phone ? form.guest_phone.value.trim() : '';
+        const courtId = form.court_id.value;
+        const duration = parseFloat(form.duration.value) || 1;
+        const partySize = parseInt(form.party_size.value, 10) || 1;
+        const paymentMethod = form.payment_method ? (document.querySelector('input[name="payment_method"]:checked')?.value || 'cash') : 'cash';
+        const gcashRef = form.gcash_ref ? form.gcash_ref.value.trim() : '';
+
+        if (!guestName) {
+            showWalkinError('Please enter guest player name.');
+            form.guest_name.focus();
+            return;
+        }
+
+        if (!courtId) {
+            showWalkinError('Please select a court to dispatch.');
+            form.court_id.focus();
+            return;
+        }
+
+        // Set Loading state
+        if (submitBtn) submitBtn.disabled = true;
+        if (btnIcon) btnIcon.className = 'ph ph-spinner ph-spin';
+        if (btnText) btnText.textContent = 'Dispatching Court...';
+
         try {
-            const response = await fetch("{{ url_for('facilitystaff.update_queue') }}", {
+            const payload = {
+                guest_name: guestName,
+                guest_phone: guestPhone,
+                court_id: courtId,
+                duration: duration,
+                party_size: partySize,
+                payment_method: paymentMethod,
+                gcash_ref: gcashRef,
+                redirect_to: 'dashboard'
+            };
+
+            const resp = await fetch("{{ url_for('facilitystaff.walkin') }}", {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
                 },
-                body: JSON.stringify({
-                    queue_id: queueId,
-                    status: nextStatus
-                })
+                body: JSON.stringify(payload)
             });
-            const res = await response.json();
+
+            const res = await resp.json();
+
             if (res.success) {
-                showToast('Success', res.message, 'success');
-                setTimeout(() => window.location.reload(), 500);
+                if (alertBox) {
+                    alertBox.style.display = 'flex';
+                    alertBox.style.alignItems = 'center';
+                    alertBox.style.gap = '10px';
+                    alertBox.style.padding = '12px 16px';
+                    alertBox.style.borderRadius = '10px';
+                    alertBox.style.background = 'rgba(34, 197, 94, 0.12)';
+                    alertBox.style.border = '1px solid rgba(34, 197, 94, 0.35)';
+                    alertBox.style.color = '#16a34a';
+                    alertBox.style.fontSize = '0.88rem';
+                    alertBox.style.fontWeight = '600';
+                    alertBox.style.marginBottom = '16px';
+                    alertBox.innerHTML = `<i class="ph ph-check-circle" style="font-size: 1.25rem; flex-shrink: 0;"></i> <span>${res.message || 'Court successfully dispatched!'}</span>`;
+                }
+                if (btnIcon) btnIcon.className = 'ph ph-check';
+                if (btnText) btnText.textContent = 'Dispatched!';
+
+                if (typeof showToast === 'function') {
+                    showToast('Walk-In Dispatched', res.message || `Match live on court!`, 'success');
+                }
+
+                setTimeout(() => {
+                    closeModal('quickWalkinModal');
+                    window.location.reload();
+                }, 500);
             } else {
-                showToast('Error', res.message || 'Failed to update queue.', 'error');
+                showWalkinError(res.message || 'Failed to dispatch walk-in registration.');
+                restoreSubmitBtn();
+            }
+        } catch (err) {
+            console.error('Walk-in dispatch error:', err);
+            showWalkinError('Server connection error. Please try again.');
+            restoreSubmitBtn();
+        }
+
+        function showWalkinError(msg) {
+            if (alertBox) {
+                alertBox.style.display = 'flex';
+                alertBox.style.alignItems = 'center';
+                alertBox.style.gap = '10px';
+                alertBox.style.padding = '12px 16px';
+                alertBox.style.borderRadius = '10px';
+                alertBox.style.background = 'rgba(239, 68, 68, 0.1)';
+                alertBox.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                alertBox.style.color = '#ef4444';
+                alertBox.style.fontSize = '0.88rem';
+                alertBox.style.fontWeight = '600';
+                alertBox.style.marginBottom = '16px';
+                alertBox.innerHTML = `<i class="ph ph-warning-circle" style="font-size: 1.25rem; flex-shrink: 0;"></i> <span>${msg}</span>`;
+            } else {
+                alert(msg);
+            }
+        }
+
+        function restoreSubmitBtn() {
+            if (submitBtn) submitBtn.disabled = false;
+            if (btnIcon) btnIcon.className = 'ph ph-check-circle';
+            if (btnText) btnText.textContent = 'Confirm Walk-In & Dispatch';
+        }
+    }
+
+    // Queue Status Update (Call Next, Start Game, Complete, Cancel)
+    async function updateQueueStatus(queueId, nextStatus, button) {
+        if (button) button.disabled = true;
+        try {
+            const resp = await fetch("{{ url_for('facilitystaff.update_queue') }}", {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify({ queue_id: queueId, status: nextStatus })
+            });
+            const res = await resp.json();
+            if (res.success) {
+                if (typeof showToast === 'function') showToast('Success', res.message, 'success');
+                setTimeout(() => window.location.reload(), 400);
+            } else {
+                if (typeof showToast === 'function') showToast('Error', res.message || 'Failed to update queue.', 'error');
                 if (button) button.disabled = false;
             }
         } catch (err) {
-            showToast('Error', 'An error occurred.', 'error');
+            console.error(err);
             if (button) button.disabled = false;
         }
     }
 
-    async function nudgePlayer(playerId, button) {
+    // Nudge Player
+    async function nudgePlayerAction(playerId, button) {
         if (button) button.disabled = true;
         try {
-            const response = await fetch(`/facilitystaff/nudge/${playerId}`, {
+            const resp = await fetch(`/facilitystaff/nudge/${playerId}`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
                 }
             });
-            const res = await response.json();
+            const res = await resp.json();
             if (res.success) {
-                showToast('Nudged', res.message, 'success');
+                if (typeof showToast === 'function') showToast('Player Nudged', res.message, 'success');
             } else {
-                showToast('Error', res.message || 'Failed to nudge player.', 'error');
+                if (typeof showToast === 'function') showToast('Notice', res.message || 'Unable to nudge player.', 'error');
             }
         } catch (err) {
-            showToast('Error', 'An error occurred.', 'error');
+            console.error(err);
         }
         if (button) button.disabled = false;
     }
 
-    function simulateScan() {
+    // Free Court Action
+    async function freeCourtAction(courtId, courtName) {
+        if (!confirm(`Are you sure you want to end session and free up ${courtName}?`)) return;
+        try {
+            const resp = await fetch(`/facilitystaff/court/${courtId}/free`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                }
+            });
+            const res = await resp.json();
+            if (res.success) {
+                if (typeof showToast === 'function') showToast('Court Cleared', `${courtName} is now ready for play!`, 'success');
+                setTimeout(() => window.location.reload(), 400);
+            } else {
+                alert(res.message || 'Failed to free court.');
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    // Toggle Court Maintenance
+    async function toggleMaintenance(courtId) {
+        try {
+            const resp = await fetch(`/facilitystaff/court/${courtId}/toggle_maintenance`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                }
+            });
+            const res = await resp.json();
+            if (res.success) {
+                if (typeof showToast === 'function') showToast('Court Updated', res.message, 'success');
+                setTimeout(() => window.location.reload(), 400);
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    // Assign Modal
+    function openAssignModal(queueId, playerName) {
+        document.getElementById('assignTargetQueueId').value = queueId;
+        document.getElementById('assignTargetPlayerName').textContent = playerName;
+        openModal('assignCourtModal');
+    }
+
+    async function confirmAssignToCourt() {
+        const queueId = document.getElementById('assignTargetQueueId').value;
+        const courtId = document.getElementById('assignTargetCourtSelect').value;
+
+        if (!courtId) {
+            alert('Please select an available court.');
+            return;
+        }
+
+        try {
+            const resp = await fetch("{{ url_for('facilitystaff.update_queue') }}", {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify({
+                    queue_id: queueId,
+                    status: 'playing',
+                    court_id: courtId
+                })
+            });
+            const res = await resp.json();
+            if (res.success) {
+                closeModal('assignCourtModal');
+                if (typeof showToast === 'function') showToast('Match Started', 'Player assigned to court and session is now live!', 'success');
+                setTimeout(() => window.location.reload(), 400);
+            } else {
+                alert(res.message || 'Failed to assign court.');
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    // Quick Assign next queued player to specific court
+    async function assignNextToCourt(courtId, courtName) {
+        {% if queues and queues|length > 0 %}
+        const nextQueueId = "{{ queues[0].id }}";
+        const nextPlayerName = "{{ (queues[0].display_name|default(queues[0].guest_name|default('Next Player')))|e }}";
+        
+        if (!confirm(`Assign ${nextPlayerName} to ${courtName} and start game?`)) return;
+
+        try {
+            const resp = await fetch("{{ url_for('facilitystaff.update_queue') }}", {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify({
+                    queue_id: nextQueueId,
+                    status: 'playing',
+                    court_id: courtId
+                })
+            });
+            const res = await resp.json();
+            if (res.success) {
+                if (typeof showToast === 'function') showToast('Assigned', `${nextPlayerName} is now on ${courtName}!`, 'success');
+                setTimeout(() => window.location.reload(), 400);
+            }
+        } catch (err) {
+            console.error(err);
+        }
+        {% endif %}
+    }
+
+    // Verify Pass Code
+    async function verifyPassCode() {
+        const input = document.getElementById('manualPassInput');
+        const code = input ? input.value.trim() : '';
+        const resultBox = document.getElementById('passResultBox');
+
+        if (!code) {
+            alert('Please enter a Pass Code, Booking ID, or Player Name.');
+            return;
+        }
+
+        resultBox.style.display = 'block';
+        resultBox.style.background = 'var(--input-bg)';
+        resultBox.innerHTML = '<div style="text-align:center; color: var(--text-muted);"><i class="ph ph-spinner ph-spin"></i> Verifying pass...</div>';
+
+        try {
+            const resp = await fetch("{{ url_for('facilitystaff.verify_pass') }}", {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify({ code: code })
+            });
+            const res = await resp.json();
+
+            if (res.success && res.found) {
+                resultBox.style.background = 'rgba(34, 197, 94, 0.1)';
+                resultBox.style.border = '1px solid rgba(34, 197, 94, 0.3)';
+                resultBox.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <strong style="color: #16a34a; font-size: 0.95rem; display:block;">
+                                <i class="ph ph-check-circle"></i> Pass Verified Active
+                            </strong>
+                            <div style="color: var(--text-primary); font-weight:700; margin-top:2px;">${res.player_name}</div>
+                            <div style="font-size:0.8rem; color: var(--text-muted);">${res.court_name} • ${res.time_slot}</div>
+                        </div>
+                        <button type="button" class="desk-action-btn-green" style="padding:6px 12px; font-size:0.8rem;" onclick="closeModal('scanPassModal'); showToast('Checked In', 'Player pass confirmed!', 'success');">
+                            Check In
+                        </button>
+                    </div>
+                `;
+            } else {
+                resultBox.style.background = 'rgba(239, 68, 68, 0.1)';
+                resultBox.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                resultBox.innerHTML = `
+                    <div style="color: #ef4444; font-size: 0.88rem;">
+                        <i class="ph ph-x-circle"></i> ${res.message || 'Pass not found or not scheduled for today.'}
+                    </div>
+                `;
+            }
+        } catch (err) {
+            resultBox.innerHTML = '<div style="color: #ef4444; font-size: 0.85rem;">Error contacting verification server.</div>';
+        }
+    }
+
+    function simulateFastPassScan() {
         closeModal('scanPassModal');
-        showToast('Pass Verified', 'Player pass scanned! Check-in confirmed for walk-in or queue entry.', 'success');
+        if (typeof showToast === 'function') {
+            showToast('Pass Verified', 'QR Pass verified: Matt Andrew (Court B, 1 Hour session confirmed).', 'success');
+        } else {
+            alert('Pass Verified: Matt Andrew check-in confirmed!');
+        }
     }
 </script>
 {% endblock %}

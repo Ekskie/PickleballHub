@@ -3,521 +3,2246 @@
 
 {% block extra_head %}
 <style>
-    .courts-toolbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-        gap: 12px;
-    }
+/* ── Courts Dashboard Layout ── */
+.courts-container {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
 
-    .courts-toolbar .left {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
+/* ── Top Header & Hero Actions ── */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 2px;
+}
 
-    .filter-select {
-        padding: 8px 14px;
-        background: var(--input-bg);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        color: var(--text-primary);
-        font-size: 0.85rem;
-        font-family: inherit;
-        cursor: pointer;
-    }
+.dashboard-header .header-left h1 {
+    font-size: 1.65rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
-    .filter-select:focus {
-        outline: none;
-        border-color: var(--primary-orange);
-    }
+.dashboard-header .header-left p {
+    font-size: 0.86rem;
+    color: var(--text-muted);
+    margin: 4px 0 0 0;
+}
 
-    .court-type-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 3px 9px;
-        border-radius: 4px;
-        font-size: 0.7rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.4px;
-    }
+.btn-primary-add {
+    background: linear-gradient(135deg, var(--primary-orange) 0%, #ea580c 100%);
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(225, 86, 35, 0.35);
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
 
-    .badge-indoor {
-        background: rgba(99, 102, 241, 0.12);
-        color: #818cf8;
-    }
+.btn-primary-add:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(225, 86, 35, 0.45);
+    filter: brightness(1.04);
+}
 
-    .badge-outdoor {
-        background: rgba(34, 197, 94, 0.12);
-        color: #22c55e;
-    }
+.btn-primary-add:active {
+    transform: translateY(0);
+}
 
-    .court-thumb {
-        width: 44px;
-        height: 44px;
-        border-radius: 8px;
-        object-fit: cover;
-        border: 1px solid var(--border-color);
-        vertical-align: middle;
-    }
+/* ── Executive KPI Summary Grid ── */
+.stats-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
 
-    .court-thumb-placeholder {
-        width: 44px;
-        height: 44px;
-        border-radius: 8px;
-        background: var(--input-bg);
-        border: 1px solid var(--border-color);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--text-muted);
-        font-size: 1.2rem;
-        vertical-align: middle;
-    }
+.kpi-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 16px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
 
-    .modal-overlay {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.6);
-        z-index: 1000;
-        align-items: center;
-        justify-content: center;
-    }
+.kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
+}
 
-    .modal-overlay.open {
-        display: flex;
-    }
+.kpi-icon-badge {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
 
-    .modal-box {
-        background: var(--sidebar-bg);
-        border: 1px solid var(--card-border);
-        border-radius: 16px;
-        padding: 28px;
-        width: 100%;
-        max-width: 500px;
-        max-height: 90vh;
-        overflow-y: auto;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-        animation: slideUp 0.25s ease;
-    }
+.kpi-icon-orange {
+    background: rgba(225, 86, 35, 0.12);
+    color: var(--primary-orange);
+}
 
-    @keyframes slideUp {
-        from { transform: translateY(20px); opacity: 0 }
-        to { transform: translateY(0); opacity: 1 }
-    }
+.kpi-icon-green {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+}
 
-    .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-    }
+.kpi-icon-amber {
+    background: rgba(245, 158, 11, 0.12);
+    color: #f59e0b;
+}
 
-    .modal-header h3 {
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: var(--text-primary);
-    }
+.kpi-icon-blue {
+    background: rgba(59, 130, 246, 0.12);
+    color: #3b82f6;
+}
 
-    .modal-close {
-        background: none;
-        border: none;
-        color: var(--text-muted);
-        cursor: pointer;
-        font-size: 1.3rem;
-        padding: 4px;
-        border-radius: 6px;
-    }
+.kpi-details {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
 
-    .modal-close:hover {
-        color: var(--text-primary);
-    }
+.kpi-label {
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+}
 
-    .form-group {
-        margin-bottom: 16px;
-    }
+.kpi-value {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.2;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
 
-    .form-group label {
-        display: block;
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: var(--text-secondary);
-        margin-bottom: 6px;
-    }
+.kpi-value small {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
 
-    .form-group input,
-    .form-group select {
-        width: 100%;
-        padding: 10px 14px;
-        background: var(--input-bg);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        color: var(--text-primary);
-        font-size: 0.9rem;
-        font-family: inherit;
-        box-sizing: border-box;
-        transition: border-color 0.2s;
-    }
+.kpi-subtext {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
-    .form-group input:focus,
-    .form-group select:focus {
-        outline: none;
-        border-color: var(--primary-orange);
-    }
+/* ── Smart Control & Filter Hub ── */
+.control-hub-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 16px;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+}
 
-    .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-    }
+.control-hub-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
 
-    .modal-footer {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        margin-top: 22px;
-    }
+.search-and-select-group {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    flex: 1;
+    min-width: 280px;
+}
 
-    .btn-sm {
-        padding: 7px 14px;
-        border-radius: 8px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        cursor: pointer;
-        border: none;
-        transition: all 0.2s;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
+.search-input-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+    max-width: 380px;
+}
 
-    .btn-sm-outline {
-        background: transparent;
-        border: 1px solid var(--border-color);
-        color: var(--text-secondary);
-    }
+.search-input-wrap i.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 1rem;
+    pointer-events: none;
+}
 
-    .btn-sm-outline:hover {
-        border-color: var(--text-muted);
-        color: var(--text-primary);
-    }
+.search-input-wrap input {
+    width: 100%;
+    padding: 9px 34px 9px 36px;
+    background: var(--input-bg, #f8fafc);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 10px;
+    font-size: 0.84rem;
+    color: var(--text-primary);
+    transition: all 0.2s;
+}
 
-    .btn-sm-primary {
-        background: var(--primary-orange);
-        color: white;
-    }
+.search-input-wrap input:focus {
+    outline: none;
+    border-color: var(--primary-orange);
+    background: var(--card-bg);
+    box-shadow: 0 0 0 3px rgba(225, 86, 35, 0.12);
+}
 
-    .btn-sm-primary:hover {
-        background: var(--primary-orange-hover);
-    }
+.search-clear-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 4px;
+    border-radius: 4px;
+    display: none;
+}
 
-    .btn-sm-danger {
-        background: rgba(239, 68, 68, 0.1);
-        color: #ef4444;
-        border: 1px solid rgba(239, 68, 68, 0.2);
-    }
+.search-clear-btn:hover {
+    color: var(--text-primary);
+}
 
-    .btn-sm-danger:hover {
-        background: rgba(239, 68, 68, 0.2);
-    }
+.facility-filter-select {
+    padding: 9px 14px;
+    background: var(--input-bg, #f8fafc);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 10px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+    min-width: 180px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
 
-    .empty-row td {
-        text-align: center;
-        padding: 48px 20px;
-        color: var(--text-muted);
-        font-size: 0.9rem;
-    }
+.facility-filter-select:focus {
+    outline: none;
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 0 3px rgba(225, 86, 35, 0.12);
+}
 
-    /* Image upload widget */
-    .img-upload-zone { border:2px dashed var(--border-color); border-radius:10px; padding:16px; text-align:center; cursor:pointer; transition:border-color .2s, background .2s; background:var(--input-bg); position:relative; }
-    .img-upload-zone:hover { border-color:var(--primary-orange); }
-    .img-upload-zone i { font-size:1.6rem; color:var(--text-muted); display:block; margin-bottom:4px; }
-    .img-upload-zone span { font-size:0.78rem; color:var(--text-muted); }
-    .img-upload-zone input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
-    .img-preview { margin-top:8px; border-radius:8px; overflow:hidden; display:none; }
-    .img-preview img { width:100%; height:100px; object-fit:cover; display:block; }
-    .img-preview-existing { margin-top:8px; border-radius:8px; overflow:hidden; }
-    .img-preview-existing img { width:100%; height:90px; object-fit:cover; display:block; border-radius:8px; }
-    .img-preview-existing small { font-size:0.72rem; color:var(--text-muted); display:block; margin-top:3px; }
+.view-and-count-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.results-badge {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    background: var(--input-bg, #f1f5f9);
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color, #eaecf0);
+}
+
+.view-switcher-toggle {
+    display: inline-flex;
+    background: var(--input-bg, #f1f5f9);
+    padding: 3px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color, #eaecf0);
+}
+
+.view-toggle-btn {
+    border: none;
+    background: transparent;
+    padding: 6px 12px;
+    border-radius: 7px;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+}
+
+.view-toggle-btn:hover {
+    color: var(--text-primary);
+}
+
+.view-toggle-btn.active {
+    background: var(--card-bg, #ffffff);
+    color: var(--primary-orange);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* Secondary Filter Chips Row */
+.filter-pills-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border-color, #eaecf0);
+}
+
+.filter-pill-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 0.4px;
+    margin-right: 4px;
+}
+
+.filter-chip {
+    padding: 5px 12px;
+    border-radius: 8px;
+    background: var(--input-bg, #f8fafc);
+    border: 1px solid var(--border-color, #eaecf0);
+    color: var(--text-secondary);
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.15s ease;
+}
+
+.filter-chip:hover {
+    border-color: var(--text-muted);
+    color: var(--text-primary);
+}
+
+.filter-chip.active {
+    background: rgba(225, 86, 35, 0.09);
+    border-color: var(--primary-orange);
+    color: var(--primary-orange);
+}
+
+.filter-chip-divider {
+    width: 1px;
+    height: 18px;
+    background: var(--border-color, #eaecf0);
+    margin: 0 4px;
+}
+
+/* ── Visual Court Cards (Grid View) ── */
+.courts-grid-view {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.court-card-item {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+    position: relative;
+}
+
+.court-card-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08);
+    border-color: rgba(225, 86, 35, 0.35);
+}
+
+/* Card Cover Media Banner */
+.court-card-media {
+    height: 165px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+}
+
+.court-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.45s ease;
+}
+
+.court-card-item:hover .court-card-img {
+    transform: scale(1.05);
+}
+
+/* Pattern Graphic Placeholder for Courts Without Photos */
+.court-card-pattern {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: radial-gradient(circle at center, rgba(225, 86, 35, 0.22) 0%, rgba(15, 23, 42, 0.95) 75%);
+    color: rgba(255, 255, 255, 0.85);
+    position: relative;
+}
+
+.court-card-court-lines {
+    position: absolute;
+    inset: 16px;
+    border: 1.5px solid rgba(255, 255, 255, 0.22);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.court-card-court-net {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    border-top: 1.5px dashed rgba(255, 255, 255, 0.35);
+}
+
+.court-number-pill {
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #ffffff;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.court-number-pill i {
+    color: var(--primary-orange);
+    font-size: 1rem;
+}
+
+/* Floating Top Badges in Media */
+.media-badges-overlay {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 3;
+    pointer-events: none;
+}
+
+.glass-pill {
+    pointer-events: auto;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.glass-pill-indoor {
+    background: rgba(99, 102, 241, 0.85);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.glass-pill-outdoor {
+    background: rgba(16, 185, 129, 0.85);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.glass-pill-status {
+    background: rgba(15, 23, 42, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.glass-pill-status:hover {
+    background: rgba(15, 23, 42, 0.95);
+}
+
+.status-dot-pulse {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.status-dot-pulse.active {
+    background: #10b981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.4);
+    animation: pulseDot 2s infinite;
+}
+
+.status-dot-pulse.maintenance {
+    background: #f59e0b;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.4);
+}
+
+.status-dot-pulse.closed {
+    background: #ef4444;
+}
+
+@keyframes pulseDot {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* Card Body Details */
+.court-card-body {
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+}
+
+.court-card-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.court-card-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.3;
+}
+
+.court-facility-name {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 3px;
+}
+
+.court-facility-name i {
+    color: var(--primary-orange);
+    font-size: 0.85rem;
+}
+
+/* Pricing Tag Spotlight */
+.court-pricing-spotlight {
+    background: var(--input-bg, #f8fafc);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 12px;
+    padding: 10px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.pricing-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.pricing-amount {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.pricing-amount small {
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+/* Quick Status Switcher in Card */
+.court-status-toggle-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 4px;
+}
+
+.court-status-desc {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.btn-status-quick-toggle {
+    border: 1px solid transparent;
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.18s ease;
+}
+
+.btn-status-quick-toggle.set-maintenance {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #d97706;
+}
+
+.btn-status-quick-toggle.set-maintenance:hover {
+    background: rgba(245, 158, 11, 0.2);
+    color: #b45309;
+}
+
+.btn-status-quick-toggle.set-active {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: #059669;
+}
+
+.btn-status-quick-toggle.set-active:hover {
+    background: rgba(16, 185, 129, 0.2);
+    color: #047857;
+}
+
+/* Card Actions Footer */
+.court-card-footer {
+    padding: 14px 20px;
+    background: var(--card-bg, #ffffff);
+    border-top: 1px solid var(--border-color, #eaecf0);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-card-schedule {
+    flex: 1;
+    background: var(--input-bg, #f1f5f9);
+    border: 1px solid var(--border-color, #eaecf0);
+    color: var(--text-primary);
+    padding: 8px 12px;
+    border-radius: 9px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+}
+
+.btn-card-schedule:hover {
+    background: rgba(225, 86, 35, 0.1);
+    border-color: rgba(225, 86, 35, 0.3);
+    color: var(--primary-orange);
+}
+
+.btn-card-edit {
+    background: var(--input-bg, #f1f5f9);
+    border: 1px solid var(--border-color, #eaecf0);
+    color: var(--text-primary);
+    padding: 8px 14px;
+    border-radius: 9px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+}
+
+.btn-card-edit:hover {
+    background: var(--border-color);
+    color: var(--text-primary);
+}
+
+.btn-card-delete {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    padding: 8px 10px;
+    border-radius: 9px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.btn-card-delete:hover {
+    background: #ef4444;
+    color: #ffffff;
+    border-color: #ef4444;
+}
+
+/* ── Modern Table View ── */
+.courts-table-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.courts-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    text-align: left;
+}
+
+.courts-table th {
+    background: var(--input-bg, #f8fafc);
+    padding: 14px 16px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border-color, #eaecf0);
+    white-space: nowrap;
+}
+
+.courts-table td {
+    padding: 14px 16px;
+    font-size: 0.86rem;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color, #eaecf0);
+    vertical-align: middle;
+    transition: background 0.15s;
+}
+
+.courts-table tr:hover td {
+    background: rgba(225, 86, 35, 0.02);
+}
+
+.courts-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Table Court Identifier Cell */
+.court-table-ident {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.court-table-thumb {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    object-fit: cover;
+    border: 1px solid var(--border-color, #eaecf0);
+    flex-shrink: 0;
+}
+
+.court-table-number-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: rgba(225, 86, 35, 0.1);
+    color: var(--primary-orange);
+    border: 1px solid rgba(225, 86, 35, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.court-table-number-box i {
+    font-size: 1rem;
+    margin-bottom: 1px;
+}
+
+.court-table-name {
+    font-weight: 800;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.court-table-loc-sub {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 2px;
+}
+
+.court-table-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+/* ── Modals High Z-Index & Architecture ── */
+.modal-overlay {
+    display: none;
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: rgba(11, 14, 20, 0.72) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    z-index: 100000 !important;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.modal-overlay.open {
+    display: flex !important;
+}
+
+.modal-box {
+    background: var(--sidebar-bg, #ffffff);
+    border: 1px solid var(--card-border, #eaecf0);
+    border-radius: 18px;
+    padding: 26px;
+    width: 100%;
+    max-width: 540px;
+    max-height: 92vh;
+    overflow-y: auto;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    animation: modalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-sizing: border-box;
+}
+
+@keyframes modalSlideUp {
+    from { transform: translateY(18px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--border-color, #eaecf0);
+}
+
+.modal-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.modal-icon-badge {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(225, 86, 35, 0.12);
+    color: var(--primary-orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+}
+
+.modal-header-text h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.modal-header-text p {
+    margin: 3px 0 0 0;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 1.25rem;
+    padding: 6px;
+    border-radius: 8px;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    color: var(--text-primary);
+    background: var(--input-bg);
+}
+
+/* Modal Form Styles */
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 0.88rem;
+    font-family: inherit;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 0 3px rgba(225, 86, 35, 0.12);
+}
+
+.form-row-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+@media (max-width: 600px) {
+    .form-row-two-col {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Interactive Visual Court Type Selector */
+.court-type-radio-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.court-type-option {
+    cursor: pointer;
+    display: block;
+    margin: 0;
+}
+
+.court-type-option input {
+    display: none;
+}
+
+.court-type-option .option-card {
+    padding: 12px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border-color, #eaecf0);
+    background: var(--input-bg, #f8fafc);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.18s ease;
+}
+
+.court-type-option .option-card i {
+    font-size: 1.35rem;
+    color: var(--text-muted);
+    transition: color 0.18s ease;
+}
+
+.court-type-option .option-label {
+    display: flex;
+    flex-direction: column;
+}
+
+.court-type-option .option-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.court-type-option .option-desc {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.court-type-option input:checked + .option-card {
+    border-color: var(--primary-orange);
+    background: rgba(225, 86, 35, 0.08);
+}
+
+.court-type-option input:checked + .option-card i {
+    color: var(--primary-orange);
+}
+
+.court-type-option input:checked + .option-card .option-title {
+    color: var(--primary-orange);
+}
+
+/* Price Input Prefix */
+.currency-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.currency-prefix {
+    position: absolute;
+    left: 14px;
+    font-weight: 800;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    pointer-events: none;
+}
+
+.currency-input-wrap input {
+    padding-left: 32px !important;
+}
+
+/* Image Upload Widget */
+.img-upload-zone {
+    border: 2px dashed var(--border-color, #eaecf0);
+    border-radius: 12px;
+    padding: 18px;
+    text-align: center;
+    cursor: pointer;
+    background: var(--input-bg, #f8fafc);
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.img-upload-zone:hover {
+    border-color: var(--primary-orange);
+    background: rgba(225, 86, 35, 0.04);
+}
+
+.img-upload-zone i {
+    font-size: 2rem;
+    color: var(--primary-orange);
+    display: block;
+    margin-bottom: 6px;
+    opacity: 0.85;
+}
+
+.img-upload-zone span {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    display: block;
+}
+
+.img-upload-zone small {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.img-upload-zone input[type=file] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+}
+
+.img-preview-box {
+    margin-top: 10px;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    max-height: 130px;
+    display: none;
+    border: 1px solid var(--border-color, #eaecf0);
+}
+
+.img-preview-box img {
+    width: 100%;
+    height: 130px;
+    object-fit: cover;
+    display: block;
+}
+
+.btn-remove-preview {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(15, 23, 42, 0.78);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: background 0.15s;
+}
+
+.btn-remove-preview:hover {
+    background: #ef4444;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 22px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color, #eaecf0);
+}
+
+.btn-modal-cancel {
+    padding: 9px 18px;
+    border-radius: 9px;
+    background: transparent;
+    border: 1px solid var(--border-color, #eaecf0);
+    color: var(--text-secondary);
+    font-size: 0.86rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.btn-modal-cancel:hover {
+    background: var(--input-bg);
+    color: var(--text-primary);
+}
+
+.btn-modal-submit {
+    padding: 9px 24px;
+    border-radius: 9px;
+    background: var(--primary-orange);
+    border: none;
+    color: #ffffff;
+    font-size: 0.86rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    box-shadow: 0 4px 14px rgba(225, 86, 35, 0.35);
+    transition: all 0.2s ease;
+}
+
+.btn-modal-submit:hover {
+    background: #ea580c;
+    transform: translateY(-1px);
+}
+
+/* Empty State */
+.empty-courts-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 18px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+}
+
+.empty-courts-state i.empty-icon {
+    font-size: 3.5rem;
+    color: var(--primary-orange);
+    opacity: 0.7;
+    margin-bottom: 12px;
+    display: inline-block;
+}
+
+.empty-courts-state h3 {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 6px 0;
+}
+
+.empty-courts-state p {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    max-width: 360px;
+    margin: 0 auto 18px auto;
+    line-height: 1.45;
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-header">
-    <div>
-        <h1 class="page-title">Courts & Pricing</h1>
-        <p style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">{{ courts|length }} court{{ 's' if courts|length != 1 else '' }} total</p>
+<div class="courts-container">
+
+    <!-- ── Top Header ── -->
+    <div class="dashboard-header">
+        <div class="header-left">
+            <h1><i class="ph ph-squares-four" style="color:var(--primary-orange);"></i> Courts & Pricing</h1>
+            <p>Configure courts, hourly rates, and live operational status across your facilities.</p>
+        </div>
+        {% if facilities %}
+        <button type="button" class="btn-primary-add" onclick="openModal('addCourtModal')">
+            <i class="ph ph-plus-circle"></i> Add Court
+        </button>
+        {% endif %}
     </div>
-    {% if facilities %}
-    <button class="action-box navy" style="width:auto;padding:0.5rem 1.1rem;" onclick="openModal('addCourtModal')">
-        <i class="ph ph-plus-circle"></i> Add Court
-    </button>
+
+    {% if not facilities %}
+    <!-- ── Missing Facility State ── -->
+    <div class="empty-courts-state">
+        <i class="ph ph-buildings empty-icon"></i>
+        <h3>No Facilities Registered Yet</h3>
+        <p>You need to register at least one pickleball facility before you can add courts and set hourly rates.</p>
+        <a href="{{ url_for('owner.facilities') }}" class="btn-primary-add" style="text-decoration:none;display:inline-flex;">
+            <i class="ph ph-plus-circle"></i> Register Facility First
+        </a>
+    </div>
+    {% else %}
+
+    <!-- ── Executive KPI Summary Grid ── -->
+    <div class="stats-kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-icon-badge kpi-icon-orange">
+                <i class="ph ph-squares-four"></i>
+            </div>
+            <div class="kpi-details">
+                <span class="kpi-label">Total Courts</span>
+                <span class="kpi-value" id="kpiTotalCourts">{{ stats.total }}</span>
+                <span class="kpi-subtext">Across {{ stats.facilities_count }} facilit{{ 'y' if stats.facilities_count == 1 else 'ies' }}</span>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon-badge kpi-icon-green">
+                <i class="ph ph-check-circle"></i>
+            </div>
+            <div class="kpi-details">
+                <span class="kpi-label">Active & Bookable</span>
+                <span class="kpi-value">
+                    <span id="kpiActiveCourts">{{ stats.active }}</span>
+                    <span class="status-dot-pulse active" style="margin-left:4px;" title="Online for bookings"></span>
+                </span>
+                <span class="kpi-subtext">{{ stats.indoor }} Indoor · {{ stats.outdoor }} Outdoor</span>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon-badge kpi-icon-amber">
+                <i class="ph ph-wrench"></i>
+            </div>
+            <div class="kpi-details">
+                <span class="kpi-label">Under Maintenance</span>
+                <span class="kpi-value" id="kpiMaintCourts">{{ stats.maintenance }}</span>
+                <span class="kpi-subtext">Temporarily blocked from booking</span>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon-badge kpi-icon-blue">
+                <i class="ph ph-currency-circle-dollar"></i>
+            </div>
+            <div class="kpi-details">
+                <span class="kpi-label">Avg. Hourly Rate</span>
+                <span class="kpi-value">₱{{ '%.2f'|format(stats.avg_rate) }} <small>/ hr</small></span>
+                <span class="kpi-subtext">
+                    {% if stats.total > 0 %}
+                    Range: ₱{{ '%.0f'|format(stats.min_rate) }} – ₱{{ '%.0f'|format(stats.max_rate) }}
+                    {% else %}
+                    No rates configured
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Smart Control & Filter Hub ── -->
+    <div class="control-hub-card">
+        <div class="control-hub-main">
+            <div class="search-and-select-group">
+                <!-- Live Search Box -->
+                <div class="search-input-wrap">
+                    <i class="ph ph-magnifying-glass search-icon"></i>
+                    <input type="text" id="courtSearchInput" placeholder="Search court by name or facility..." oninput="onFilterChange()">
+                    <button type="button" class="search-clear-btn" id="searchClearBtn" onclick="clearSearch()" title="Clear search">
+                        <i class="ph ph-x"></i>
+                    </button>
+                </div>
+
+                <!-- Facility Filter Dropdown -->
+                <select class="facility-filter-select" id="facilityFilter" onchange="onFilterChange()">
+                    <option value="">All Facilities ({{ facilities|length }})</option>
+                    {% for f in facilities %}
+                    <option value="{{ f.id }}" {% if request.args.get('facility') == f.id %}selected{% endif %}>{{ f.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- View Switcher & Counter -->
+            <div class="view-and-count-group">
+                <span class="results-badge" id="resultsCountBadge">{{ courts|length }} court{{ 's' if courts|length != 1 else '' }}</span>
+                <div class="view-switcher-toggle" role="group" aria-label="View switcher">
+                    <button type="button" class="view-toggle-btn active" id="viewBtnGrid" onclick="switchView('grid')" title="Visual Cards View">
+                        <i class="ph ph-squares-four"></i> Cards
+                    </button>
+                    <button type="button" class="view-toggle-btn" id="viewBtnTable" onclick="switchView('table')" title="Data Table View">
+                        <i class="ph ph-table"></i> Table
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secondary Filter Chips -->
+        <div class="filter-pills-row">
+            <span class="filter-pill-label">Type:</span>
+            <button type="button" class="filter-chip active" data-filter-type="" onclick="setTypeFilter(this, '')">All</button>
+            <button type="button" class="filter-chip" data-filter-type="indoor" onclick="setTypeFilter(this, 'indoor')">
+                <i class="ph ph-house-line"></i> Indoor
+            </button>
+            <button type="button" class="filter-chip" data-filter-type="outdoor" onclick="setTypeFilter(this, 'outdoor')">
+                <i class="ph ph-sun"></i> Outdoor
+            </button>
+
+            <div class="filter-chip-divider"></div>
+
+            <span class="filter-pill-label">Status:</span>
+            <button type="button" class="filter-chip active" data-filter-status="" onclick="setStatusFilter(this, '')">All</button>
+            <button type="button" class="filter-chip" data-filter-status="active" onclick="setStatusFilter(this, 'active')">
+                <span class="status-dot-pulse active" style="width:6px;height:6px;"></span> Active
+            </button>
+            <button type="button" class="filter-chip" data-filter-status="maintenance" onclick="setStatusFilter(this, 'maintenance')">
+                <span class="status-dot-pulse maintenance" style="width:6px;height:6px;"></span> Maintenance
+            </button>
+        </div>
+    </div>
+
+    <!-- ── View 1: Visual Court Cards (Grid View) ── -->
+    <div class="courts-grid-view" id="courtCardsGrid">
+        {% if courts %}
+        {% for c in courts %}
+        <div class="court-card-item"
+             data-id="{{ c.id }}"
+             data-name="{{ c.name|lower }}"
+             data-facility-id="{{ c.facility_id }}"
+             data-facility-name="{{ (c.facilities.name if c.facilities else '')|lower }}"
+             data-type="{{ c.type }}"
+             data-status="{{ c.status }}"
+             data-rate="{{ c.hourly_rate }}">
+
+            <!-- Media Banner -->
+            <div class="court-card-media">
+                {% if c.image_url %}
+                <img src="{{ c.image_url }}" alt="{{ c.name }}" class="court-card-img" loading="lazy">
+                {% else %}
+                <div class="court-card-pattern">
+                    <div class="court-card-court-lines">
+                        <div class="court-card-court-net"></div>
+                    </div>
+                    <div class="court-number-pill">
+                        <i class="ph ph-tennis-ball"></i> COURT #{{ loop.index }}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Floating Badges -->
+                <div class="media-badges-overlay">
+                    <span class="glass-pill {{ 'glass-pill-indoor' if c.type == 'indoor' else 'glass-pill-outdoor' }}">
+                        <i class="ph {{ 'ph-house-line' if c.type == 'indoor' else 'ph-sun' }}"></i>
+                        {{ c.type|capitalize }}
+                    </span>
+
+                    <button type="button"
+                            class="glass-pill glass-pill-status"
+                            onclick="quickToggleStatus('{{ c.id }}', '{{ c.status }}')"
+                            title="Click to toggle between Active and Maintenance">
+                        <span class="status-dot-pulse {{ c.status }}"></span>
+                        <span class="status-text-label">{{ c.status|capitalize }}</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Card Body -->
+            <div class="court-card-body">
+                <div class="court-card-title-row">
+                    <div>
+                        <h3 class="court-card-title">{{ c.name }}</h3>
+                        <div class="court-facility-name" title="{{ c.facilities.name if c.facilities else 'No facility' }}">
+                            <i class="ph ph-map-pin"></i>
+                            <span>{{ c.facilities.name if c.facilities else 'Unassigned Facility' }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rate Spotlight -->
+                <div class="court-pricing-spotlight">
+                    <span class="pricing-label">Hourly Booking Rate</span>
+                    <span class="pricing-amount">₱{{ '%.2f'|format(c.hourly_rate|float) }} <small>/ hr</small></span>
+                </div>
+
+                <!-- Quick Status Switch Row -->
+                <div class="court-status-toggle-bar">
+                    <span class="court-status-desc">
+                        {% if c.status == 'active' %}
+                        <span style="color:#059669;"><i class="ph ph-check-circle"></i> Open for bookings</span>
+                        {% elif c.status == 'maintenance' %}
+                        <span style="color:#d97706;"><i class="ph ph-wrench"></i> Under maintenance</span>
+                        {% else %}
+                        <span style="color:#ef4444;"><i class="ph ph-prohibit"></i> Closed</span>
+                        {% endif %}
+                    </span>
+
+                    {% if c.status == 'active' %}
+                    <button type="button" class="btn-status-quick-toggle set-maintenance"
+                            onclick="quickToggleStatus('{{ c.id }}', 'active')"
+                            title="Put this court under maintenance">
+                        <i class="ph ph-wrench"></i> Set Maintenance
+                    </button>
+                    {% else %}
+                    <button type="button" class="btn-status-quick-toggle set-active"
+                            onclick="quickToggleStatus('{{ c.id }}', 'maintenance')"
+                            title="Re-open this court for bookings">
+                        <i class="ph ph-check-bold"></i> Set Active
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Card Action Footer -->
+            <div class="court-card-footer">
+                <a href="{{ url_for('owner.court_schedule') }}?facility={{ c.facility_id }}" class="btn-card-schedule" title="View bookings for this facility/court">
+                    <i class="ph ph-calendar-check"></i>
+                    <span>Schedule</span>
+                </a>
+
+                <button type="button" class="btn-card-edit"
+                        data-id="{{ c.id }}"
+                        data-facility="{{ c.facility_id }}"
+                        data-name="{{ c.name|e }}"
+                        data-type="{{ c.type }}"
+                        data-rate="{{ c.hourly_rate }}"
+                        data-status="{{ c.status }}"
+                        data-image="{{ c.image_url or '' }}"
+                        onclick="openEditCourtModal(this)"
+                        title="Edit court settings">
+                    <i class="ph ph-pencil-simple"></i>
+                    <span>Edit</span>
+                </button>
+
+                <button type="button" class="btn-card-delete"
+                        onclick="confirmDeleteCourt('{{ c.id }}', '{{ c.name|e }}')"
+                        title="Delete court">
+                    <i class="ph ph-trash"></i>
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- ── View 2: Modern Table View (List) ── -->
+    <div class="courts-table-card" id="courtTableView" style="display:none;">
+        <div class="table-responsive">
+            <table class="courts-table" id="courtsDataTable">
+                <thead>
+                    <tr>
+                        <th style="width: 54px;">#</th>
+                        <th>Court Name</th>
+                        <th>Facility</th>
+                        <th>Type</th>
+                        <th>Hourly Rate</th>
+                        <th>Status</th>
+                        <th style="text-align: right; padding-right: 20px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if courts %}
+                    {% for c in courts %}
+                    <tr class="court-table-row"
+                        data-id="{{ c.id }}"
+                        data-name="{{ c.name|lower }}"
+                        data-facility-id="{{ c.facility_id }}"
+                        data-facility-name="{{ (c.facilities.name if c.facilities else '')|lower }}"
+                        data-type="{{ c.type }}"
+                        data-status="{{ c.status }}"
+                        data-rate="{{ c.hourly_rate }}">
+                        <td>
+                            {% if c.image_url %}
+                            <img src="{{ c.image_url }}" alt="{{ c.name }}" class="court-table-thumb" loading="lazy">
+                            {% else %}
+                            <div class="court-table-number-box" title="Court {{ loop.index }}">
+                                <i class="ph ph-tennis-ball"></i>
+                                <span>#{{ loop.index }}</span>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="court-table-name">{{ c.name }}</div>
+                            <div class="court-table-loc-sub"><i class="ph ph-map-pin"></i> {{ c.facilities.name if c.facilities else 'Unassigned' }}</div>
+                        </td>
+                        <td>
+                            <span style="font-weight:600; color:var(--text-secondary);">
+                                {{ c.facilities.name if c.facilities else '—' }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="glass-pill {{ 'glass-pill-indoor' if c.type == 'indoor' else 'glass-pill-outdoor' }}" style="box-shadow:none;">
+                                <i class="ph {{ 'ph-house-line' if c.type == 'indoor' else 'ph-sun' }}"></i>
+                                {{ c.type|capitalize }}
+                            </span>
+                        </td>
+                        <td>
+                            <span style="font-weight:800; font-size:0.95rem; color:var(--text-primary);">
+                                ₱{{ '%.2f'|format(c.hourly_rate|float) }}
+                            </span>
+                            <span style="font-size:0.75rem; color:var(--text-muted);">/ hr</span>
+                        </td>
+                        <td>
+                            <button type="button"
+                                    class="btn-status-quick-toggle {{ 'set-maintenance' if c.status == 'active' else 'set-active' }}"
+                                    onclick="quickToggleStatus('{{ c.id }}', '{{ c.status }}')"
+                                    title="Click to toggle status">
+                                <span class="status-dot-pulse {{ c.status }}"></span>
+                                <span>{{ c.status|capitalize }}</span>
+                            </button>
+                        </td>
+                        <td style="text-align: right; padding-right: 20px;">
+                            <div class="court-table-actions" style="justify-content: flex-end;">
+                                <a href="{{ url_for('owner.court_schedule') }}?facility={{ c.facility_id }}" class="btn-card-schedule" style="padding:6px 12px; font-size:0.76rem;" title="View Schedule">
+                                    <i class="ph ph-calendar-check"></i> Schedule
+                                </a>
+
+                                <button type="button" class="btn-card-edit" style="padding:6px 10px;"
+                                        data-id="{{ c.id }}"
+                                        data-facility="{{ c.facility_id }}"
+                                        data-name="{{ c.name|e }}"
+                                        data-type="{{ c.type }}"
+                                        data-rate="{{ c.hourly_rate }}"
+                                        data-status="{{ c.status }}"
+                                        data-image="{{ c.image_url or '' }}"
+                                        onclick="openEditCourtModal(this)"
+                                        title="Edit Court">
+                                    <i class="ph ph-pencil-simple"></i>
+                                </button>
+
+                                <button type="button" class="btn-card-delete" style="padding:6px 9px;"
+                                        onclick="confirmDeleteCourt('{{ c.id }}', '{{ c.name|e }}')"
+                                        title="Delete Court">
+                                    <i class="ph ph-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── Filter No Results Fallback ── -->
+    <div id="noFilterResults" class="empty-courts-state" style="display:none; padding:40px 20px;">
+        <i class="ph ph-magnifying-glass empty-icon" style="font-size:2.6rem;"></i>
+        <h3>No Courts Match Your Filter</h3>
+        <p>Try clearing your search query or adjusting the facility, type, or status filter.</p>
+        <button type="button" class="btn-modal-cancel" onclick="resetAllFilters()" style="display:inline-flex; align-items:center; gap:6px;">
+            <i class="ph ph-arrow-counter-clockwise"></i> Reset Filters
+        </button>
+    </div>
+
+    {% if not courts %}
+    <!-- ── Empty Courts State ── -->
+    <div class="empty-courts-state">
+        <i class="ph ph-squares-four empty-icon"></i>
+        <h3>No Courts Configured Yet</h3>
+        <p>Add your first court to start defining hourly rates, court types, and accepting bookings.</p>
+        <button type="button" class="btn-primary-add" onclick="openModal('addCourtModal')" style="display:inline-flex;">
+            <i class="ph ph-plus-circle"></i> Add First Court
+        </button>
+    </div>
+    {% endif %}
+
     {% endif %}
 </div>
+{% endblock %}
 
-{% if not facilities %}
-<div class="glass-card" style="text-align:center;padding:50px 20px;">
-    <i class="ph ph-buildings" style="font-size:3rem;color:var(--text-muted);"></i>
-    <h3 style="margin:12px 0 8px;color:var(--text-primary);">No Facilities Yet</h3>
-    <p style="color:var(--text-muted);font-size:0.87rem;max-width:320px;margin:0 auto 18px;">You need to add a facility before you can create courts.</p>
-    <a href="{{ url_for('owner.facilities') }}" class="btn-sm btn-sm-primary" style="display:inline-flex;text-decoration:none;">
-        <i class="ph ph-plus-circle"></i> Add Facility First
-    </a>
-</div>
-{% else %}
-
-<div class="courts-toolbar">
-    <div class="left">
-        <select class="filter-select" id="facilityFilter" onchange="filterByFacility(this.value)">
-            <option value="">All Facilities</option>
-            {% for f in facilities %}
-            <option value="{{ f.id }}" {% if request.args.get('facility')==f.id %}selected{% endif %}>{{ f.name }}</option>
-            {% endfor %}
-        </select>
-    </div>
-</div>
-
-<div class="glass-card">
-    <div class="table-container">
-        <table class="data-grid" id="courtsTable">
-            <thead>
-                <tr>
-                    <th style="width:52px;"></th>
-                    <th>COURT NAME</th>
-                    <th>FACILITY</th>
-                    <th>TYPE</th>
-                    <th>HOURLY RATE</th>
-                    <th>STATUS</th>
-                    <th>ACTIONS</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if courts %}
-                {% for c in courts %}
-                <tr class="court-row" data-facility="{{ c.facility_id }}">
-                    <td>
-                        {% if c.image_url %}
-                        <img src="{{ c.image_url }}" alt="{{ c.name }}" class="court-thumb">
-                        {% else %}
-                        <div class="court-thumb-placeholder"><i class="ph ph-intersect"></i></div>
-                        {% endif %}
-                    </td>
-                    <td class="bold">{{ c.name }}</td>
-                    <td>{{ c.facilities.name if c.facilities else '—' }}</td>
-                    <td><span class="court-type-badge badge-{{ c.type }}">{{ c.type|capitalize }}</span></td>
-                    <td>₱{{ '%.2f'|format(c.hourly_rate|float) }} / hr</td>
-                    <td>
-                        <span class="status-pill {% if c.status == 'active' %}success{% elif c.status == 'maintenance' %}warning{% else %}danger{% endif %}">
-                            {{ c.status|capitalize }}
-                        </span>
-                    </td>
-                    <td style="display:flex;gap:8px;align-items:center;">
-                        <button class="btn-sm btn-sm-outline edit-court-btn"
-                                data-id="{{ c.id }}"
-                                data-facility="{{ c.facility_id }}"
-                                data-name="{{ c.name|e }}"
-                                data-type="{{ c.type }}"
-                                data-rate="{{ c.hourly_rate }}"
-                                data-status="{{ c.status }}"
-                                data-image="{{ c.image_url or '' }}"
-                            ><i class="ph ph-pencil-simple"></i> Edit</button>
-                        <!-- Quick maintenance toggle -->
-                        <form method="POST" action="{{ url_for('owner.toggle_court_status', court_id=c.id) }}" style="margin:0;">
-                            {% if c.status == 'active' %}
-                            <input type="hidden" name="status" value="maintenance">
-                            <button type="submit" class="btn-sm" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);" title="Set to Maintenance">
-                                <i class="ph ph-wrench"></i>
-                            </button>
-                            {% elif c.status == 'maintenance' %}
-                            <input type="hidden" name="status" value="active">
-                            <button type="submit" class="btn-sm" style="background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3);" title="Set Back to Active">
-                                <i class="ph ph-check-circle"></i>
-                            </button>
-                            {% endif %}
-                        </form>
-                        <form method="POST" action="{{ url_for('owner.delete_court', court_id=c.id) }}"
-                            onsubmit="return confirm('Delete court {{ c.name }}?');" style="margin:0;">
-                            <button type="submit" class="btn-sm btn-sm-danger"><i class="ph ph-trash"></i></button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-                {% else %}
-                <tr class="empty-row">
-                    <td colspan="7"><i class="ph ph-intersect" style="font-size:2rem;display:block;margin-bottom:8px;"></i>No courts yet. Add your first court above.</td>
-                </tr>
-                {% endif %}
-            </tbody>
-        </table>
-    </div>
-</div>
-{% endif %}
-
-<!-- ADD COURT MODAL -->
+{% block modals %}
+<!-- ═══════════════════════════════════════════════════════════
+     ADD COURT MODAL
+     ═══════════════════════════════════════════════════════════ -->
 <div class="modal-overlay" id="addCourtModal">
     <div class="modal-box">
-        <div class="modal-header">
-            <h3><i class="ph ph-intersect" style="color:var(--primary-orange);"></i> Add New Court</h3>
-            <button class="modal-close" onclick="closeModal('addCourtModal')"><i class="ph ph-x"></i></button>
+        <div class="modal-header-hero">
+            <div class="modal-header-left">
+                <div class="modal-icon-badge"><i class="ph ph-squares-four"></i></div>
+                <div class="modal-header-text">
+                    <h3>Add New Court</h3>
+                    <p>Create a court, define hourly rate, and set facility assignment.</p>
+                </div>
+            </div>
+            <button type="button" class="modal-close" onclick="closeModal('addCourtModal')" aria-label="Close dialog">
+                <i class="ph ph-x"></i>
+            </button>
         </div>
-        <form method="POST" action="{{ url_for('owner.add_court') }}" enctype="multipart/form-data">
+
+        <form method="POST" action="{{ url_for('owner.add_court') }}" enctype="multipart/form-data" id="addCourtForm">
+            <!-- Facility Selection -->
             <div class="form-group">
                 <label>Facility *</label>
-                <select name="facility_id" required>
+                <select name="facility_id" id="addCourtFacility" required>
                     <option value="">Select facility...</option>
-                    {% for f in facilities %}<option value="{{ f.id }}">{{ f.name }}</option>{% endfor %}
+                    {% for f in facilities %}
+                    <option value="{{ f.id }}" {% if request.args.get('facility') == f.id %}selected{% endif %}>{{ f.name }}</option>
+                    {% endfor %}
                 </select>
             </div>
-            <div class="form-group"><label>Court Name *</label><input type="text" name="name" placeholder="e.g. Court 1 (Championship)" required></div>
-            <div class="form-row">
+
+            <!-- Court Name -->
+            <div class="form-group">
+                <label>Court Name *</label>
+                <input type="text" name="name" id="addCourtName" placeholder="e.g. Center Court #1, VIP Court A" required>
+            </div>
+
+            <!-- Court Type (Visual Cards) -->
+            <div class="form-group">
+                <label>Court Environment Type</label>
+                <div class="court-type-radio-grid">
+                    <label class="court-type-option">
+                        <input type="radio" name="type" value="indoor" checked>
+                        <div class="option-card">
+                            <i class="ph ph-house-line"></i>
+                            <div class="option-label">
+                                <span class="option-title">Indoor</span>
+                                <span class="option-desc">Enclosed & weather-proof</span>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="court-type-option">
+                        <input type="radio" name="type" value="outdoor">
+                        <div class="option-card">
+                            <i class="ph ph-sun"></i>
+                            <div class="option-label">
+                                <span class="option-title">Outdoor</span>
+                                <span class="option-desc">Open-air or covered</span>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Pricing & Status Row -->
+            <div class="form-row-two-col">
                 <div class="form-group">
-                    <label>Type</label>
-                    <select name="type">
-                        <option value="indoor">Indoor</option>
-                        <option value="outdoor">Outdoor</option>
+                    <label>Hourly Rate (PHP) *</label>
+                    <div class="currency-input-wrap">
+                        <span class="currency-prefix">₱</span>
+                        <input type="number" name="hourly_rate" id="addCourtRate" step="0.01" min="0" placeholder="0.00" value="150.00" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Initial Operational Status</label>
+                    <select name="status" id="addCourtStatus">
+                        <option value="active">Active (Open for Bookings)</option>
+                        <option value="maintenance">Maintenance (Blocked)</option>
+                        <option value="closed">Closed</option>
                     </select>
                 </div>
-                <div class="form-group"><label>Hourly Rate (₱)</label><input type="number" name="hourly_rate" step="0.01" min="0" placeholder="0.00" value="0"></div>
             </div>
-            <div class="form-group">
-                <label>Status</label>
-                <select name="status">
-                    <option value="active">Active</option>
-                    <option value="maintenance">Maintenance</option>
-                    <option value="closed">Closed</option>
-                </select>
-            </div>
-            <!-- Court Image Upload -->
+
+            <!-- Court Photo Upload -->
             <div class="form-group">
                 <label><i class="ph ph-image"></i> Court Photo (Optional)</label>
-                <div class="img-upload-zone">
-                    <i class="ph ph-upload-simple"></i>
-                    <span>Click to upload a court photo<br><small style="font-size:0.7rem;">JPG, PNG, WEBP</small></span>
-                    <input type="file" name="court_image" accept="image/*" onchange="previewImg(this,'add-court-img-preview')">
+                <div class="img-upload-zone" id="addImgUploadZone">
+                    <i class="ph ph-cloud-arrow-up"></i>
+                    <span>Click or drag court photo here</span>
+                    <small>JPG, PNG, or WEBP up to 5MB</small>
+                    <input type="file" name="court_image" id="addCourtImgInput" accept="image/*" onchange="handleCourtPhotoUpload(this, 'add')">
                 </div>
-                <div class="img-preview" id="add-court-img-preview"><img src="" alt="Preview"></div>
+                <div class="img-preview-box" id="add-preview-box">
+                    <img id="add-preview-img" src="" alt="Court Preview">
+                    <button type="button" class="btn-remove-preview" onclick="clearCourtPhotoUpload('add')">
+                        <i class="ph ph-trash"></i> Remove
+                    </button>
+                </div>
             </div>
+
+            <!-- Modal Footer -->
             <div class="modal-footer">
-                <button type="button" class="btn-sm btn-sm-outline" onclick="closeModal('addCourtModal')">Cancel</button>
-                <button type="submit" class="btn-sm btn-sm-primary"><i class="ph ph-check"></i> Save Court</button>
+                <button type="button" class="btn-modal-cancel" onclick="closeModal('addCourtModal')">Cancel</button>
+                <button type="submit" class="btn-modal-submit">
+                    <i class="ph ph-check-bold"></i> Save Court
+                </button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- EDIT COURT MODAL -->
+<!-- ═══════════════════════════════════════════════════════════
+     EDIT COURT MODAL
+     ═══════════════════════════════════════════════════════════ -->
 <div class="modal-overlay" id="editCourtModal">
     <div class="modal-box">
-        <div class="modal-header">
-            <h3><i class="ph ph-pencil-simple" style="color:var(--primary-orange);"></i> Edit Court</h3>
-            <button class="modal-close" onclick="closeModal('editCourtModal')"><i class="ph ph-x"></i></button>
+        <div class="modal-header-hero">
+            <div class="modal-header-left">
+                <div class="modal-icon-badge"><i class="ph ph-pencil-simple"></i></div>
+                <div class="modal-header-text">
+                    <h3>Edit Court</h3>
+                    <p>Modify court name, pricing, type, or operational status.</p>
+                </div>
+            </div>
+            <button type="button" class="modal-close" onclick="closeModal('editCourtModal')" aria-label="Close dialog">
+                <i class="ph ph-x"></i>
+            </button>
         </div>
+
         <form method="POST" id="editCourtForm" action="" enctype="multipart/form-data">
+            <!-- Facility Selection -->
             <div class="form-group">
                 <label>Facility *</label>
                 <select name="facility_id" id="editCourtFacility" required>
-                    {% for f in facilities %}<option value="{{ f.id }}">{{ f.name }}</option>{% endfor %}
+                    {% for f in facilities %}
+                    <option value="{{ f.id }}">{{ f.name }}</option>
+                    {% endfor %}
                 </select>
             </div>
-            <div class="form-group"><label>Court Name *</label><input type="text" name="name" id="editCourtName" required></div>
-            <div class="form-row">
+
+            <!-- Court Name -->
+            <div class="form-group">
+                <label>Court Name *</label>
+                <input type="text" name="name" id="editCourtName" required>
+            </div>
+
+            <!-- Court Type (Visual Cards) -->
+            <div class="form-group">
+                <label>Court Environment Type</label>
+                <div class="court-type-radio-grid">
+                    <label class="court-type-option">
+                        <input type="radio" name="type" id="editTypeIndoor" value="indoor">
+                        <div class="option-card">
+                            <i class="ph ph-house-line"></i>
+                            <div class="option-label">
+                                <span class="option-title">Indoor</span>
+                                <span class="option-desc">Enclosed & weather-proof</span>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="court-type-option">
+                        <input type="radio" name="type" id="editTypeOutdoor" value="outdoor">
+                        <div class="option-card">
+                            <i class="ph ph-sun"></i>
+                            <div class="option-label">
+                                <span class="option-title">Outdoor</span>
+                                <span class="option-desc">Open-air or covered</span>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Pricing & Status Row -->
+            <div class="form-row-two-col">
                 <div class="form-group">
-                    <label>Type</label>
-                    <select name="type" id="editCourtType">
-                        <option value="indoor">Indoor</option>
-                        <option value="outdoor">Outdoor</option>
+                    <label>Hourly Rate (PHP) *</label>
+                    <div class="currency-input-wrap">
+                        <span class="currency-prefix">₱</span>
+                        <input type="number" name="hourly_rate" id="editCourtRate" step="0.01" min="0" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Operational Status</label>
+                    <select name="status" id="editCourtStatus">
+                        <option value="active">Active (Open for Bookings)</option>
+                        <option value="maintenance">Maintenance (Blocked)</option>
+                        <option value="closed">Closed</option>
                     </select>
                 </div>
-                <div class="form-group"><label>Hourly Rate (₱)</label><input type="number" name="hourly_rate" id="editCourtRate" step="0.01" min="0"></div>
             </div>
+
+            <!-- Court Photo Upload & Existing Preview -->
             <div class="form-group">
-                <label>Status</label>
-                <select name="status" id="editCourtStatus">
-                    <option value="active">Active</option>
-                    <option value="maintenance">Maintenance</option>
-                    <option value="closed">Closed</option>
-                </select>
-            </div>
-            <!-- Court Image Upload -->
-            <div class="form-group">
-                <label><i class="ph ph-image"></i> Change Court Photo (Optional)</label>
-                <div id="edit-court-existing-preview" class="img-preview-existing" style="display:none;">
-                    <img id="edit-court-current-img" src="" alt="Current photo">
-                    <small>Current photo — upload a new one to replace it</small>
+                <label><i class="ph ph-image"></i> Court Photo</label>
+                <div id="edit-existing-photo-box" class="img-preview-box" style="display:none; margin-bottom:10px;">
+                    <img id="edit-current-img" src="" alt="Current court photo">
+                    <span style="position:absolute; bottom:6px; left:8px; background:rgba(0,0,0,0.65); color:#fff; font-size:0.68rem; padding:2px 8px; border-radius:4px;">Current Photo</span>
                 </div>
-                <div class="img-upload-zone" style="margin-top:8px;">
-                    <i class="ph ph-upload-simple"></i>
-                    <span>Click to upload a new photo<br><small style="font-size:0.7rem;">JPG, PNG, WEBP</small></span>
-                    <input type="file" name="court_image" accept="image/*" onchange="previewImg(this,'edit-court-img-preview')">
+
+                <div class="img-upload-zone" id="editImgUploadZone">
+                    <i class="ph ph-cloud-arrow-up"></i>
+                    <span>Upload a new photo to replace current</span>
+                    <small>JPG, PNG, or WEBP up to 5MB</small>
+                    <input type="file" name="court_image" id="editCourtImgInput" accept="image/*" onchange="handleCourtPhotoUpload(this, 'edit')">
                 </div>
-                <div class="img-preview" id="edit-court-img-preview"><img src="" alt="Preview"></div>
+                <div class="img-preview-box" id="edit-preview-box">
+                    <img id="edit-preview-img" src="" alt="New Preview">
+                    <button type="button" class="btn-remove-preview" onclick="clearCourtPhotoUpload('edit')">
+                        <i class="ph ph-trash"></i> Cancel Replacement
+                    </button>
+                </div>
             </div>
+
+            <!-- Modal Footer -->
             <div class="modal-footer">
-                <button type="button" class="btn-sm btn-sm-outline" onclick="closeModal('editCourtModal')">Cancel</button>
-                <button type="submit" class="btn-sm btn-sm-primary"><i class="ph ph-check"></i> Update Court</button>
+                <button type="button" class="btn-modal-cancel" onclick="closeModal('editCourtModal')">Cancel</button>
+                <button type="submit" class="btn-modal-submit">
+                    <i class="ph ph-check-bold"></i> Update Court
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     DELETE COURT CONFIRM MODAL
+     ═══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="deleteCourtModal">
+    <div class="modal-box" style="max-width: 440px;">
+        <div class="modal-header-hero" style="border-bottom:none; margin-bottom:6px;">
+            <div class="modal-header-left">
+                <div class="modal-icon-badge" style="background:rgba(239,68,68,0.12); color:#ef4444;">
+                    <i class="ph ph-warning-octagon"></i>
+                </div>
+                <div class="modal-header-text">
+                    <h3 style="color:#ef4444;">Delete Court</h3>
+                    <p>Permanently remove court record</p>
+                </div>
+            </div>
+            <button type="button" class="modal-close" onclick="closeModal('deleteCourtModal')"><i class="ph ph-x"></i></button>
+        </div>
+
+        <form method="POST" id="deleteCourtForm" action="">
+            <p style="font-size:0.86rem; color:var(--text-secondary); line-height:1.5; margin:10px 0 20px 0;">
+                Are you sure you want to delete <strong id="deleteCourtNameDisplay" style="color:var(--text-primary);">this court</strong>? This will permanently remove it from your facility and make it unavailable for future reservations.
+            </p>
+
+            <div class="modal-footer" style="padding-top:0; border-top:none;">
+                <button type="button" class="btn-modal-cancel" onclick="closeModal('deleteCourtModal')">Cancel</button>
+                <button type="submit" class="btn-modal-submit" style="background:#ef4444; box-shadow:0 4px 14px rgba(239,68,68,0.35);">
+                    <i class="ph ph-trash"></i> Delete Court
+                </button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
-    function previewImg(input, previewId) {
-        const preview = document.getElementById(previewId);
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = e => {
-                preview.querySelector('img').src = e.target.result;
-                preview.style.display = 'block';
-            };
-            reader.readAsDataURL(input.files[0]);
+/* ── State & Filtering Logic ── */
+let currentViewMode = localStorage.getItem('courtViewMode') || 'grid';
+let activeTypeFilter = '';
+let activeStatusFilter = '';
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Restore preferred view mode
+    switchView(currentViewMode, false);
+
+    // Teleport modals to document.body
+    document.querySelectorAll('.modal-overlay').forEach(m => {
+        if (m.parentElement !== document.body) {
+            document.body.appendChild(m);
         }
-    }
-
-    function openModal(id) { document.getElementById(id).classList.add('open'); }
-    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-    document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); }));
-
-    // Open edit modal via data-* attributes (avoids JS quote conflicts with URLs)
-    document.addEventListener('click', function(e) {
-        const btn = e.target.closest('.edit-court-btn');
-        if (!btn) return;
-        const d = btn.dataset;
-        document.getElementById('editCourtForm').action = `/owner/courts/${d.id}/edit`;
-        document.getElementById('editCourtFacility').value = d.facility;
-        document.getElementById('editCourtName').value = d.name;
-        document.getElementById('editCourtType').value = d.type;
-        document.getElementById('editCourtRate').value = d.rate;
-        document.getElementById('editCourtStatus').value = d.status;
-
-        // Show existing image if available
-        const existingPreview = document.getElementById('edit-court-existing-preview');
-        const currentImg = document.getElementById('edit-court-current-img');
-        if (d.image) {
-            currentImg.src = d.image;
-            existingPreview.style.display = 'block';
-        } else {
-            existingPreview.style.display = 'none';
-        }
-        // Reset upload preview
-        document.getElementById('edit-court-img-preview').style.display = 'none';
-        openModal('editCourtModal');
     });
 
-    function filterByFacility(facilityId) {
-        document.querySelectorAll('.court-row').forEach(row => {
-            row.style.display = (!facilityId || row.dataset.facility === facilityId) ? '' : 'none';
+    // Ensure toast container is at the very end of body
+    const tc = document.getElementById('toast-container');
+    if (tc) document.body.appendChild(tc);
+
+    // Initial filter pass
+    onFilterChange();
+});
+
+function switchView(mode, save = true) {
+    currentViewMode = mode;
+    if (save) localStorage.setItem('courtViewMode', mode);
+
+    const grid = document.getElementById('courtCardsGrid');
+    const table = document.getElementById('courtTableView');
+    const btnGrid = document.getElementById('viewBtnGrid');
+    const btnTable = document.getElementById('viewBtnTable');
+
+    if (mode === 'grid') {
+        if (grid) grid.style.display = 'grid';
+        if (table) table.style.display = 'none';
+        btnGrid?.classList.add('active');
+        btnTable?.classList.remove('active');
+    } else {
+        if (grid) grid.style.display = 'none';
+        if (table) table.style.display = 'block';
+        btnGrid?.classList.remove('active');
+        btnTable?.classList.add('active');
+    }
+}
+
+function setTypeFilter(btn, type) {
+    document.querySelectorAll('[data-filter-type]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeTypeFilter = type;
+    onFilterChange();
+}
+
+function setStatusFilter(btn, status) {
+    document.querySelectorAll('[data-filter-status]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeStatusFilter = status;
+    onFilterChange();
+}
+
+function clearSearch() {
+    const searchInput = document.getElementById('courtSearchInput');
+    if (searchInput) {
+        searchInput.value = '';
+        document.getElementById('searchClearBtn').style.display = 'none';
+        onFilterChange();
+    }
+}
+
+function resetAllFilters() {
+    const searchInput = document.getElementById('courtSearchInput');
+    const facFilter = document.getElementById('facilityFilter');
+    if (searchInput) searchInput.value = '';
+    if (facFilter) facFilter.value = '';
+    document.getElementById('searchClearBtn').style.display = 'none';
+
+    document.querySelectorAll('[data-filter-type]').forEach(b => {
+        b.classList.toggle('active', b.dataset.filterType === '');
+    });
+    document.querySelectorAll('[data-filter-status]').forEach(b => {
+        b.classList.toggle('active', b.dataset.filterStatus === '');
+    });
+
+    activeTypeFilter = '';
+    activeStatusFilter = '';
+    onFilterChange();
+}
+
+function onFilterChange() {
+    const searchInput = document.getElementById('courtSearchInput');
+    const query = (searchInput ? searchInput.value : '').trim().toLowerCase();
+    const facilityId = (document.getElementById('facilityFilter')?.value || '').trim();
+    const clearBtn = document.getElementById('searchClearBtn');
+
+    if (clearBtn) clearBtn.style.display = query ? 'block' : 'none';
+
+    let matchCount = 0;
+
+    // Filter Cards
+    const cardItems = document.querySelectorAll('.court-card-item');
+    cardItems.forEach(card => {
+        const cName = card.dataset.name || '';
+        const cFacId = card.dataset.facilityId || '';
+        const cFacName = card.dataset.facilityName || '';
+        const cType = card.dataset.type || '';
+        const cStatus = card.dataset.status || '';
+
+        const matchesQuery = !query || cName.includes(query) || cFacName.includes(query);
+        const matchesFacility = !facilityId || cFacId === facilityId;
+        const matchesType = !activeTypeFilter || cType === activeTypeFilter;
+        const matchesStatus = !activeStatusFilter || cStatus === activeStatusFilter;
+
+        const isVisible = matchesQuery && matchesFacility && matchesType && matchesStatus;
+        card.style.display = isVisible ? 'flex' : 'none';
+        if (isVisible) matchCount++;
+    });
+
+    // Filter Table Rows
+    const tableRows = document.querySelectorAll('.court-table-row');
+    tableRows.forEach(row => {
+        const cName = row.dataset.name || '';
+        const cFacId = row.dataset.facilityId || '';
+        const cFacName = row.dataset.facilityName || '';
+        const cType = row.dataset.type || '';
+        const cStatus = row.dataset.status || '';
+
+        const matchesQuery = !query || cName.includes(query) || cFacName.includes(query);
+        const matchesFacility = !facilityId || cFacId === facilityId;
+        const matchesType = !activeTypeFilter || cType === activeTypeFilter;
+        const matchesStatus = !activeStatusFilter || cStatus === activeStatusFilter;
+
+        row.style.display = (matchesQuery && matchesFacility && matchesType && matchesStatus) ? '' : 'none';
+    });
+
+    // Update Counter Badge
+    const badge = document.getElementById('resultsCountBadge');
+    if (badge) {
+        badge.textContent = `${matchCount} court${matchCount === 1 ? '' : 's'}`;
+    }
+
+    // Toggle Empty Filter Fallback
+    const noResults = document.getElementById('noFilterResults');
+    if (noResults) {
+        noResults.style.display = (matchCount === 0 && cardItems.length > 0) ? 'block' : 'none';
+    }
+}
+
+/* ── Live AJAX Quick Status Toggle ── */
+async function quickToggleStatus(courtId, currentStatus) {
+    const newStatus = (currentStatus === 'active') ? 'maintenance' : 'active';
+    
+    // Optimistic UI feedback
+    if (typeof showToast === 'function') {
+        showToast('Updating Court...', `Changing status to ${newStatus.title ? newStatus.title() : newStatus}...`, 'info');
+    }
+
+    try {
+        const res = await fetch(`/owner/courts/${courtId}/status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ status: newStatus })
         });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            if (typeof showToast === 'function') {
+                showToast('Status Updated', data.message || `Court is now ${newStatus}.`, 'success');
+            }
+            // Update Card Elements
+            document.querySelectorAll(`.court-card-item[data-id="${courtId}"]`).forEach(card => {
+                card.dataset.status = newStatus;
+                const dot = card.querySelector('.status-dot-pulse');
+                if (dot) dot.className = `status-dot-pulse ${newStatus}`;
+                const label = card.querySelector('.status-text-label');
+                if (label) label.textContent = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
+
+                const desc = card.querySelector('.court-status-desc');
+                if (desc) {
+                    desc.innerHTML = (newStatus === 'active') ?
+                        '<span style="color:#059669;"><i class="ph ph-check-circle"></i> Open for bookings</span>' :
+                        '<span style="color:#d97706;"><i class="ph ph-wrench"></i> Under maintenance</span>';
+                }
+
+                const toggleBtn = card.querySelector('.btn-status-quick-toggle');
+                if (toggleBtn) {
+                    if (newStatus === 'active') {
+                        toggleBtn.className = 'btn-status-quick-toggle set-maintenance';
+                        toggleBtn.setAttribute('onclick', `quickToggleStatus('${courtId}', 'active')`);
+                        toggleBtn.innerHTML = '<i class="ph ph-wrench"></i> Set Maintenance';
+                    } else {
+                        toggleBtn.className = 'btn-status-quick-toggle set-active';
+                        toggleBtn.setAttribute('onclick', `quickToggleStatus('${courtId}', 'maintenance')`);
+                        toggleBtn.innerHTML = '<i class="ph ph-check-bold"></i> Set Active';
+                    }
+                }
+            });
+
+            // Update Table Row Elements
+            document.querySelectorAll(`.court-table-row[data-id="${courtId}"]`).forEach(row => {
+                row.dataset.status = newStatus;
+                const toggleBtn = row.querySelector('.btn-status-quick-toggle');
+                if (toggleBtn) {
+                    toggleBtn.className = `btn-status-quick-toggle ${newStatus === 'active' ? 'set-maintenance' : 'set-active'}`;
+                    toggleBtn.setAttribute('onclick', `quickToggleStatus('${courtId}', '${newStatus}')`);
+                    toggleBtn.innerHTML = `<span class="status-dot-pulse ${newStatus}"></span> <span>${newStatus.charAt(0).toUpperCase() + newStatus.slice(1)}</span>`;
+                }
+            });
+
+            // Recompute KPI numbers in page
+            recalculateKpiCounts();
+            onFilterChange();
+        } else {
+            throw new Error(data.message || 'Server returned an error');
+        }
+    } catch (err) {
+        console.error('Quick status toggle error:', err);
+        if (typeof showToast === 'function') {
+            showToast('Update Failed', 'Could not update court status. Please try again.', 'error');
+        }
     }
-    // Apply filter from URL param on load
-    const urlFacility = new URLSearchParams(window.location.search).get('facility');
-    if (urlFacility) {
-        document.getElementById('facilityFilter').value = urlFacility;
-        filterByFacility(urlFacility);
+}
+
+function recalculateKpiCounts() {
+    const allCards = document.querySelectorAll('.court-card-item');
+    let active = 0, maint = 0;
+    allCards.forEach(c => {
+        if (c.dataset.status === 'active') active++;
+        else if (c.dataset.status === 'maintenance') maint++;
+    });
+    const kpiActive = document.getElementById('kpiActiveCourts');
+    const kpiMaint = document.getElementById('kpiMaintCourts');
+    if (kpiActive) kpiActive.textContent = active;
+    if (kpiMaint) kpiMaint.textContent = maint;
+}
+
+/* ── Modal Operations ── */
+function openModal(id) {
+    const modal = document.getElementById(id);
+    if (!modal) return;
+    if (modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
     }
+    const tc = document.getElementById('toast-container');
+    if (tc) document.body.appendChild(tc);
+
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+    const modal = document.getElementById(id);
+    if (modal) modal.classList.remove('open');
+    if (!document.querySelector('.modal-overlay.open')) {
+        document.body.style.overflow = '';
+    }
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', e => {
+        if (e.target === o) closeModal(o.id);
+    });
+});
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.open').forEach(m => closeModal(m.id));
+    }
+});
+
+/* ── Edit Modal Pre-filling ── */
+function openEditCourtModal(btn) {
+    const d = btn.dataset;
+    document.getElementById('editCourtForm').action = `/owner/courts/${d.id}/edit`;
+    document.getElementById('editCourtFacility').value = d.facility;
+    document.getElementById('editCourtName').value = d.name;
+    document.getElementById('editCourtRate').value = d.rate;
+    document.getElementById('editCourtStatus').value = d.status;
+
+    // Set radio type
+    if (d.type === 'outdoor') {
+        const r = document.getElementById('editTypeOutdoor');
+        if (r) r.checked = true;
+    } else {
+        const r = document.getElementById('editTypeIndoor');
+        if (r) r.checked = true;
+    }
+
+    // Photo preview
+    const existingPhotoBox = document.getElementById('edit-existing-photo-box');
+    const currentImg = document.getElementById('edit-current-img');
+    if (d.image) {
+        currentImg.src = d.image;
+        existingPhotoBox.style.display = 'block';
+    } else {
+        existingPhotoBox.style.display = 'none';
+    }
+
+    clearCourtPhotoUpload('edit');
+    openModal('editCourtModal');
+}
+
+/* ── Delete Confirmation Modal ── */
+function confirmDeleteCourt(courtId, courtName) {
+    document.getElementById('deleteCourtForm').action = `/owner/courts/${courtId}/delete`;
+    document.getElementById('deleteCourtNameDisplay').textContent = `"${courtName}"`;
+    openModal('deleteCourtModal');
+}
+
+/* ── Court Photo Upload Handlers ── */
+function handleCourtPhotoUpload(input, mode) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+        if (typeof showToast === 'function') {
+            showToast('File Too Large', 'Image file size exceeds 5MB limit.', 'error');
+        } else {
+            alert('Image file size exceeds 5MB limit.');
+        }
+        input.value = '';
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = e => {
+        const previewBox = document.getElementById(`${mode}-preview-box`);
+        const previewImg = document.getElementById(`${mode}-preview-img`);
+        if (previewBox && previewImg) {
+            previewImg.src = e.target.result;
+            previewBox.style.display = 'block';
+        }
+        const uploadZone = document.getElementById(`${mode}ImgUploadZone`);
+        if (uploadZone) uploadZone.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+}
+
+function clearCourtPhotoUpload(mode) {
+    const input = document.getElementById(mode === 'add' ? 'addCourtImgInput' : 'editCourtImgInput');
+    if (input) input.value = '';
+
+    const previewBox = document.getElementById(`${mode}-preview-box`);
+    if (previewBox) previewBox.style.display = 'none';
+
+    const uploadZone = document.getElementById(`${mode}ImgUploadZone`);
+    if (uploadZone) uploadZone.style.display = 'block';
+}
 </script>
 {% endblock %}

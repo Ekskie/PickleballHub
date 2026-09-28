@@ -138,7 +138,21 @@
                     <td>{{ f.location or '—' }}</td>
                     <td>{{ f.profiles.first_name }} {{ f.profiles.last_name if f.profiles else '' }}</td>
                     <td>
-                        {% if f.kyc_document_url %}
+                        {% set kyc_data = f.kyc_document_url | parse_kyc %}
+                        {% if kyc_data.tct_url or kyc_data.permit_url %}
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                {% if kyc_data.tct_url %}
+                                <a href="{{ kyc_data.tct_url }}" target="_blank" class="status-pill info" style="text-decoration: none; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
+                                    <i class="ph ph-certificate"></i> TCT / OCT
+                                </a>
+                                {% endif %}
+                                {% if kyc_data.permit_url %}
+                                <a href="{{ kyc_data.permit_url }}" target="_blank" class="status-pill info" style="text-decoration: none; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; background: rgba(59, 130, 246, 0.15); color: #93c5fd; border-color: rgba(59, 130, 246, 0.3);">
+                                    <i class="ph ph-file-text"></i> Business Permit
+                                </a>
+                                {% endif %}
+                            </div>
+                        {% elif f.kyc_document_url %}
                         <a href="{{ f.kyc_document_url }}" target="_blank" class="status-pill info" style="text-decoration: none; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 4px;">
                             <i class="ph ph-file-text"></i> View Document
                         </a>

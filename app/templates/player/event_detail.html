@@ -1,415 +1,1028 @@
 {% extends "player/base_player.html" %}
-{% block title %}{{ ev.title }}{% endblock %}
+
+{% block title %}{{ ev.title }} — PickleballHub{% endblock %}
 
 {% block extra_head %}
 <style>
-    .event-detail-wrapper {
-        max-width: 760px;
+    /* ==========================================================================
+       EVENT DETAIL — SPORTS PLATFORM 2.0 (LIGHT & DARK DUAL THEME)
+       ========================================================================== */
+    .event-detail-page {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        width: 100%;
+        max-width: 1300px;
         margin: 0 auto;
+        padding-bottom: 140px; /* Clearance for floating cart widget */
+    }
+
+    /* ── Breadcrumb Bar ── */
+    .event-detail-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--sports-text-muted, #64748b);
+        flex-wrap: wrap;
+    }
+
+    .event-detail-breadcrumb a {
+        color: var(--sports-text-muted, #64748b);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: color 0.18s ease;
+    }
+
+    .event-detail-breadcrumb a:hover {
+        color: var(--primary-orange, #ff5722);
+    }
+
+    .event-detail-breadcrumb-sep {
+        font-size: 0.75rem;
+        opacity: 0.5;
+    }
+
+    .event-detail-breadcrumb-current {
+        color: var(--sports-text-main, #0f172a);
+        font-weight: 700;
+        max-width: 320px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* ── 2-Column Athletic Layout ── */
+    .event-layout-grid {
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 28px;
+        align-items: start;
+    }
+
+    /* ── Left Column (Main Details) ── */
+    .event-main-col {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    /* Hero Media Banner Card */
+    .event-hero-card {
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(16, 24, 40, 0.05);
+        position: relative;
+    }
+
+    .event-hero-banner {
+        height: 280px;
+        position: relative;
+        background-color: #0f172a;
+        background-size: cover;
+        background-position: center;
+        display: flex;
+        align-items: flex-end;
+        padding: 24px;
+        overflow: hidden;
+    }
+
+    .event-hero-scrim {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.4) 60%, rgba(15, 23, 42, 0.2) 100%);
+        z-index: 1;
+    }
+
+    .event-hero-top-badges {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        right: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 2;
+    }
+
+    .event-type-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.74rem;
+        font-weight: 800;
+        letter-spacing: 0.6px;
+        text-transform: uppercase;
+        padding: 5px 12px;
+        border-radius: 9999px;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+    }
+
+    .event-type-badge.badge-tournament {
+        color: #ffffff;
+        background: linear-gradient(135deg, var(--primary-orange, #ff5722), #ea580c);
+        box-shadow: 0 2px 8px rgba(225, 86, 35, 0.35);
+    }
+
+    .event-type-badge.badge-social {
+        color: #ffffff;
+        background: linear-gradient(135deg, #0284c7, #0369a1);
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+    }
+
+    .event-type-badge.badge-training {
+        color: #ffffff;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        box-shadow: 0 2px 8px rgba(124, 58, 237, 0.35);
+    }
+
+    .event-type-badge.badge-league {
+        color: #ffffff;
+        background: linear-gradient(135deg, #d97706, #b45309);
+        box-shadow: 0 2px 8px rgba(217, 119, 6, 0.35);
+    }
+
+    .event-status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 12px;
+        border-radius: 9999px;
+        font-size: 0.74rem;
+        font-weight: 800;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+    }
+
+    .event-status-pill.open {
+        background: rgba(16, 185, 129, 0.95);
+        color: #ffffff;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    }
+
+    .event-status-pill.full {
+        background: rgba(239, 68, 68, 0.95);
+        color: #ffffff;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    }
+
+    .event-status-pill.soon {
+        background: rgba(15, 23, 42, 0.85);
+        color: #ffffff;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .event-hero-banner-content {
+        position: relative;
+        z-index: 2;
+        width: 100%;
+    }
+
+    .event-hero-prize-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 800;
+        background: rgba(245, 158, 11, 0.95);
+        color: #ffffff;
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+        margin-bottom: 10px;
+    }
+
+    .event-hero-title {
+        font-size: 1.85rem;
+        font-weight: 900;
+        color: #ffffff;
+        line-height: 1.25;
+        letter-spacing: -0.02em;
+        margin: 0;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .event-hero-body {
+        padding: 24px;
         display: flex;
         flex-direction: column;
         gap: 20px;
     }
 
-    .event-detail-hero {
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
-        border-radius: 16px;
-        box-shadow: var(--shadow-card);
-        overflow: hidden;
-    }
-    
-    .event-detail-banner {
-        height: 250px;
-        background-size: cover;
-        background-position: center;
-        position: relative;
-    }
-    
-    .event-detail-banner::after {
-        content: '';
-        position: absolute;
-        bottom: 0; left: 0; right: 0;
-        height: 50%;
-        background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%);
+    /* ── Quick Specs Strip (4 Tiles) ── */
+    .event-specs-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
     }
 
-    .event-detail-content {
-        padding: 28px;
-    }
-
-    .event-detail-top {
+    .event-spec-card {
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        border-radius: 14px;
+        padding: 14px 16px;
         display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 16px;
-        flex-wrap: wrap;
-        gap: 10px;
+        flex-direction: column;
+        gap: 4px;
+        box-shadow: 0 1px 3px rgba(16, 24, 40, 0.03);
     }
 
-    .event-type-badge {
-        font-size: 0.7rem;
+    .event-spec-label {
+        font-size: 0.72rem;
         font-weight: 700;
-        letter-spacing: 0.5px;
         text-transform: uppercase;
-        padding: 4px 10px;
-        border-radius: 4px;
+        letter-spacing: 0.4px;
+        color: var(--sports-text-muted, #64748b);
+        display: flex;
+        align-items: center;
+        gap: 6px;
     }
 
-    .badge-tournament {
-        color: var(--primary-orange);
-        background: var(--primary-orange-light);
+    .event-spec-label i {
+        color: var(--primary-orange, #ff5722);
+        font-size: 0.95rem;
     }
 
-    .badge-social {
-        color: #0369a1;
-        background: #e0f2fe;
-    }
-
-    .badge-training {
-        color: #7c3aed;
-        background: #ede9fe;
-    }
-
-    .badge-league {
-        color: #b45309;
-        background: #fef3c7;
-    }
-
-    html.dark-mode .badge-social {
-        background: rgba(3, 105, 161, 0.15);
-    }
-
-    html.dark-mode .badge-training {
-        background: rgba(124, 58, 237, 0.15);
-    }
-
-    html.dark-mode .badge-league {
-        background: rgba(180, 83, 9, 0.15);
-    }
-
-    .event-detail-title {
-        font-size: 1.5rem;
+    .event-spec-val {
+        font-size: 0.94rem;
         font-weight: 800;
-        color: var(--text-primary);
+        color: var(--sports-text-main, #0f172a);
         line-height: 1.3;
-        margin-bottom: 14px;
     }
 
-    .event-detail-meta {
+    /* ── Tournament Bracket Banner Callout ── */
+    .tournament-bracket-callout {
+        background: linear-gradient(135deg, #0f172a, #1e293b);
+        border: 1.5px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 20px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        color: #ffffff;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.15);
+    }
+
+    .tournament-bracket-info {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .bracket-icon-box {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+    }
+
+    .bracket-callout-title {
+        font-size: 1.05rem;
+        font-weight: 800;
+        margin: 0 0 2px 0;
+    }
+
+    .bracket-callout-sub {
+        font-size: 0.82rem;
+        color: #94a3b8;
+        margin: 0;
+    }
+
+    .btn-view-bracket-callout {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        border-radius: 12px;
+        background: #10b981;
+        color: #ffffff;
+        font-size: 0.84rem;
+        font-weight: 800;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .btn-view-bracket-callout:hover {
+        background: #059669;
+        transform: translateY(-2px);
+        color: #ffffff;
+    }
+
+    /* ── Content Card (About & Rules) ── */
+    .event-info-card {
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(16, 24, 40, 0.04);
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .event-card-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-bottom: 1px solid var(--sports-border, #eaecf0);
+        padding-bottom: 12px;
+    }
+
+    .event-card-header i {
+        font-size: 1.25rem;
+        color: var(--primary-orange, #ff5722);
+    }
+
+    .event-card-header h2 {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--sports-text-main, #0f172a);
+        margin: 0;
+    }
+
+    .event-desc-text {
+        font-size: 0.94rem;
+        color: var(--sports-text-muted, #475467);
+        line-height: 1.7;
+        margin: 0;
+    }
+
+    /* ── Facility & Organizer Row ── */
+    .venue-host-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .venue-host-box {
+        background: var(--input-bg, #f8fafc);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        border-radius: 14px;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .venue-host-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--primary-orange, #ff5722), #ea580c);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    .venue-host-avatar.venue {
+        background: linear-gradient(135deg, #0284c7, #0369a1);
+    }
+
+    .venue-host-text {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .venue-host-role {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--sports-text-muted, #64748b);
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .venue-host-name {
+        font-size: 0.94rem;
+        font-weight: 800;
+        color: var(--sports-text-main, #0f172a);
+        margin-top: 2px;
+    }
+
+    /* ── Right Column (Sticky Registration Pass Panel) ── */
+    .event-sticky-col {
+        position: sticky;
+        top: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .event-registration-card {
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        border-radius: 20px;
+        padding: 24px;
+        box-shadow: 0 4px 20px rgba(16, 24, 40, 0.06);
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .event-registration-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-orange, #ff5722), #f59e0b);
+    }
+
+    .reg-price-box {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--sports-border, #eaecf0);
+        padding-bottom: 16px;
+    }
+
+    .reg-price-label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--sports-text-muted, #64748b);
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .reg-price-val {
+        font-size: 1.75rem;
+        font-weight: 900;
+        color: var(--sports-text-main, #0f172a);
+    }
+
+    .reg-price-val.free {
+        color: #059669;
+    }
+
+    /* Capacity Progress */
+    .reg-capacity-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .reg-capacity-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: var(--sports-text-main, #0f172a);
+    }
+
+    .reg-capacity-track {
+        height: 8px;
+        background: #f1f5f9;
+        border-radius: 9999px;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+    }
+
+    .reg-capacity-fill {
+        height: 100%;
+        background: #10b981;
+        border-radius: 9999px;
+        transition: width 0.4s ease;
+    }
+
+    .reg-capacity-fill.near-full { background: #f59e0b; }
+    .reg-capacity-fill.full { background: #ef4444; }
+
+    .reg-capacity-sub {
+        font-size: 0.74rem;
+        color: var(--sports-text-muted, #64748b);
+        display: flex;
+        justify-content: space-between;
+    }
+
+    /* Registration Actions */
+    .reg-actions-wrap {
+        display: flex;
+        flex-direction: column;
         gap: 10px;
     }
 
-    .detail-meta-item {
+    .btn-register-main {
+        width: 100%;
+        padding: 14px 20px;
+        border-radius: 14px;
+        font-size: 0.96rem;
+        font-weight: 800;
+        font-family: inherit;
         display: flex;
         align-items: center;
+        justify-content: center;
         gap: 8px;
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-    }
-
-    .detail-meta-item i {
-        color: var(--primary-orange);
-        font-size: 1.1rem;
-    }
-
-    .event-desc-card {
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
-        border-radius: 14px;
-        padding: 22px;
-    }
-
-    .event-desc-card h3 {
-        font-size: 0.85rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: var(--text-muted);
-        margin-bottom: 10px;
-    }
-
-    .event-desc-card p {
-        font-size: 0.9rem;
-        color: var(--text-secondary);
-        line-height: 1.7;
-    }
-
-    .event-register-card {
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
-        border-radius: 14px;
-        padding: 22px;
-    }
-
-    .capacity-bar {
-        height: 6px;
-        background: var(--border-color);
-        border-radius: 3px;
-        overflow: hidden;
-        margin: 10px 0 4px;
-    }
-
-    .capacity-fill {
-        height: 100%;
-        background: var(--primary-orange);
-        border-radius: 3px;
-        transition: width 0.4s;
-    }
-
-    .capacity-fill.near-full {
-        background: #f59e0b;
-    }
-
-    .capacity-fill.full {
-        background: #ef4444;
-    }
-
-    .capacity-label {
-        font-size: 0.78rem;
-        color: var(--text-muted);
-        margin-bottom: 14px;
-    }
-
-    .btn-join-big {
-        width: 100%;
-        padding: 14px;
-        background: var(--primary-orange);
-        color: white;
-        border: none;
-        border-radius: 10px;
-        font-size: 0.95rem;
-        font-weight: 700;
         cursor: pointer;
-        transition: all 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
+        text-decoration: none;
+        border: none;
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .btn-join-big:hover {
-        background: var(--primary-orange-hover);
-        transform: translateY(-1px);
+    .btn-register-main.join {
+        background: linear-gradient(135deg, var(--primary-orange, #ff5722), #ea580c);
+        color: #ffffff;
+        box-shadow: 0 4px 14px rgba(225, 86, 35, 0.3);
     }
 
-    .btn-registered-big {
-        width: 100%;
-        padding: 14px;
-        background: rgba(74, 222, 128, 0.12);
-        color: #4ade80;
-        border: 1.5px solid rgba(74, 222, 128, 0.3);
-        border-radius: 10px;
-        font-size: 0.95rem;
-        font-weight: 700;
+    .btn-register-main.join:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(225, 86, 35, 0.4);
+    }
+
+    .btn-register-main.waitlist {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: #ffffff;
+        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+    }
+
+    .btn-register-main.waitlist:hover {
+        background: #d97706;
+        transform: translateY(-2px);
+    }
+
+    .btn-register-main.registered {
+        background: rgba(16, 185, 129, 0.12);
+        color: #059669;
+        border: 1.5px solid rgba(16, 185, 129, 0.3);
         cursor: default;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
     }
 
-    .btn-cancel {
+    .btn-register-main.pending-pay {
+        background: linear-gradient(135deg, #0070BA, #00AAE4);
+        color: #ffffff;
+        box-shadow: 0 4px 14px rgba(0, 112, 186, 0.3);
+    }
+
+    .btn-register-main.pending-pay:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 112, 186, 0.4);
+    }
+
+    .btn-register-main.disabled {
+        background: #f1f5f9;
+        color: #94a3b8;
+        cursor: not-allowed;
+        border: 1px solid #e2e8f0;
+    }
+
+    .btn-cancel-reg {
         width: 100%;
         padding: 10px;
         background: transparent;
-        color: var(--text-muted);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
+        color: var(--sports-text-muted, #64748b);
+        border: 1.5px solid var(--sports-border, #d0d5dd);
+        border-radius: 12px;
         font-size: 0.82rem;
-        font-weight: 600;
+        font-weight: 700;
         cursor: pointer;
-        margin-top: 8px;
-        transition: all 0.2s;
-    }
-
-    .btn-cancel:hover {
-        border-color: #ef4444;
-        color: #ef4444;
-    }
-
-    .organizer-row {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 12px;
-        background: var(--input-bg);
-        border-radius: 8px;
-        margin-top: 10px;
-    }
-
-    .organizer-avatar {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        background: var(--primary-orange);
-        color: white;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 700;
-        font-size: 0.9rem;
-    }
-
-    .organizer-info .label {
-        font-size: 0.72rem;
-        color: var(--text-muted);
-        font-weight: 600;
-    }
-
-    .organizer-info .name {
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: var(--text-primary);
-    }
-
-    .back-link {
-        display: inline-flex;
-        align-items: center;
         gap: 6px;
-        font-size: 0.85rem;
-        color: var(--text-muted);
-        text-decoration: none;
-        margin-bottom: 16px;
+        transition: all 0.2s ease;
     }
 
-    .back-link:hover {
-        color: var(--primary-orange);
+    .btn-cancel-reg:hover {
+        border-color: #ef4444;
+        color: #ef4444;
+        background: #fef2f2;
     }
 
-    .fee-badge {
-        display: inline-flex;
+    /* Benefits List */
+    .reg-perks-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        border-top: 1px solid var(--sports-border, #eaecf0);
+        padding-top: 16px;
+    }
+
+    .reg-perk-item {
+        display: flex;
         align-items: center;
-        gap: 4px;
-        padding: 3px 9px;
-        border-radius: 4px;
-        font-size: 0.8rem;
-        font-weight: 700;
+        gap: 8px;
+        font-size: 0.82rem;
+        color: var(--sports-text-muted, #475467);
+        font-weight: 500;
+    }
+
+    .reg-perk-item i {
+        color: #10b981;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    /* ── Dark Mode Overrides ── */
+    html.dark-mode .event-hero-card,
+    html.dark-mode .event-spec-card,
+    html.dark-mode .event-info-card,
+    html.dark-mode .event-registration-card {
+        background: #19202e;
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    html.dark-mode .event-detail-breadcrumb-current,
+    html.dark-mode .event-card-header h2,
+    html.dark-mode .event-spec-val,
+    html.dark-mode .reg-price-val,
+    html.dark-mode .reg-capacity-header,
+    html.dark-mode .venue-host-name {
+        color: #f8fafc;
+    }
+
+    html.dark-mode .event-desc-text,
+    html.dark-mode .event-spec-label,
+    html.dark-mode .reg-price-label,
+    html.dark-mode .reg-capacity-sub,
+    html.dark-mode .venue-host-role,
+    html.dark-mode .reg-perk-item {
+        color: #94a3b8;
+    }
+
+    html.dark-mode .event-card-header,
+    html.dark-mode .reg-price-box,
+    html.dark-mode .reg-perks-list {
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    html.dark-mode .venue-host-box {
+        background: #141923;
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    html.dark-mode .reg-capacity-track {
+        background: #121620;
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    html.dark-mode .btn-cancel-reg {
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #94a3b8;
+    }
+
+    html.dark-mode .btn-cancel-reg:hover {
+        background: rgba(239, 68, 68, 0.1);
+        border-color: #ef4444;
+        color: #fca5a5;
+    }
+
+    html.dark-mode .btn-register-main.registered {
+        background: rgba(16, 185, 129, 0.15);
+        color: #4ade80;
+        border-color: rgba(16, 185, 129, 0.35);
+    }
+
+    html.dark-mode .btn-register-main.disabled {
+        background: #121620;
+        color: #64748b;
+        border-color: rgba(255, 255, 255, 0.06);
+    }
+
+    /* ── Responsive Queries ── */
+    @media (max-width: 992px) {
+        .event-layout-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .event-specs-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .event-sticky-col {
+            position: static;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .event-specs-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .venue-host-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .tournament-bracket-callout {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .btn-view-bracket-callout {
+            width: 100%;
+            justify-content: center;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<a href="{{ url_for('player.events') }}" class="back-link"><i class="ph ph-arrow-left"></i> Back to Events</a>
+<div class="event-detail-page">
 
-{% set default_img = 'https://plus.unsplash.com/premium_photo-1709048991290-1d36455a2895?q=80&w=870&auto=format&fit=crop' %}
-<div class="event-detail-wrapper">
-    <!-- Hero Card -->
-    <div class="event-detail-hero">
-        <div class="event-detail-banner" style="background-image: url('{{ ev.image_url if ev.image_url else default_img }}');">
-            <div style="position: absolute; top: 20px; left: 20px; z-index: 2;">
-                <span class="event-type-badge badge-{{ ev.type }}">{{ ev.type|capitalize }}</span>
-            </div>
-            <div style="position: absolute; bottom: 20px; right: 20px; z-index: 2;">
-                {% if ev.status == 'full' %}
-                <span class="status-pill" style="background:rgba(239,68,68,0.9);color:#fff;backdrop-filter:blur(4px);"><i class="ph ph-prohibit"></i> Full</span>
-                {% elif ev.status == 'registration_open' %}
-                <span class="status-pill" style="background:rgba(74,222,128,0.9);color:#fff;backdrop-filter:blur(4px);"><i class="ph ph-check-circle"></i> Registration Open</span>
-                {% else %}
-                <span class="status-pill" style="background:rgba(0,0,0,0.5);color:#fff;border:1px solid rgba(255,255,255,0.2);backdrop-filter:blur(4px);">{{ ev.status|replace('_',' ')|capitalize }}</span>
-                {% endif %}
-            </div>
-        </div>
-        
-        <div class="event-detail-content">
-            <div class="event-detail-title">{{ ev.title }}</div>
-        <div class="event-detail-meta">
-            <div class="detail-meta-item"><i class="ph ph-calendar-blank"></i> {{ ev.event_date }}</div>
-            <div class="detail-meta-item"><i class="ph ph-clock"></i> {{ ev.start_time[:5] }} – {{ ev.end_time[:5] }}
-            </div>
-            <div class="detail-meta-item">
-                <i class="ph ph-buildings"></i>
-                {{ ev.facilities.name if ev.facilities else 'TBA' }}
-            </div>
-            <div class="detail-meta-item">
-                <i class="ph ph-map-pin"></i>
-                {{ ev.facilities.location if ev.facilities and ev.facilities.location else ev.location_label or 'TBA' }}
-            </div>
-            {% if ev.location_label %}
-            <div class="detail-meta-item"><i class="ph ph-intersect"></i> {{ ev.location_label }}</div>
-            {% endif %}
-            <div class="detail-meta-item">
-                <i class="ph ph-coins"></i>
-                {% if ev.entry_fee and ev.entry_fee > 0 %}
-                <span class="fee-badge" style="background:rgba(99,102,241,0.12);color:#818cf8;">₱{{
-                    '%.2f'|format(ev.entry_fee|float) }} Entry Fee</span>
-                {% else %}
-                <span class="fee-badge" style="background:rgba(74,222,128,0.12);color:#4ade80;">Free Event</span>
-                {% endif %}
-            </div>
-        </div>
-
-        {% if ev.profiles %}
-        {% set org = ev.profiles %}
-        <div class="organizer-row" style="margin-top:16px;">
-            <div class="organizer-avatar">{{ (org.first_name or 'O')[0]|upper }}</div>
-            <div class="organizer-info">
-                <div class="label">Organized by</div>
-                <div class="name">{{ org.first_name }} {{ org.last_name }}</div>
-            </div>
-        </div>
-        {% endif %}
-        </div>
-    </div>
-
-    <!-- Description -->
-    {% if ev.description %}
-    <div class="event-desc-card">
-        <h3>About This Event</h3>
-        <p>{{ ev.description }}</p>
-    </div>
-    {% endif %}
-
-    <!-- Registration -->
-    <div class="event-register-card">
-        <h3
-            style="font-size:0.85rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:8px;">
-            Registration</h3>
-        {% set pct = ((reg_count / ev.max_players) * 100)|int if ev.max_players else 0 %}
-        <div
-            style="display:flex;justify-content:space-between;align-items:center;font-size:0.9rem;font-weight:600;color:var(--text-primary);">
-            <span>{{ reg_count }} registered</span>
-            <span style="color:var(--text-muted);">{{ ev.max_players }} max</span>
-        </div>
-        <div class="capacity-bar">
-            <div class="capacity-fill {% if pct >= 90 %}full{% elif pct >= 70 %}near-full{% endif %}"
-                style="width:{{ pct }}%;"></div>
-        </div>
-        <div class="capacity-label">{{ ev.max_players - reg_count }} spot{{ 's' if (ev.max_players - reg_count) != 1
-            else '' }} remaining</div>
-
-        {% if is_registered %}
-        <div class="btn-registered-big"><i class="ph ph-check-circle"></i> You're Registered!</div>
-        <form method="POST" action="{{ url_for('player.unregister_event', event_id=ev.id) }}" style="margin:0;">
-            <button type="submit" class="btn-cancel" onclick="return confirm('Cancel your registration?')">
-                <i class="ph ph-x-circle"></i> Cancel Registration
-            </button>
-        </form>
-        {% elif player_status == 'pending_payment' %}
-        <div class="btn-registered-big" style="background: rgba(245,158,11,0.1); color: #f59e0b; border-color: rgba(245,158,11,0.3);"><i class="ph ph-warning-circle"></i> Pending Payment</div>
-        <p style="text-align: center; font-size: 0.85rem; color: var(--text-secondary); margin: 8px 0;">Your spot is not secured yet!</p>
-        <a href="{{ url_for('player.tournament_payment', event_id=ev.id) }}" class="btn-join-big" style="text-decoration: none; margin-bottom: 8px;">
-            <i class="ph ph-credit-card"></i> Complete Payment Now
+    <!-- ── 1. BREADCRUMBS ── -->
+    <nav class="event-detail-breadcrumb" aria-label="Breadcrumb">
+        <a href="{{ url_for('player.events') }}">
+            <i class="ph ph-trophy"></i> Events & Tournaments
         </a>
-        <form method="POST" action="{{ url_for('player.unregister_event', event_id=ev.id) }}" style="margin:0;">
-            <button type="submit" class="btn-cancel" onclick="return confirm('Cancel your pending registration?')">
-                <i class="ph ph-x-circle"></i> Cancel Request
-            </button>
-        </form>
-        {% elif ev.status == 'registration_open' and reg_count < ev.max_players %}
-        <form method="POST" action="{{ url_for('player.register_event', event_id=ev.id) }}" style="margin:0;">
-            <button type="submit" class="btn-join-big"><i class="ph ph-trophy"></i> Register Now</button>
-        </form>
-            {% elif ev.status == 'full' %}
-            <form method="POST" action="{{ url_for('player.register_event', event_id=ev.id) }}" style="margin:0;">
-                <button type="submit" class="btn-join-big" style="background:#f59e0b;"><i class="ph ph-list-checks"></i>
-                    Join Waitlist</button>
-            </form>
-            {% else %}
-            <button class="btn-join-big" style="opacity:0.5;cursor:not-allowed;" disabled>Registration Not Open</button>
+        <span class="event-detail-breadcrumb-sep"><i class="ph ph-caret-right"></i></span>
+        <span class="event-detail-breadcrumb-current">{{ ev.title }}</span>
+    </nav>
+
+    {% set pct = ((reg_count / ev.max_players) * 100)|int if ev.max_players else 0 %}
+    {% set spots_left = (ev.max_players - reg_count) if ev.max_players else 0 %}
+    {% set facility_name = ev.facilities.name if ev.facilities else 'PickleballHub Partner Facility' %}
+    {% set facility_loc = ev.facilities.location if ev.facilities and ev.facilities.location else (ev.location_label or 'Facility Courts') %}
+    {% set default_banner = 'https://plus.unsplash.com/premium_photo-1709048991290-1d36455a2895?q=80&w=870&auto=format&fit=crop' %}
+
+    <!-- ── 2. TWO-COLUMN LAYOUT ── -->
+    <div class="event-layout-grid">
+
+        <!-- ── MAIN CONTENT (LEFT) ── -->
+        <div class="event-main-col">
+
+            <!-- Hero Media Banner Card -->
+            <article class="event-hero-card">
+                <div class="event-hero-banner" style="background-image: url('{{ ev.image_url if ev.image_url else default_banner }}');">
+                    <div class="event-hero-scrim"></div>
+
+                    <!-- Top Badges -->
+                    <div class="event-hero-top-badges">
+                        <span class="event-type-badge badge-{{ ev.type }}">
+                            {% if ev.type == 'tournament' %}
+                            <i class="ph ph-trophy"></i>
+                            {% elif ev.type == 'social' %}
+                            <i class="ph ph-users-three"></i>
+                            {% elif ev.type == 'training' %}
+                            <i class="ph ph-barbell"></i>
+                            {% else %}
+                            <i class="ph ph-medal"></i>
+                            {% endif %}
+                            {{ ev.type|capitalize }}
+                        </span>
+
+                        {% if ev.status == 'full' %}
+                        <span class="event-status-pill full"><i class="ph ph-prohibit"></i> Full Capacity</span>
+                        {% elif ev.status == 'registration_open' %}
+                        <span class="event-status-pill open"><i class="ph ph-check-circle"></i> Registration Open</span>
+                        {% else %}
+                        <span class="event-status-pill soon"><i class="ph ph-clock"></i> Upcoming</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Banner Bottom Content -->
+                    <div class="event-hero-banner-content">
+                        {% if ev.prize_pool and ev.prize_pool > 0 %}
+                        <div class="event-hero-prize-pill">
+                            <i class="ph ph-coins"></i> ₱{{ "%.0f"|format(ev.prize_pool) }} Prize Pool
+                        </div>
+                        {% endif %}
+                        <h1 class="event-hero-title">{{ ev.title }}</h1>
+                    </div>
+                </div>
+
+                <!-- Hero Meta Body -->
+                <div class="event-hero-body">
+                    <!-- Quick Specs Grid (4 Tiles) -->
+                    <div class="event-specs-grid">
+                        <div class="event-spec-card">
+                            <span class="event-spec-label"><i class="ph ph-calendar"></i> Date & Time</span>
+                            <span class="event-spec-val">{{ ev.event_date }}</span>
+                            <span style="font-size: 0.76rem; color: var(--sports-text-muted);">{{ ev.start_time[:5] }} – {{ ev.end_time[:5] }}</span>
+                        </div>
+
+                        <div class="event-spec-card">
+                            <span class="event-spec-label"><i class="ph ph-intersect"></i> Format</span>
+                            <span class="event-spec-val">{{ (ev.format or 'Standard')|replace('_', ' ')|title }}</span>
+                            <span style="font-size: 0.76rem; color: var(--sports-text-muted);">Official Rules</span>
+                        </div>
+
+                        <div class="event-spec-card">
+                            <span class="event-spec-label"><i class="ph ph-map-pin"></i> Venue Court</span>
+                            <span class="event-spec-val" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ ev.location_label or facility_name }}">
+                                {{ ev.location_label or facility_name }}
+                            </span>
+                            <span style="font-size: 0.76rem; color: var(--sports-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ facility_loc }}</span>
+                        </div>
+
+                        <div class="event-spec-card">
+                            <span class="event-spec-label"><i class="ph ph-tag"></i> Entry Fee</span>
+                            {% if ev.entry_fee and ev.entry_fee > 0 %}
+                            <span class="event-spec-val" style="color: var(--primary-orange);">₱{{ "%.2f"|format(ev.entry_fee|float) }}</span>
+                            <span style="font-size: 0.76rem; color: var(--sports-text-muted);">Per Player</span>
+                            {% else %}
+                            <span class="event-spec-val" style="color: #059669;">Free</span>
+                            <span style="font-size: 0.76rem; color: var(--sports-text-muted);">No Entry Fee</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ── Tournament Brackets Callout (If Tournament) ── -->
+            {% if ev.type == 'tournament' %}
+            <section class="tournament-bracket-callout" aria-label="Tournament Brackets">
+                <div class="tournament-bracket-info">
+                    <div class="bracket-icon-box">
+                        <i class="ph ph-tree-structure"></i>
+                    </div>
+                    <div>
+                        <h3 class="bracket-callout-title">Live Tournament Brackets</h3>
+                        <p class="bracket-callout-sub">View bracket seedings, match pairings, and real-time round progression.</p>
+                    </div>
+                </div>
+                <a href="{{ url_for('player.tournament_bracket', event_id=ev.id) }}" class="btn-view-bracket-callout">
+                    <i class="ph ph-arrows-out-cardinal"></i> View Bracket
+                </a>
+            </section>
             {% endif %}
+
+            <!-- ── About This Event ── -->
+            <section class="event-info-card">
+                <div class="event-card-header">
+                    <i class="ph ph-info"></i>
+                    <h2>About This Event</h2>
+                </div>
+                <p class="event-desc-text">
+                    {{ ev.description if ev.description else "Welcome to this official PickleballHub event! Join fellow players for competitive play, sportsmanship, and court action. Please arrive at least 15 minutes before the scheduled start time for player check-in and warmups." }}
+                </p>
+            </section>
+
+            <!-- ── Venue & Organizer Information ── -->
+            <section class="event-info-card">
+                <div class="event-card-header">
+                    <i class="ph ph-buildings"></i>
+                    <h2>Facility & Organizer</h2>
+                </div>
+
+                <div class="venue-host-grid">
+                    <!-- Venue Box -->
+                    <div class="venue-host-box">
+                        <div class="venue-host-avatar venue">
+                            <i class="ph ph-court-tennis"></i>
+                        </div>
+                        <div class="venue-host-text">
+                            <span class="venue-host-role">Host Venue</span>
+                            <span class="venue-host-name">{{ facility_name }}</span>
+                            <span style="font-size: 0.78rem; color: var(--sports-text-muted); margin-top: 2px;">{{ facility_loc }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Host/Organizer Box -->
+                    {% set org = ev.profiles %}
+                    <div class="venue-host-box">
+                        <div class="venue-host-avatar">
+                            {% if org and (org.first_name or org.last_name) %}
+                            {{ (org.first_name or 'O')[0]|upper }}{{ (org.last_name or '')[0]|upper }}
+                            {% else %}
+                            <i class="ph ph-user"></i>
+                            {% endif %}
+                        </div>
+                        <div class="venue-host-text">
+                            <span class="venue-host-role">Event Organizer</span>
+                            <span class="venue-host-name">
+                                {% if org and (org.first_name or org.last_name) %}
+                                {{ org.first_name }} {{ org.last_name }}
+                                {% else %}
+                                PickleballHub Admin
+                                {% endif %}
+                            </span>
+                            <span style="font-size: 0.78rem; color: var(--sports-text-muted); margin-top: 2px;">Sanctioned Organizer</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- ── STICKY REGISTRATION PANEL (RIGHT) ── -->
+        <aside class="event-sticky-col">
+            <div class="event-registration-card">
+                <!-- Price Row -->
+                <div class="reg-price-box">
+                    <div>
+                        <span class="reg-price-label">Registration Pass</span>
+                        <div style="font-size: 0.82rem; color: var(--sports-text-muted); margin-top: 2px;">Official Event Entry</div>
+                    </div>
+                    {% if ev.entry_fee and ev.entry_fee > 0 %}
+                    <div class="reg-price-val">₱{{ "%.2f"|format(ev.entry_fee|float) }}</div>
+                    {% else %}
+                    <div class="reg-price-val free">FREE</div>
+                    {% endif %}
+                </div>
+
+                <!-- Capacity Tracker -->
+                <div class="reg-capacity-wrap">
+                    <div class="reg-capacity-header">
+                        <span>Capacity Roster</span>
+                        <span>{{ reg_count }} / {{ ev.max_players }} Players</span>
+                    </div>
+                    <div class="reg-capacity-track">
+                        <div class="reg-capacity-fill {% if pct >= 90 %}full{% elif pct >= 70 %}near-full{% endif %}" style="width: {{ pct }}%;"></div>
+                    </div>
+                    <div class="reg-capacity-sub">
+                        <span>{{ pct }}% Filled</span>
+                        <span>{% if spots_left > 0 %}{{ spots_left }} spots remaining{% else %}Roster Full{% endif %}</span>
+                    </div>
+                </div>
+
+                <!-- Action Button Form -->
+                <div class="reg-actions-wrap">
+                    {% if is_registered %}
+                    <div class="btn-register-main registered">
+                        <i class="ph ph-check-circle-fill"></i> You're Registered!
+                    </div>
+                    <form method="POST" action="{{ url_for('player.unregister_event', event_id=ev.id) }}" style="margin: 0;">
+                        <button type="submit" class="btn-cancel-reg" onclick="return confirm('Are you sure you want to cancel your registration for this event?')">
+                            <i class="ph ph-x-circle"></i> Cancel Registration
+                        </button>
+                    </form>
+
+                    {% elif player_status == 'pending_payment' %}
+                    <div class="btn-register-main registered" style="background: rgba(245, 158, 11, 0.12); color: #d97706; border-color: rgba(245, 158, 11, 0.3);">
+                        <i class="ph ph-warning-circle"></i> Pending Payment
+                    </div>
+                    <p style="text-align: center; font-size: 0.82rem; color: var(--sports-text-muted); margin: 0;">
+                        Your spot is held temporarily. Complete payment to finalize.
+                    </p>
+                    <a href="{{ url_for('player.tournament_payment', event_id=ev.id) }}" class="btn-register-main pending-pay">
+                        <i class="ph ph-device-mobile-camera"></i> Pay via GCash Now
+                    </a>
+                    <form method="POST" action="{{ url_for('player.unregister_event', event_id=ev.id) }}" style="margin: 0;">
+                        <button type="submit" class="btn-cancel-reg" onclick="return confirm('Cancel your pending registration?')">
+                            <i class="ph ph-x-circle"></i> Cancel Request
+                        </button>
+                    </form>
+
+                    {% elif ev.status == 'registration_open' and reg_count < ev.max_players %}
+                    <form method="POST" action="{{ url_for('player.register_event', event_id=ev.id) }}" style="margin: 0;">
+                        <button type="submit" class="btn-register-main join">
+                            {% if ev.entry_fee and ev.entry_fee > 0 %}
+                            <i class="ph ph-ticket"></i> Register • ₱{{ "%.0f"|format(ev.entry_fee) }}
+                            {% else %}
+                            <i class="ph ph-plus-circle"></i> Join Event (Free)
+                            {% endif %}
+                        </button>
+                    </form>
+
+                    {% elif ev.status == 'full' or reg_count >= ev.max_players %}
+                    <form method="POST" action="{{ url_for('player.register_event', event_id=ev.id) }}" style="margin: 0;">
+                        <button type="submit" class="btn-register-main waitlist">
+                            <i class="ph ph-clock-countdown"></i> Join Waiting List
+                        </button>
+                    </form>
+
+                    {% else %}
+                    <button type="button" class="btn-register-main disabled" disabled>
+                        <i class="ph ph-lock"></i> Registration Not Open
+                    </button>
+                    {% endif %}
+                </div>
+
+                <!-- Registration Perks -->
+                <div class="reg-perks-list">
+                    <div class="reg-perk-item">
+                        <i class="ph ph-check"></i>
+                        <span>Instant automated registration confirmation</span>
+                    </div>
+                    <div class="reg-perk-item">
+                        <i class="ph ph-check"></i>
+                        <span>DUPR Rating performance submission</span>
+                    </div>
+                    <div class="reg-perk-item">
+                        <i class="ph ph-check"></i>
+                        <span>Real-time bracket and schedule alerts</span>
+                    </div>
+                    <div class="reg-perk-item">
+                        <i class="ph ph-check"></i>
+                        <span>Court venue access and warmup time</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
     </div>
+
 </div>
 {% endblock %}

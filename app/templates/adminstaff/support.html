@@ -1,131 +1,1362 @@
 {% extends "adminstaff/base_adminstaff.html" %}
-{% block title %}Support Tickets{% endblock %}
+{% block title %}Support Tickets & Resolution Console{% endblock %}
+
+{% block extra_head %}
+{{ super() }}
+<style>
+    /* ── SUPPORT CONSOLE DESIGN SYSTEM ── */
+    :root {
+        --support-accent: #f97316;
+        --support-accent-hover: #ea580c;
+        --support-accent-soft: rgba(249, 115, 22, 0.1);
+        --support-accent-border: rgba(249, 115, 22, 0.25);
+    }
+
+    /* Page Header */
+    .support-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .support-header-left .page-title {
+        margin: 0 0 6px 0;
+        font-size: 1.6rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--text-primary);
+    }
+
+    .support-header-left .page-subtitle {
+        color: var(--text-secondary);
+        font-size: 0.88rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Stat Cards */
+    .support-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    @media (max-width: 1024px) {
+        .support-stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 640px) {
+        .support-stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .support-stat-card {
+        padding: 18px 20px;
+        border-radius: 14px !important;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--border-color-soft);
+        cursor: pointer;
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: var(--shadow-sm);
+        user-select: none;
+    }
+
+    .support-stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.08);
+        border-color: var(--border-color);
+    }
+
+    .support-stat-card.active {
+        border-color: var(--support-accent) !important;
+        box-shadow: 0 0 0 2px var(--support-accent-soft), var(--shadow-sm);
+    }
+
+    .support-stat-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        flex-shrink: 0;
+    }
+
+    .support-stat-icon.purple {
+        color: #6366f1;
+        background: rgba(99, 102, 241, 0.1);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+
+    .support-stat-icon.amber {
+        color: #f59e0b;
+        background: rgba(245, 158, 11, 0.1);
+        border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    .support-stat-icon.blue {
+        color: #0284c7;
+        background: rgba(2, 132, 199, 0.1);
+        border: 1px solid rgba(2, 132, 199, 0.2);
+    }
+
+    .support-stat-icon.green {
+        color: #10b981;
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .support-stat-meta h4 {
+        margin: 0;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+    }
+
+    .support-stat-meta .stat-number {
+        margin: 3px 0 0 0;
+        font-size: 1.45rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        line-height: 1.2;
+    }
+
+    /* Filter & Search Bar */
+    .support-filter-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .support-search-wrapper {
+        flex: 1;
+        min-width: 260px;
+        max-width: 440px;
+        position: relative;
+    }
+
+    .support-search-wrapper i {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        font-size: 1.1rem;
+        pointer-events: none;
+    }
+
+    .support-search-input {
+        width: 100%;
+        padding: 10px 16px 10px 42px;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        background: var(--input-bg);
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        outline: none;
+        transition: all 0.2s;
+    }
+
+    .support-search-input:focus {
+        border-color: var(--support-accent);
+        box-shadow: 0 0 0 3px var(--support-accent-soft);
+    }
+
+    .support-filter-tabs {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--action-box-bg);
+        padding: 4px;
+        border-radius: 10px;
+        border: 1px solid var(--border-color-soft);
+    }
+
+    .filter-tab-pill {
+        border: none;
+        background: transparent;
+        color: var(--text-secondary);
+        font-size: 0.82rem;
+        font-weight: 600;
+        padding: 6px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.18s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .filter-tab-pill:hover {
+        color: var(--text-primary);
+    }
+
+    .filter-tab-pill.active {
+        background: var(--card-bg, #ffffff);
+        color: var(--support-accent);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .tab-counter {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2px 7px;
+        border-radius: 12px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        background: rgba(0, 0, 0, 0.06);
+        color: inherit;
+    }
+
+    html.dark-mode .tab-counter {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Table & Row Styling */
+    .support-table-card {
+        padding: 20px;
+        border-radius: 16px !important;
+    }
+
+    .support-data-grid {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .support-data-grid th {
+        font-size: 0.73rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-muted);
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border-color-soft);
+        text-align: left;
+    }
+
+    .support-data-grid td {
+        padding: 16px;
+        border-bottom: 1px solid var(--border-color-soft);
+        vertical-align: middle;
+        font-size: 0.88rem;
+    }
+
+    .support-data-grid tr:last-child td {
+        border-bottom: none;
+    }
+
+    .support-data-grid tbody tr {
+        transition: background-color 0.15s ease;
+    }
+
+    .support-data-grid tbody tr:hover {
+        background-color: var(--action-box-bg);
+    }
+
+    /* Submitter Cell */
+    .submitter-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .submitter-avatar-wrap {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        overflow: hidden;
+        background: rgba(249, 115, 22, 0.12);
+        color: var(--support-accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+        border: 1px solid var(--border-color-soft);
+    }
+
+    .submitter-avatar-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .submitter-info-text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .submitter-name {
+        font-weight: 700;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+    }
+
+    .submitter-sub-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .role-badge-chip {
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 1px 7px;
+        border-radius: 6px;
+        background: rgba(0, 0, 0, 0.05);
+        color: var(--text-secondary);
+        letter-spacing: 0.3px;
+    }
+
+    html.dark-mode .role-badge-chip {
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .contact-quick-icon {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        transition: color 0.15s;
+        text-decoration: none;
+    }
+
+    .contact-quick-icon:hover {
+        color: var(--support-accent);
+    }
+
+    /* Subject & Inquiry Cell */
+    .ticket-meta-cell {
+        max-width: 320px;
+    }
+
+    .ticket-tag-category {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 6px;
+        background: rgba(99, 102, 241, 0.09);
+        color: #6366f1;
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        margin-bottom: 4px;
+    }
+
+    .ticket-subject-title {
+        font-weight: 700;
+        color: var(--text-primary);
+        font-size: 0.92rem;
+        margin: 0 0 3px 0;
+        line-height: 1.3;
+    }
+
+    .ticket-snippet-preview {
+        color: var(--text-muted);
+        font-size: 0.8rem;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 280px;
+    }
+
+    /* Status Pills */
+    .ticket-status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.2px;
+        text-transform: uppercase;
+    }
+
+    .ticket-status-pill.open {
+        background: rgba(245, 158, 11, 0.1);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        color: #d97706;
+    }
+
+    html.dark-mode .ticket-status-pill.open {
+        color: #f59e0b;
+    }
+
+    .ticket-status-pill.in-progress {
+        background: rgba(2, 132, 199, 0.1);
+        border: 1px solid rgba(2, 132, 199, 0.3);
+        color: #0284c7;
+    }
+
+    .ticket-status-pill.closed {
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        color: #059669;
+    }
+
+    html.dark-mode .ticket-status-pill.closed {
+        color: #10b981;
+    }
+
+    .responded-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.72rem;
+        color: #059669;
+        margin-top: 4px;
+        font-weight: 600;
+    }
+
+    html.dark-mode .responded-indicator {
+        color: #34d399;
+    }
+
+    /* Action Buttons in Grid */
+    .row-actions-group {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+
+    .btn-action-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        background: var(--support-accent);
+        color: #ffffff !important;
+        border: none;
+        cursor: pointer;
+        transition: all 0.18s ease;
+        text-decoration: none;
+    }
+
+    .btn-action-primary:hover {
+        background: var(--support-accent-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(249, 115, 22, 0.25);
+    }
+
+    .btn-action-chat {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 12px;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        background: rgba(99, 102, 241, 0.1);
+        color: #6366f1 !important;
+        border: 1px solid rgba(99, 102, 241, 0.25);
+        cursor: pointer;
+        transition: all 0.18s ease;
+        text-decoration: none;
+    }
+
+    .btn-action-chat:hover {
+        background: #6366f1;
+        color: #ffffff !important;
+        border-color: #6366f1;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+    }
+
+    /* ── TICKET RESOLUTION & COMMUNICATION MODAL ── */
+    .ticket-modal-overlay {
+        display: none;
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background: rgba(15, 23, 42, 0.72) !important;
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+        z-index: 999990 !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 30px 20px !important;
+        box-sizing: border-box !important;
+    }
+
+    .ticket-modal-overlay.open {
+        display: flex !important;
+    }
+
+    .ticket-modal-window {
+        width: 100%;
+        max-width: 820px;
+        max-height: 88vh;
+        background: #ffffff !important;
+        color: #0f172a !important;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        border-radius: 20px;
+        box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.4);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        animation: popUpModal 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        z-index: 999991 !important;
+    }
+
+    html.dark-mode .ticket-modal-window {
+        background: #141720 !important;
+        color: #f8fafc !important;
+        border-color: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8);
+    }
+
+    @keyframes popUpModal {
+        from {
+            opacity: 0;
+            transform: scale(0.96) translateY(8px);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    /* Modal Header */
+    .ticket-modal-header {
+        padding: 20px 24px;
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-shrink: 0;
+    }
+
+    html.dark-mode .ticket-modal-header {
+        background: #1a1e29;
+        border-bottom-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .modal-ticket-id-tag {
+        font-family: monospace;
+        font-size: 0.95rem;
+        font-weight: 700;
+        background: rgba(0, 0, 0, 0.06);
+        padding: 3px 10px;
+        border-radius: 6px;
+        color: var(--text-primary);
+    }
+
+    html.dark-mode .modal-ticket-id-tag {
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .modal-close-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.05);
+        color: #475569;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+        font-size: 1.15rem;
+        transition: all 0.2s;
+    }
+
+    html.dark-mode .modal-close-btn {
+        background: rgba(255, 255, 255, 0.06);
+        color: #cbd5e1;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .modal-close-btn:hover {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+        transform: rotate(90deg);
+    }
+
+    /* Modal Scrollable Body */
+    .ticket-modal-body {
+        padding: 24px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    /* Submitter Communication Toolbar */
+    .submitter-dossier-bar {
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 14px 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 14px;
+    }
+
+    html.dark-mode .submitter-dossier-bar {
+        background: #191e2b;
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .dossier-user-wrap {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .dossier-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: var(--support-accent-soft);
+        color: var(--support-accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1rem;
+        overflow: hidden;
+        border: 1.5px solid var(--border-color-soft);
+    }
+
+    .dossier-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .dossier-channels {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .btn-dossier-channel {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 12px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: 1px solid transparent;
+        transition: all 0.16s ease;
+    }
+
+    .btn-dossier-channel.chat {
+        background: #6366f1;
+        color: #ffffff !important;
+    }
+
+    .btn-dossier-channel.chat:hover {
+        background: #4f46e5;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-dossier-channel.neutral {
+        background: rgba(0, 0, 0, 0.06);
+        color: var(--text-primary) !important;
+        border-color: var(--border-color);
+    }
+
+    html.dark-mode .btn-dossier-channel.neutral {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-dossier-channel.neutral:hover {
+        background: rgba(0, 0, 0, 0.1);
+    }
+
+    html.dark-mode .btn-dossier-channel.neutral:hover {
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Message & Resolution Cards */
+    .inquiry-bubble {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 16px 20px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+    }
+
+    html.dark-mode .inquiry-bubble {
+        background: #1a1e29;
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .bubble-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--border-color-soft);
+    }
+
+    .bubble-author {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        font-size: 0.88rem;
+        color: var(--text-primary);
+    }
+
+    .bubble-time {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+    }
+
+    .inquiry-text-content {
+        margin: 0;
+        font-size: 0.92rem;
+        line-height: 1.6;
+        color: var(--text-primary);
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+    /* Staff Response Bubble */
+    .response-history-bubble {
+        background: rgba(16, 185, 129, 0.05);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        border-radius: 14px;
+        padding: 16px 20px;
+    }
+
+    html.dark-mode .response-history-bubble {
+        background: rgba(16, 185, 129, 0.08);
+        border-color: rgba(16, 185, 129, 0.25);
+    }
+
+    /* Quick Reply Templates */
+    .canned-templates-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .canned-templates-title {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .canned-chips-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .canned-chip {
+        background: var(--action-box-bg);
+        border: 1px solid var(--border-color);
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.16s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .canned-chip:hover {
+        background: var(--support-accent-soft);
+        border-color: var(--support-accent);
+        color: var(--support-accent);
+        transform: translateY(-1px);
+    }
+
+    /* Response Textarea */
+    .response-input-area {
+        width: 100%;
+        min-height: 120px;
+        padding: 14px 16px;
+        border-radius: 12px;
+        border: 1.5px solid var(--border-color);
+        background: var(--input-bg);
+        color: var(--text-primary);
+        font-family: inherit;
+        font-size: 0.92rem;
+        line-height: 1.5;
+        outline: none;
+        resize: vertical;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .response-input-area:focus {
+        border-color: var(--support-accent);
+        box-shadow: 0 0 0 3px var(--support-accent-soft);
+    }
+
+    /* Modal Footer Actions */
+    .ticket-modal-footer {
+        padding: 18px 24px;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        flex-shrink: 0;
+    }
+
+    html.dark-mode .ticket-modal-footer {
+        background: #1a1e29;
+        border-top-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .footer-left-options {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .notify-checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.82rem;
+        color: var(--text-secondary);
+        cursor: pointer;
+        user-select: none;
+        font-weight: 500;
+    }
+
+    .notify-checkbox-label input[type="checkbox"] {
+        accent-color: var(--support-accent);
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+    }
+
+    .footer-buttons-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .btn-ticket-modal {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 18px;
+        border-radius: 10px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: all 0.18s ease;
+    }
+
+    .btn-ticket-modal.secondary {
+        background: transparent;
+        border-color: var(--border-color);
+        color: var(--text-primary);
+    }
+
+    .btn-ticket-modal.secondary:hover {
+        background: rgba(0, 0, 0, 0.05);
+    }
+
+    html.dark-mode .btn-ticket-modal.secondary:hover {
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .btn-ticket-modal.in-progress {
+        background: rgba(2, 132, 199, 0.12);
+        color: #0284c7;
+        border-color: rgba(2, 132, 199, 0.3);
+    }
+
+    .btn-ticket-modal.in-progress:hover {
+        background: #0284c7;
+        color: #ffffff;
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.25);
+    }
+
+    .btn-ticket-modal.resolve {
+        background: #10b981;
+        color: #ffffff;
+    }
+
+    .btn-ticket-modal.resolve:hover {
+        background: #059669;
+        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-ticket-modal.reopen {
+        background: #f59e0b;
+        color: #ffffff;
+    }
+
+    .btn-ticket-modal.reopen:hover {
+        background: #d97706;
+        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+    }
+
+    /* ── CUSTOM CONFIRMATION MODAL ── */
+    .confirm-modal-backdrop {
+        display: none;
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background: rgba(15, 23, 42, 0.75) !important;
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+        z-index: 999995 !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 20px !important;
+        box-sizing: border-box !important;
+    }
+
+    .confirm-modal-backdrop.open {
+        display: flex !important;
+    }
+
+    .confirm-modal-card {
+        width: 100%;
+        max-width: 440px;
+        background: #ffffff !important;
+        color: #0f172a !important;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        border-radius: 20px;
+        padding: 28px 24px 22px 24px;
+        text-align: center;
+        box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.45);
+        animation: popUpModal 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        z-index: 999996 !important;
+    }
+
+    html.dark-mode .confirm-modal-card {
+        background: #161923 !important;
+        color: #f8fafc !important;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .confirm-modal-icon-circle {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        margin: 0 auto 16px auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+    }
+
+    .confirm-modal-icon-circle.green {
+        background: rgba(16, 185, 129, 0.12);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .confirm-modal-icon-circle.amber {
+        background: rgba(245, 158, 11, 0.12);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+
+    .confirm-modal-icon-circle.blue {
+        background: rgba(2, 132, 199, 0.12);
+        color: #0284c7;
+        border: 1px solid rgba(2, 132, 199, 0.25);
+    }
+
+    .confirm-modal-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin: 0 0 8px 0;
+        color: #0f172a;
+    }
+
+    html.dark-mode .confirm-modal-title {
+        color: #f8fafc;
+    }
+
+    .confirm-modal-desc {
+        font-size: 0.88rem;
+        color: #475569;
+        margin: 0 0 24px 0;
+        line-height: 1.5;
+    }
+
+    html.dark-mode .confirm-modal-desc {
+        color: #94a3b8;
+    }
+
+    .confirm-modal-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+
+    .btn-confirm-action {
+        flex: 1;
+        padding: 10px 16px;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition: all 0.18s;
+    }
+
+    .btn-confirm-action.cancel {
+        background: rgba(0, 0, 0, 0.06);
+        color: #334155;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    html.dark-mode .btn-confirm-action.cancel {
+        background: rgba(255, 255, 255, 0.08);
+        color: #cbd5e1;
+        border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .btn-confirm-action.cancel:hover {
+        background: rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-confirm-action.green {
+        background: #10b981;
+        color: #ffffff;
+    }
+
+    .btn-confirm-action.green:hover {
+        background: #059669;
+    }
+
+    .btn-confirm-action.amber {
+        background: #f59e0b;
+        color: #ffffff;
+    }
+
+    .btn-confirm-action.amber:hover {
+        background: #d97706;
+    }
+
+    /* Toast Notification */
+    .support-toast {
+        position: fixed !important;
+        bottom: 28px !important;
+        right: 28px !important;
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: #ffffff;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        z-index: 2000000000 !important;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        pointer-events: none;
+    }
+
+    .support-toast.show {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+    }
+
+    .support-toast.success {
+        background: #059669;
+    }
+
+    .support-toast.error {
+        background: #dc2626;
+    }
+
+    .support-toast.info {
+        background: #4f46e5;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 
 {% set total_tickets = tickets|length %}
 {% set open_tickets = tickets | selectattr('status', 'equalto', 'open') | list | length %}
+{% set in_prog_tickets = tickets | selectattr('status', 'equalto', 'in_progress') | list | length %}
 {% set closed_tickets = tickets | selectattr('status', 'equalto', 'closed') | list | length %}
 
-<div class="dashboard-header" style="margin-bottom: 24px;">
-    <h1 class="page-title">Support Tickets</h1>
-    <small style="color:var(--text-secondary); font-size: 0.85rem; font-weight: 500;">Review player/staff queries,
-        publish resolutions, and manage ticket lifecycles</small>
+<!-- Header -->
+<div class="support-header-row">
+    <div class="support-header-left">
+        <h1 class="page-title">Support Tickets & Resolution Console</h1>
+        <p class="page-subtitle">
+            <i class="ph ph-shield-check" style="color:var(--support-accent);"></i>
+            Direct user communication, ticket lifecycle management, and resolution tracking.
+        </p>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <a href="{{ url_for('adminstaff.messages') }}" class="btn-action-chat" style="padding: 9px 16px; font-size: 0.88rem;">
+            <i class="ph ph-chat-teardrop-text"></i> Open Live Messenger
+        </a>
+    </div>
 </div>
 
 <!-- Support Stats Summary Bar -->
-<div class="stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px;">
-    <div class="glass-card"
-        style="padding: 16px; display: flex; align-items: center; gap: 14px; border-radius: 12px !important; box-shadow: var(--shadow-sm) !important; transform: none !important; border-color: var(--border-color-soft) !important;">
-        <div
-            style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #6366f1; background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.15); flex-shrink: 0;">
+<div class="support-stats-grid">
+    <div class="support-stat-card active" id="statCardAll" onclick="setFilterStatus('all')">
+        <div class="support-stat-icon purple">
             <i class="ph ph-ticket"></i>
         </div>
-        <div>
-            <h4
-                style="margin: 0; font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
-                Total Tickets</h4>
-            <p style="margin: 2px 0 0 0; font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">{{
-                total_tickets }}</p>
+        <div class="support-stat-meta">
+            <h4>Total Tickets</h4>
+            <div class="stat-number">{{ total_tickets }}</div>
         </div>
     </div>
-    <div class="glass-card"
-        style="padding: 16px; display: flex; align-items: center; gap: 14px; border-radius: 12px !important; box-shadow: var(--shadow-sm) !important; transform: none !important; border-color: var(--border-color-soft) !important;">
-        <div
-            style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #f59e0b; background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.15); flex-shrink: 0;">
+
+    <div class="support-stat-card" id="statCardOpen" onclick="setFilterStatus('open')">
+        <div class="support-stat-icon amber">
             <i class="ph ph-hourglass-high"></i>
         </div>
-        <div>
-            <h4
-                style="margin: 0; font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
-                Open Tickets</h4>
-            <p style="margin: 2px 0 0 0; font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">{{
-                open_tickets }}</p>
+        <div class="support-stat-meta">
+            <h4>Open / Awaiting</h4>
+            <div class="stat-number">{{ open_tickets }}</div>
         </div>
     </div>
-    <div class="glass-card"
-        style="padding: 16px; display: flex; align-items: center; gap: 14px; border-radius: 12px !important; box-shadow: var(--shadow-sm) !important; transform: none !important; border-color: var(--border-color-soft) !important;">
-        <div
-            style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #10b981; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.15); flex-shrink: 0;">
+
+    <div class="support-stat-card" id="statCardInProgress" onclick="setFilterStatus('in_progress')">
+        <div class="support-stat-icon blue">
+            <i class="ph ph-arrows-clockwise"></i>
+        </div>
+        <div class="support-stat-meta">
+            <h4>In Progress</h4>
+            <div class="stat-number">{{ in_prog_tickets }}</div>
+        </div>
+    </div>
+
+    <div class="support-stat-card" id="statCardClosed" onclick="setFilterStatus('closed')">
+        <div class="support-stat-icon green">
             <i class="ph ph-check-circle"></i>
         </div>
-        <div>
-            <h4
-                style="margin: 0; font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
-                Resolved</h4>
-            <p style="margin: 2px 0 0 0; font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">{{
-                closed_tickets }}</p>
+        <div class="support-stat-meta">
+            <h4>Resolved / Closed</h4>
+            <div class="stat-number">{{ closed_tickets }}</div>
         </div>
     </div>
 </div>
 
-<div class="glass-card" style="padding: 24px;">
+<!-- Main Table Container -->
+<div class="glass-card support-table-card">
     <!-- Filter and Search Header -->
-    <div class="widget-header"
-        style="display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color-soft); padding-bottom: 16px; flex-wrap: wrap;">
-        <div style="flex: 1; max-width: 400px; position: relative; display: flex; align-items: center;">
-            <i class="ph ph-magnifying-glass"
-                style="position: absolute; left: 14px; color: var(--text-muted); font-size: 1.1rem; z-index: 10;"></i>
-            <input type="text" id="ticketSearchInput" placeholder="Search by ID, subject, or user..."
-                style="width: 100%; padding: 10px 14px 10px 42px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-primary); font-size: 0.9rem; outline: none; transition: all 0.2s;">
+    <div class="support-filter-bar">
+        <div class="support-search-wrapper">
+            <i class="ph ph-magnifying-glass"></i>
+            <input type="text" id="ticketSearchInput" class="support-search-input"
+                placeholder="Search by ID, subject, submitter, email..." oninput="applyFilters()">
         </div>
-        <div class="filter-actions" style="display: flex; gap: 10px;">
-            <select id="statusFilter" class="dropdown-trigger"
-                style="padding: 10px 14px; cursor: pointer; font-size: 0.85rem; outline: none; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary);">
-                <option value="all">All Statuses</option>
-                <option value="open">Open</option>
-                <option value="closed">Closed</option>
-            </select>
+
+        <div class="support-filter-tabs">
+            <button type="button" class="filter-tab-pill active" data-status="all" onclick="setFilterStatus('all')">
+                All <span class="tab-counter">{{ total_tickets }}</span>
+            </button>
+            <button type="button" class="filter-tab-pill" data-status="open" onclick="setFilterStatus('open')">
+                Open <span class="tab-counter">{{ open_tickets }}</span>
+            </button>
+            <button type="button" class="filter-tab-pill" data-status="in_progress" onclick="setFilterStatus('in_progress')">
+                In Progress <span class="tab-counter">{{ in_prog_tickets }}</span>
+            </button>
+            <button type="button" class="filter-tab-pill" data-status="closed" onclick="setFilterStatus('closed')">
+                Resolved <span class="tab-counter">{{ closed_tickets }}</span>
+            </button>
         </div>
     </div>
 
     <!-- Data Grid -->
     <div class="table-container">
-        <table class="data-grid" id="ticketsTable">
+        <table class="support-data-grid" id="ticketsTable">
             <thead>
                 <tr>
-                    <th>TICKET ID</th>
-                    <th>SUBJECT</th>
-                    <th>USER</th>
-                    <th>CREATED AT</th>
-                    <th>STATUS</th>
-                    <th style="text-align: right; padding-right: 24px !important;">ACTIONS</th>
+                    <th style="width: 140px;">TICKET ID</th>
+                    <th style="width: 220px;">SUBMITTER</th>
+                    <th>SUBJECT & INQUIRY</th>
+                    <th style="width: 140px;">STATUS</th>
+                    <th style="width: 130px;">CREATED</th>
+                    <th style="text-align: right; width: 230px;">ACTIONS</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="ticketsTbody">
                 {% for ticket in tickets %}
-                <tr class="ticket-row" data-id="{{ ticket.id | lower }}" data-subject="{{ ticket.subject | lower }}"
-                    data-user="{{ (ticket.profiles.first_name ~ ' ' ~ ticket.profiles.last_name) | lower if ticket.profiles else '' }}"
+                {% set raw_subj = ticket.subject or 'Inquiry' %}
+                {% if raw_subj.startswith('[') and ']' in raw_subj %}
+                    {% set cat_tag = raw_subj.split(']')[0][1:] %}
+                    {% set clean_subj = raw_subj.split(']')[1].strip() %}
+                {% else %}
+                    {% set cat_tag = 'General' %}
+                    {% set clean_subj = raw_subj %}
+                {% endif %}
+
+                {% set user_obj = ticket.profiles %}
+                {% set user_full_name = (user_obj.first_name ~ ' ' ~ user_obj.last_name) if user_obj else 'User' %}
+
+                <tr class="ticket-row"
+                    id="ticket-row-{{ ticket.id }}"
+                    data-id="{{ ticket.id | lower }}"
+                    data-ticket-num="tk-{{ ticket.id[:6] | lower }}"
+                    data-subject="{{ (ticket.subject or '') | lower }}"
+                    data-message="{{ (ticket.message or '') | lower }}"
+                    data-user="{{ user_full_name | lower }}"
+                    data-email="{{ (user_obj.email if user_obj else '') | lower }}"
                     data-status="{{ ticket.status }}">
-                    <td class="bold">#TK-{{ ticket.id[:6].upper() }}</td>
-                    <td>{{ ticket.subject }}</td>
+                    <!-- Ticket ID & Category -->
                     <td>
-                        <div style="display: flex; flex-direction: column; gap: 2px;">
-                            <span>{{ ticket.profiles.first_name }} {{ ticket.profiles.last_name }}</span>
-                            <span
-                                style="font-size: 0.72rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase;">{{
-                                ticket.profiles.role }}</span>
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <span style="font-family: monospace; font-weight: 700; color: var(--text-primary); font-size: 0.88rem;">
+                                #TK-{{ ticket.id[:6].upper() }}
+                            </span>
+                            <span class="ticket-tag-category">
+                                <i class="ph ph-tag" style="font-size: 0.7rem;"></i> {{ cat_tag }}
+                            </span>
                         </div>
                     </td>
-                    <td>{{ ticket.created_at | community_timeago }}</td>
+
+                    <!-- Submitter -->
                     <td>
-                        {% if ticket.status == 'open' %}
-                        <span class="status-pill warning">Open</span>
-                        {% else %}
-                        <span class="status-pill success">Closed</span>
-                        {% endif %}
+                        <div class="submitter-cell">
+                            <div class="submitter-avatar-wrap">
+                                {% if user_obj and user_obj.avatar_url %}
+                                <img src="{{ user_obj.avatar_url }}" alt="{{ user_full_name }}" onerror="this.style.display='none'; this.parentElement.innerText='{{ user_obj.first_name[:1] if user_obj else 'U' }}';">
+                                {% else %}
+                                <span>{{ user_obj.first_name[:1] if user_obj and user_obj.first_name else 'U' }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="submitter-info-text">
+                                <span class="submitter-name">{{ user_full_name }}</span>
+                                <div class="submitter-sub-row">
+                                    <span class="role-badge-chip">{{ (user_obj.role if user_obj else 'Player') | title }}</span>
+                                    {% if user_obj and user_obj.email %}
+                                    <a href="mailto:{{ user_obj.email }}" class="contact-quick-icon" title="Email: {{ user_obj.email }}">
+                                        <i class="ph ph-envelope-simple"></i>
+                                    </a>
+                                    {% endif %}
+                                    {% if user_obj and user_obj.phone %}
+                                    <a href="tel:{{ user_obj.phone }}" class="contact-quick-icon" title="Call: {{ user_obj.phone }}">
+                                        <i class="ph ph-phone"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
                     </td>
-                    <td style="text-align: right; padding-right: 24px !important;">
-                        <button class="action-box orange"
-                            style="padding: 4px 12px; font-size: 0.8rem; width: auto; font-weight: 600;"
-                            onclick="openTicketModal('{{ ticket.id }}', '{{ ticket.subject | escape }}', '{{ ticket.message | escape }}', '{{ ticket.status }}', '{{ ticket.response | escape if ticket.response else '' }}')">
-                            Review
-                        </button>
+
+                    <!-- Subject & Inquiry Preview -->
+                    <td class="ticket-meta-cell">
+                        <div class="ticket-subject-title">{{ clean_subj }}</div>
+                        <p class="ticket-snippet-preview">{{ ticket.message or 'No message body provided.' }}</p>
+                    </td>
+
+                    <!-- Status -->
+                    <td>
+                        <div>
+                            {% if ticket.status == 'open' %}
+                            <span class="ticket-status-pill open"><i class="ph ph-clock"></i> Open</span>
+                            {% elif ticket.status == 'in_progress' %}
+                            <span class="ticket-status-pill in-progress"><i class="ph ph-arrows-clockwise"></i> In Progress</span>
+                            {% else %}
+                            <span class="ticket-status-pill closed"><i class="ph ph-check-circle"></i> Resolved</span>
+                            {% endif %}
+
+                            {% if ticket.response %}
+                            <div class="responded-indicator">
+                                <i class="ph ph-chat-circle-check"></i> Responded
+                            </div>
+                            {% endif %}
+                        </div>
+                    </td>
+
+                    <!-- Created Date -->
+                    <td>
+                        <span style="color: var(--text-secondary); font-size: 0.82rem; white-space: nowrap;">
+                            {{ ticket.created_at | community_timeago }}
+                        </span>
+                    </td>
+
+                    <!-- Actions -->
+                    <td style="text-align: right;">
+                        <div class="row-actions-group">
+                            <button type="button" class="btn-action-primary" onclick="openTicketConsole('{{ ticket.id }}')">
+                                <i class="ph ph-chats-circle"></i> Manage & Reply
+                            </button>
+
+                            {% if ticket.user_id %}
+                            <a href="{{ url_for('adminstaff.messages') }}?chat_user={{ ticket.user_id }}" target="_blank"
+                               class="btn-action-chat" title="Open live direct conversation in Messenger">
+                                <i class="ph ph-paper-plane-tilt"></i> Chat
+                            </a>
+                            {% endif %}
+                        </div>
                     </td>
                 </tr>
                 {% else %}
-                <tr>
-                    <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">No tickets
-                        found.</td>
+                <tr id="emptyRowState">
+                    <td colspan="6" style="text-align: center; padding: 48px 20px; color: var(--text-muted);">
+                        <div style="font-size: 2.2rem; color: var(--text-muted); margin-bottom: 8px;">
+                            <i class="ph ph-ticket"></i>
+                        </div>
+                        <h4 style="margin: 0 0 4px 0; color: var(--text-primary); font-size: 1.05rem;">No support tickets found</h4>
+                        <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary);">There are currently no tickets logged matching your filter.</p>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -133,107 +1364,662 @@
     </div>
 </div>
 
-<!-- Ticket Review Modal -->
-<div id="ticket-modal" class="modal-overlay"
-    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center;">
-    <div class="glass-card modal-content"
-        style="background: var(--modal-box-bg) !important; border: 1px solid var(--modal-box-border) !important; padding: 28px; width: 100%; max-width: 600px; border-radius: 16px !important; box-shadow: 0 20px 60px rgba(0,0,0,0.4) !important; transform: none !important;">
-        <div class="modal-header"
-            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="margin: 0; font-size: 1.25rem; color: var(--text-primary);">Review Ticket Details</h2>
-            <button class="icon-btn" onclick="document.getElementById('ticket-modal').style.display='none'"
-                style="background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 1.4rem;"><i
-                    class="ph ph-x"></i></button>
-        </div>
-        <div style="margin-bottom: 16px;">
-            <strong
-                style="color: var(--text-secondary); font-size: 0.85rem; text-transform: uppercase;">Subject</strong>
-            <p id="modal-ticket-subject" style="margin-top: 6px; font-weight: 600; color: var(--text-primary);"></p>
-        </div>
-        <div style="margin-bottom: 20px;">
-            <strong style="color: var(--text-secondary); font-size: 0.85rem; text-transform: uppercase;">Message
-                Content</strong>
-            <p id="modal-ticket-message"
-                style="margin-top: 6px; white-space: pre-wrap; background: var(--action-box-bg); padding: 14px; border: 1px solid var(--border-color-soft); border-radius: 8px; color: var(--text-primary); font-size: 0.9rem; line-height: 1.5; max-height: 180px; overflow-y: auto;">
-            </p>
+<!-- ── TICKET RESOLUTION & DIRECT COMMUNICATION MODAL ── -->
+<div id="ticketDetailModal" class="ticket-modal-overlay" onclick="handleModalBackdropClick(event)">
+    <div class="ticket-modal-window">
+        <!-- Modal Header -->
+        <div class="ticket-modal-header">
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <span class="modal-ticket-id-tag" id="modalTicketBadge">#TK-000000</span>
+                <span id="modalCategoryBadge" class="ticket-tag-category">General</span>
+                <span id="modalStatusPill" class="ticket-status-pill open">Open</span>
+                <span id="modalCreatedAt" style="font-size: 0.8rem; color: var(--text-muted);"></span>
+            </div>
+            <button type="button" class="modal-close-btn" onclick="closeTicketConsole()" title="Close dialog">
+                <i class="ph ph-x"></i>
+            </button>
         </div>
 
-        <form id="resolve-form" method="POST">
-            <div id="response-section" class="form-group" style="margin-bottom: 20px;">
-                <label
-                    style="display: block; margin-bottom: 8px; color: var(--text-secondary); font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">Your
-                    Response (required to resolve)</label>
-                <textarea name="response" id="modal-ticket-response" rows="4" required
-                    placeholder="Type your resolution or response here..."
-                    style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary); resize: vertical; outline: none; font-family: inherit; font-size: 0.9rem;"></textarea>
+        <!-- Modal Body -->
+        <div class="ticket-modal-body">
+            <!-- Submitter Direct Dossier Strip -->
+            <div class="submitter-dossier-bar">
+                <div class="dossier-user-wrap">
+                    <div class="dossier-avatar" id="modalUserAvatar">U</div>
+                    <div>
+                        <div style="font-weight: 700; color: var(--text-primary); font-size: 0.95rem;" id="modalUserName">User Name</div>
+                        <div style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
+                            <span class="role-badge-chip" id="modalUserRole">Player</span>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);" id="modalUserEmailPreview"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dossier-channels">
+                    <a id="modalChatUserBtn" href="#" target="_blank" class="btn-dossier-channel chat" title="Open live direct chat with submitter">
+                        <i class="ph ph-chats-circle"></i> Chat in Messenger
+                        <i class="ph ph-arrow-square-out" style="font-size: 0.8rem;"></i>
+                    </a>
+                    <a id="modalEmailBtn" href="#" class="btn-dossier-channel neutral" title="Compose Email">
+                        <i class="ph ph-envelope-simple"></i> Email
+                    </a>
+                    <button type="button" class="btn-dossier-channel neutral" onclick="copyUserEmail()" title="Copy email address to clipboard">
+                        <i class="ph ph-copy"></i>
+                    </button>
+                    <a id="modalPhoneBtn" href="#" class="btn-dossier-channel neutral" title="Call Submitter Phone" style="display: none;">
+                        <i class="ph ph-phone"></i> Call
+                    </a>
+                </div>
             </div>
-            <div class="form-actions" style="display: flex; justify-content: flex-end; gap: 10px;">
-                <button type="button" class="action-box"
-                    onclick="document.getElementById('ticket-modal').style.display='none'"
-                    style="padding: 10px 20px; background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; width: auto; font-size: 0.9rem; font-weight: 600; border-radius: 8px;">Cancel</button>
-                <button type="submit" id="resolve-btn" class="action-box green"
-                    style="padding: 10px 24px; cursor: pointer; width: auto; font-size: 0.9rem; font-weight: 600; border-radius: 8px;"><i
-                        class="ph ph-check-circle"></i> Resolve Ticket</button>
+
+            <!-- Submitter's Inquiry Bubble -->
+            <div class="inquiry-bubble">
+                <div class="bubble-header">
+                    <div class="bubble-author">
+                        <i class="ph ph-user-circle" style="font-size: 1.1rem; color: var(--support-accent);"></i>
+                        <span id="modalInquiryAuthor">User Inquiry</span>
+                    </div>
+                    <span class="bubble-time" id="modalInquiryTime">Submitted</span>
+                </div>
+                <div style="margin-bottom: 8px;">
+                    <strong style="font-size: 1.05rem; color: var(--text-primary);" id="modalInquirySubject">Subject Title</strong>
+                </div>
+                <p class="inquiry-text-content" id="modalInquiryMessage">Message body...</p>
             </div>
-        </form>
+
+            <!-- Existing Staff Response History (if any) -->
+            <div id="modalExistingResponseWrap" class="response-history-bubble" style="display: none;">
+                <div class="bubble-header" style="border-bottom-color: rgba(16, 185, 129, 0.2);">
+                    <div class="bubble-author" style="color: #059669;">
+                        <i class="ph ph-shield-check" style="font-size: 1.15rem;"></i>
+                        <span>Current Staff Resolution Note</span>
+                    </div>
+                    <span class="bubble-time" style="color: #059669; font-weight: 600;">Active Resolution</span>
+                </div>
+                <p class="inquiry-text-content" id="modalExistingResponseText" style="color: var(--text-primary);"></p>
+            </div>
+
+            <!-- Response Composer Section -->
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div class="canned-templates-wrap">
+                    <span class="canned-templates-title">
+                        <i class="ph ph-lightning" style="color: #f59e0b;"></i> Quick Response Templates:
+                    </span>
+                    <div class="canned-chips-row">
+                        <button type="button" class="canned-chip" onclick="applyQuickTemplate('investigating')">
+                            🔍 Under Investigation
+                        </button>
+                        <button type="button" class="canned-chip" onclick="applyQuickTemplate('need_info')">
+                            ❓ Requesting Details
+                        </button>
+                        <button type="button" class="canned-chip" onclick="applyQuickTemplate('resolved')">
+                            ✅ Issue Resolved
+                        </button>
+                        <button type="button" class="canned-chip" onclick="applyQuickTemplate('booking_updated')">
+                            🎾 Booking / Reservation Adjusted
+                        </button>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="modalResponseInput" style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">
+                        Staff Response & Action Notes:
+                    </label>
+                    <textarea id="modalResponseInput" class="response-input-area"
+                        placeholder="Type your official response, resolution note, or instructions to the user..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="ticket-modal-footer">
+            <div class="footer-left-options">
+                <label class="notify-checkbox-label">
+                    <input type="checkbox" id="modalNotifyUserCheck" checked>
+                    <span>Dispatch instant in-app notification to submitter</span>
+                </label>
+            </div>
+
+            <div class="footer-buttons-group">
+                <button type="button" class="btn-ticket-modal secondary" onclick="closeTicketConsole()">
+                    Cancel
+                </button>
+
+                <!-- When Open or In-Progress -->
+                <div id="modalActiveActionsGroup" style="display: flex; gap: 8px;">
+                    <button type="button" class="btn-ticket-modal in-progress" onclick="submitTicketAction('in_progress')">
+                        <i class="ph ph-arrows-clockwise"></i> Mark In Progress
+                    </button>
+                    <button type="button" class="btn-ticket-modal resolve" onclick="promptResolveTicket()">
+                        <i class="ph ph-check-circle"></i> Resolve & Close Ticket
+                    </button>
+                </div>
+
+                <!-- When Closed -->
+                <div id="modalClosedActionsGroup" style="display: none; gap: 8px;">
+                    <button type="button" class="btn-ticket-modal reopen" onclick="promptReopenTicket()">
+                        <i class="ph ph-arrow-counter-clockwise"></i> Reopen Ticket
+                    </button>
+                    <button type="button" class="btn-ticket-modal secondary" onclick="submitTicketAction('closed', true)">
+                        <i class="ph ph-floppy-disk"></i> Update Resolution Note
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
+<!-- ── CUSTOM CONFIRMATION MODAL ── -->
+<div id="customConfirmModal" class="confirm-modal-backdrop" onclick="handleConfirmBackdropClick(event)">
+    <div class="confirm-modal-card">
+        <div id="confirmModalIcon" class="confirm-modal-icon-circle green">
+            <i class="ph ph-check-circle"></i>
+        </div>
+        <h3 class="confirm-modal-title" id="confirmModalTitle">Resolve & Close Ticket?</h3>
+        <p class="confirm-modal-desc" id="confirmModalDesc">
+            This will mark the ticket as resolved, save your response, and send an in-app notification to the user.
+        </p>
+        <div class="confirm-modal-actions">
+            <button type="button" class="btn-confirm-action cancel" onclick="closeConfirmModal()">
+                Cancel
+            </button>
+            <button type="button" class="btn-confirm-action green" id="btnConfirmProceed" onclick="executeConfirmedAction()">
+                <i class="ph ph-check"></i> Yes, Proceed
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast notification element -->
+<div id="supportToast" class="support-toast info">
+    <i class="ph ph-info" id="toastIcon"></i>
+    <span id="toastMsg">Action completed</span>
+</div>
+
+<!-- CSRF Token Meta or fallback -->
+<input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+
 <script>
-    const searchInput = document.getElementById('ticketSearchInput');
-    const statusFilter = document.getElementById('statusFilter');
+    // ── DATA REPOSITORY ──
+    const ticketsData = {
+        {% for ticket in tickets %}
+        "{{ ticket.id }}": {
+            id: {{ ticket.id | tojson }},
+            subject: {{ (ticket.subject or '') | tojson }},
+            message: {{ (ticket.message or '') | tojson }},
+            status: {{ (ticket.status or 'open') | tojson }},
+            response: {{ (ticket.response or '') | tojson }},
+            created_at: {{ (ticket.created_at or '') | tojson }},
+            user_id: {{ (ticket.user_id or '') | tojson }},
+            user: {
+                id: {{ (ticket.profiles.id if ticket.profiles else ticket.user_id or '') | tojson }},
+                name: {{ ((ticket.profiles.first_name ~ ' ' ~ ticket.profiles.last_name) if ticket.profiles else 'User') | tojson }},
+                role: {{ (ticket.profiles.role if ticket.profiles else 'Player') | tojson }},
+                email: {{ (ticket.profiles.email if ticket.profiles else '') | tojson }},
+                phone: {{ (ticket.profiles.phone if ticket.profiles else '') | tojson }},
+                avatar_url: {{ (ticket.profiles.avatar_url if ticket.profiles else '') | tojson }}
+            }
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    };
+
+    let currentFilterStatus = 'all';
+    let activeTicketId = null;
+    let pendingConfirmAction = null;
+
+    // ── CSRF HELPER ──
+    function getCsrfToken() {
+        return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
+               document.querySelector('input[name="csrf_token"]')?.value || '';
+    }
+
+    // ── TOAST MESSAGES ──
+    let toastTimeout = null;
+    function showToast(message, type = 'info') {
+        const toast = document.getElementById('supportToast');
+        const msgEl = document.getElementById('toastMsg');
+        const iconEl = document.getElementById('toastIcon');
+
+        if (!toast) return;
+        clearTimeout(toastTimeout);
+
+        toast.className = `support-toast ${type}`;
+        msgEl.textContent = message;
+
+        if (type === 'success') {
+            iconEl.className = 'ph ph-check-circle';
+        } else if (type === 'error') {
+            iconEl.className = 'ph ph-x-circle';
+        } else {
+            iconEl.className = 'ph ph-info';
+        }
+
+        toast.classList.add('show');
+        toastTimeout = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3600);
+    }
+
+    // ── SEARCH & STATUS FILTERING ──
+    function setFilterStatus(status) {
+        currentFilterStatus = status;
+
+        // Update pills
+        document.querySelectorAll('.filter-tab-pill').forEach(pill => {
+            pill.classList.toggle('active', pill.dataset.status === status);
+        });
+
+        // Update stat cards
+        document.querySelectorAll('.support-stat-card').forEach(card => card.classList.remove('active'));
+        if (status === 'all') document.getElementById('statCardAll')?.classList.add('active');
+        if (status === 'open') document.getElementById('statCardOpen')?.classList.add('active');
+        if (status === 'in_progress') document.getElementById('statCardInProgress')?.classList.add('active');
+        if (status === 'closed') document.getElementById('statCardClosed')?.classList.add('active');
+
+        applyFilters();
+    }
 
     function applyFilters() {
-        const query = searchInput.value.toLowerCase().trim();
-        const statusVal = statusFilter.value;
+        const query = (document.getElementById('ticketSearchInput')?.value || '').toLowerCase().trim();
         const rows = document.querySelectorAll('.ticket-row');
+        let visibleCount = 0;
 
         rows.forEach(row => {
-            const id = row.dataset.id;
-            const subject = row.dataset.subject;
-            const user = row.dataset.user;
-            const status = row.dataset.status;
+            const rowStatus = row.dataset.status || 'open';
+            const rowId = row.dataset.id || '';
+            const rowNum = row.dataset.ticketNum || '';
+            const rowSubject = row.dataset.subject || '';
+            const rowMessage = row.dataset.message || '';
+            const rowUser = row.dataset.user || '';
+            const rowEmail = row.dataset.email || '';
 
-            const matchesStatus = (statusVal === 'all' || status === statusVal);
-            const matchesSearch = !query || id.includes(query) || subject.includes(query) || user.includes(query);
+            const matchesStatus = (currentFilterStatus === 'all' || rowStatus === currentFilterStatus);
+            const matchesQuery = !query ||
+                rowId.includes(query) ||
+                rowNum.includes(query) ||
+                rowSubject.includes(query) ||
+                rowMessage.includes(query) ||
+                rowUser.includes(query) ||
+                rowEmail.includes(query);
 
-            if (matchesStatus && matchesSearch) {
+            if (matchesStatus && matchesQuery) {
                 row.style.display = '';
+                visibleCount++;
             } else {
                 row.style.display = 'none';
             }
         });
+
+        const emptyState = document.getElementById('emptyRowState');
+        if (emptyState) {
+            emptyState.style.display = (visibleCount === 0) ? '' : 'none';
+        }
     }
 
-    if (searchInput) searchInput.addEventListener('input', applyFilters);
-    if (statusFilter) statusFilter.addEventListener('change', applyFilters);
+    // ── TICKET CONSOLE MODAL ──
+    function openTicketConsole(ticketId) {
+        ensureModalsInBody();
+        const ticket = ticketsData[ticketId];
+        if (!ticket) return;
 
-    function openTicketModal(id, subject, message, status, response) {
-        document.getElementById('modal-ticket-subject').textContent = subject;
-        document.getElementById('modal-ticket-message').textContent = message;
+        activeTicketId = ticketId;
 
-        const form = document.getElementById('resolve-form');
-        const responseField = document.getElementById('modal-ticket-response');
-        const resolveBtn = document.getElementById('resolve-btn');
+        // Header info
+        const badge = document.getElementById('modalTicketBadge');
+        if (badge) badge.textContent = `#TK-${ticket.id.slice(0, 6).toUpperCase()}`;
 
-        if (status === 'closed') {
-            responseField.value = response;
-            responseField.disabled = true;
-            resolveBtn.style.display = 'none';
-            form.action = '';
+        // Parse category
+        let category = 'General';
+        let cleanSubject = ticket.subject || 'No Subject';
+        if (ticket.subject && ticket.subject.startsWith('[') && ticket.subject.includes(']')) {
+            category = ticket.subject.split(']')[0].slice(1).trim();
+            cleanSubject = ticket.subject.split(']')[1].trim();
+        }
+
+        const catBadge = document.getElementById('modalCategoryBadge');
+        if (catBadge) catBadge.innerHTML = `<i class="ph ph-tag" style="font-size:0.7rem;"></i> ${category}`;
+
+        const createdEl = document.getElementById('modalCreatedAt');
+        if (createdEl && ticket.created_at) {
+            createdEl.textContent = `Logged ${ticket.created_at.slice(0, 10)}`;
+        }
+
+        // Status pill
+        const statusPill = document.getElementById('modalStatusPill');
+        if (statusPill) {
+            if (ticket.status === 'open') {
+                statusPill.className = 'ticket-status-pill open';
+                statusPill.innerHTML = '<i class="ph ph-clock"></i> Open';
+            } else if (ticket.status === 'in_progress') {
+                statusPill.className = 'ticket-status-pill in-progress';
+                statusPill.innerHTML = '<i class="ph ph-arrows-clockwise"></i> In Progress';
+            } else {
+                statusPill.className = 'ticket-status-pill closed';
+                statusPill.innerHTML = '<i class="ph ph-check-circle"></i> Resolved';
+            }
+        }
+
+        // Submitter details
+        const userNameEl = document.getElementById('modalUserName');
+        if (userNameEl) userNameEl.textContent = ticket.user.name;
+
+        const userRoleEl = document.getElementById('modalUserRole');
+        if (userRoleEl) userRoleEl.textContent = (ticket.user.role || 'Player').toUpperCase();
+
+        const userEmailEl = document.getElementById('modalUserEmailPreview');
+        if (userEmailEl) userEmailEl.textContent = ticket.user.email ? `• ${ticket.user.email}` : '';
+
+        const avatarEl = document.getElementById('modalUserAvatar');
+        if (avatarEl) {
+            if (ticket.user.avatar_url) {
+                avatarEl.innerHTML = `<img src="${ticket.user.avatar_url}" alt="${ticket.user.name}" onerror="this.style.display='none'; this.parentElement.innerText='${ticket.user.name.charAt(0)}';">`;
+            } else {
+                avatarEl.textContent = ticket.user.name.charAt(0) || 'U';
+            }
+        }
+
+        // Communication buttons
+        const chatBtn = document.getElementById('modalChatUserBtn');
+        if (chatBtn) {
+            if (ticket.user_id) {
+                chatBtn.href = `/adminstaff/messages?chat_user=${ticket.user_id}`;
+                chatBtn.style.display = 'inline-flex';
+            } else {
+                chatBtn.style.display = 'none';
+            }
+        }
+
+        const emailBtn = document.getElementById('modalEmailBtn');
+        if (emailBtn) {
+            if (ticket.user.email) {
+                emailBtn.href = `mailto:${ticket.user.email}?subject=${encodeURIComponent('Support Ticket #' + ticket.id.slice(0,6).toUpperCase() + ' - PickleballHub')}`;
+                emailBtn.style.display = 'inline-flex';
+            } else {
+                emailBtn.style.display = 'none';
+            }
+        }
+
+        const phoneBtn = document.getElementById('modalPhoneBtn');
+        if (phoneBtn) {
+            if (ticket.user.phone) {
+                phoneBtn.href = `tel:${ticket.user.phone}`;
+                phoneBtn.style.display = 'inline-flex';
+            } else {
+                phoneBtn.style.display = 'none';
+            }
+        }
+
+        // Inquiry content
+        const authorEl = document.getElementById('modalInquiryAuthor');
+        if (authorEl) authorEl.textContent = `${ticket.user.name} (${(ticket.user.role || 'Player').toUpperCase()})`;
+
+        const subjEl = document.getElementById('modalInquirySubject');
+        if (subjEl) subjEl.textContent = cleanSubject;
+
+        const msgEl = document.getElementById('modalInquiryMessage');
+        if (msgEl) msgEl.textContent = ticket.message || 'No inquiry text provided.';
+
+        // Existing Response
+        const existingWrap = document.getElementById('modalExistingResponseWrap');
+        const existingText = document.getElementById('modalExistingResponseText');
+        if (existingWrap && existingText) {
+            if (ticket.response) {
+                existingText.textContent = ticket.response;
+                existingWrap.style.display = 'block';
+            } else {
+                existingWrap.style.display = 'none';
+            }
+        }
+
+        // Input textarea
+        const inputArea = document.getElementById('modalResponseInput');
+        if (inputArea) {
+            inputArea.value = ticket.response || '';
+        }
+
+        // Action groups toggle
+        const activeGroup = document.getElementById('modalActiveActionsGroup');
+        const closedGroup = document.getElementById('modalClosedActionsGroup');
+
+        if (ticket.status === 'closed') {
+            if (activeGroup) activeGroup.style.display = 'none';
+            if (closedGroup) closedGroup.style.display = 'flex';
         } else {
-            responseField.value = '';
-            responseField.disabled = false;
-            resolveBtn.style.display = 'inline-block';
-            form.action = `/adminstaff/support/${id}/resolve`;
+            if (activeGroup) activeGroup.style.display = 'flex';
+            if (closedGroup) closedGroup.style.display = 'none';
         }
 
-        document.getElementById('ticket-modal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        document.getElementById('ticketDetailModal')?.classList.add('open');
     }
-    window.addEventListener('click', e => {
-        if (e.target === document.getElementById('ticket-modal')) {
-            document.getElementById('ticket-modal').style.display = 'none';
+
+    function ensureModalsInBody() {
+        const modal = document.getElementById('ticketDetailModal');
+        const confirmModal = document.getElementById('customConfirmModal');
+        const toast = document.getElementById('supportToast');
+
+        if (modal && modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
         }
-    });
+        if (confirmModal && confirmModal.parentElement !== document.body) {
+            document.body.appendChild(confirmModal);
+        }
+        if (toast && toast.parentElement !== document.body) {
+            document.body.appendChild(toast);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', ensureModalsInBody);
+
+    function closeTicketConsole() {
+        document.getElementById('ticketDetailModal')?.classList.remove('open');
+        document.body.style.overflow = '';
+        activeTicketId = null;
+    }
+
+    function handleModalBackdropClick(event) {
+        if (event.target === document.getElementById('ticketDetailModal')) {
+            closeTicketConsole();
+        }
+    }
+
+    // ── QUICK RESPONSE TEMPLATES ──
+    function applyQuickTemplate(type) {
+        const input = document.getElementById('modalResponseInput');
+        if (!input) return;
+
+        let template = '';
+        if (type === 'investigating') {
+            template = 'Hello, our administrative team is actively investigating your inquiry with facility operations. We will update you here as soon as we have completed the review.';
+        } else if (type === 'need_info') {
+            template = 'Hello, could you please provide additional details, reservation time/court, or supporting screenshots so our team can assist you more promptly?';
+        } else if (type === 'resolved') {
+            template = 'Hello, this issue has been resolved by our support staff. Thank you for bringing this to our attention, and please reach out if you need further assistance!';
+        } else if (type === 'booking_updated') {
+            template = 'Hello, we have updated your reservation records and adjusted your account balance/booking schedule accordingly. Thank you for your patience!';
+        }
+
+        input.value = template;
+        input.focus();
+        showToast('Template response inserted.', 'info');
+    }
+
+    function copyUserEmail() {
+        if (!activeTicketId) return;
+        const email = ticketsData[activeTicketId]?.user?.email;
+        if (!email) {
+            showToast('No email address on file.', 'error');
+            return;
+        }
+
+        navigator.clipboard.writeText(email).then(() => {
+            showToast(`Copied ${email} to clipboard!`, 'success');
+        }).catch(() => {
+            showToast(`Email: ${email}`, 'info');
+        });
+    }
+
+    // ── CONFIRMATION MODAL & ACTIONS ──
+    function promptResolveTicket() {
+        ensureModalsInBody();
+        const input = document.getElementById('modalResponseInput');
+        const notes = input ? input.value.trim() : '';
+
+        const icon = document.getElementById('confirmModalIcon');
+        const title = document.getElementById('confirmModalTitle');
+        const desc = document.getElementById('confirmModalDesc');
+        const btn = document.getElementById('btnConfirmProceed');
+
+        if (icon) icon.className = 'confirm-modal-icon-circle green';
+        if (title) title.textContent = 'Resolve & Close Support Ticket?';
+        if (desc) desc.textContent = 'This ticket will be marked as Resolved. Your resolution note will be saved and an in-app notification dispatched to the submitter.';
+        if (btn) {
+            btn.className = 'btn-confirm-action green';
+            btn.innerHTML = '<i class="ph ph-check-circle"></i> Resolve & Close';
+        }
+
+        pendingConfirmAction = () => submitTicketAction('closed', false);
+        document.getElementById('customConfirmModal')?.classList.add('open');
+    }
+
+    function promptReopenTicket() {
+        ensureModalsInBody();
+        const icon = document.getElementById('confirmModalIcon');
+        const title = document.getElementById('confirmModalTitle');
+        const desc = document.getElementById('confirmModalDesc');
+        const btn = document.getElementById('btnConfirmProceed');
+
+        if (icon) icon.className = 'confirm-modal-icon-circle amber';
+        if (title) title.textContent = 'Reopen Support Ticket?';
+        if (desc) desc.textContent = 'This ticket will be returned to Open status for further inquiry or communication with the user.';
+        if (btn) {
+            btn.className = 'btn-confirm-action amber';
+            btn.innerHTML = '<i class="ph ph-arrow-counter-clockwise"></i> Reopen Ticket';
+        }
+
+        pendingConfirmAction = () => submitTicketAction('open', false);
+        document.getElementById('customConfirmModal')?.classList.add('open');
+    }
+
+    function closeConfirmModal() {
+        document.getElementById('customConfirmModal')?.classList.remove('open');
+        pendingConfirmAction = null;
+    }
+
+    function handleConfirmBackdropClick(event) {
+        if (event.target === document.getElementById('customConfirmModal')) {
+            closeConfirmModal();
+        }
+    }
+
+    function executeConfirmedAction() {
+        if (typeof pendingConfirmAction === 'function') {
+            const action = pendingConfirmAction;
+            closeConfirmModal();
+            action();
+        }
+    }
+
+    // ── SUBMIT TICKET STATUS & RESPONSE ──
+    async function submitTicketAction(newStatus, isSilentUpdate = false) {
+        if (!activeTicketId) return;
+
+        const ticket = ticketsData[activeTicketId];
+        const responseInput = document.getElementById('modalResponseInput');
+        const notes = responseInput ? responseInput.value.trim() : '';
+        const notifyUser = document.getElementById('modalNotifyUserCheck')?.checked ?? true;
+
+        try {
+            const resp = await fetch(`/adminstaff/support/${activeTicketId}/resolve`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCsrfToken(),
+                    'X-CSRF-Token': getCsrfToken()
+                },
+                body: JSON.stringify({
+                    status: newStatus,
+                    response: notes,
+                    notify_user: notifyUser
+                })
+            });
+
+            const data = await resp.json();
+            if (data.success) {
+                // Update local model
+                ticket.status = newStatus;
+                ticket.response = notes;
+
+                // Update Table Row UI
+                const row = document.getElementById(`ticket-row-${activeTicketId}`);
+                if (row) {
+                    row.dataset.status = newStatus;
+                    const statusTd = row.children[3];
+                    if (statusTd) {
+                        let pillHtml = '';
+                        if (newStatus === 'open') {
+                            pillHtml = '<span class="ticket-status-pill open"><i class="ph ph-clock"></i> Open</span>';
+                        } else if (newStatus === 'in_progress') {
+                            pillHtml = '<span class="ticket-status-pill in-progress"><i class="ph ph-arrows-clockwise"></i> In Progress</span>';
+                        } else {
+                            pillHtml = '<span class="ticket-status-pill closed"><i class="ph ph-check-circle"></i> Resolved</span>';
+                        }
+                        if (notes) {
+                            pillHtml += '<div class="responded-indicator"><i class="ph ph-chat-circle-check"></i> Responded</div>';
+                        }
+                        statusTd.innerHTML = pillHtml;
+                    }
+                }
+
+                // Update stat counts
+                recalculateStatCounters();
+
+                showToast(data.message || `Ticket marked as ${newStatus}.`, 'success');
+                closeTicketConsole();
+                applyFilters();
+            } else {
+                showToast(data.message || 'Error updating ticket.', 'error');
+            }
+        } catch (err) {
+            console.error('Ticket update error:', err);
+            showToast('Network error while updating ticket.', 'error');
+        }
+    }
+
+    function recalculateStatCounters() {
+        let openCount = 0;
+        let inProgCount = 0;
+        let closedCount = 0;
+        let total = 0;
+
+        for (const id in ticketsData) {
+            total++;
+            const s = ticketsData[id].status;
+            if (s === 'open') openCount++;
+            else if (s === 'in_progress') inProgCount++;
+            else if (s === 'closed') closedCount++;
+        }
+
+        const openEl = document.querySelector('#statCardOpen .stat-number');
+        if (openEl) openEl.textContent = openCount;
+
+        const inProgEl = document.querySelector('#statCardInProgress .stat-number');
+        if (inProgEl) inProgEl.textContent = inProgCount;
+
+        const closedEl = document.querySelector('#statCardClosed .stat-number');
+        if (closedEl) closedEl.textContent = closedCount;
+
+        // Also update tab counters
+        const openTab = document.querySelector('.filter-tab-pill[data-status="open"] .tab-counter');
+        if (openTab) openTab.textContent = openCount;
+
+        const inProgTab = document.querySelector('.filter-tab-pill[data-status="in_progress"] .tab-counter');
+        if (inProgTab) inProgTab.textContent = inProgCount;
+
+        const closedTab = document.querySelector('.filter-tab-pill[data-status="closed"] .tab-counter');
+        if (closedTab) closedTab.textContent = closedCount;
+    }
 </script>
 {% endblock %}

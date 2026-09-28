@@ -1,251 +1,120 @@
 {% extends "player/base_player.html" %}
 
-{% block title %}Profile Management{% endblock %}
+{% block title %}Player Profile — {{ current_user.full_name }}{% endblock %}
 
 {% block extra_head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-    .profile-layout {
+    /* Tabbed Interface Controls */
+    .profile-tab-pane {
+        display: none;
+        animation: fadeInSlideUp 0.3s ease-out forwards;
+    }
+
+    .profile-tab-pane.active {
+        display: block;
+    }
+
+    .sports-stats-strip {
         display: grid;
-        grid-template-columns: 1fr 1.6fr;
-        gap: 24px;
-        align-items: start;
-    }
-
-    /* ---- Left: Profile Card ---- */
-    .profile-card {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        gap: 8px;
-    }
-
-    .profile-avatar {
-        width: 72px;
-        height: 72px;
-        background: var(--btn-navy);
-        color: #fff;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem;
-        font-weight: 700;
-        margin-bottom: 8px;
-    }
-
-    .profile-card h2 {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: var(--text-primary);
-    }
-
-    .profile-card .player-id {
-        font-size: 0.8rem;
-        color: var(--text-muted);
-        margin-bottom: 12px;
-    }
-
-    .profile-contact {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        margin-bottom: 12px;
-    }
-
-    .contact-row {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 0.875rem;
-        color: var(--text-secondary);
-    }
-
-    .contact-row i {
-        font-size: 1.1rem;
-        color: var(--text-muted);
-        flex-shrink: 0;
-    }
-
-    .membership-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: var(--btn-green-light);
-        color: var(--btn-green);
-        font-size: 0.75rem;
-        font-weight: 600;
-        padding: 4px 10px;
-        border-radius: 20px;
-    }
-
-    html.dark-mode .membership-badge {
-        background: rgba(41, 163, 86, 0.15);
-        color: #4ade80;
-    }
-
-    .btn-edit-profile {
-        width: 100%;
-        margin-top: 8px;
-        padding: 12px;
-        border: 1px solid var(--border-color);
-        background: transparent;
-        color: var(--text-primary);
-        border-radius: 8px;
-        font-size: 0.875rem;
-        font-weight: 600;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        transition: var(--transition);
-    }
-
-    .btn-edit-profile:hover {
-        background: var(--input-bg);
-        border-color: var(--text-muted);
-    }
-
-    /* ---- Right: Stats Card ---- */
-    .stats-section-title {
-        font-size: 1rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 16px;
-    }
-
-    .stat-boxes {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
-        margin-bottom: 24px;
-    }
-
-    .stat-boxes.four-cols {
-        grid-template-columns: repeat(4, 1fr) !important;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+        margin: 20px 0;
     }
 
     @media (max-width: 768px) {
-        .stat-boxes.four-cols {
-            grid-template-columns: repeat(2, 1fr) !important;
+        .sports-stats-strip {
+            grid-template-columns: repeat(2, 1fr);
         }
     }
 
-    .stat-box {
-        background: var(--bg-color);
-        border: 1px solid var(--border-color);
-        border-radius: 10px;
+    .sports-stat-box {
+        background: var(--sports-card-elevated);
+        border: 1px solid var(--sports-border);
+        border-radius: var(--radius-sm);
         padding: 16px;
         text-align: center;
+        transition: var(--sports-transition);
     }
 
-    .stat-box .stat-value {
-        font-size: 1.75rem;
-        font-weight: 700;
+    .sports-stat-box:hover {
+        transform: translateY(-2px);
+        border-color: var(--sports-border-subtle);
+    }
+
+    .sports-stat-box .box-value {
+        font-size: 1.85rem;
+        font-weight: 900;
+        letter-spacing: -0.02em;
         display: block;
-        margin-bottom: 4px;
+        margin-bottom: 2px;
     }
 
-    .stat-box .stat-label {
-        font-size: 0.75rem;
-        color: var(--text-muted);
-    }
-
-    .stat-box.orange .stat-value {
-        color: var(--primary-orange);
-    }
-
-    .stat-box.navy .stat-value {
-        color: var(--btn-navy);
-    }
-
-    html.dark-mode .stat-box.navy .stat-value {
-        color: #93c5fd;
-    }
-
-    .stat-box.green .stat-value {
-        color: var(--btn-green);
-    }
-
-    /* Fairness Rating */
-    .fairness-label {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: var(--text-primary);
-        margin-bottom: 10px;
-    }
-
-    .fairness-bar-wrap {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 6px;
-    }
-
-    .fairness-track {
-        flex: 1;
-        height: 8px;
-        background: var(--border-color);
-        border-radius: 99px;
-        overflow: hidden;
-    }
-
-    .fairness-fill {
-        height: 100%;
-        background: var(--btn-green);
-        border-radius: 99px;
-        width: 85%;
-        transition: width 0.6s ease;
-    }
-
-    .fairness-score {
-        font-size: 0.85rem;
+    .sports-stat-box .box-label {
+        font-size: 0.74rem;
         font-weight: 700;
-        color: var(--btn-green);
-        white-space: nowrap;
+        text-transform: uppercase;
+        color: var(--sports-text-muted);
+        letter-spacing: 0.4px;
     }
 
-    .fairness-note {
-        font-size: 0.75rem;
-        color: var(--text-muted);
-        margin-bottom: 20px;
-    }
-
-    /* Recent Activity */
-    .recent-activity-title {
-        font-size: 0.875rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 12px;
-    }
-
-    .activity-list {
-        list-style: none;
+    /* Visual Match Cards */
+    .match-history-stack {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 12px;
     }
 
-    .activity-list li {
+    .match-history-item {
+        background: var(--sports-card-elevated);
+        border: 1px solid var(--sports-border);
+        border-radius: var(--radius-sm);
+        padding: 16px 20px;
         display: flex;
         align-items: center;
-        gap: 10px;
-        font-size: 0.85rem;
-        color: var(--text-secondary);
+        justify-content: space-between;
+        gap: 16px;
+        transition: var(--sports-transition);
     }
 
-    .activity-list li .dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--primary-orange);
+    .match-history-item:hover {
+        border-color: var(--sports-border-subtle);
+        transform: translateY(-2px);
+        box-shadow: var(--sports-shadow-sm);
+    }
+
+    .match-result-badge {
+        font-size: 0.74rem;
+        font-weight: 900;
+        padding: 6px 12px;
+        border-radius: var(--radius-xs);
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
         flex-shrink: 0;
     }
 
-    /* ---- Simulator Card Styles ---- */
+    .match-result-badge.win {
+        background: rgba(16, 185, 129, 0.15);
+        color: var(--pb-green);
+        border: 1px solid rgba(16, 185, 129, 0.35);
+    }
+
+    .match-result-badge.loss {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.35);
+    }
+
+    .match-result-badge.draw {
+        background: rgba(148, 163, 184, 0.15);
+        color: var(--sports-text-muted);
+        border: 1px solid rgba(148, 163, 184, 0.35);
+    }
+
+    /* Simulator Styles */
     .sim-card-body {
         display: flex;
         flex-direction: column;
@@ -267,8 +136,8 @@
 
     .sim-result-box {
         background: rgba(16, 185, 129, 0.04);
-        border: 1px solid rgba(16, 185, 129, 0.15);
-        border-radius: 10px;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        border-radius: var(--radius-sm);
         padding: 16px;
         display: flex;
         flex-direction: column;
@@ -279,45 +148,13 @@
 
     .sim-result-box.loss {
         background: rgba(239, 68, 68, 0.04);
-        border-color: rgba(239, 68, 68, 0.15);
+        border-color: rgba(239, 68, 68, 0.2);
     }
 
     .sim-metric-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-    }
-
-    .sim-metric-label {
-        font-size: 0.8rem;
-        color: var(--text-secondary);
-        font-weight: 500;
-    }
-
-    .sim-metric-value {
-        font-size: 0.9rem;
-        font-weight: 700;
-        color: var(--text-primary);
-    }
-
-    .sim-change-badge {
-        padding: 4px 8px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        border-radius: 6px;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    .sim-change-badge.positive {
-        background: rgba(16, 185, 129, 0.12);
-        color: #10b981;
-    }
-
-    .sim-change-badge.negative {
-        background: rgba(239, 68, 68, 0.12);
-        color: #ef4444;
     }
 
     .sim-toggle-btn {
@@ -329,23 +166,18 @@
         padding: 10px;
         font-size: 0.85rem;
         font-weight: 700;
-        border-radius: 8px;
-        border: 1px solid var(--border-color);
-        background: var(--bg-color);
-        color: var(--text-secondary);
+        border-radius: var(--radius-xs);
+        border: 1px solid var(--sports-border);
+        background: var(--sports-card-bg);
+        color: var(--sports-text-muted);
         cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .sim-toggle-btn:hover {
-        background: var(--input-bg);
-        color: var(--text-primary);
+        transition: var(--sports-transition);
     }
 
     .sim-toggle-btn.active-win {
-        background: var(--btn-green);
+        background: var(--pb-green);
         color: white;
-        border-color: var(--btn-green);
+        border-color: var(--pb-green);
     }
 
     .sim-toggle-btn.active-loss {
@@ -353,466 +185,949 @@
         color: white;
         border-color: #ef4444;
     }
+
+    /* Danger Zone Styles */
+    .danger-zone-card {
+        margin-top: 24px;
+        border: 1px solid rgba(239, 68, 68, 0.3) !important;
+        background: rgba(239, 68, 68, 0.03) !important;
+        border-radius: var(--radius-sm);
+        padding: 24px;
+        transition: var(--sports-transition);
+    }
+
+    .danger-zone-card:hover {
+        border-color: rgba(239, 68, 68, 0.5) !important;
+    }
+
+    .danger-badge-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: rgba(239, 68, 68, 0.12);
+        color: #ef4444;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+    }
+
+    .sports-pill-btn.danger {
+        background: #ef4444 !important;
+        color: #ffffff !important;
+        border: none !important;
+        box-shadow: 0 4px 14px rgba(239, 68, 68, 0.25);
+    }
+
+    .sports-pill-btn.danger:hover {
+        background: #dc2626 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(239, 68, 68, 0.35);
+    }
+
+    /* Delete Account Confirmation Modal */
+    .delete-modal-overlay {
+        display: none;
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background: rgba(15, 23, 42, 0.78) !important;
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+        z-index: 999990 !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 20px !important;
+        box-sizing: border-box !important;
+    }
+
+    .delete-modal-overlay.open {
+        display: flex !important;
+    }
+
+    .delete-modal-window {
+        width: 100%;
+        max-width: 480px;
+        background: #ffffff !important;
+        color: #0f172a !important;
+        border: 1px solid rgba(239, 68, 68, 0.3) !important;
+        border-radius: 20px;
+        padding: 30px 28px 24px 28px;
+        box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.5);
+        animation: popUpDelete 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        z-index: 999991 !important;
+        text-align: center;
+    }
+
+    html.dark-mode .delete-modal-window {
+        background: #141722 !important;
+        color: #f8fafc !important;
+        border-color: rgba(239, 68, 68, 0.4) !important;
+    }
+
+    @keyframes popUpDelete {
+        from {
+            opacity: 0;
+            transform: scale(0.95) translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    .delete-modal-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: rgba(239, 68, 68, 0.12);
+        color: #ef4444;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin: 0 auto 16px auto;
+        border: 1px solid rgba(239, 68, 68, 0.25);
+    }
+
+    .delete-modal-title {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0 0 8px 0;
+    }
+
+    html.dark-mode .delete-modal-title {
+        color: #f8fafc;
+    }
+
+    .delete-modal-desc {
+        font-size: 0.88rem;
+        color: #64748b;
+        margin: 0 0 20px 0;
+        line-height: 1.5;
+    }
+
+    html.dark-mode .delete-modal-desc {
+        color: #94a3b8;
+    }
+
+    .delete-modal-checklist {
+        text-align: left;
+        background: rgba(239, 68, 68, 0.05);
+        border: 1px solid rgba(239, 68, 68, 0.15);
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        font-size: 0.8rem;
+        color: #ef4444;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .delete-input-group {
+        text-align: left;
+        margin-bottom: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .delete-input-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    html.dark-mode .delete-input-label {
+        color: #cbd5e1;
+    }
+
+    .delete-input-field {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 10px;
+        background: #f8fafc;
+        color: #0f172a;
+        font-size: 0.9rem;
+        outline: none;
+        box-sizing: border-box;
+        transition: border-color 0.2s;
+    }
+
+    html.dark-mode .delete-input-field {
+        background: #1a1e2b;
+        border-color: rgba(255, 255, 255, 0.15);
+        color: #f8fafc;
+    }
+
+    .delete-input-field:focus {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+    }
+
+    .delete-modal-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .btn-delete-cancel {
+        flex: 1;
+        padding: 11px;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        background: rgba(0, 0, 0, 0.05);
+        color: #334155;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+
+    html.dark-mode .btn-delete-cancel {
+        background: rgba(255, 255, 255, 0.08);
+        color: #cbd5e1;
+        border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .btn-delete-cancel:hover {
+        background: rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-delete-confirm {
+        flex: 1.3;
+        padding: 11px;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        background: #ef4444;
+        color: #ffffff;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.18s;
+        box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-delete-confirm:hover {
+        background: #dc2626;
+        box-shadow: 0 6px 18px rgba(239, 68, 68, 0.4);
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-header">
-    <h1 class="page-title">Profile Settings</h1>
-</div>
+<div class="sports-hub">
 
-<div class="profile-layout">
+    <!-- ── 1. ATHLETIC PROFILE HERO HEADER ───────────────────────────────── -->
+    <header class="sports-profile-header animate-entry">
+        <div class="profile-hero-content">
+            <div style="display: flex; align-items: flex-end; gap: 20px; flex-wrap: wrap;">
+                <!-- Avatar with Camera Trigger -->
+                <div class="profile-avatar-wrap">
+                    <div class="profile-big-avatar" onclick="document.getElementById('avatar-file-input').click()" style="cursor: pointer;" title="Change profile picture">
+                        {% if current_user.avatar_url %}
+                            <img id="avatar-preview-img" src="{{ current_user.avatar_url }}" alt="{{ current_user.full_name }}">
+                        {% else %}
+                            <span id="avatar-initials-span">{{ current_user.initials }}</span>
+                        {% endif %}
+                    </div>
+                    <button type="button" class="avatar-cam-btn" onclick="document.getElementById('avatar-file-input').click()" title="Upload photo">
+                        <i class="ph ph-camera"></i>
+                    </button>
+                </div>
 
-    <!-- Left Column Wrapper -->
-    <div style="display: flex; flex-direction: column; gap: 24px; width: 100%;">
-        <!-- Left: Profile Card -->
-        <div class="glass-card">
-        <form method="POST" action="{{ url_for(request.blueprint ~ '.profile') }}" class="profile-card" enctype="multipart/form-data">
-            <div class="profile-avatar" style="position: relative; cursor: pointer; transition: transform 0.2s;" onclick="document.getElementById('avatar-input').click()" title="Click to change profile picture" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
-                {% if current_user.avatar_url %}
-                    <img src="{{ current_user.avatar_url }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
-                {% else %}
-                    {{ current_user.initials }}
-                {% endif %}
-                <div style="position: absolute; bottom: -4px; right: -4px; background: var(--primary-orange); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--card-bg); font-size: 0.8rem; box-shadow: var(--shadow-sm);">
-                    <i class="ph ph-camera"></i>
+                <!-- Player Details -->
+                <div class="profile-meta-block">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        {% set rating = current_user.dupr|float %}
+                        {% if rating < 3.0 %}
+                            <span class="player-rank-badge beginner"><i class="ph ph-shield"></i> Beginner</span>
+                        {% elif rating < 4.0 %}
+                            <span class="player-rank-badge intermediate"><i class="ph ph-shield-star"></i> Intermediate</span>
+                        {% elif rating < 5.0 %}
+                            <span class="player-rank-badge advanced"><i class="ph ph-medal"></i> Advanced</span>
+                        {% else %}
+                            <span class="player-rank-badge elite"><i class="ph ph-crown"></i> Elite Pro</span>
+                        {% endif %}
+                        <span style="font-size: 0.74rem; font-weight: 700; color: var(--pb-orange);">
+                            Level {{ progression.level }} Player
+                        </span>
+                    </div>
+
+                    <h1>{{ current_user.full_name }}</h1>
+
+                    <div class="profile-meta-sub">
+                        <span><i class="ph ph-identification-badge"></i> PBH-{{ current_user.id[:8]|upper if current_user.id else 'PBH-PRO' }}</span>
+                        <span>•</span>
+                        <span><i class="ph ph-map-pin"></i> Philippines Regional League</span>
+                        <span>•</span>
+                        <span><i class="ph ph-envelope"></i> {{ current_user.email }}</span>
+                    </div>
                 </div>
             </div>
-            <input type="file" id="avatar-input" name="avatar" accept="image/*" style="display: none;" onchange="previewAvatar(this)">
-            
-            <div style="width: 100%; margin-bottom: 15px; text-align: left;">
-                <label style="font-size: 0.8rem; color: var(--text-muted);">First Name</label>
-                <input type="text" name="first_name" value="{{ current_user.first_name }}" required 
-                       style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg); color: var(--text-primary); margin-bottom: 10px;">
+
+            <!-- Header Quick Action Buttons -->
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button type="button" class="sports-pill-btn primary" onclick="switchProfileTab('settings')">
+                    <i class="ph ph-gear"></i> Edit Profile
+                </button>
+                <button type="button" class="sports-pill-btn outline" onclick="switchProfileTab('simulator')">
+                    <i class="ph ph-calculator"></i> DUPR Simulator
+                </button>
+            </div>
+        </div>
+
+        <!-- Sports Navigation Tabs -->
+        <nav class="sports-tabs-bar" aria-label="Profile Sections">
+            <button type="button" class="sports-tab-btn active" id="tab-btn-matches" onclick="switchProfileTab('matches')">
+                <i class="ph ph-chart-line-up"></i> Sports Life & Stats
+            </button>
+            <button type="button" class="sports-tab-btn" id="tab-btn-simulator" onclick="switchProfileTab('simulator')">
+                <i class="ph ph-calculator"></i> DUPR Simulator
+            </button>
+            <button type="button" class="sports-tab-btn" id="tab-btn-settings" onclick="switchProfileTab('settings')">
+                <i class="ph ph-user-gear"></i> Account & Security
+            </button>
+        </nav>
+    </header>
+
+    <!-- ── TAB 1: SPORTS LIFE & MATCHES ──────────────────────────────────── -->
+    <div id="tab-pane-matches" class="profile-tab-pane active">
+
+        <!-- Athletic Stats Overview Strip -->
+        <div class="sports-stats-strip">
+            <div class="sports-stat-box">
+                <span class="box-value" style="color: var(--pb-orange);">{{ "%.2f"|format(current_user.dupr|float) }}</span>
+                <span class="box-label">Official DUPR</span>
+            </div>
+            <div class="sports-stat-box">
+                <span class="box-value">{{ current_user.elo }}</span>
+                <span class="box-label">Elo Points</span>
+            </div>
+            <div class="sports-stat-box">
+                <span class="box-value" style="color: var(--pb-green);">{{ player_stats.win_rate }}%</span>
+                <span class="box-label">Win Rate ({{ player_stats.wins }}W / {{ player_stats.losses }}L)</span>
+            </div>
+            <div class="sports-stat-box">
+                <span class="box-value" style="color: var(--pb-orange);">{{ player_streak }}</span>
+                <span class="box-label">Win Streak 🔥</span>
+            </div>
+        </div>
+
+        <div class="sports-layout-grid">
+            <!-- Left: Trajectory Chart & Match History -->
+            <div class="sports-col">
                 
-                <label style="font-size: 0.8rem; color: var(--text-muted);">Last Name</label>
-                <input type="text" name="last_name" value="{{ current_user.last_name }}" required 
-                       style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg); color: var(--text-primary);">
-            </div>
-            
-            <p class="player-id" style="margin-top: 0;">Player ID: PBH-{{ current_user.id[:8] | upper if current_user.id else '544A69CB' }}</p>
+                <!-- Competitive Trajectory Curve -->
+                <section class="sports-card">
+                    <div class="sports-section-head">
+                        <h2 class="sports-section-title">
+                            <i class="ph ph-chart-line" style="color: var(--pb-green);"></i>
+                            Rating Trajectory
+                        </h2>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" class="sports-pill-btn green" id="btn-chart-dupr" onclick="toggleTrajectoryChart('dupr')" style="padding: 4px 12px; font-size: 0.72rem;">
+                                DUPR
+                            </button>
+                            <button type="button" class="sports-pill-btn outline" id="btn-chart-elo" onclick="toggleTrajectoryChart('elo')" style="padding: 4px 12px; font-size: 0.72rem;">
+                                Elo
+                            </button>
+                        </div>
+                    </div>
+                    <div style="position: relative; height: 210px; width: 100%;">
+                        <canvas id="profileTrajectoryChart"></canvas>
+                    </div>
+                </section>
 
-            <div class="profile-contact">
-                <div class="contact-row">
-                    <i class="ph ph-envelope"></i>
-                    <span>{{ current_user.email or '—' }} (Read-only)</span>
-                </div>
-                <div class="contact-row">
-                    <i class="ph ph-phone"></i>
-                    <input type="text" name="phone" value="{{ current_user.phone or '' }}" placeholder="Phone Number" 
-                           style="width: 100%; padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--input-bg); color: var(--text-primary);">
-                </div>
-                <div class="contact-row">
-                    <i class="ph ph-shield-check"></i>
-                    <span class="membership-badge">Free</span>
-                </div>
-                <div class="contact-row">
-                    <i class="ph ph-trophy"></i>
-                    <span class="membership-badge" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);">
-                        DUPR: {{ "%.2f"|format(current_user.dupr|float) }} ({{ current_user.elo }} Elo)
-                    </span>
-                </div>
+                <!-- Match History List -->
+                <section class="sports-card">
+                    <div class="sports-section-head">
+                        <h2 class="sports-section-title">
+                            <i class="ph ph-sword" style="color: var(--pb-orange);"></i>
+                            Match History
+                            <span class="sports-badge-pill">{{ player_matches|length }}</span>
+                        </h2>
+                    </div>
+
+                    <div class="match-history-stack">
+                        {% if player_matches %}
+                            {% for match in player_matches[:8] %}
+                            <div class="match-history-item">
+                                <div style="display: flex; align-items: center; gap: 14px;">
+                                    <span class="match-result-badge {{ match.result|lower }}">
+                                        {% if match.result == 'WIN' %}
+                                            <i class="ph ph-trophy"></i>
+                                        {% elif match.result == 'LOSS' %}
+                                            <i class="ph ph-x"></i>
+                                        {% endif %}
+                                        {{ match.result }}
+                                    </span>
+                                    <div>
+                                        <h4 style="font-size: 0.92rem; font-weight: 800; color: var(--sports-text-main); margin: 0;">
+                                            vs {{ match.opponent_name }}
+                                        </h4>
+                                        <span style="font-size: 0.74rem; color: var(--sports-text-muted);">
+                                            {{ match.event_title }} • {{ match.played_at[:10] if match.played_at else 'Recent' }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div style="text-align: right;">
+                                    <span style="font-size: 1.1rem; font-weight: 900; color: var(--sports-text-main);">
+                                        {{ match.score }}
+                                    </span>
+                                    <span style="display: block; font-size: 0.72rem; color: var(--sports-text-dim);">
+                                        Completed
+                                    </span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div style="text-align: center; padding: 28px; background: var(--sports-card-elevated); border-radius: var(--radius-sm); border: 1px dashed var(--sports-border);">
+                                <i class="ph ph-tennis-ball" style="font-size: 2rem; color: var(--pb-orange); display: block; margin-bottom: 8px;"></i>
+                                <h4 style="font-size: 0.95rem; font-weight: 800; color: var(--sports-text-main);">No Matches Logged Yet</h4>
+                                <p style="font-size: 0.8rem; color: var(--sports-text-muted); margin-top: 4px;">Join open play or registered tournaments to build your match history.</p>
+                                <a href="{{ url_for('player.matchmaker') }}" class="sports-pill-btn green" style="margin-top: 12px; display: inline-flex;">
+                                    Find an Open Match
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </section>
             </div>
 
-            <button type="submit" class="btn-edit-profile" style="background: var(--btn-navy); color: white; border: none;">
-                <i class="ph ph-floppy-disk"></i> Save Profile
-            </button>
-        </form>
-        
-        <hr style="border:0; border-top:1px solid var(--border-color); width:100%; margin:20px 0;">
-        
-        <form method="POST" action="{{ url_for(request.blueprint ~ '.change_password') }}" style="width:100%; text-align:left;">
-            <h3 style="font-size:0.95rem; font-weight:700; color:var(--text-primary); margin-bottom:12px;">Security</h3>
-            <label style="font-size: 0.8rem; color: var(--text-muted);">New Password</label>
-            <input type="password" name="new_password" required minlength="6"
-                   style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg); color: var(--text-primary); margin-bottom: 10px;">
-            
-            <label style="font-size: 0.8rem; color: var(--text-muted);">Confirm Password</label>
-            <input type="password" name="confirm_password" required minlength="6"
-                   style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg); color: var(--text-primary); margin-bottom: 12px;">
-                   
-            <button type="submit" class="btn-edit-profile" style="background: transparent; color: var(--text-primary); border: 1px solid var(--border-color);">
-                <i class="ph ph-lock-key"></i> Update Password
-            </button>
-        </form>
+            <!-- Right: Achievements & Career Summary -->
+            <div class="sports-col">
+                <section class="sports-card">
+                    <div class="sports-section-head">
+                        <h2 class="sports-section-title">
+                            <i class="ph ph-trophy" style="color: #fbbf24;"></i>
+                            Player Achievements
+                        </h2>
+                    </div>
+
+                    <div class="sports-achieve-grid">
+                        {% for ach in achievements %}
+                        <div class="sports-badge-card {{ 'unlocked' if ach.unlocked else 'locked' }}">
+                            <div class="badge-icon-box">
+                                <i class="ph {{ ach.icon }}"></i>
+                            </div>
+                            <span class="badge-title">{{ ach.title }}</span>
+                            <span class="badge-meta">{{ ach.meta }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <section class="sports-card">
+                    <div class="sports-section-head">
+                        <h2 class="sports-section-title">
+                            <i class="ph ph-calendar" style="color: var(--pb-green);"></i>
+                            Activity Summary
+                        </h2>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; border-bottom: 1px solid var(--sports-border); padding-bottom: 8px;">
+                            <span style="color: var(--sports-text-muted);">Courts Booked</span>
+                            <strong style="color: var(--sports-text-main);">{{ stats.courts|default(0) }}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; border-bottom: 1px solid var(--sports-border); padding-bottom: 8px;">
+                            <span style="color: var(--sports-text-muted);">Events Joined</span>
+                            <strong style="color: var(--sports-text-main);">{{ stats.events|default(0) }}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; border-bottom: 1px solid var(--sports-border); padding-bottom: 8px;">
+                            <span style="color: var(--sports-text-muted);">Tournaments Played</span>
+                            <strong style="color: var(--sports-text-main);">{{ stats.tournaments|default(0) }}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+                            <span style="color: var(--sports-text-muted);">Fairness Rating</span>
+                            <strong style="color: var(--pb-green);">0.92 / 1.00</strong>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
     </div>
 
-        <!-- DUPR Match Simulator -->
-        <div class="glass-card">
-            <h3 style="font-size:1.05rem; font-weight:700; color:var(--text-primary); margin-bottom:12px; display:flex; align-items:center; gap:8px;">
-                <i class="ph ph-calculator" style="color:var(--btn-green); font-size:1.2rem;"></i> DUPR Match Simulator
-            </h3>
-            <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:16px; line-height:1.4;">
-                Predict the impact of a match on your ratings. Adjust the opponent's rating and toggle the result below.
+    <!-- ── TAB 2: DUPR MATCH SIMULATOR ───────────────────────────────────── -->
+    <div id="tab-pane-simulator" class="profile-tab-pane">
+        <section class="sports-card" style="max-width: 680px; margin: 0 auto;">
+            <div class="sports-section-head">
+                <h2 class="sports-section-title">
+                    <i class="ph ph-calculator" style="color: var(--pb-green);"></i>
+                    DUPR Match Outcome Simulator
+                </h2>
+            </div>
+            <p style="font-size: 0.82rem; color: var(--sports-text-muted); line-height: 1.45;">
+                Simulate prospective match scenarios against opponents of varying ratings to preview Elo and DUPR shifts.
             </p>
 
             <div class="sim-card-body">
-                <!-- Opponent Rating Input -->
+                <!-- Opponent Rating Slider -->
                 <div class="sim-input-group">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                        <label style="font-size: 0.8rem; font-weight:600; color: var(--text-secondary);">Opponent DUPR</label>
-                        <span style="font-size: 0.75rem; color: var(--text-muted);" id="sim-opp-elo-text">(1400 Elo)</span>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label style="font-size: 0.82rem; font-weight: 700; color: var(--sports-text-main);">Opponent DUPR</label>
+                        <span id="sim-opp-elo-text" style="font-size: 0.76rem; color: var(--sports-text-dim);">(1400 Elo)</span>
                     </div>
                     <div class="sim-input-row">
-                        <input type="range" id="sim-opp-dupr-slider" min="2.0" max="8.0" step="0.05" value="3.5" style="flex:1; accent-color:var(--btn-green); height:6px; border-radius:3px; cursor:pointer;">
-                        <input type="number" id="sim-opp-dupr-num" min="2.0" max="8.0" step="0.01" value="3.50" style="width:72px; padding:6px 8px; border:1px solid var(--border-color); border-radius:6px; background:var(--input-bg); color:var(--text-primary); text-align:center; font-weight:700; font-size:0.85rem;">
+                        <input type="range" id="sim-opp-dupr-slider" min="2.0" max="8.0" step="0.05" value="3.5" style="flex: 1; accent-color: var(--pb-green); height: 6px; cursor: pointer;">
+                        <input type="number" id="sim-opp-dupr-num" min="2.0" max="8.0" step="0.01" value="3.50" style="width: 76px; padding: 8px; border: 1px solid var(--sports-border); border-radius: var(--radius-xs); background: var(--sports-card-elevated); color: var(--sports-text-main); font-weight: 800; text-align: center;">
                     </div>
                 </div>
 
-                <!-- Match Outcome Choice -->
-                <div style="display:flex; gap:10px; margin-bottom:8px; margin-top:4px;">
+                <!-- Match Outcome Buttons -->
+                <div style="display: flex; gap: 10px;">
                     <button type="button" id="btn-sim-win" class="sim-toggle-btn active-win">
-                        <i class="ph ph-trophy"></i> Win Match
+                        <i class="ph ph-trophy"></i> Simulated Victory
                     </button>
                     <button type="button" id="btn-sim-loss" class="sim-toggle-btn">
-                        <i class="ph ph-skull"></i> Lose Match
+                        <i class="ph ph-x"></i> Simulated Defeat
                     </button>
                 </div>
 
-                <!-- Simulated Results Card -->
+                <!-- Result Box -->
                 <div id="sim-results-box" class="sim-result-box">
                     <div class="sim-metric-row">
-                        <span class="sim-metric-label">Win Probability</span>
-                        <span class="sim-metric-value" id="sim-win-prob">50.0%</span>
+                        <span style="font-size: 0.82rem; color: var(--sports-text-muted);">Win Probability</span>
+                        <strong id="sim-win-prob" style="color: var(--sports-text-main);">50.0%</strong>
                     </div>
-                    
-                    <hr style="border:0; border-top:1px dashed var(--border-color); margin:4px 0;">
-
                     <div class="sim-metric-row">
-                        <span class="sim-metric-label">Rating Change</span>
-                        <span class="sim-change-badge positive" id="sim-rating-change">+0 Elo</span>
+                        <span style="font-size: 0.82rem; color: var(--sports-text-muted);">Rating Shift</span>
+                        <strong id="sim-rating-change" style="color: var(--pb-green);">+16 Elo</strong>
                     </div>
-
                     <div class="sim-metric-row">
-                        <span class="sim-metric-label">Simulated DUPR</span>
-                        <span class="sim-metric-value" style="font-size:1.05rem;" id="sim-new-dupr-text">3.50 (+0.00)</span>
-                    </div>
-
-                    <div class="sim-metric-row">
-                        <span class="sim-metric-label">Simulated Elo</span>
-                        <span class="sim-metric-value" id="sim-new-elo-text">1400 Elo</span>
+                        <span style="font-size: 0.82rem; color: var(--sports-text-muted);">New Simulated DUPR</span>
+                        <strong id="sim-new-dupr-text" style="font-size: 1.15rem; color: var(--sports-text-main);">3.12 (+0.04)</strong>
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
     </div>
 
-    <!-- Right: Statistics & Activity -->
-    <div class="glass-card">
-        <p class="stats-section-title">Player Statistics</p>
+    <!-- ── TAB 3: ACCOUNT & SECURITY ─────────────────────────────────────── -->
+    <div id="tab-pane-settings" class="profile-tab-pane">
+        <div class="sports-layout-grid">
+            <!-- Edit Profile Form -->
+            <section class="sports-card">
+                <div class="sports-section-head">
+                    <h2 class="sports-section-title">
+                        <i class="ph ph-user-circle" style="color: var(--pb-orange);"></i>
+                        Personal Details
+                    </h2>
+                </div>
 
-        <div class="stat-boxes four-cols">
-            <div class="stat-box orange">
-                <span class="stat-value">{{ stats.courts if stats else 0 }}</span>
-                <span class="stat-label">Courts Booked</span>
-            </div>
-            <div class="stat-box navy">
-                <span class="stat-value">{{ stats.events if stats else 0 }}</span>
-                <span class="stat-label">Events Joined</span>
-            </div>
-            <div class="stat-box green">
-                <span class="stat-value">{{ stats.tournaments if stats else 0 }}</span>
-                <span class="stat-label">Tournaments</span>
-            </div>
-            <div class="stat-box" style="border-color: var(--btn-green); background: rgba(16, 185, 129, 0.04);">
-                <span class="stat-value" style="color: var(--btn-green);">{{ "%.2f"|format(current_user.dupr|float) }}</span>
-                <span class="stat-label" style="font-weight: 600; color: var(--text-primary);">DUPR ({{ current_user.elo }} Elo)</span>
-            </div>
-        </div>
-
-        <p class="fairness-label">Fairness Rating</p>
-        <div class="fairness-bar-wrap">
-            <div class="fairness-track">
-                <div class="fairness-fill"></div>
-            </div>
-            <span class="fairness-score">0.85</span>
-        </div>
-        <p class="fairness-note">Your fairness score is based on peak-time booking frequency. Higher is better.</p>
-
-        <!-- Skill Trajectory Line Chart -->
-        <div style="border-top: 1px solid var(--border-color); margin: 24px 0 16px; padding-top: 24px; display: flex; justify-content: space-between; align-items: center;">
-            <p class="recent-activity-title" style="margin: 0;"><i class="ph ph-chart-line-up" style="color: var(--btn-green); font-size: 1.1rem; vertical-align: middle;"></i> Competitive Trajectory</p>
-            <div style="display: flex; gap: 8px;">
-                <button type="button" class="action-box green active" id="btn-chart-dupr" onclick="toggleChartType('dupr')" style="padding: 4px 12px; font-size: 0.75rem; border-radius: 6px; cursor: pointer; width: auto; font-weight: 600;">DUPR</button>
-                <button type="button" class="action-box navy" id="btn-chart-elo" onclick="toggleChartType('elo')" style="padding: 4px 12px; font-size: 0.75rem; border-radius: 6px; cursor: pointer; width: auto; font-weight: 600;">Elo</button>
-            </div>
-        </div>
-        <div style="position: relative; height: 200px; width: 100%; margin-bottom: 24px;">
-            <canvas id="ratingChart"></canvas>
-        </div>
-
-        <!-- Recent Tournament Matches -->
-        <p class="recent-activity-title" style="border-top: 1px solid var(--border-color); padding-top: 24px; margin-top: 24px;"><i class="ph ph-sword" style="color: var(--primary-orange); font-size: 1.1rem; vertical-align: middle;"></i> Recent Tournament Matches</p>
-        <div class="match-log" style="display: flex; flex-direction: column; gap: 10px;">
-            {% if player_matches %}
-                {% for match in player_matches[:5] %}
-                <div style="padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--border-color); background: var(--input-bg);">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <span style="padding: 4px 8px; font-size: 0.7rem; font-weight: 700; border-radius: 4px; background: {{ 'rgba(16,185,129,0.12)' if match.result == 'WIN' else 'rgba(239,68,68,0.12)' }}; color: {{ '#10b981' if match.result == 'WIN' else '#ef4444' }}; text-transform: uppercase;">
-                            {{ match.result }}
-                        </span>
+                <form method="POST" action="{{ url_for('player.profile') }}" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 16px;">
+                    <input type="file" id="avatar-file-input" name="avatar" accept="image/*" style="display: none;" onchange="previewAvatar(this)">
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                         <div>
-                            <span style="font-weight: 600; font-size: 0.85rem; display: block; color: var(--text-primary);">vs {{ match.opponent_name }}</span>
-                            <span style="font-size: 0.75rem; color: var(--text-muted);">{{ match.event_title }}</span>
+                            <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--sports-text-muted); margin-bottom: 4px;">First Name</label>
+                            <input type="text" name="first_name" value="{{ current_user.first_name }}" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--sports-border); border-radius: var(--radius-xs); background: var(--sports-card-elevated); color: var(--sports-text-main);">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--sports-text-muted); margin-bottom: 4px;">Last Name</label>
+                            <input type="text" name="last_name" value="{{ current_user.last_name }}" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--sports-border); border-radius: var(--radius-xs); background: var(--sports-card-elevated); color: var(--sports-text-main);">
                         </div>
                     </div>
-                    <div style="text-align: right;">
-                        <span style="font-weight: 700; font-size: 0.9rem; color: var(--text-primary);">{{ match.score }}</span>
-                        <span style="font-size: 0.7rem; color: var(--text-muted); display: block;">{{ match.played_at[:10] if match.played_at else 'Recent' }}</span>
+
+                    <div>
+                        <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--sports-text-muted); margin-bottom: 4px;">Email (Account Login)</label>
+                        <input type="email" value="{{ current_user.email }}" disabled style="width: 100%; padding: 10px 14px; border: 1px solid var(--sports-border); border-radius: var(--radius-xs); background: var(--sports-card-elevated); color: var(--sports-text-dim); opacity: 0.8;">
+                    </div>
+
+                    <div>
+                        <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--sports-text-muted); margin-bottom: 4px;">Phone Number</label>
+                        <input type="tel" name="phone" value="{{ current_user.phone or '' }}" placeholder="+63 9xx xxx xxxx" style="width: 100%; padding: 10px 14px; border: 1px solid var(--sports-border); border-radius: var(--radius-xs); background: var(--sports-card-elevated); color: var(--sports-text-main);">
+                    </div>
+
+                    <button type="submit" class="sports-pill-btn primary" style="align-self: flex-start; margin-top: 8px;">
+                        <i class="ph ph-floppy-disk"></i> Save Profile Details
+                    </button>
+                </form>
+            </section>
+
+            <!-- Password Change Form -->
+            <section class="sports-card">
+                <div class="sports-section-head">
+                    <h2 class="sports-section-title">
+                        <i class="ph ph-lock-key" style="color: var(--pb-green);"></i>
+                        Security & Password
+                    </h2>
+                </div>
+
+                <form method="POST" action="{{ url_for('player.change_password') }}" style="display: flex; flex-direction: column; gap: 16px;">
+                    <div>
+                        <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--sports-text-muted); margin-bottom: 4px;">Current Password</label>
+                        <input type="password" name="old_password" required placeholder="Enter current password" style="width: 100%; padding: 10px 14px; border: 1px solid var(--sports-border); border-radius: var(--radius-xs); background: var(--sports-card-elevated); color: var(--sports-text-main);">
+                    </div>
+
+                    <div>
+                        <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--sports-text-muted); margin-bottom: 4px;">New Password (min 8 chars)</label>
+                        <input type="password" name="new_password" required minlength="8" placeholder="Enter new password" style="width: 100%; padding: 10px 14px; border: 1px solid var(--sports-border); border-radius: var(--radius-xs); background: var(--sports-card-elevated); color: var(--sports-text-main);">
+                    </div>
+
+                    <div>
+                        <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--sports-text-muted); margin-bottom: 4px;">Confirm New Password</label>
+                        <input type="password" name="confirm_password" required minlength="8" placeholder="Repeat new password" style="width: 100%; padding: 10px 14px; border: 1px solid var(--sports-border); border-radius: var(--radius-xs); background: var(--sports-card-elevated); color: var(--sports-text-main);">
+                    </div>
+
+                    <button type="submit" class="sports-pill-btn green" style="align-self: flex-start; margin-top: 8px;">
+                        <i class="ph ph-shield-check"></i> Update Password
+                    </button>
+                </form>
+            </section>
+        </div>
+
+        <!-- Danger Zone: Account Deletion -->
+        <section class="sports-card danger-zone-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <div class="danger-badge-icon">
+                        <i class="ph ph-warning-octagon"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0 0 4px 0; font-size: 1.05rem; font-weight: 700; color: #ef4444;">
+                            Permanently Delete Account
+                        </h3>
+                        <p style="margin: 0; font-size: 0.82rem; color: var(--sports-text-muted); max-width: 580px; line-height: 1.4;">
+                            Once you delete your account, your player profile, Elo and DUPR rating history, court bookings, and credentials will be permanently erased. This action is irreversible.
+                        </p>
                     </div>
                 </div>
-                {% endfor %}
-            {% else %}
-                <div style="text-align: center; padding: 24px; color: var(--text-muted); font-size: 0.8rem; background: var(--input-bg); border-radius: 8px; border: 1px dashed var(--border-color);">
-                    <i class="ph ph-club" style="font-size: 1.8rem; display: block; margin-bottom: 8px; opacity: 0.4;"></i>
-                    No tournament matches played yet.
+                <button type="button" class="sports-pill-btn danger" onclick="openDeleteAccountModal()">
+                    <i class="ph ph-trash"></i> Delete Account
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <!-- ── ACCOUNT DELETION CONFIRMATION MODAL ── -->
+    <div id="deleteAccountModal" class="delete-modal-overlay" onclick="handleDeleteBackdropClick(event)">
+        <div class="delete-modal-window">
+            <div class="delete-modal-icon">
+                <i class="ph ph-warning-octagon"></i>
+            </div>
+            <h3 class="delete-modal-title">Permanently Delete Account?</h3>
+            <p class="delete-modal-desc">
+                This action is final and cannot be undone. All your match statistics, ratings, court reservations, and credentials will be permanently erased.
+            </p>
+
+            <div class="delete-modal-checklist">
+                <div><i class="ph ph-x-circle"></i> Permanent loss of Elo & DUPR rating history</div>
+                <div><i class="ph ph-x-circle"></i> Cancellation of active court reservations and queues</div>
+                <div><i class="ph ph-x-circle"></i> Complete erasure of your account credentials</div>
+            </div>
+
+            <form method="POST" action="{{ url_for('player.delete_account') }}" id="deleteAccountForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+
+                <div class="delete-input-group">
+                    <label class="delete-input-label">1. Confirm Current Password *</label>
+                    <div style="position: relative; display: flex; align-items: center;">
+                        <input type="password" name="password" id="deletePasswordInput" class="delete-input-field" required placeholder="Enter your current password">
+                        <button type="button" onclick="toggleDeletePasswordView()" style="position: absolute; right: 12px; background: none; border: none; color: var(--sports-text-muted); cursor: pointer; font-size: 1.1rem; display: flex; align-items: center;">
+                            <i class="ph ph-eye" id="deleteEyeIcon"></i>
+                        </button>
+                    </div>
                 </div>
-            {% endif %}
+
+                <div class="delete-input-group">
+                    <label class="delete-input-label">2. Type "DELETE" to confirm *</label>
+                    <input type="text" name="confirmation_text" id="deleteConfirmTextInput" class="delete-input-field" required placeholder="Type DELETE in capital letters" autocomplete="off">
+                </div>
+
+                <div class="delete-modal-actions">
+                    <button type="button" class="btn-delete-cancel" onclick="closeDeleteAccountModal()">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn-delete-confirm">
+                        <i class="ph ph-trash"></i> Permanently Delete
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <!-- Chart rendering logic -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const historyData = {{ rating_history|tojson if rating_history else '[]' }};
-            
-            if (!historyData || historyData.length === 0) {
-                return;
-            }
+</div>
 
-            const labels = historyData.map(h => {
+<!-- ── PROFILE JAVASCRIPT CONTROLLERS ────────────────────────────────────── -->
+<script>
+    // Tab Switching
+    function switchProfileTab(tabName) {
+        document.querySelectorAll('.profile-tab-pane').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.sports-tab-btn').forEach(b => b.classList.remove('active'));
+
+        const targetPane = document.getElementById('tab-pane-' + tabName);
+        const targetBtn = document.getElementById('tab-btn-' + tabName);
+
+        if (targetPane) targetPane.classList.add('active');
+        if (targetBtn) targetBtn.classList.add('active');
+    }
+
+    // Avatar Preview
+    function previewAvatar(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById('avatar-preview-img');
+                const span = document.getElementById('avatar-initials-span');
+                if (img) {
+                    img.src = e.target.result;
+                } else if (span) {
+                    span.outerHTML = `<img id="avatar-preview-img" src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                }
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // Rating Trajectory Chart.js Initializer
+    document.addEventListener("DOMContentLoaded", function() {
+        const historyData = {{ rating_history|tojson if rating_history else '[]' }};
+        const ctx = document.getElementById('profileTrajectoryChart');
+        if (!ctx) return;
+
+        let labels = [];
+        let duprValues = [];
+        let eloValues = [];
+
+        if (historyData && historyData.length > 0) {
+            labels = historyData.map(h => {
                 const date = new Date(h.recorded_at);
                 return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
             });
-            
-            const eloValues = historyData.map(h => h.elo);
-            const duprValues = historyData.map(h => parseFloat(h.dupr));
+            eloValues = historyData.map(h => h.elo);
+            duprValues = historyData.map(h => parseFloat(h.dupr));
+        } else {
+            labels = ["3 Wks Ago", "2 Wks Ago", "Last Wk", "Current"];
+            duprValues = [3.00, 3.02, 3.05, {{ "%.2f"|format(current_user.dupr|float) }}];
+            eloValues = [1200, 1208, 1220, {{ current_user.elo }}];
+        }
 
-            let chartType = 'dupr';
-
-            const ctx = document.getElementById('ratingChart').getContext('2d');
-            
-            let ratingChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'DUPR Rating',
-                        data: duprValues,
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.06)',
-                        borderWidth: 2.5,
-                        fill: true,
-                        tension: 0.35,
-                        pointBackgroundColor: '#10b981',
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 1.5,
-                        pointRadius: 4,
-                        pointHoverRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: 'rgba(30, 41, 59, 0.9)',
-                            titleColor: '#fff',
-                            bodyColor: '#fff',
-                            borderColor: 'rgba(148, 163, 184, 0.1)',
-                            borderWidth: 1,
-                            padding: 8,
-                            displayColors: false,
-                            callbacks: {
-                                label: function(context) {
-                                    if (chartType === 'dupr') {
-                                        return `DUPR: ${context.parsed.y.toFixed(2)}`;
-                                    } else {
-                                        return `Elo: ${context.parsed.y}`;
-                                    }
-                                }
+        let chartType = 'dupr';
+        let trajectoryChart = new Chart(ctx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'DUPR Rating',
+                    data: duprValues,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+                    borderWidth: 2.5,
+                    fill: true,
+                    tension: 0.35,
+                    pointBackgroundColor: '#10b981',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(17, 23, 35, 0.95)',
+                        padding: 10,
+                        callbacks: {
+                            label: function(c) {
+                                return chartType === 'dupr' ? `DUPR: ${c.parsed.y.toFixed(2)}` : `Elo: ${c.parsed.y}`;
                             }
                         }
-                    },
-                    scales: {
-                        x: {
-                            grid: {
-                                color: 'rgba(148, 163, 184, 0.04)'
-                            },
-                            ticks: {
-                                color: 'rgba(148, 163, 184, 0.55)',
-                                font: { size: 9 }
-                            }
-                        },
-                        y: {
-                            grid: {
-                                color: 'rgba(148, 163, 184, 0.04)'
-                            },
-                            ticks: {
-                                color: 'rgba(148, 163, 184, 0.55)',
-                                font: { size: 9 },
-                                callback: function(value) {
-                                    return chartType === 'dupr' ? value.toFixed(1) : value;
-                                }
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: {
+                        grid: { color: 'rgba(148, 163, 184, 0.06)' },
+                        ticks: {
+                            callback: function(v) {
+                                return chartType === 'dupr' ? v.toFixed(1) : v;
                             }
                         }
                     }
                 }
-            });
-
-            window.toggleChartType = function(type) {
-                chartType = type;
-                
-                const btnDupr = document.getElementById('btn-chart-dupr');
-                const btnElo = document.getElementById('btn-chart-elo');
-                
-                if (type === 'dupr') {
-                    btnDupr.classList.add('active', 'green');
-                    btnDupr.classList.remove('navy');
-                    btnElo.classList.remove('active', 'green');
-                    btnElo.classList.add('navy');
-                    
-                    ratingChart.data.datasets[0].label = 'DUPR Rating';
-                    ratingChart.data.datasets[0].data = duprValues;
-                    ratingChart.data.datasets[0].borderColor = '#10b981';
-                    ratingChart.data.datasets[0].backgroundColor = 'rgba(16, 185, 129, 0.06)';
-                    ratingChart.data.datasets[0].pointBackgroundColor = '#10b981';
-                } else {
-                    btnElo.classList.add('active', 'green');
-                    btnElo.classList.remove('navy');
-                    btnDupr.classList.remove('active', 'green');
-                    btnDupr.classList.add('navy');
-                    
-                    ratingChart.data.datasets[0].label = 'Elo Rating';
-                    ratingChart.data.datasets[0].data = eloValues;
-                    ratingChart.data.datasets[0].borderColor = '#818cf8';
-                    ratingChart.data.datasets[0].backgroundColor = 'rgba(129, 140, 248, 0.06)';
-                    ratingChart.data.datasets[0].pointBackgroundColor = '#818cf8';
-                }
-                
-                ratingChart.update();
-            };
-
-            // ---- DUPR Match Simulator Logic ----
-            const slider = document.getElementById('sim-opp-dupr-slider');
-            const numInput = document.getElementById('sim-opp-dupr-num');
-            const btnWin = document.getElementById('btn-sim-win');
-            const btnLoss = document.getElementById('btn-sim-loss');
-            const oppEloText = document.getElementById('sim-opp-elo-text');
-            const winProb = document.getElementById('sim-win-prob');
-            const ratingChange = document.getElementById('sim-rating-change');
-            const newDuprText = document.getElementById('sim-new-dupr-text');
-            const newEloText = document.getElementById('sim-new-elo-text');
-            const resultsBox = document.getElementById('sim-results-box');
-
-            const myElo = {{ current_user.elo|default(1200)|int }};
-            const myDupr = {{ current_user.dupr|default(3.0)|float }};
-            let isWin = true;
-
-            function duprToElo(dupr) {
-                return Math.round(800 + (dupr - 2.0) * 400);
-            }
-            function eloToDupr(elo) {
-                let dupr = 2.0 + (elo - 800) / 400.0;
-                return Math.max(2.0, Math.min(8.0, Math.round(dupr * 100) / 100));
-            }
-
-            function calculateSimulation() {
-                const oppDupr = parseFloat(numInput.value) || 2.0;
-                const oppElo = duprToElo(oppDupr);
-                oppEloText.textContent = `(${oppElo} Elo)`;
-
-                // Expected outcome
-                const expected = 1.0 / (1.0 + Math.pow(10.0, (oppElo - myElo) / 400.0));
-                const probPct = (expected * 100).toFixed(1);
-                winProb.textContent = `${probPct}%`;
-
-                // Actual outcome
-                const actual = isWin ? 1.0 : 0.0;
-
-                // New ratings (K = 32)
-                const eloDiff = Math.round(32 * (actual - expected));
-                const newElo = Math.round(myElo + eloDiff);
-                const newDupr = eloToDupr(newElo);
-                const duprDiff = newDupr - myDupr;
-
-                // Update display
-                newEloText.textContent = `${newElo} Elo`;
-                
-                // Format diffs
-                const eloDiffSign = eloDiff >= 0 ? `+${eloDiff}` : `${eloDiff}`;
-                const duprDiffSign = duprDiff >= 0 ? `+${duprDiff.toFixed(2)}` : `${duprDiff.toFixed(2)}`;
-
-                if (isWin) {
-                    resultsBox.classList.remove('loss');
-                    ratingChange.className = "sim-change-badge positive";
-                    ratingChange.innerHTML = `<i class="ph ph-trend-up"></i> ${eloDiffSign} Elo`;
-                    newDuprText.innerHTML = `<span style="color:var(--btn-green); font-weight:700;">${newDupr.toFixed(2)}</span> <span style="font-size:0.8rem; color:var(--text-muted);">(${duprDiffSign})</span>`;
-                } else {
-                    resultsBox.classList.add('loss');
-                    ratingChange.className = "sim-change-badge negative";
-                    ratingChange.innerHTML = `<i class="ph ph-trend-down"></i> ${eloDiffSign} Elo`;
-                    newDuprText.innerHTML = `<span style="color:#ef4444; font-weight:700;">${newDupr.toFixed(2)}</span> <span style="font-size:0.8rem; color:var(--text-muted);">(${duprDiffSign})</span>`;
-                }
-            }
-
-            if (slider && numInput) {
-                // Sync slider and number input
-                slider.addEventListener('input', function() {
-                    numInput.value = parseFloat(slider.value).toFixed(2);
-                    calculateSimulation();
-                });
-
-                numInput.addEventListener('input', function() {
-                    let val = parseFloat(numInput.value);
-                    if (isNaN(val)) val = 2.0;
-                    if (val < 2.0) val = 2.0;
-                    if (val > 8.0) val = 8.0;
-                    slider.value = val;
-                    calculateSimulation();
-                });
-
-                numInput.addEventListener('blur', function() {
-                    numInput.value = parseFloat(slider.value).toFixed(2);
-                });
-
-                // Toggle outcomes
-                btnWin.addEventListener('click', function() {
-                    isWin = true;
-                    btnWin.classList.add('active-win');
-                    btnLoss.classList.remove('active-loss');
-                    calculateSimulation();
-                });
-
-                btnLoss.addEventListener('click', function() {
-                    isWin = false;
-                    btnWin.classList.remove('active-win');
-                    btnLoss.classList.add('active-loss');
-                    calculateSimulation();
-                });
-
-                // Run initial calculation
-                calculateSimulation();
             }
         });
 
-        function previewAvatar(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const avatarDiv = document.querySelector('.profile-avatar');
-                    avatarDiv.innerHTML = `
-                        <img src="${e.target.result}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
-                        <div style="position: absolute; bottom: -4px; right: -4px; background: var(--primary-orange); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--card-bg); font-size: 0.8rem; box-shadow: var(--shadow-sm);">
-                            <i class="ph ph-camera"></i>
-                        </div>
-                    `;
+        window.toggleTrajectoryChart = function(type) {
+            chartType = type;
+            const btnDupr = document.getElementById('btn-chart-dupr');
+            const btnElo = document.getElementById('btn-chart-elo');
+
+            if (type === 'dupr') {
+                btnDupr.className = 'sports-pill-btn green';
+                btnElo.className = 'sports-pill-btn outline';
+                trajectoryChart.data.datasets[0].label = 'DUPR Rating';
+                trajectoryChart.data.datasets[0].data = duprValues;
+                trajectoryChart.data.datasets[0].borderColor = '#10b981';
+                trajectoryChart.data.datasets[0].backgroundColor = 'rgba(16, 185, 129, 0.08)';
+            } else {
+                btnElo.className = 'sports-pill-btn green';
+                btnDupr.className = 'sports-pill-btn outline';
+                trajectoryChart.data.datasets[0].label = 'Elo Rating';
+                trajectoryChart.data.datasets[0].data = eloValues;
+                trajectoryChart.data.datasets[0].borderColor = '#3b82f6';
+                trajectoryChart.data.datasets[0].backgroundColor = 'rgba(59, 130, 246, 0.08)';
+            }
+            trajectoryChart.update();
+        };
+
+        // ── DUPR Match Simulator Logic ─────────────────────────────────────────
+        const slider = document.getElementById('sim-opp-dupr-slider');
+        const numInput = document.getElementById('sim-opp-dupr-num');
+        const btnWin = document.getElementById('btn-sim-win');
+        const btnLoss = document.getElementById('btn-sim-loss');
+        const resultsBox = document.getElementById('sim-results-box');
+        const oppEloText = document.getElementById('sim-opp-elo-text');
+        const winProbText = document.getElementById('sim-win-prob');
+        const ratingChangeBadge = document.getElementById('sim-rating-change');
+        const newDuprText = document.getElementById('sim-new-dupr-text');
+
+        let isWin = true;
+        const myElo = {{ current_user.elo }};
+        const myDupr = {{ "%.2f"|format(current_user.dupr|float) }};
+
+        function duprToElo(d) {
+            return Math.round(1200 + ((d - 3.0) / 0.1) * 37.5);
+        }
+
+        function eloToDupr(e) {
+            return 3.0 + ((e - 1200) / 37.5) * 0.1;
+        }
+
+        function updateSimulation() {
+            if (!slider || !numInput) return;
+            const oppDupr = parseFloat(slider.value);
+            const oppElo = duprToElo(oppDupr);
+            if (oppEloText) oppEloText.innerText = `(${oppElo} Elo)`;
+
+            const expectedScore = 1 / (1 + Math.pow(10, (oppElo - myElo) / 400));
+            if (winProbText) winProbText.innerText = (expectedScore * 100).toFixed(1) + '%';
+
+            const actualScore = isWin ? 1.0 : 0.0;
+            const deltaElo = Math.round(32 * (actualScore - expectedScore));
+            const newElo = myElo + deltaElo;
+            const newDupr = eloToDupr(newElo);
+            const deltaDupr = newDupr - myDupr;
+
+            if (ratingChangeBadge) {
+                const sign = deltaElo >= 0 ? '+' : '';
+                ratingChangeBadge.innerText = `${sign}${deltaElo} Elo`;
+                ratingChangeBadge.style.color = deltaElo >= 0 ? 'var(--pb-green)' : '#ef4444';
+            }
+
+            if (newDuprText) {
+                const sign = deltaDupr >= 0 ? '+' : '';
+                newDuprText.innerText = `${newDupr.toFixed(2)} (${sign}${deltaDupr.toFixed(2)})`;
+            }
+
+            if (resultsBox) {
+                if (isWin) {
+                    resultsBox.classList.remove('loss');
+                } else {
+                    resultsBox.classList.add('loss');
                 }
-                reader.readAsDataURL(input.files[0]);
             }
         }
-    </script>
 
-</div>
+        if (slider && numInput) {
+            slider.addEventListener('input', () => {
+                numInput.value = parseFloat(slider.value).toFixed(2);
+                updateSimulation();
+            });
+            numInput.addEventListener('input', () => {
+                slider.value = numInput.value;
+                updateSimulation();
+            });
+        }
+
+        if (btnWin && btnLoss) {
+            btnWin.addEventListener('click', () => {
+                isWin = true;
+                btnWin.className = 'sim-toggle-btn active-win';
+                btnLoss.className = 'sim-toggle-btn';
+                updateSimulation();
+            });
+            btnLoss.addEventListener('click', () => {
+                isWin = false;
+                btnLoss.className = 'sim-toggle-btn active-loss';
+                btnWin.className = 'sim-toggle-btn';
+                updateSimulation();
+            });
+        }
+
+        updateSimulation();
+    });
+
+    // ── DELETE ACCOUNT MODAL CONTROLLERS ──
+    function ensureDeleteModalInBody() {
+        const modal = document.getElementById('deleteAccountModal');
+        if (modal && modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+    }
+
+    function openDeleteAccountModal() {
+        ensureDeleteModalInBody();
+        document.body.style.overflow = 'hidden';
+        const modal = document.getElementById('deleteAccountModal');
+        if (modal) modal.classList.add('open');
+    }
+
+    function closeDeleteAccountModal() {
+        document.body.style.overflow = '';
+        const modal = document.getElementById('deleteAccountModal');
+        if (modal) modal.classList.remove('open');
+        const pwdInput = document.getElementById('deletePasswordInput');
+        const confirmInput = document.getElementById('deleteConfirmTextInput');
+        if (pwdInput) pwdInput.value = '';
+        if (confirmInput) confirmInput.value = '';
+    }
+
+    function handleDeleteBackdropClick(event) {
+        if (event.target === document.getElementById('deleteAccountModal')) {
+            closeDeleteAccountModal();
+        }
+    }
+
+    function toggleDeletePasswordView() {
+        const pwdInput = document.getElementById('deletePasswordInput');
+        const eyeIcon = document.getElementById('deleteEyeIcon');
+        if (!pwdInput) return;
+        if (pwdInput.type === 'password') {
+            pwdInput.type = 'text';
+            if (eyeIcon) eyeIcon.className = 'ph ph-eye-slash';
+        } else {
+            pwdInput.type = 'password';
+            if (eyeIcon) eyeIcon.className = 'ph ph-eye';
+        }
+    }
+
+    // Auto-switch tab if ?tab= query parameter is present (e.g., ?tab=settings)
+    document.addEventListener('DOMContentLoaded', () => {
+        ensureDeleteModalInBody();
+        const urlParams = new URLSearchParams(window.location.search);
+        const activeTab = urlParams.get('tab');
+        if (activeTab) {
+            switchProfileTab(activeTab);
+        }
+    });
+</script>
 {% endblock %}

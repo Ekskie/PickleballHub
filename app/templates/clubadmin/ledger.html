@@ -1,127 +1,1253 @@
 {% extends "clubadmin/base_clubadmin.html" %}
-{% block title %}Payment Ledger{% endblock %}
+{% block title %}Payment Ledger - {{ g.club.name if g.club else 'Club' }}{% endblock %}
+
+{% block extra_head %}
+<style>
+/* ── Club Payment Ledger Styles ── */
+.ledger-page-container {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+/* ── Page Header ── */
+.page-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.page-title-left {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.page-title-text {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.page-title-desc {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.header-action-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-secondary-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--card-bg, #ffffff);
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.btn-secondary-action:hover {
+    background: var(--input-bg);
+    border-color: var(--text-muted);
+}
+
+/* ── Financial KPI Intelligence Grid ── */
+.kpi-finance-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+@media (max-width: 992px) {
+    .kpi-finance-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 520px) {
+    .kpi-finance-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.kpi-finance-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 16px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kpi-finance-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.kpi-icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.45rem;
+    flex-shrink: 0;
+}
+
+.kpi-icon-green  { background: rgba(16, 185, 129, 0.12); color: #059669; }
+.kpi-icon-blue   { background: rgba(37, 99, 235, 0.12); color: #2563eb; }
+.kpi-icon-amber  { background: rgba(245, 158, 11, 0.12); color: #d97706; }
+.kpi-icon-purple { background: rgba(139, 92, 246, 0.12); color: #7c3aed; }
+
+.kpi-meta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.kpi-meta-label {
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.kpi-meta-val {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.2;
+    margin-top: 2px;
+}
+
+.kpi-meta-sub {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    margin-top: 3px;
+}
+
+/* ── Filter & Search Control Center ── */
+.control-hub-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 16px;
+    padding: 16px 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.control-hub-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.search-box-wrapper {
+    position: relative;
+    flex: 1;
+    min-width: 260px;
+}
+
+.search-box-wrapper i.search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+.search-box-wrapper input {
+    width: 100%;
+    padding: 10px 14px 10px 42px;
+    background: var(--input-bg, #f8fafc);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 12px;
+    font-size: 0.88rem;
+    color: var(--text-primary);
+    outline: none;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.search-box-wrapper input:focus {
+    border-color: var(--primary-orange);
+    background: var(--card-bg, #ffffff);
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12);
+}
+
+.clear-search-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    display: none;
+}
+
+.filter-selects-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.custom-select-ctrl {
+    padding: 9px 14px;
+    background: var(--input-bg, #f8fafc);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 10px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.custom-select-ctrl:focus {
+    border-color: var(--primary-orange);
+}
+
+/* Quick Filter Tabs */
+.quick-filter-pills {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.tab-pill-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border-color, #e2e8f0);
+    background: var(--input-bg, #f8fafc);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tab-pill-btn.active {
+    background: var(--text-primary);
+    color: #ffffff;
+    border-color: var(--text-primary);
+}
+
+.tab-pill-badge {
+    background: rgba(255, 255, 255, 0.25);
+    color: inherit;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+/* ── Table Container ── */
+.ledger-table-container {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.club-ledger-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.88rem;
+}
+
+.club-ledger-table th {
+    background: var(--input-bg, #f8fafc);
+    padding: 14px 18px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    border-bottom: 1px solid var(--border-color, #eaecf0);
+    white-space: nowrap;
+}
+
+.club-ledger-table td {
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--border-color, #f1f5f9);
+    vertical-align: middle;
+}
+
+.club-ledger-table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.club-ledger-table tbody tr:hover {
+    background-color: rgba(249, 115, 22, 0.025);
+}
+
+/* Member Column */
+.player-profile-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.player-avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 800;
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.player-avatar-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.player-info-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.player-name-link {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.player-name-link:hover {
+    color: var(--primary-orange);
+}
+
+.player-phone-sub {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Amount Badge */
+.amount-badge-display {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #059669;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 8px;
+    padding: 4px 10px;
+    display: inline-block;
+    font-family: inherit;
+}
+
+/* Reference Chip */
+.ref-code-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--input-bg, #f1f5f9);
+    border: 1px solid var(--border-color, #e2e8f0);
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 0.5px;
+}
+
+.copy-ref-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    transition: color 0.15s ease;
+}
+
+.copy-ref-btn:hover {
+    color: var(--primary-orange);
+}
+
+/* Status Badges */
+.status-pill-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.74rem;
+    font-weight: 700;
+}
+
+.status-pill-badge.active {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+    border: 1px solid rgba(16, 185, 129, 0.28);
+}
+
+.status-pill-badge.pending {
+    background: rgba(245, 158, 11, 0.12);
+    color: #b45309;
+    border: 1px solid rgba(245, 158, 11, 0.28);
+}
+
+.status-pill-badge.expired {
+    background: rgba(239, 68, 68, 0.12);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.28);
+}
+
+.status-dot-pulse {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* Receipt Button */
+.btn-view-receipt {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(14, 165, 233, 0.1);
+    color: #0284c7;
+    border: 1px solid rgba(14, 165, 233, 0.25);
+    border-radius: 8px;
+    padding: 5px 11px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-view-receipt:hover {
+    background: #0284c7;
+    color: #ffffff;
+}
+
+.btn-verify-quick {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+    border: 1px solid rgba(16, 185, 129, 0.28);
+    border-radius: 8px;
+    padding: 5px 11px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-verify-quick:hover {
+    background: #059669;
+    color: #ffffff;
+}
+
+/* ── Lightbox Modal ── */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(6px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.modal-overlay.open {
+    display: flex;
+}
+
+.modal-box-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 20px;
+    padding: 24px;
+    width: 100%;
+    max-width: 520px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    box-sizing: border-box;
+}
+
+@keyframes modalPop {
+    from { opacity: 0; transform: scale(0.96) translateY(8px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-header-flex {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.modal-close-icon {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    transition: all 0.15s ease;
+}
+
+.modal-close-icon:hover {
+    color: var(--text-primary);
+    background: var(--input-bg);
+}
+
+.drawer-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--border-color);
+    border-top-color: var(--primary-orange);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="dashboard-header">
-    <h1 class="page-title">Payment Ledger</h1>
-    <span style="color:var(--text-secondary);font-size:0.9rem;">{{ transactions|length }} transaction(s) logged</span>
-</div>
+<div class="ledger-page-container">
 
-<div class="glass-card">
-    <div class="widget-header" style="margin-bottom:16px;">
-        <div class="header-search" style="flex:1;max-width:360px;">
-            <i class="ph ph-magnifying-glass"></i>
-            <input type="text" id="ledgerSearch" placeholder="Search by name or reference..." oninput="filterLedger()">
+    <!-- ── Header Section ── -->
+    <div class="page-title-row">
+        <div class="page-title-left">
+            <h1 class="page-title-text">
+                <i class="ph ph-receipt" style="color: var(--primary-orange);"></i>
+                Club Payment Ledger
+            </h1>
+            <p class="page-title-desc">
+                Review membership dues, verify GCash payment proof screenshots, and monitor club treasury receipts for {{ g.club.name if g.club else 'your club' }}.
+            </p>
         </div>
-        <div class="filter-actions" style="display:flex;gap:8px;">
-            <select id="statusFilter" onchange="filterLedger()"
-                style="padding:0.5rem 10px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);cursor:pointer;border-radius:8px;font-size:0.85rem;">
-                <option value="all">All Statuses</option>
-                <option value="active">Active (Approved)</option>
-                <option value="pending">Pending</option>
-                <option value="expired">Expired</option>
-                <option value="rejected">Rejected</option>
-            </select>
+        <div class="header-action-group">
+            <button type="button" class="btn-secondary-action" onclick="exportLedgerCSV()">
+                <i class="ph ph-export"></i> Export Ledger CSV
+            </button>
+            <a href="{{ url_for('clubadmin.club_setup') }}" class="btn-secondary-action" title="Adjust membership fee">
+                <i class="ph ph-gear"></i> Fee Settings
+            </a>
         </div>
     </div>
 
-    <div class="table-container">
-        <table class="data-grid">
-            <thead>
-                <tr>
-                    <th>TRANSACTION DATE</th>
-                    <th>MEMBER</th>
-                    <th>AMOUNT</th>
-                    <th>GCASH REFERENCE</th>
-                    <th>STATUS</th>
-                    <th>RECEIPT</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if transactions %}
+    <!-- ── Financial Intelligence KPI Row ── -->
+    <div class="kpi-finance-grid">
+        <!-- 1. Total Dues Collected -->
+        <div class="kpi-finance-card">
+            <div class="kpi-icon-box kpi-icon-green">
+                <i class="ph ph-wallet"></i>
+            </div>
+            <div class="kpi-meta">
+                <span class="kpi-meta-label">Total Dues Collected</span>
+                <span class="kpi-meta-val" style="color: #059669;">₱{{ "%.2f"|format(stats.total_collected) }}</span>
+                <span class="kpi-meta-sub">From verified active members</span>
+            </div>
+        </div>
+
+        <!-- 2. Verified Transactions -->
+        <div class="kpi-finance-card">
+            <div class="kpi-icon-box kpi-icon-blue">
+                <i class="ph ph-check-circle"></i>
+            </div>
+            <div class="kpi-meta">
+                <span class="kpi-meta-label">Verified Transactions</span>
+                <span class="kpi-meta-val">{{ stats.verified_count }}</span>
+                <span class="kpi-meta-sub">Active enrolled dues</span>
+            </div>
+        </div>
+
+        <!-- 3. Pending Review -->
+        <div class="kpi-finance-card">
+            <div class="kpi-icon-box kpi-icon-amber">
+                <i class="ph ph-clock-countdown"></i>
+            </div>
+            <div class="kpi-meta">
+                <span class="kpi-meta-label">Pending Verification</span>
+                <span class="kpi-meta-val" {% if stats.pending_count > 0 %}style="color: #d97706;"{% endif %}>
+                    {{ stats.pending_count }}
+                </span>
+                <span class="kpi-meta-sub">
+                    {% if stats.pending_count > 0 %}
+                    <span style="font-weight: 700; color: #d97706;">Needs receipt verification</span>
+                    {% else %}
+                    All receipts verified
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <!-- 4. Membership Fee Policy -->
+        <div class="kpi-finance-card">
+            <div class="kpi-icon-box kpi-icon-purple">
+                <i class="ph ph-identification-card"></i>
+            </div>
+            <div class="kpi-meta">
+                <span class="kpi-meta-label">Membership Tier</span>
+                <span class="kpi-meta-val">₱{{ "%.2f"|format(stats.fee) }}</span>
+                <span class="kpi-meta-sub">{{ g.club.membership_duration|capitalize if g.club else 'Lifetime' }} Duration</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Filter & Search Control Center ── -->
+    <div class="control-hub-card">
+        <div class="control-hub-top">
+            <!-- Search Input -->
+            <div class="search-box-wrapper">
+                <i class="ph ph-magnifying-glass search-icon"></i>
+                <input type="text" id="ledgerSearch" placeholder="Search by member name, phone, or GCash reference..." oninput="handleSearchInput()">
+                <button type="button" class="clear-search-btn" id="clearSearchBtn" onclick="clearSearch()" aria-label="Clear search">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+
+            <!-- Quick Filter Tabs -->
+            <div class="quick-filter-pills">
+                <button type="button" class="tab-pill-btn active" data-tab="all" onclick="setQuickTab('all')">
+                    All <span class="tab-pill-badge">{{ transactions|length }}</span>
+                </button>
+                <button type="button" class="tab-pill-btn" data-tab="pending" onclick="setQuickTab('pending')">
+                    Pending Review 
+                    {% if stats.pending_count > 0 %}
+                    <span class="tab-pill-badge" style="background:#ea580c; color:#fff;">{{ stats.pending_count }}</span>
+                    {% else %}
+                    <span class="tab-pill-badge">0</span>
+                    {% endif %}
+                </button>
+                <button type="button" class="tab-pill-btn" data-tab="active" onclick="setQuickTab('active')">
+                    Verified <span class="tab-pill-badge">{{ stats.verified_count }}</span>
+                </button>
+            </div>
+
+            <!-- Sort Filter -->
+            <div class="filter-selects-row">
+                <select id="sortFilter" class="custom-select-ctrl" onchange="sortLedger()">
+                    <option value="date-desc">Newest Transactions</option>
+                    <option value="date-asc">Oldest Transactions</option>
+                    <option value="name-asc">Member Name (A-Z)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Transaction Ledger Table ── -->
+    <div class="ledger-table-container">
+        <div class="table-responsive">
+            <table class="club-ledger-table" id="ledgerTable">
+                <thead>
+                    <tr>
+                        <th>TRANSACTION DATE</th>
+                        <th>MEMBER</th>
+                        <th>DESCRIPTION</th>
+                        <th>AMOUNT</th>
+                        <th>GCASH REFERENCE</th>
+                        <th>PAYMENT STATUS</th>
+                        <th style="text-align: right;">RECEIPT / ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody id="ledgerTableBody">
+                    {% if transactions %}
                     {% for t in transactions %}
+                    {% set fn = t.profiles.first_name if t.profiles else 'Member' %}
+                    {% set ln = t.profiles.last_name if t.profiles else '' %}
                     <tr class="ledger-row"
-                        data-name="{{ (t.profiles.first_name ~ ' ' ~ t.profiles.last_name)|lower }}"
-                        data-ref="{{ t.gcash_ref|lower }}"
-                        data-status="{{ t.status }}">
-                        <td style="color:var(--text-secondary); font-size:0.85rem;">
-                            {{ t.joined_at.split('T')[0] if t.joined_at else '—' }}
+                        data-name="{{ (fn ~ ' ' ~ ln)|lower }}"
+                        data-phone="{{ (t.profiles.phone or '')|lower }}"
+                        data-ref="{{ (t.gcash_ref or '')|lower }}"
+                        data-status="{{ t.status }}"
+                        data-date="{{ t.joined_at[:10] if t.joined_at else '' }}">
+                        
+                        <!-- Transaction Date -->
+                        <td style="color: var(--text-secondary); font-size: 0.85rem; white-space: nowrap;">
+                            <i class="ph ph-calendar" style="opacity: 0.5;"></i>
+                            {{ t.joined_at[:10] if t.joined_at else '—' }}
                         </td>
-                        <td class="bold">
-                            <div style="display:flex;align-items:center;gap:12px;">
-                                <div style="width:32px;height:32px;border-radius:50%;background:var(--btn-navy);color:white;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;flex-shrink:0;overflow:hidden;">
-                                    {% if t.profiles.avatar_url %}
-                                        <img src="{{ t.profiles.avatar_url }}" style="width:100%;height:100%;object-fit:cover;">
+
+                        <!-- Member Cell -->
+                        <td>
+                            <div class="player-profile-cell">
+                                <div class="player-avatar-circle">
+                                    {% if t.profiles and t.profiles.avatar_url %}
+                                    <img src="{{ t.profiles.avatar_url }}" alt="{{ fn }}">
                                     {% else %}
-                                        {{ t.profiles.initials }}
+                                    {{ t.profiles.initials if t.profiles else fn[:2]|upper }}
                                     {% endif %}
                                 </div>
-                                <div>
-                                    <div class="clickable-name" style="font-size:0.9rem;" onclick="openMemberDrawer('{{ t.player_id }}')">{{ t.profiles.first_name }} {{ t.profiles.last_name }}</div>
-                                    <small style="color:var(--text-muted); font-size:0.7rem; font-weight:normal;">{{ t.profiles.phone or 'No phone' }}</small>
+                                <div class="player-info-meta">
+                                    <span class="player-name-link" onclick="openMemberDrawer('{{ t.player_id }}')">
+                                        {{ fn }} {{ ln }}
+                                    </span>
+                                    <span class="player-phone-sub">
+                                        {% if t.profiles and t.profiles.phone %}
+                                        <i class="ph ph-phone"></i> {{ t.profiles.phone }}
+                                        {% else %}
+                                        <i class="ph ph-identification-card"></i> Member
+                                        {% endif %}
+                                    </span>
                                 </div>
                             </div>
                         </td>
-                        <td class="bold" style="color:var(--text-primary); font-size:0.95rem;">
-                            ₱{{ "%.2f"|format(g.club.membership_fee) }}
+
+                        <!-- Payment Tier / Description -->
+                        <td>
+                            <span style="font-weight: 600; color: var(--text-primary); display: block;">
+                                Club Membership Dues
+                            </span>
+                            <small style="color: var(--text-muted); font-size: 0.74rem;">
+                                {{ g.club.membership_duration|capitalize if g.club else 'Lifetime' }} access
+                            </small>
                         </td>
-                        <td style="font-family:monospace; color:var(--text-primary); font-size:0.95rem; letter-spacing:0.5px;">
-                            {{ t.gcash_ref }}
+
+                        <!-- Amount -->
+                        <td>
+                            <span class="amount-badge-display">
+                                ₱{{ "%.2f"|format(stats.fee) }}
+                            </span>
                         </td>
+
+                        <!-- GCash Reference -->
+                        <td>
+                            {% if t.gcash_ref %}
+                            <div class="ref-code-chip">
+                                <span>{{ t.gcash_ref }}</span>
+                                <button type="button" class="copy-ref-btn" title="Copy Reference Number" onclick="copyRefText('{{ t.gcash_ref }}')">
+                                    <i class="ph ph-copy"></i>
+                                </button>
+                            </div>
+                            {% else %}
+                            <span style="color: var(--text-muted); font-style: italic; font-size: 0.82rem;">None provided</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Status Badge -->
                         <td>
                             {% if t.status == 'active' %}
-                                <span class="status-pill success">Active</span>
+                            <span class="status-pill-badge active">
+                                <span class="status-dot-pulse"></span> Verified
+                            </span>
                             {% elif t.status == 'pending' %}
-                                <span class="status-pill pending">Pending</span>
+                            <span class="status-pill-badge pending">
+                                <span class="status-dot-pulse"></span> Pending Review
+                            </span>
                             {% elif t.status == 'expired' %}
-                                <span class="status-pill expired">Expired</span>
+                            <span class="status-pill-badge expired">
+                                <span class="status-dot-pulse"></span> Expired
+                            </span>
                             {% else %}
-                                <span class="status-pill {{ t.status }}">{{ t.status|title }}</span>
+                            <span class="status-pill-badge" style="background: var(--input-bg); color: var(--text-secondary);">
+                                {{ t.status|title }}
+                            </span>
                             {% endif %}
                         </td>
-                        <td>
-                            {% if t.receipt_url %}
-                                <button onclick="showReceipt('{{ t.receipt_url }}', '{{ t.gcash_ref }}')"
-                                        style="background:rgba(0,198,255,0.12); color:#00c6ff; border:1px solid rgba(0,198,255,0.2); border-radius:6px; padding:6px 12px; cursor:pointer; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px; font-weight:600;">
+
+                        <!-- Receipt & Actions -->
+                        <td style="text-align: right; white-space: nowrap;">
+                            <div style="display: flex; gap: 8px; justify-content: flex-end; align-items: center;">
+                                {% if t.receipt_url %}
+                                <button type="button" class="btn-view-receipt" 
+                                        onclick="openReceiptPreview('{{ t.receipt_url }}', '{{ t.gcash_ref }}', '{{ fn }} {{ ln }}', '₱{{ '%.2f'|format(stats.fee) }}', '{{ t.id }}', '{{ t.status }}')">
                                     <i class="ph ph-image"></i> View Receipt
                                 </button>
-                            {% else %}
-                                <span style="color:var(--text-muted); font-size:0.8rem; font-style:italic;">No upload</span>
-                            {% endif %}
+                                {% else %}
+                                <span style="color: var(--text-muted); font-size: 0.78rem; font-style: italic;">
+                                    No receipt uploaded
+                                </span>
+                                {% endif %}
+
+                                {% if t.status == 'pending' %}
+                                <form action="{{ url_for('clubadmin.approve_member', membership_id=t.id) }}" method="POST" style="margin: 0;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn-verify-quick" title="Approve & Activate">
+                                        <i class="ph ph-check"></i> Approve
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
-                {% else %}
+                    {% else %}
                     <tr>
-                        <td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">
-                            <i class="ph ph-receipt" style="font-size:2rem;display:block;margin-bottom:8px;opacity:0.4;"></i>
-                            No transactions logged yet.
+                        <td colspan="7" style="text-align: center; padding: 48px; color: var(--text-muted);">
+                            <i class="ph ph-receipt" style="font-size: 2.5rem; opacity: 0.4; display: block; margin-bottom: 8px;"></i>
+                            No payment transactions recorded yet.
                         </td>
                     </tr>
-                {% endif %}
-            </tbody>
-        </table>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <div id="noResultsMsg" style="display:none;text-align:center;padding:30px;color:var(--text-muted);">
-        <i class="ph ph-magnifying-glass" style="font-size:1.5rem;display:block;margin-bottom:6px;opacity:0.4;"></i>
-        No transactions match your search.
+    <!-- No Search Results -->
+    <div id="noResultsMsg" style="display: none; text-align: center; padding: 48px 20px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px;">
+        <i class="ph ph-magnifying-glass" style="font-size: 2.2rem; color: var(--text-muted); opacity: 0.4; display: block; margin-bottom: 8px;"></i>
+        <h3 style="font-size: 1.1rem; color: var(--text-primary); margin: 0 0 6px 0;">No transactions match your search</h3>
+        <p style="font-size: 0.86rem; color: var(--text-muted); margin: 0 0 16px 0;">Try searching with a different name, phone number, or reference number.</p>
+        <button type="button" class="btn-secondary-action" onclick="clearSearch()">
+            Reset Filter
+        </button>
+    </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     ALL MODALS & SCRIPT CONTROLLER (DIRECTLY EMBEDDED)
+     ═══════════════════════════════════════════════════════════ -->
+
+<!-- 1. RECEIPT VERIFICATION LIGHTBOX MODAL -->
+<div class="modal-overlay" id="receiptPreviewModal">
+    <div class="modal-box-card" style="max-width: 500px;">
+        <div class="modal-header-flex">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(14, 165, 233, 0.12); color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+                    <i class="ph ph-wallet"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--text-primary);">Payment Receipt Proof</h3>
+                    <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">GCash verification screenshot</p>
+                </div>
+            </div>
+            <button type="button" class="modal-close-icon" onclick="closeReceiptPreview()">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+
+        <!-- Receipt Image Preview -->
+        <div style="background: #0f172a; border-radius: 14px; overflow: hidden; margin-bottom: 16px; text-align: center; border: 1px solid var(--border-color); max-height: 50vh; display: flex; align-items: center; justify-content: center;">
+            <img id="previewReceiptImg" src="" alt="Receipt Proof" style="max-width: 100%; max-height: 48vh; object-fit: contain;">
+        </div>
+
+        <!-- Transaction Details Grid -->
+        <div style="background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; font-size: 0.85rem; display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--text-muted);"><i class="ph ph-user"></i> Member:</span>
+                <strong id="previewMemberName" style="color: var(--text-primary);">Player</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--text-muted);"><i class="ph ph-hash"></i> GCash Reference:</span>
+                <span id="previewRefCode" style="font-family: monospace; font-weight: 700; color: var(--text-primary);">-</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--text-muted);"><i class="ph ph-money"></i> Amount Paid:</span>
+                <strong id="previewAmount" style="color: #059669; font-weight: 800;">₱0.00</strong>
+            </div>
+        </div>
+
+        <!-- Action Footer -->
+        <div style="display: flex; gap: 10px;">
+            <button type="button" class="btn-secondary-action" style="flex: 1; justify-content: center;" onclick="closeReceiptPreview()">
+                Close
+            </button>
+            <form id="modalApproveForm" method="POST" action="" style="flex: 1; margin: 0; display: none;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn-secondary-action" style="width: 100%; justify-content: center; background: #059669; color: #fff !important; border: none; font-weight: 700;">
+                    <i class="ph ph-check-circle"></i> Verify &amp; Approve
+                </button>
+            </form>
+        </div>
     </div>
 </div>
+
+<!-- 2. MEMBER DETAILS DOSSIER MODAL -->
+<div class="modal-overlay" id="memberDetailsModal">
+    <div class="modal-box-card" style="max-width: 540px; max-height: 88vh; overflow-y: auto;">
+        <div class="modal-header-flex">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(59, 130, 246, 0.12); color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+                    <i class="ph ph-user-focus"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--text-primary);">Member Dossier</h3>
+                    <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">Official player profile & tournament history</p>
+                </div>
+            </div>
+            <button type="button" class="modal-close-icon" onclick="closeMemberDetailsModal()">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+
+        <div id="memberDossierLoading" style="text-align: center; padding: 40px; color: var(--text-muted);">
+            <div class="drawer-spinner" style="margin: 0 auto 12px;"></div>
+            <span>Loading player details...</span>
+        </div>
+
+        <div id="memberDossierContent" style="display: none; flex-direction: column; gap: 16px;">
+            <!-- Profile Header -->
+            <div style="display: flex; align-items: center; gap: 16px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 16px;">
+                <div id="dossierAvatar" style="width: 60px; height: 60px; border-radius: 16px; background: #1e293b; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 800; overflow: hidden; flex-shrink: 0;">
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                    <h3 id="dossierName" style="margin: 0 0 4px 0; font-size: 1.15rem; font-weight: 800; color: var(--text-primary);">Player</h3>
+                    <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                        <span id="dossierSkill" style="font-size: 0.75rem; font-weight: 700; background: rgba(59, 130, 246, 0.12); color: #2563eb; padding: 3px 8px; border-radius: 6px;">Beginner</span>
+                        <span id="dossierStatus" class="status-pill-badge active">Active</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ratings Grid -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div style="background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; text-align: center;">
+                    <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">DUPR Rating</span>
+                    <div id="dossierDupr" style="font-size: 1.35rem; font-weight: 800; color: #059669; margin-top: 2px;">3.00</div>
+                </div>
+                <div style="background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; text-align: center;">
+                    <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Club ELO</span>
+                    <div id="dossierElo" style="font-size: 1.35rem; font-weight: 800; color: #ea580c; margin-top: 2px;">1200</div>
+                </div>
+            </div>
+
+            <!-- Contact & Membership Details -->
+            <div style="background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 16px; font-size: 0.84rem; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-muted);"><i class="ph ph-phone"></i> Phone:</span>
+                    <strong id="dossierPhone" style="color: var(--text-primary);">—</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-muted);"><i class="ph ph-calendar"></i> Member Since:</span>
+                    <span id="dossierJoined" style="color: var(--text-primary);">—</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-muted);"><i class="ph ph-hourglass"></i> Membership Expiry:</span>
+                    <span id="dossierExpires" style="color: var(--text-primary);">Lifetime</span>
+                </div>
+            </div>
+
+            <!-- Actions Footer -->
+            <div style="display: flex; gap: 10px; margin-top: 8px;">
+                <a id="dossierChatLink" href="#" class="btn-secondary-action" style="flex: 1; justify-content: center;">
+                    <i class="ph ph-chat-circle-dots"></i> Message Player
+                </a>
+                <button type="button" class="btn-secondary-action" style="flex: 1; justify-content: center;" onclick="closeMemberDetailsModal()">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-function filterLedger() {
-    const query = document.getElementById('ledgerSearch').value.toLowerCase();
-    const status = document.getElementById('statusFilter').value;
-    let visible = 0;
-    document.querySelectorAll('.ledger-row').forEach(row => {
-        const matchName   = row.dataset.name.includes(query);
-        const matchRef    = row.dataset.ref.includes(query);
-        const matchStatus = status === 'all' || row.dataset.status === status;
-        const show = (matchName || matchRef) && matchStatus;
-        row.style.display = show ? '' : 'none';
-        if (show) visible++;
+/* ── Modal Architecture ── */
+function openModal(id) {
+    const modal = document.getElementById(id);
+    if (!modal) return;
+    if (modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+    }
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+    const modal = document.getElementById(id);
+    if (modal) modal.classList.remove('open');
+    if (!document.querySelector('.modal-overlay.open')) {
+        document.body.style.overflow = '';
+    }
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', e => {
+        if (e.target === o) closeModal(o.id);
     });
-    document.getElementById('noResultsMsg').style.display = visible === 0 ? 'block' : 'none';
+});
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.open').forEach(m => closeModal(m.id));
+    }
+});
+
+/* ── Receipt Preview Modal Handlers ── */
+function openReceiptPreview(url, ref, memberName, amount, membershipId, status) {
+    const img = document.getElementById('previewReceiptImg');
+    const refCode = document.getElementById('previewRefCode');
+    const nameEl = document.getElementById('previewMemberName');
+    const amtEl = document.getElementById('previewAmount');
+    const approveForm = document.getElementById('modalApproveForm');
+    
+    if (img) img.src = url || '';
+    if (refCode) refCode.textContent = ref || 'None';
+    if (nameEl) nameEl.textContent = memberName || 'Member';
+    if (amtEl) amtEl.textContent = amount || '₱50.00';
+    
+    if (approveForm) {
+        if (status === 'pending') {
+            approveForm.style.display = 'block';
+            approveForm.action = `/clubadmin/members/${membershipId}/approve`;
+        } else {
+            approveForm.style.display = 'none';
+        }
+    }
+    
+    openModal('receiptPreviewModal');
+}
+
+function closeReceiptPreview() {
+    closeModal('receiptPreviewModal');
+}
+
+/* ── Member Dossier Modal ── */
+function openMemberDrawer(playerId) {
+    if (!playerId) return;
+    openModal('memberDetailsModal');
+    
+    const loading = document.getElementById('memberDossierLoading');
+    const content = document.getElementById('memberDossierContent');
+    if (loading) {
+        loading.style.display = 'block';
+        loading.innerHTML = '<div class="drawer-spinner" style="margin: 0 auto 12px;"></div><span>Loading player details...</span>';
+    }
+    if (content) content.style.display = 'none';
+    
+    fetch(`/clubadmin/members/${playerId}/details`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                if (loading) loading.innerHTML = `<p style="color:#ef4444;"><i class="ph ph-warning" style="font-size:1.5rem; display:block; margin-bottom:6px;"></i> Error loading details</p>`;
+                return;
+            }
+            if (loading) loading.style.display = 'none';
+            if (content) content.style.display = 'flex';
+            
+            document.getElementById('dossierName').textContent = `${data.first_name || ''} ${data.last_name || ''}`.trim() || 'Player';
+            document.getElementById('dossierPhone').textContent = data.phone || '—';
+            document.getElementById('dossierJoined').textContent = data.joined_at || '—';
+            document.getElementById('dossierExpires').textContent = data.expires_at || 'Lifetime';
+            document.getElementById('dossierDupr').textContent = parseFloat(data.dupr || 0).toFixed(2);
+            document.getElementById('dossierElo').textContent = data.elo || 1200;
+            
+            const skillEl = document.getElementById('dossierSkill');
+            if (skillEl) {
+                skillEl.textContent = (data.proficiency || 'Beginner');
+            }
+            
+            const statusEl = document.getElementById('dossierStatus');
+            if (statusEl) {
+                statusEl.className = `status-pill-badge ${data.status || 'active'}`;
+                statusEl.textContent = (data.status || 'active').charAt(0).toUpperCase() + (data.status || 'active').slice(1);
+            }
+            
+            const avatarEl = document.getElementById('dossierAvatar');
+            if (avatarEl) {
+                if (data.avatar_url) {
+                    avatarEl.innerHTML = `<img src="${data.avatar_url}" alt="Player" style="width:100%;height:100%;object-fit:cover;">`;
+                } else {
+                    const initials = (((data.first_name || ' ')[0]) + ((data.last_name || ' ')[0])).toUpperCase().trim() || '?';
+                    avatarEl.textContent = initials;
+                }
+            }
+            
+            const chatLink = document.getElementById('dossierChatLink');
+            if (chatLink) {
+                chatLink.href = `/clubadmin/messages?chat_user=${playerId}`;
+            }
+        })
+        .catch(err => {
+            console.error('Dossier error:', err);
+            if (loading) loading.innerHTML = `<p style="color:#ef4444;"><i class="ph ph-warning" style="font-size:1.5rem; display:block; margin-bottom:6px;"></i> Error loading details</p>`;
+        });
+}
+
+function closeMemberDetailsModal() {
+    closeModal('memberDetailsModal');
+}
+
+/* ── Quick Tab Filters ── */
+let currentTab = 'all';
+
+function setQuickTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.tab-pill-btn').forEach(btn => {
+        if (btn.dataset.tab === tab) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    filterLedger();
+}
+
+/* ── Search & Filter Logic ── */
+function handleSearchInput() {
+    const query = document.getElementById('ledgerSearch').value;
+    const clearBtn = document.getElementById('clearSearchBtn');
+    if (clearBtn) clearBtn.style.display = query ? 'block' : 'none';
+    filterLedger();
+}
+
+function clearSearch() {
+    document.getElementById('ledgerSearch').value = '';
+    const clearBtn = document.getElementById('clearSearchBtn');
+    if (clearBtn) clearBtn.style.display = 'none';
+    currentTab = 'all';
+    document.querySelectorAll('.tab-pill-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'all'));
+    filterLedger();
+}
+
+function filterLedger() {
+    const query = (document.getElementById('ledgerSearch')?.value || '').toLowerCase().trim();
+    let visibleCount = 0;
+    
+    document.querySelectorAll('.ledger-row').forEach(row => {
+        const name = row.dataset.name || '';
+        const phone = row.dataset.phone || '';
+        const ref = row.dataset.ref || '';
+        const status = row.dataset.status || '';
+        
+        const matchQuery = !query || name.includes(query) || phone.includes(query) || ref.includes(query);
+        const matchTab = currentTab === 'all' || status === currentTab;
+        
+        const show = matchQuery && matchTab;
+        row.style.display = show ? '' : 'none';
+        if (show) visibleCount++;
+    });
+    
+    const noResults = document.getElementById('noResultsMsg');
+    const tableContainer = document.querySelector('.ledger-table-container');
+    
+    if (visibleCount === 0) {
+        if (noResults) noResults.style.display = 'block';
+        if (tableContainer) tableContainer.style.display = 'none';
+    } else {
+        if (noResults) noResults.style.display = 'none';
+        if (tableContainer) tableContainer.style.display = 'block';
+    }
+}
+
+/* ── Sorting Logic ── */
+function sortLedger() {
+    const sortVal = document.getElementById('sortFilter')?.value || 'date-desc';
+    const tbody = document.getElementById('ledgerTableBody');
+    if (!tbody) return;
+    const rows = Array.from(tbody.querySelectorAll('.ledger-row'));
+    
+    const comparator = (a, b) => {
+        if (sortVal === 'date-desc') {
+            return (b.dataset.date || '').localeCompare(a.dataset.date || '');
+        } else if (sortVal === 'date-asc') {
+            return (a.dataset.date || '').localeCompare(b.dataset.date || '');
+        } else if (sortVal === 'name-asc') {
+            return (a.dataset.name || '').localeCompare(b.dataset.name || '');
+        }
+        return 0;
+    };
+    
+    rows.sort(comparator).forEach(r => tbody.appendChild(r));
+}
+
+/* ── Copy Reference Helper ── */
+function copyRefText(text) {
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+        alert('Reference ' + text + ' copied to clipboard!');
+    }).catch(e => console.error(e));
+}
+
+/* ── CSV Export ── */
+function exportLedgerCSV() {
+    const rows = document.querySelectorAll('.ledger-row');
+    if (!rows.length) {
+        alert('No transactions to export.');
+        return;
+    }
+    
+    let csvContent = "data:text/csv;charset=utf-8,Transaction Date,Member Name,Phone,Amount,GCash Reference,Status\n";
+    rows.forEach(r => {
+        const date = r.dataset.date || '';
+        const name = `"${r.dataset.name || ''}"`;
+        const phone = `"${r.dataset.phone || ''}"`;
+        const amount = "50.00";
+        const ref = `"${r.dataset.ref || ''}"`;
+        const status = `"${r.dataset.status || ''}"`;
+        csvContent += `${date},${name},${phone},${amount},${ref},${status}\n`;
+    });
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `club_ledger_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 </script>
 {% endblock %}

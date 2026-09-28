@@ -1,0 +1,1794 @@
+{% extends "owner/base_owner.html" %}
+{% block title %}Court Schedule & Bookings Calendar — Facility Owner{% endblock %}
+
+{% block content %}
+<style>
+    /* ==========================================================================
+       OWNER COURT SCHEDULE & BOOKINGS CALENDAR (LIGHT & DARK DUAL THEME)
+       ========================================================================== */
+    .schedule-page-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        width: 100%;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding-bottom: 70px;
+    }
+
+    /* ── Hero Banner ── */
+    .schedule-hero {
+        position: relative;
+        background: var(--card-bg, #ffffff);
+        border: 1.5px solid var(--border-color, #eaecf0);
+        border-radius: 20px;
+        padding: 26px 32px;
+        box-shadow: 0 4px 16px rgba(16, 24, 40, 0.05);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+        transition: background 0.3s ease, border-color 0.3s ease;
+    }
+
+    .schedule-hero::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #10b981, #0ea5e9, #ff5722);
+        z-index: 2;
+    }
+
+    .schedule-hero::before {
+        content: "";
+        position: absolute;
+        top: -40px;
+        right: -40px;
+        width: 280px;
+        height: 280px;
+        background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, rgba(14, 165, 233, 0.04) 60%, transparent 80%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 1;
+        flex: 1;
+        min-width: 280px;
+    }
+
+    .hero-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.74rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: #059669;
+        background: rgba(16, 185, 129, 0.12);
+        padding: 4px 12px;
+        border-radius: 9999px;
+        margin-bottom: 8px;
+    }
+
+    .hero-title {
+        font-size: 1.85rem;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        color: var(--text-primary, #0f172a);
+        line-height: 1.2;
+        margin: 0 0 6px 0;
+    }
+
+    .hero-desc {
+        font-size: 0.92rem;
+        color: var(--text-muted, #475467);
+        line-height: 1.5;
+        margin: 0;
+        max-width: 650px;
+    }
+
+    .hero-actions {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .hero-date-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: var(--text-primary, #0f172a);
+        background: var(--bg-surface, #f8fafc);
+        border: 1px solid var(--border-color, #eaecf0);
+        padding: 8px 16px;
+        border-radius: 12px;
+    }
+
+    .hero-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #10b981;
+        color: #ffffff;
+        font-size: 0.86rem;
+        font-weight: 700;
+        padding: 10px 18px;
+        border-radius: 12px;
+        border: none;
+        text-decoration: none;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+        transition: transform 0.15s ease, background 0.15s ease;
+    }
+
+    .hero-btn:hover {
+        background: #059669;
+        transform: translateY(-1px);
+        color: #ffffff;
+    }
+
+    /* ── KPI Stats Grid ── */
+    .schedule-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 16px;
+    }
+
+    @media (max-width: 1200px) {
+        .schedule-kpi-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 768px) {
+        .schedule-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 480px) {
+        .schedule-kpi-grid { grid-template-columns: 1fr; }
+    }
+
+    .kpi-card {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--border-color, #eaecf0);
+        border-radius: 16px;
+        padding: 18px 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow: 0 2px 8px rgba(16, 24, 40, 0.04);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .kpi-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(16, 24, 40, 0.08);
+    }
+
+    .kpi-icon-wrap {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        flex-shrink: 0;
+    }
+
+    .kpi-icon-wrap.all { background: rgba(14, 165, 233, 0.12); color: #0284c7; }
+    .kpi-icon-wrap.past { background: rgba(100, 116, 139, 0.12); color: #475569; }
+    .kpi-icon-wrap.today { background: rgba(245, 158, 11, 0.14); color: #d97706; }
+    .kpi-icon-wrap.upcoming { background: rgba(16, 185, 129, 0.14); color: #059669; }
+    .kpi-icon-wrap.revenue { background: rgba(99, 102, 241, 0.14); color: #4f46e5; }
+
+    .kpi-details {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .kpi-label {
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: var(--text-muted, #64748b);
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        margin-bottom: 2px;
+    }
+
+    .kpi-value {
+        font-size: 1.45rem;
+        font-weight: 900;
+        color: var(--text-primary, #0f172a);
+        line-height: 1.2;
+    }
+
+    .kpi-sub {
+        font-size: 0.72rem;
+        color: var(--text-muted, #94a3b8);
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* ── Controls & Filters Bar ── */
+    .controls-bar {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--border-color, #eaecf0);
+        border-radius: 16px;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        box-shadow: 0 2px 8px rgba(16, 24, 40, 0.03);
+    }
+
+    .controls-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        flex: 1;
+    }
+
+    .filter-select {
+        background: var(--bg-surface, #f8fafc);
+        border: 1px solid var(--border-color, #cbd5e1);
+        border-radius: 10px;
+        padding: 8px 14px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-primary, #0f172a);
+        outline: none;
+        cursor: pointer;
+        transition: border-color 0.2s ease;
+    }
+
+    .filter-select:focus {
+        border-color: #10b981;
+    }
+
+    .search-input-wrap {
+        position: relative;
+        min-width: 220px;
+        flex: 1;
+        max-width: 320px;
+    }
+
+    .search-input-wrap i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted, #94a3b8);
+        font-size: 0.95rem;
+    }
+
+    .search-input-wrap input {
+        width: 100%;
+        padding: 8px 12px 8px 36px;
+        background: var(--bg-surface, #f8fafc);
+        border: 1px solid var(--border-color, #cbd5e1);
+        border-radius: 10px;
+        font-size: 0.84rem;
+        color: var(--text-primary, #0f172a);
+        outline: none;
+        transition: border-color 0.2s ease;
+    }
+
+    .search-input-wrap input:focus {
+        border-color: #10b981;
+    }
+
+    .view-switcher {
+        display: inline-flex;
+        background: var(--bg-surface, #f1f5f9);
+        border: 1px solid var(--border-color, #e2e8f0);
+        border-radius: 12px;
+        padding: 4px;
+        gap: 4px;
+    }
+
+    .view-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: none;
+        background: transparent;
+        color: var(--text-muted, #64748b);
+        font-size: 0.82rem;
+        font-weight: 700;
+        padding: 6px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .view-btn.active {
+        background: var(--card-bg, #ffffff);
+        color: var(--text-primary, #0f172a);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    /* ── Main Layout: Calendar + Day Schedule ── */
+    .schedule-main-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 440px) minmax(0, 1fr);
+        gap: 24px;
+        align-items: start;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    @media (max-width: 1240px) {
+        .schedule-main-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* ── Interactive Calendar Card ── */
+    .cal-card {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--border-color, #eaecf0);
+        border-radius: 20px;
+        padding: 24px;
+        min-width: 0;
+        box-sizing: border-box;
+        box-shadow: 0 4px 16px rgba(16, 24, 40, 0.04);
+    }
+
+    .cal-nav-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .cal-month-title-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .cal-month-title {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--text-primary, #0f172a);
+    }
+
+    .cal-nav-buttons {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .cal-nav-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        border: 1px solid var(--border-color, #eaecf0);
+        background: var(--bg-surface, #f8fafc);
+        color: var(--text-primary, #0f172a);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 0.95rem;
+        transition: all 0.15s ease;
+    }
+
+    .cal-nav-btn:hover {
+        background: var(--card-bg, #ffffff);
+        border-color: #10b981;
+        color: #10b981;
+    }
+
+    .cal-today-pill {
+        font-size: 0.74rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color, #eaecf0);
+        background: var(--bg-surface, #f8fafc);
+        color: var(--text-primary, #0f172a);
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .cal-today-pill:hover {
+        background: #10b981;
+        color: #ffffff;
+        border-color: #10b981;
+    }
+
+    .cal-weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        text-align: center;
+        font-size: 0.76rem;
+        font-weight: 800;
+        color: var(--text-muted, #94a3b8);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 10px;
+    }
+
+    .cal-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 6px;
+    }
+
+    .cal-day-cell {
+        aspect-ratio: 1 / 1;
+        min-height: 52px;
+        border-radius: 12px;
+        border: 1.5px solid transparent;
+        background: var(--bg-surface, #f8fafc);
+        padding: 6px 4px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.2s ease;
+    }
+
+    .cal-day-cell:hover {
+        background: var(--card-bg, #ffffff);
+        border-color: #cbd5e1;
+        transform: scale(1.04);
+        z-index: 2;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    .cal-day-cell.empty {
+        background: transparent;
+        cursor: default;
+        border: none;
+    }
+    .cal-day-cell.empty:hover {
+        transform: none;
+        box-shadow: none;
+    }
+
+    .cal-day-cell.past {
+        opacity: 0.88;
+    }
+
+    .cal-day-cell.today {
+        border-color: #3b82f6;
+        background: rgba(59, 130, 246, 0.05);
+    }
+
+    .cal-day-cell.today .day-number {
+        color: #2563eb;
+        font-weight: 900;
+    }
+
+    .cal-day-cell.selected {
+        border-color: #10b981 !important;
+        background: rgba(16, 185, 129, 0.12) !important;
+        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+        transform: scale(1.03);
+    }
+
+    .cal-day-cell.selected .day-number {
+        color: #059669;
+        font-weight: 900;
+    }
+
+    .day-number {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--text-primary, #0f172a);
+        line-height: 1;
+    }
+
+    .day-indicators {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        min-height: 6px;
+    }
+
+    .day-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+    }
+    .day-dot.confirmed { background: #10b981; }
+    .day-dot.pending { background: #f59e0b; }
+    .day-dot.completed { background: #0ea5e9; }
+    .day-dot.cancelled { background: #ef4444; }
+
+    .day-booking-badge {
+        font-size: 0.65rem;
+        font-weight: 800;
+        padding: 2px 5px;
+        border-radius: 6px;
+        background: #10b981;
+        color: #ffffff;
+        line-height: 1;
+    }
+
+    .day-booking-badge.past {
+        background: #64748b;
+    }
+
+    .day-booking-badge.pending {
+        background: #f59e0b;
+    }
+
+    .cal-legend {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+        padding-top: 14px;
+        border-top: 1px solid var(--border-color, #eaecf0);
+        font-size: 0.72rem;
+        color: var(--text-muted, #64748b);
+        font-weight: 600;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    /* ── Right Panel: Day Schedule & Bookings ── */
+    .schedule-content-card {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--border-color, #eaecf0);
+        border-radius: 20px;
+        padding: 24px;
+        box-shadow: 0 4px 16px rgba(16, 24, 40, 0.04);
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .day-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border-color, #eaecf0);
+    }
+
+    .day-header-info h3 {
+        font-size: 1.35rem;
+        font-weight: 900;
+        color: var(--text-primary, #0f172a);
+        margin: 0 0 4px 0;
+    }
+
+    .day-header-info p {
+        font-size: 0.84rem;
+        color: var(--text-muted, #64748b);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .day-tag {
+        font-size: 0.72rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 3px 10px;
+        border-radius: 9999px;
+    }
+    .day-tag.today { background: rgba(59, 130, 246, 0.12); color: #2563eb; }
+    .day-tag.past { background: rgba(100, 116, 139, 0.14); color: #475569; }
+    .day-tag.upcoming { background: rgba(16, 185, 129, 0.14); color: #059669; }
+
+    .day-metrics-pills {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .metric-pill {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--bg-surface, #f8fafc);
+        border: 1px solid var(--border-color, #eaecf0);
+        padding: 6px 14px;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--text-primary, #0f172a);
+    }
+
+    .metric-pill i {
+        color: #10b981;
+    }
+
+    /* ── Booking List & Cards ── */
+    .bookings-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .booking-card {
+        background: var(--bg-surface, #f8fafc);
+        border: 1px solid var(--border-color, #eaecf0);
+        border-radius: 16px;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        transition: all 0.2s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .booking-card:hover {
+        border-color: #cbd5e1;
+        background: var(--card-bg, #ffffff);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+    }
+
+    .booking-card::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+    }
+
+    .booking-card.status-completed::before,
+    .booking-card.status-confirmed::before {
+        background: #10b981;
+    }
+    .booking-card.status-pending_payment::before {
+        background: #f59e0b;
+    }
+    .booking-card.status-cancelled::before {
+        background: #ef4444;
+    }
+
+    .bcard-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        min-width: 0;
+        flex: 1;
+    }
+
+    .bcard-time-slot {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-width: 90px;
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--border-color, #e2e8f0);
+        padding: 8px 10px;
+        border-radius: 12px;
+        text-align: center;
+    }
+
+    .bcard-time-slot .start-time {
+        font-size: 0.92rem;
+        font-weight: 800;
+        color: var(--text-primary, #0f172a);
+        line-height: 1.1;
+    }
+
+    .bcard-time-slot .end-time {
+        font-size: 0.74rem;
+        color: var(--text-muted, #64748b);
+        margin-top: 2px;
+    }
+
+    .bcard-time-slot .duration {
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: #059669;
+        margin-top: 4px;
+    }
+
+    .bcard-player-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+    }
+
+    .bcard-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #10b981, #0ea5e9);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.95rem;
+        font-weight: 800;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+    .bcard-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .bcard-player-meta {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .bcard-player-name {
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: var(--text-primary, #0f172a);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .walk-in-chip {
+        font-size: 0.65rem;
+        font-weight: 800;
+        background: rgba(245, 158, 11, 0.14);
+        color: #d97706;
+        padding: 2px 6px;
+        border-radius: 4px;
+        text-transform: uppercase;
+    }
+
+    .bcard-court-sub {
+        font-size: 0.78rem;
+        color: var(--text-muted, #64748b);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 3px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .bcard-right {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-shrink: 0;
+    }
+
+    .bcard-amount-block {
+        text-align: right;
+    }
+
+    .bcard-amount {
+        font-size: 1.05rem;
+        font-weight: 900;
+        color: var(--text-primary, #0f172a);
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        padding: 3px 10px;
+        border-radius: 9999px;
+        text-transform: capitalize;
+    }
+
+    .status-pill.completed,
+    .status-pill.confirmed {
+        background: rgba(16, 185, 129, 0.12);
+        color: #059669;
+    }
+    .status-pill.pending_payment {
+        background: rgba(245, 158, 11, 0.14);
+        color: #d97706;
+    }
+    .status-pill.cancelled {
+        background: rgba(239, 68, 68, 0.12);
+        color: #dc2626;
+    }
+
+    .bcard-action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        border: 1px solid var(--border-color, #eaecf0);
+        background: var(--card-bg, #ffffff);
+        color: var(--text-primary, #0f172a);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .bcard-action-btn:hover {
+        background: #10b981;
+        color: #ffffff;
+        border-color: #10b981;
+    }
+
+    /* ── Empty State ── */
+    .empty-state-box {
+        text-align: center;
+        padding: 48px 24px;
+        background: var(--bg-surface, #f8fafc);
+        border: 1.5px dashed var(--border-color, #cbd5e1);
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+    }
+
+    .empty-state-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+    }
+
+    .empty-state-title {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--text-primary, #0f172a);
+        margin: 0;
+    }
+
+    .empty-state-sub {
+        font-size: 0.85rem;
+        color: var(--text-muted, #64748b);
+        margin: 0;
+        max-width: 400px;
+    }
+
+    /* ── Table View Section (Tab 3) ── */
+    .table-view-section {
+        display: none;
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--border-color, #eaecf0);
+        border-radius: 20px;
+        padding: 24px;
+        box-shadow: 0 4px 16px rgba(16, 24, 40, 0.04);
+        overflow-x: auto;
+    }
+
+    .master-schedule-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.88rem;
+    }
+
+    .master-schedule-table th {
+        text-align: left;
+        padding: 12px 16px;
+        font-size: 0.74rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-muted, #64748b);
+        border-bottom: 1.5px solid var(--border-color, #eaecf0);
+        background: var(--bg-surface, #f8fafc);
+    }
+
+    .master-schedule-table td {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border-color, #eaecf0);
+        color: var(--text-primary, #0f172a);
+        vertical-align: middle;
+    }
+
+    .master-schedule-table tr:hover td {
+        background: var(--bg-surface, #f8fafc);
+    }
+
+    /* ── Detail Modal ── */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.65);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        padding: 20px;
+    }
+
+    .modal-card {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--border-color, #eaecf0);
+        border-radius: 20px;
+        width: 100%;
+        max-width: 580px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        animation: modalPop 0.2s ease-out;
+    }
+
+    @keyframes modalPop {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border-color, #eaecf0);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .modal-title {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: var(--text-primary, #0f172a);
+        margin: 0;
+    }
+
+    .modal-close-btn {
+        background: transparent;
+        border: none;
+        font-size: 1.25rem;
+        color: var(--text-muted, #64748b);
+        cursor: pointer;
+    }
+
+    .modal-body {
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        max-height: 75vh;
+        overflow-y: auto;
+    }
+
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+    }
+
+    .detail-tile {
+        background: var(--bg-surface, #f8fafc);
+        border: 1px solid var(--border-color, #eaecf0);
+        border-radius: 12px;
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .detail-tile-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--text-muted, #64748b);
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        margin-bottom: 4px;
+    }
+
+    .detail-tile-val {
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: var(--text-primary, #0f172a);
+    }
+
+    .modal-footer {
+        padding: 16px 24px;
+        border-top: 1px solid var(--border-color, #eaecf0);
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
+    }
+
+    .modal-btn-secondary {
+        background: var(--bg-surface, #f8fafc);
+        border: 1px solid var(--border-color, #eaecf0);
+        color: var(--text-primary, #0f172a);
+        font-size: 0.85rem;
+        font-weight: 700;
+        padding: 8px 16px;
+        border-radius: 10px;
+        cursor: pointer;
+    }
+
+    .modal-btn-primary {
+        background: #10b981;
+        border: none;
+        color: #ffffff;
+        font-size: 0.85rem;
+        font-weight: 700;
+        padding: 8px 16px;
+        border-radius: 10px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* ── Dark Mode Overrides ── */
+    body.dark-mode, html.dark-mode {
+        --card-bg: #1e293b;
+        --border-color: #334155;
+        --bg-surface: #0f172a;
+        --text-primary: #f8fafc;
+        --text-muted: #94a3b8;
+    }
+</style>
+
+<div class="schedule-page-wrap">
+
+    <!-- ── Hero Banner ── -->
+    <section class="schedule-hero">
+        <div class="hero-content">
+            <span class="hero-tag">
+                <i class="ph ph-calendar-check"></i> Court Operations & Schedule
+            </span>
+            <h1 class="hero-title">Court Booking Schedule</h1>
+            <p class="hero-desc">
+                Interactive master schedule for all your courts. Browse active bookings, upcoming court reservations, and historical records across all facilities.
+            </p>
+        </div>
+        <div class="hero-actions">
+            <div class="hero-date-badge">
+                <i class="ph ph-clock" style="color: #10b981;"></i>
+                <span id="liveTimeClock">Loading PH Time...</span>
+            </div>
+            <a href="{{ url_for('owner.courts') }}" class="hero-btn">
+                <i class="ph ph-intersect"></i> Manage Courts
+            </a>
+        </div>
+    </section>
+
+    <!-- ── KPI Stats Summary ── -->
+    <section class="schedule-kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-icon-wrap all">
+                <i class="ph ph-stack"></i>
+            </div>
+            <div class="kpi-details">
+                <span class="kpi-label">Total Bookings</span>
+                <span class="kpi-value">{{ stats.total_bookings }}</span>
+                <span class="kpi-sub">All-time lifetime records</span>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon-wrap past">
+                <i class="ph ph-clock-counter-clockwise"></i>
+            </div>
+            <div class="kpi-details">
+                <span class="kpi-label">Past / Old Bookings</span>
+                <span class="kpi-value">{{ stats.past_bookings }}</span>
+                <span class="kpi-sub">Completed & historic</span>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon-wrap today">
+                <i class="ph ph-sun-horizon"></i>
+            </div>
+            <div class="kpi-details">
+                <span class="kpi-label">Today's Bookings</span>
+                <span class="kpi-value">{{ stats.today_bookings }}</span>
+                <span class="kpi-sub">{{ today_str }}</span>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon-wrap upcoming">
+                <i class="ph ph-calendar-plus"></i>
+            </div>
+            <div class="kpi-details">
+                <span class="kpi-label">Upcoming Bookings</span>
+                <span class="kpi-value">{{ stats.upcoming_bookings }}</span>
+                <span class="kpi-sub">Future court slots</span>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon-wrap revenue">
+                <i class="ph ph-currency-circle-dollar"></i>
+            </div>
+            <div class="kpi-details">
+                <span class="kpi-label">Total Revenue</span>
+                <span class="kpi-value">₱{{ "{:,.0f}".format(stats.completed_revenue) }}</span>
+                <span class="kpi-sub">Paid bookings</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── Filter & Control Bar ── -->
+    <div class="controls-bar">
+        <div class="controls-left">
+            <!-- Facility selector -->
+            <select id="facilityFilter" class="filter-select" onchange="applyFilters()">
+                <option value="all">All Facilities ({{ facilities|length }})</option>
+                {% for fac in facilities %}
+                <option value="{{ fac.id }}">{{ fac.name }}</option>
+                {% endfor %}
+            </select>
+
+            <!-- Court selector -->
+            <select id="courtFilter" class="filter-select" onchange="applyFilters()">
+                <option value="all">All Courts ({{ courts|length }})</option>
+                {% for court in courts %}
+                <option value="{{ court.id }}" data-facility="{{ court.facility_id }}">{{ court.name }}</option>
+                {% endfor %}
+            </select>
+
+            <!-- Status filter -->
+            <select id="statusFilter" class="filter-select" onchange="applyFilters()">
+                <option value="all">All Statuses</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="completed">Completed (Old)</option>
+                <option value="pending_payment">Pending Payment</option>
+                <option value="cancelled">Cancelled</option>
+            </select>
+
+            <!-- Search input -->
+            <div class="search-input-wrap">
+                <i class="ph ph-magnifying-glass"></i>
+                <input type="text" id="scheduleSearch" placeholder="Search player, court, or ref..." oninput="onSearchChange()">
+            </div>
+        </div>
+
+        <!-- View switcher -->
+        <div class="view-switcher">
+            <button type="button" class="view-btn active" id="btnViewCalendar" onclick="switchView('calendar')">
+                <i class="ph ph-calendar"></i> Calendar & Day
+            </button>
+            <button type="button" class="view-btn" id="btnViewTable" onclick="switchView('table')">
+                <i class="ph ph-table"></i> All Bookings Ledger
+            </button>
+        </div>
+    </div>
+
+    <!-- ── VIEW 1: Calendar & Daily Breakdown ── -->
+    <div id="viewCalendarSection" class="schedule-main-grid">
+
+        <!-- Left: Interactive Full Calendar -->
+        <div class="cal-card">
+            <div class="cal-nav-header">
+                <div class="cal-month-title-wrap">
+                    <span id="calendarMonthTitle" class="cal-month-title">September 2026</span>
+                </div>
+                <div class="cal-nav-buttons">
+                    <button type="button" class="cal-today-pill" onclick="jumpToToday()">Today</button>
+                    <button type="button" class="cal-nav-btn" onclick="changeMonth(-1)" title="Previous Month">
+                        <i class="ph ph-caret-left"></i>
+                    </button>
+                    <button type="button" class="cal-nav-btn" onclick="changeMonth(1)" title="Next Month">
+                        <i class="ph ph-caret-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Weekdays -->
+            <div class="cal-weekdays">
+                <span>Sun</span>
+                <span>Mon</span>
+                <span>Tue</span>
+                <span>Wed</span>
+                <span>Thu</span>
+                <span>Fri</span>
+                <span>Sat</span>
+            </div>
+
+            <!-- Calendar Days Grid -->
+            <div id="calendarDaysGrid" class="cal-grid">
+                <!-- Dynamically generated via JavaScript -->
+            </div>
+
+            <!-- Calendar Legend -->
+            <div class="cal-legend">
+                <div class="legend-item">
+                    <span class="day-dot confirmed"></span>
+                    <span>Paid / Confirmed</span>
+                </div>
+                <div class="legend-item">
+                    <span class="day-dot completed"></span>
+                    <span>Completed (Old)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="day-dot pending"></span>
+                    <span>Pending</span>
+                </div>
+                <div class="legend-item">
+                    <span class="day-dot cancelled"></span>
+                    <span>Cancelled</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Daily Schedule for Selected Date -->
+        <div class="schedule-content-card">
+            <div class="day-header">
+                <div class="day-header-info">
+                    <h3 id="selectedDateTitle">Wednesday, Sep 25, 2026</h3>
+                    <p>
+                        <span id="selectedDateBadge" class="day-tag today">Today</span>
+                        <span id="selectedDateFacility">All Facilities</span>
+                    </p>
+                </div>
+                <div class="day-metrics-pills">
+                    <div class="metric-pill">
+                        <i class="ph ph-calendar-check"></i>
+                        <span id="dayTotalBookings">0 Bookings</span>
+                    </div>
+                    <div class="metric-pill">
+                        <i class="ph ph-currency-circle-dollar"></i>
+                        <span id="dayTotalRevenue">₱0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bookings List for Selected Date -->
+            <div id="dayBookingsList" class="bookings-list">
+                <!-- Populated via JS -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ── VIEW 2: All Bookings Master Ledger (Table) ── -->
+    <div id="viewTableSection" class="table-view-section">
+        <table class="master-schedule-table">
+            <thead>
+                <tr>
+                    <th>Date & Time</th>
+                    <th>Player</th>
+                    <th>Court & Facility</th>
+                    <th>Status</th>
+                    <th>Amount</th>
+                    <th>Reference</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="masterTableBody">
+                <!-- Populated via JS -->
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- ── Executive Booking Details Modal ── -->
+<div id="bookingModal" class="modal-overlay" onclick="onModalOverlayClick(event)">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3 class="modal-title">Reservation Details</h3>
+            <button type="button" class="modal-close-btn" onclick="closeBookingModal()">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="modalBodyContent">
+            <!-- Populated via JS -->
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="modal-btn-secondary" onclick="closeBookingModal()">Close</button>
+            <a href="{{ url_for('owner.payment_ledger') }}" id="modalLedgerLink" class="modal-btn-primary">
+                <i class="ph ph-receipt"></i> View in Payment Ledger
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- ── CLIENT LOGIC: DATA, CALENDAR & SEARCH ── -->
+<script>
+    // Injected Data from Flask
+    const ALL_RESERVATIONS = {{ all_reservations | tojson }};
+    const TODAY_STR = {{ today_str | tojson }};
+    const INITIAL_SELECTED_DATE = {{ selected_date | tojson }};
+
+    // State
+    const state = {
+        currentYear: parseInt(TODAY_STR.split('-')[0]),
+        currentMonth: parseInt(TODAY_STR.split('-')[1]), // 1 - 12
+        selectedDate: INITIAL_SELECTED_DATE || TODAY_STR,
+        facilityFilter: 'all',
+        courtFilter: 'all',
+        statusFilter: 'all',
+        searchQuery: '',
+        activeView: 'calendar'
+    };
+
+    const MONTH_NAMES = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+
+    // Helper: format YYYY-MM-DD to friendly string
+    function formatDateFriendly(dateStr) {
+        if (!dateStr) return '';
+        try {
+            const parts = dateStr.split('-');
+            const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+            return d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
+        } catch (e) {
+            return dateStr;
+        }
+    }
+
+    // Filter reservations based on active filters
+    function getFilteredReservations() {
+        return ALL_RESERVATIONS.filter(r => {
+            if (state.facilityFilter !== 'all' && r.facility_id !== state.facilityFilter) return false;
+            if (state.courtFilter !== 'all' && r.court_id !== state.courtFilter) return false;
+            if (state.statusFilter !== 'all' && r.status !== state.statusFilter) return false;
+            if (state.searchQuery) {
+                const q = state.searchQuery.toLowerCase();
+                const matchPlayer = (r.player_name || '').toLowerCase().includes(q);
+                const matchCourt = (r.court_name || '').toLowerCase().includes(q);
+                const matchFac = (r.facility_name || '').toLowerCase().includes(q);
+                const matchRef = (r.gcash_ref || '').toLowerCase().includes(q);
+                const matchId = (r.id || '').toLowerCase().includes(q);
+                if (!matchPlayer && !matchCourt && !matchFac && !matchRef && !matchId) return false;
+            }
+            return true;
+        });
+    }
+
+    // Group filtered reservations by date
+    function getBookingsByDateMap() {
+        const filtered = getFilteredReservations();
+        const map = {};
+        filtered.forEach(r => {
+            if (!map[r.date]) map[r.date] = [];
+            map[r.date].push(r);
+        });
+        return map;
+    }
+
+    // Render Calendar
+    function renderCalendar() {
+        const grid = document.getElementById('calendarDaysGrid');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        const title = document.getElementById('calendarMonthTitle');
+        if (title) {
+            title.textContent = `${MONTH_NAMES[state.currentMonth - 1]} ${state.currentYear}`;
+        }
+
+        const firstDayObj = new Date(state.currentYear, state.currentMonth - 1, 1);
+        const firstDayWeekday = firstDayObj.getDay();
+        const totalDays = new Date(state.currentYear, state.currentMonth, 0).getDate();
+
+        const bookingsMap = getBookingsByDateMap();
+
+        // Empty padding cells for start of month
+        for (let i = 0; i < firstDayWeekday; i++) {
+            const emptyCell = document.createElement('div');
+            emptyCell.className = 'cal-day-cell empty';
+            grid.appendChild(emptyCell);
+        }
+
+        // Days
+        for (let d = 1; d <= totalDays; d++) {
+            const dayStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const dayBookings = bookingsMap[dayStr] || [];
+
+            const isToday = (dayStr === TODAY_STR);
+            const isSelected = (dayStr === state.selectedDate);
+            const isPast = (dayStr < TODAY_STR);
+
+            const cell = document.createElement('div');
+            let classes = ['cal-day-cell'];
+            if (isToday) classes.push('today');
+            if (isSelected) classes.push('selected');
+            if (isPast) classes.push('past');
+            cell.className = classes.join(' ');
+            cell.dataset.date = dayStr;
+
+            // Day number
+            const numSpan = document.createElement('span');
+            numSpan.className = 'day-number';
+            numSpan.textContent = d;
+            cell.appendChild(numSpan);
+
+            // Badges or dots if bookings exist
+            if (dayBookings.length > 0) {
+                // Indicators dots
+                const dotWrap = document.createElement('div');
+                dotWrap.className = 'day-indicators';
+
+                const statuses = new Set(dayBookings.map(b => b.status));
+                statuses.forEach(st => {
+                    const dot = document.createElement('span');
+                    dot.className = `day-dot ${st}`;
+                    dotWrap.appendChild(dot);
+                });
+                cell.appendChild(dotWrap);
+
+                // Count badge
+                const badge = document.createElement('span');
+                badge.className = `day-booking-badge ${isPast ? 'past' : ''}`;
+                badge.textContent = dayBookings.length === 1 ? '1 slot' : `${dayBookings.length} slots`;
+                cell.appendChild(badge);
+            }
+
+            // Click listener: Select Date
+            cell.onclick = () => selectDate(dayStr);
+            grid.appendChild(cell);
+        }
+    }
+
+    // Select a Date
+    function selectDate(dateStr) {
+        state.selectedDate = dateStr;
+        renderCalendar();
+        renderDaySchedule();
+    }
+
+    // Render the right-side Day Schedule panel
+    function renderDaySchedule() {
+        const titleEl = document.getElementById('selectedDateTitle');
+        const badgeEl = document.getElementById('selectedDateBadge');
+        const facEl = document.getElementById('selectedDateFacility');
+        const listEl = document.getElementById('dayBookingsList');
+        const totalBookingsEl = document.getElementById('dayTotalBookings');
+        const totalRevenueEl = document.getElementById('dayTotalRevenue');
+
+        if (!titleEl || !listEl) return;
+
+        titleEl.textContent = formatDateFriendly(state.selectedDate);
+
+        // Badge: Today, Past, or Upcoming
+        if (state.selectedDate === TODAY_STR) {
+            badgeEl.className = 'day-tag today';
+            badgeEl.textContent = "Today's Schedule";
+        } else if (state.selectedDate < TODAY_STR) {
+            badgeEl.className = 'day-tag past';
+            badgeEl.textContent = "Past Date (Historical Record)";
+        } else {
+            badgeEl.className = 'day-tag upcoming';
+            badgeEl.textContent = "Upcoming Date";
+        }
+
+        // Facility name
+        if (state.facilityFilter === 'all') {
+            facEl.textContent = "All Facilities";
+        } else {
+            const opt = document.querySelector(`#facilityFilter option[value="${state.facilityFilter}"]`);
+            facEl.textContent = opt ? opt.textContent : 'Facility';
+        }
+
+        const bookingsMap = getBookingsByDateMap();
+        const dayBookings = bookingsMap[state.selectedDate] || [];
+
+        // Metrics
+        totalBookingsEl.textContent = dayBookings.length === 1 ? '1 Booking' : `${dayBookings.length} Bookings`;
+        const dayRev = dayBookings
+            .filter(b => b.status === 'confirmed' || b.status === 'completed')
+            .reduce((sum, b) => sum + (b.total_amount || 0), 0);
+        totalRevenueEl.textContent = `₱${dayRev.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+
+        // List HTML
+        if (dayBookings.length === 0) {
+            listEl.innerHTML = `
+                <div class="empty-state-box">
+                    <div class="empty-state-icon"><i class="ph ph-calendar-blank"></i></div>
+                    <h4 class="empty-state-title">No court reservations for this day</h4>
+                    <p class="empty-state-sub">There are no bookings recorded on ${formatDateFriendly(state.selectedDate)}. Select another date from the calendar to inspect bookings.</p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        dayBookings.forEach(b => {
+            const avatarHtml = b.player_avatar 
+                ? `<img src="${b.player_avatar}" alt="${b.player_name}">`
+                : `${b.player_initials}`;
+
+            const walkInTag = b.is_guest ? `<span class="walk-in-chip">Walk-in</span>` : '';
+            const statusLabel = b.status.replace('_', ' ');
+
+            html += `
+                <div class="booking-card status-${b.status}" onclick="openBookingModal('${b.id}')">
+                    <div class="bcard-left">
+                        <div class="bcard-time-slot">
+                            <span class="start-time">${b.start_time_fmt || b.start_time.slice(0,5)}</span>
+                            <span class="end-time">${b.end_time_fmt || b.end_time.slice(0,5)}</span>
+                            <span class="duration">${b.total_hours} hr(s)</span>
+                        </div>
+                        <div class="bcard-player-info">
+                            <div class="bcard-avatar">${avatarHtml}</div>
+                            <div class="bcard-player-meta">
+                                <span class="bcard-player-name">${b.player_name} ${walkInTag}</span>
+                                <span class="bcard-court-sub">
+                                    <i class="ph ph-intersect"></i> ${b.court_name} • ${b.facility_name}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bcard-right">
+                        <div class="bcard-amount-block">
+                            <div class="bcard-amount">₱${Number(b.total_amount || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
+                            <span class="status-pill ${b.status}"><i class="ph ph-circle-fill" style="font-size:6px;"></i> ${statusLabel}</span>
+                        </div>
+                        <button type="button" class="bcard-action-btn" title="View Details" onclick="event.stopPropagation(); openBookingModal('${b.id}')">
+                            <i class="ph ph-eye"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+
+        listEl.innerHTML = html;
+    }
+
+    // Render Master Table (All Bookings)
+    function renderMasterTable() {
+        const tbody = document.getElementById('masterTableBody');
+        if (!tbody) return;
+
+        const filtered = getFilteredReservations();
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                        <i class="ph ph-folder-notch-open" style="font-size: 2rem; display: block; margin-bottom: 8px;"></i>
+                        No matching reservations found.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        let html = '';
+        filtered.forEach(b => {
+            const avatarHtml = b.player_avatar 
+                ? `<img src="${b.player_avatar}" alt="${b.player_name}" style="width:24px;height:24px;border-radius:6px;object-fit:cover;">`
+                : `<span style="font-weight:700;font-size:0.75rem;">${b.player_initials}</span>`;
+
+            html += `
+                <tr>
+                    <td>
+                        <strong style="color:var(--text-primary);">${b.date}</strong><br>
+                        <span style="font-size:0.76rem;color:var(--text-muted);">${b.start_time_fmt} – ${b.end_time_fmt}</span>
+                    </td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            ${avatarHtml}
+                            <div>
+                                <span style="font-weight:700;">${b.player_name}</span>
+                                ${b.is_guest ? '<span class="walk-in-chip" style="margin-left:4px;">Walk-in</span>' : ''}
+                                ${b.player_phone ? `<br><span style="font-size:0.72rem;color:var(--text-muted);">${b.player_phone}</span>` : ''}
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span style="font-weight:700;"><i class="ph ph-intersect" style="color:#10b981;"></i> ${b.court_name}</span><br>
+                        <span style="font-size:0.74rem;color:var(--text-muted);">${b.facility_name}</span>
+                    </td>
+                    <td>
+                        <span class="status-pill ${b.status}">${b.status.replace('_', ' ')}</span>
+                    </td>
+                    <td>
+                        <strong style="font-size:0.95rem;">₱${Number(b.total_amount || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</strong>
+                    </td>
+                    <td>
+                        ${b.gcash_ref ? `<code style="background:var(--bg-surface);padding:3px 6px;border-radius:4px;font-size:0.75rem;">${b.gcash_ref}</code>` : '<span style="color:var(--text-muted);">—</span>'}
+                    </td>
+                    <td>
+                        <button type="button" class="bcard-action-btn" title="View Details" onclick="openBookingModal('${b.id}')">
+                            <i class="ph ph-eye"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        tbody.innerHTML = html;
+    }
+
+    // Modal Details
+    function openBookingModal(reservationId) {
+        const b = ALL_RESERVATIONS.find(x => x.id === reservationId);
+        if (!b) return;
+
+        const body = document.getElementById('modalBodyContent');
+        const modal = document.getElementById('bookingModal');
+
+        const avatarHtml = b.player_avatar 
+            ? `<img src="${b.player_avatar}" alt="${b.player_name}" style="width:100%;height:100%;object-fit:cover;">`
+            : `${b.player_initials}`;
+
+        let receiptHtml = '';
+        if (b.receipt_url) {
+            receiptHtml = `
+                <div style="margin-top: 10px;">
+                    <span class="detail-tile-label">Uploaded GCash Slip</span>
+                    <a href="${b.receipt_url}" target="_blank" style="display:block;margin-top:6px;">
+                        <img src="${b.receipt_url}" alt="Receipt" style="max-height:160px;border-radius:8px;border:1px solid var(--border-color);object-fit:contain;">
+                    </a>
+                </div>
+            `;
+        }
+
+        body.innerHTML = `
+            <div style="display:flex;align-items:center;gap:14px;padding-bottom:14px;border-bottom:1px solid var(--border-color);">
+                <div class="bcard-avatar" style="width:50px;height:50px;font-size:1.15rem;">${avatarHtml}</div>
+                <div>
+                    <h4 style="margin:0 0 2px 0;font-size:1.1rem;font-weight:800;color:var(--text-primary);">${b.player_name}</h4>
+                    <span style="font-size:0.8rem;color:var(--text-muted);">${b.player_email || b.player_phone || 'Registered Player'}</span>
+                </div>
+                <div style="margin-left:auto;">
+                    <span class="status-pill ${b.status}">${b.status.replace('_', ' ')}</span>
+                </div>
+            </div>
+
+            <div class="detail-grid">
+                <div class="detail-tile">
+                    <span class="detail-tile-label">Facility</span>
+                    <span class="detail-tile-val">${b.facility_name}</span>
+                </div>
+                <div class="detail-tile">
+                    <span class="detail-tile-label">Court</span>
+                    <span class="detail-tile-val">${b.court_name} (${b.court_type})</span>
+                </div>
+                <div class="detail-tile">
+                    <span class="detail-tile-label">Date</span>
+                    <span class="detail-tile-val">${b.date}</span>
+                </div>
+                <div class="detail-tile">
+                    <span class="detail-tile-label">Time Slot</span>
+                    <span class="detail-tile-val">${b.start_time_fmt} – ${b.end_time_fmt} (${b.total_hours}h)</span>
+                </div>
+                <div class="detail-tile">
+                    <span class="detail-tile-label">Total Amount</span>
+                    <span class="detail-tile-val" style="color:#10b981;">₱${Number(b.total_amount || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                </div>
+                <div class="detail-tile">
+                    <span class="detail-tile-label">GCash Reference</span>
+                    <span class="detail-tile-val">${b.gcash_ref || 'None / Cash'}</span>
+                </div>
+            </div>
+
+            ${receiptHtml}
+        `;
+
+        modal.style.display = 'flex';
+    }
+
+    function closeBookingModal() {
+        document.getElementById('bookingModal').style.display = 'none';
+    }
+
+    function onModalOverlayClick(e) {
+        if (e.target.id === 'bookingModal') {
+            closeBookingModal();
+        }
+    }
+
+    // Navigation
+    function changeMonth(dir) {
+        state.currentMonth += dir;
+        if (state.currentMonth > 12) {
+            state.currentMonth = 1;
+            state.currentYear += 1;
+        } else if (state.currentMonth < 1) {
+            state.currentMonth = 12;
+            state.currentYear -= 1;
+        }
+        renderCalendar();
+    }
+
+    function jumpToToday() {
+        const parts = TODAY_STR.split('-');
+        state.currentYear = parseInt(parts[0]);
+        state.currentMonth = parseInt(parts[1]);
+        state.selectedDate = TODAY_STR;
+        renderCalendar();
+        renderDaySchedule();
+    }
+
+    function applyFilters() {
+        state.facilityFilter = document.getElementById('facilityFilter').value;
+        state.courtFilter = document.getElementById('courtFilter').value;
+        state.statusFilter = document.getElementById('statusFilter').value;
+        renderCalendar();
+        renderDaySchedule();
+        renderMasterTable();
+    }
+
+    function onSearchChange() {
+        state.searchQuery = document.getElementById('scheduleSearch').value;
+        renderCalendar();
+        renderDaySchedule();
+        renderMasterTable();
+    }
+
+    function switchView(viewName) {
+        state.activeView = viewName;
+        const calSection = document.getElementById('viewCalendarSection');
+        const tableSection = document.getElementById('viewTableSection');
+        const btnCal = document.getElementById('btnViewCalendar');
+        const btnTable = document.getElementById('btnViewTable');
+
+        if (viewName === 'calendar') {
+            calSection.style.display = 'grid';
+            tableSection.style.display = 'none';
+            btnCal.classList.add('active');
+            btnTable.classList.remove('active');
+        } else {
+            calSection.style.display = 'none';
+            tableSection.style.display = 'block';
+            btnCal.classList.remove('active');
+            btnTable.classList.add('active');
+            renderMasterTable();
+        }
+    }
+
+    // Live Clock
+    function updateLiveClock() {
+        const el = document.getElementById('liveTimeClock');
+        if (!el) return;
+        const now = new Date();
+        el.textContent = now.toLocaleTimeString('en-US', { timeZone: 'Asia/Manila', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }) + ' (GMT+8)';
+    }
+
+    // Initial load
+    document.addEventListener('DOMContentLoaded', () => {
+        renderCalendar();
+        renderDaySchedule();
+        renderMasterTable();
+        updateLiveClock();
+        setInterval(updateLiveClock, 1000);
+    });
+</script>
+{% endblock %}

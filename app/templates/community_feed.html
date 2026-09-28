@@ -1,92 +1,1545 @@
-{# community_feed.html — Shared community macro included by all role templates #}
+{# community_feed.html — Sports Platform 2.0 Community Lounge Macro #}
 {% macro render_community() %}
 
-<!-- ── Page Header ───────────────────────────────── -->
-<div class="community-page-header">
-    <div class="community-header-left">
-        <h1 class="page-title"><i class="ph ph-users-three"></i> Community Feed</h1>
-        <span class="posts-count" id="posts-count-label">Loading...</span>
-    </div>
-    <div class="community-header-right">
-        <button class="community-refresh-btn" id="btn-refresh-feed" title="Refresh feed">
-            <i class="ph ph-arrow-clockwise"></i> Refresh
+<style>
+    /* ==========================================================================
+       COMMUNITY FEED — SPORTS PLATFORM 2.0 (LIGHT & DARK DUAL THEME)
+       ========================================================================== */
+    .community-page-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        width: 100%;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding-bottom: 140px; /* Clearance for floating cart widget */
+    }
+
+    /* ── Hero Banner ── */
+    .community-hero-banner {
+        position: relative;
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        border-radius: 20px;
+        padding: 26px 32px;
+        box-shadow: 0 4px 16px rgba(16, 24, 40, 0.05);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+        transition: background 0.3s ease, border-color 0.3s ease;
+    }
+
+    .community-hero-banner::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #ff5722, #f59e0b, #6366f1);
+        z-index: 2;
+    }
+
+    .community-hero-banner::before {
+        content: "";
+        position: absolute;
+        top: -40px;
+        right: -40px;
+        width: 280px;
+        height: 280px;
+        background: radial-gradient(circle, rgba(255, 87, 34, 0.1) 0%, rgba(99, 102, 241, 0.04) 60%, transparent 80%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .community-hero-info {
+        position: relative;
+        z-index: 1;
+        flex: 1;
+        min-width: 280px;
+    }
+
+    .community-hero-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.74rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: var(--primary-orange, #ff5722);
+        background: var(--primary-orange-light, rgba(225, 86, 35, 0.12));
+        padding: 4px 12px;
+        border-radius: 9999px;
+        margin-bottom: 10px;
+    }
+
+    .community-hero-title {
+        font-size: 1.85rem;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        color: var(--sports-text-main, #0f172a);
+        line-height: 1.2;
+        margin: 0 0 8px 0;
+    }
+
+    .community-hero-desc {
+        font-size: 0.92rem;
+        color: var(--sports-text-muted, #475467);
+        line-height: 1.5;
+        margin: 0;
+        max-width: 680px;
+    }
+
+    .community-hero-actions {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+        flex-wrap: wrap;
+    }
+
+    .community-search-box {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .community-search-box i {
+        position: absolute;
+        left: 14px;
+        color: var(--sports-text-muted, #94a3b8);
+        font-size: 1rem;
+        pointer-events: none;
+    }
+
+    .community-search-input {
+        padding: 10px 14px 10px 38px;
+        background: var(--input-bg, #f8fafc);
+        border: 1.5px solid var(--sports-border, #d0d5dd);
+        border-radius: 12px;
+        font-size: 0.85rem;
+        color: var(--sports-text-main, #0f172a);
+        outline: none;
+        width: 240px;
+        transition: border-color 0.2s, width 0.2s, box-shadow 0.2s;
+    }
+
+    .community-search-input:focus {
+        width: 280px;
+        border-color: var(--primary-orange, #ff5722);
+        box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.1);
+    }
+
+    .community-refresh-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        background: var(--sports-card-bg, #ffffff);
+        color: var(--sports-text-main, #0f172a);
+        border: 1.5px solid var(--sports-border, #d0d5dd);
+        border-radius: 12px;
+        font-size: 0.84rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    .community-refresh-btn:hover {
+        border-color: var(--primary-orange, #ff5722);
+        color: var(--primary-orange, #ff5722);
+        transform: translateY(-1px);
+    }
+
+    .posts-count-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 14px;
+        border-radius: 9999px;
+        font-size: 0.8rem;
+        font-weight: 800;
+        background: var(--input-bg, #f1f5f9);
+        border: 1px solid var(--sports-border, #e2e8f0);
+        color: var(--sports-text-muted, #475467);
+    }
+
+    /* ── Smart Feed Banner ── */
+    .smart-feed-banner {
+        background: linear-gradient(135deg, rgba(255, 87, 34, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%);
+        border: 1.5px solid rgba(255, 87, 34, 0.25);
+        border-radius: 16px;
+        padding: 14px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--sports-text-main, #0f172a);
+        box-shadow: 0 2px 10px rgba(255, 87, 34, 0.06);
+        animation: postFadeIn 0.3s ease;
+    }
+
+    .smart-feed-banner i {
+        color: var(--primary-orange, #ff5722);
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    .smart-feed-close {
+        background: none;
+        border: none;
+        color: var(--sports-text-muted, #94a3b8);
+        cursor: pointer;
+        padding: 4px;
+        margin-left: auto;
+        border-radius: 6px;
+        font-size: 1.1rem;
+        transition: color 0.2s;
+    }
+
+    .smart-feed-close:hover {
+        color: var(--primary-orange, #ff5722);
+    }
+
+    /* ── Dual-Column Layout ── */
+    .community-grid-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 340px;
+        gap: 24px;
+        align-items: start;
+    }
+
+    .community-feed-main {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        min-width: 0;
+    }
+
+    .community-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    /* ── Post Composer Card ── */
+    .create-post-card {
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        border-radius: 20px;
+        padding: 22px;
+        box-shadow: 0 4px 16px rgba(16, 24, 40, 0.04);
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .create-post-card:focus-within {
+        border-color: rgba(255, 87, 34, 0.4);
+        box-shadow: 0 6px 20px rgba(255, 87, 34, 0.08);
+    }
+
+    .create-post-top {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        margin-bottom: 14px;
+    }
+
+    .community-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--primary-orange, #ff5722), #ea580c);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.95rem;
+        font-weight: 800;
+        flex-shrink: 0;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(255, 87, 34, 0.25);
+    }
+
+    .community-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .post-compose-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .post-textarea {
+        background: var(--input-bg, #f8fafc);
+        border: 1.5px solid var(--sports-border, #d0d5dd);
+        border-radius: 14px;
+        padding: 14px 16px;
+        font-size: 0.92rem;
+        color: var(--sports-text-main, #0f172a);
+        resize: none;
+        min-height: 80px;
+        font-family: inherit;
+        outline: none;
+        width: 100%;
+        transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+        line-height: 1.5;
+    }
+
+    .post-textarea:focus {
+        background: var(--sports-card-bg, #ffffff);
+        border-color: var(--primary-orange, #ff5722);
+        box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.1);
+    }
+
+    .post-textarea::placeholder {
+        color: var(--sports-text-muted, #94a3b8);
+    }
+
+    /* Quick Topic Tag Chips */
+    .quick-tags-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        padding: 4px 0;
+    }
+
+    .quick-tag-label {
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: var(--sports-text-muted, #64748b);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .quick-tag-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 9999px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        background: var(--input-bg, #f1f5f9);
+        border: 1px solid var(--sports-border, #e2e8f0);
+        color: var(--sports-text-muted, #475467);
+        cursor: pointer;
+        transition: all 0.18s ease;
+    }
+
+    .quick-tag-chip:hover {
+        background: #fff7ed;
+        border-color: var(--primary-orange, #ff5722);
+        color: var(--primary-orange, #ff5722);
+        transform: translateY(-1px);
+    }
+
+    /* Image Preview */
+    .post-image-preview-wrap {
+        position: relative;
+        display: inline-block;
+        max-width: 220px;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1.5px solid var(--sports-border, #eaecf0);
+    }
+
+    .post-image-preview {
+        width: 100%;
+        max-height: 160px;
+        object-fit: cover;
+        display: block;
+    }
+
+    .post-image-remove {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        background: rgba(15, 23, 42, 0.75);
+        color: #ffffff;
+        border: none;
+        border-radius: 50%;
+        width: 26px;
+        height: 26px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 1.1rem;
+        transition: background 0.2s;
+    }
+
+    .post-image-remove:hover {
+        background: #ef4444;
+    }
+
+    /* Composer Footer */
+    .create-post-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding-top: 14px;
+        border-top: 1px solid var(--sports-border, #eaecf0);
+    }
+
+    .create-post-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .post-action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: var(--sports-text-muted, #475467);
+        background: var(--input-bg, #f1f5f9);
+        border: 1px solid var(--sports-border, #e2e8f0);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .post-action-btn:hover {
+        background: #fff7ed;
+        border-color: var(--primary-orange, #ff5722);
+        color: var(--primary-orange, #ff5722);
+    }
+
+    .btn-post {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 24px;
+        background: var(--primary-orange, #ff5722);
+        color: #ffffff;
+        border: none;
+        border-radius: 12px;
+        font-size: 0.88rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 10px rgba(255, 87, 34, 0.25);
+    }
+
+    .btn-post:hover {
+        background: var(--primary-orange-hover, #ea580c);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(255, 87, 34, 0.35);
+    }
+
+    .btn-post:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* ── Category Filter Bar ── */
+    .community-filter-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        padding: 4px 0;
+    }
+
+    .comm-filter-tab {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 12px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        color: var(--sports-text-muted, #475467);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .comm-filter-tab:hover {
+        border-color: var(--primary-orange, #ff5722);
+        color: var(--primary-orange, #ff5722);
+    }
+
+    .comm-filter-tab.active {
+        background: var(--primary-orange, #ff5722);
+        color: #ffffff;
+        border-color: var(--primary-orange, #ff5722);
+        box-shadow: 0 2px 8px rgba(255, 87, 34, 0.25);
+    }
+
+    /* ── Feed Post Cards ── */
+    .feed-post-card {
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        border-radius: 20px;
+        padding: 22px;
+        box-shadow: 0 4px 16px rgba(16, 24, 40, 0.04);
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        animation: postFadeIn 0.3s ease;
+        position: relative;
+    }
+
+    .feed-post-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
+    }
+
+    /* Official Announcement Post Styling */
+    .feed-post-card.is-announcement {
+        border-color: rgba(245, 158, 11, 0.45);
+        background: linear-gradient(180deg, rgba(254, 243, 199, 0.25) 0%, var(--sports-card-bg, #ffffff) 65px);
+    }
+
+    .post-announcement-ribbon {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.74rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #b45309;
+        background: #fef3c7;
+        border: 1px solid #fde68a;
+        padding: 4px 12px;
+        border-radius: 9999px;
+        margin-bottom: 14px;
+    }
+
+    .featured-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.74rem;
+        font-weight: 800;
+        color: #6366f1;
+        background: rgba(99, 102, 241, 0.1);
+        border: 1px solid rgba(99, 102, 241, 0.25);
+        padding: 4px 12px;
+        border-radius: 9999px;
+        margin-bottom: 14px;
+    }
+
+    .feed-post-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+
+    .feed-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.95rem;
+        font-weight: 800;
+        flex-shrink: 0;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    .feed-post-meta {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .feed-author-line {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 2px;
+    }
+
+    .feed-author-name {
+        font-size: 0.96rem;
+        font-weight: 800;
+        color: var(--sports-text-main, #0f172a);
+        margin: 0;
+    }
+
+    /* Author Role Badges */
+    .author-role-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.7rem;
+        font-weight: 800;
+        padding: 2px 8px;
+        border-radius: 6px;
+        text-transform: capitalize;
+    }
+
+    .author-role-badge.admin {
+        background: rgba(99, 102, 241, 0.12);
+        color: #4f46e5;
+        border: 1px solid rgba(99, 102, 241, 0.25);
+    }
+
+    .author-role-badge.club {
+        background: rgba(168, 85, 247, 0.12);
+        color: #7e22ce;
+        border: 1px solid rgba(168, 85, 247, 0.25);
+    }
+
+    .author-role-badge.owner {
+        background: rgba(16, 185, 129, 0.12);
+        color: #047857;
+        border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .author-role-badge.player {
+        background: rgba(255, 87, 34, 0.1);
+        color: #c2410c;
+        border: 1px solid rgba(255, 87, 34, 0.2);
+    }
+
+    .post-time {
+        font-size: 0.76rem;
+        color: var(--sports-text-muted, #64748b);
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .delete-post-btn {
+        background: none;
+        border: none;
+        color: var(--sports-text-muted, #94a3b8);
+        cursor: pointer;
+        padding: 6px;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.18s ease;
+    }
+
+    .delete-post-btn:hover {
+        background: #fee2e2;
+        color: #ef4444;
+    }
+
+    /* Post Content */
+    .feed-post-body {
+        font-size: 0.94rem;
+        line-height: 1.6;
+        color: var(--sports-text-main, #0f172a);
+        margin: 0 0 16px 0;
+        word-break: break-word;
+    }
+
+    /* Interactive Hashtags inside post */
+    .post-tag-pill {
+        color: var(--primary-orange, #ff5722);
+        font-weight: 700;
+        cursor: pointer;
+        transition: text-decoration 0.2s;
+    }
+
+    .post-tag-pill:hover {
+        text-decoration: underline;
+    }
+
+    /* Post Image Preview */
+    .feed-post-image-wrap {
+        border-radius: 14px;
+        overflow: hidden;
+        margin-bottom: 16px;
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        background: var(--input-bg, #f8fafc);
+        cursor: pointer;
+    }
+
+    .feed-post-image {
+        width: 100%;
+        max-height: 440px;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.2s ease;
+    }
+
+    .feed-post-image-wrap.expanded .feed-post-image {
+        max-height: none;
+    }
+
+    /* Engagement Action Bar */
+    .feed-post-footer {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding-top: 14px;
+        border-top: 1px solid var(--sports-border, #eaecf0);
+        flex-wrap: wrap;
+    }
+
+    .feed-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: var(--sports-text-muted, #475467);
+        background: var(--input-bg, #f8fafc);
+        border: 1px solid var(--sports-border, #e2e8f0);
+        cursor: pointer;
+        transition: all 0.18s ease;
+    }
+
+    .feed-action:hover {
+        background: #fff7ed;
+        border-color: var(--primary-orange, #ff5722);
+        color: var(--primary-orange, #ff5722);
+    }
+
+    .feed-action.like-btn.liked {
+        background: rgba(255, 87, 34, 0.1);
+        border-color: rgba(255, 87, 34, 0.3);
+        color: var(--primary-orange, #ff5722);
+    }
+
+    .feed-action.comment-toggle-btn.active {
+        background: rgba(99, 102, 241, 0.1);
+        border-color: rgba(99, 102, 241, 0.3);
+        color: #4f46e5;
+    }
+
+    .like-bounce {
+        animation: likeBounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes likeBounce {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.25); }
+        100% { transform: scale(1); }
+    }
+
+    /* ── Inline Comments Section ── */
+    .comment-section {
+        display: none;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px dashed var(--sports-border, #eaecf0);
+    }
+
+    .comment-section.open {
+        display: flex;
+    }
+
+    .comment-input-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .comment-avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, var(--primary-orange, #ff5722), #ea580c);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 800;
+        flex-shrink: 0;
+        overflow: hidden;
+    }
+
+    .comment-input-wrap {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        background: var(--input-bg, #f8fafc);
+        border: 1.5px solid var(--sports-border, #d0d5dd);
+        border-radius: 12px;
+        padding: 4px 6px 4px 14px;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .comment-input-wrap:focus-within {
+        border-color: var(--primary-orange, #ff5722);
+        box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.1);
+        background: var(--sports-card-bg, #ffffff);
+    }
+
+    .comment-input {
+        flex: 1;
+        background: none;
+        border: none;
+        outline: none;
+        font-size: 0.86rem;
+        color: var(--sports-text-main, #0f172a);
+        font-family: inherit;
+        resize: none;
+        padding: 6px 0;
+        line-height: 1.4;
+    }
+
+    .btn-comment-send {
+        background: var(--primary-orange, #ff5722);
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.18s ease;
+        flex-shrink: 0;
+    }
+
+    .btn-comment-send:hover {
+        background: var(--primary-orange-hover, #ea580c);
+        transform: scale(1.05);
+    }
+
+    .comments-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 6px;
+    }
+
+    .comment-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px 14px;
+        background: var(--input-bg, #f8fafc);
+        border-radius: 12px;
+        border: 1px solid var(--sports-border, #eaecf0);
+    }
+
+    .comment-body-wrap {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .comment-author-name {
+        font-size: 0.82rem;
+        font-weight: 800;
+        color: var(--sports-text-main, #0f172a);
+        margin-bottom: 2px;
+    }
+
+    .comment-text {
+        font-size: 0.86rem;
+        color: var(--sports-text-main, #334155);
+        line-height: 1.4;
+        margin: 0 0 4px 0;
+    }
+
+    .comment-meta-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.72rem;
+        color: var(--sports-text-muted, #94a3b8);
+    }
+
+    .delete-comment-btn {
+        background: none;
+        border: none;
+        color: var(--sports-text-muted, #94a3b8);
+        cursor: pointer;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.72rem;
+        font-weight: 700;
+    }
+
+    .delete-comment-btn:hover {
+        color: #ef4444;
+    }
+
+    /* ── Community Sidebar Cards ── */
+    .community-sidebar-card {
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0 4px 16px rgba(16, 24, 40, 0.04);
+    }
+
+    .sidebar-card-title {
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: var(--sports-text-main, #0f172a);
+        margin: 0 0 14px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .sidebar-card-title i {
+        color: var(--primary-orange, #ff5722);
+    }
+
+    .trending-tags-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .trending-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 12px;
+        border-radius: 10px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        background: var(--input-bg, #f8fafc);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        color: var(--sports-text-main, #0f172a);
+        cursor: pointer;
+        transition: all 0.18s ease;
+        text-decoration: none;
+    }
+
+    .trending-chip:hover {
+        background: #fff7ed;
+        border-color: var(--primary-orange, #ff5722);
+        color: var(--primary-orange, #ff5722);
+        transform: translateY(-1px);
+    }
+
+    .guideline-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .guideline-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .guideline-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: rgba(255, 87, 34, 0.1);
+        color: var(--primary-orange, #ff5722);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.95rem;
+        flex-shrink: 0;
+    }
+
+    .guideline-text h5 {
+        font-size: 0.82rem;
+        font-weight: 800;
+        color: var(--sports-text-main, #0f172a);
+        margin: 0 0 2px 0;
+    }
+
+    .guideline-text p {
+        font-size: 0.76rem;
+        color: var(--sports-text-muted, #64748b);
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    .quick-nav-link {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        border-radius: 12px;
+        background: var(--input-bg, #f8fafc);
+        border: 1px solid var(--sports-border, #eaecf0);
+        color: var(--sports-text-main, #0f172a);
+        font-size: 0.84rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        margin-bottom: 8px;
+    }
+
+    .quick-nav-link:last-child {
+        margin-bottom: 0;
+    }
+
+    .quick-nav-link:hover {
+        border-color: var(--primary-orange, #ff5722);
+        color: var(--primary-orange, #ff5722);
+        background: #fff7ed;
+        transform: translateX(3px);
+    }
+
+    /* ── Empty State ── */
+    .community-empty {
+        text-align: center;
+        padding: 48px 24px;
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        border-radius: 20px;
+        color: var(--sports-text-muted, #64748b);
+    }
+
+    .community-empty i {
+        font-size: 2.4rem;
+        opacity: 0.4;
+        display: block;
+        margin-bottom: 10px;
+        color: var(--primary-orange, #ff5722);
+    }
+
+    .community-empty p {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--sports-text-main, #0f172a);
+        margin: 0;
+    }
+
+    /* ── Skeletons ── */
+    .feed-skeleton {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .skeleton-card {
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        border-radius: 20px;
+        padding: 22px;
+        display: flex;
+        gap: 14px;
+    }
+
+    .sk-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: #e2e8f0;
+        animation: skPulse 1.4s ease-in-out infinite;
+        flex-shrink: 0;
+    }
+
+    .sk-lines {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .sk-line {
+        height: 12px;
+        background: #e2e8f0;
+        border-radius: 6px;
+        animation: skPulse 1.4s ease-in-out infinite;
+    }
+
+    .sk-line-short { width: 35%; }
+    .sk-line-medium { width: 65%; }
+
+    @keyframes skPulse {
+        0%, 100% { opacity: 0.6; }
+        50% { opacity: 0.25; }
+    }
+
+    /* ── Share Modal Overlay ── */
+    .share-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .share-modal {
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        border-radius: 20px;
+        padding: 24px;
+        width: 100%;
+        max-width: 460px;
+        box-shadow: 0 16px 40px rgba(15, 23, 42, 0.2);
+        animation: postFadeIn 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .share-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+    }
+
+    .share-modal-header h3 {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--sports-text-main, #0f172a);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .share-modal-close {
+        background: none;
+        border: none;
+        font-size: 1.25rem;
+        color: var(--sports-text-muted, #94a3b8);
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 8px;
+        transition: color 0.2s;
+    }
+
+    .share-modal-close:hover {
+        color: #ef4444;
+    }
+
+    .share-post-preview {
+        background: var(--input-bg, #f8fafc);
+        border: 1px solid var(--sports-border, #eaecf0);
+        border-radius: 12px;
+        padding: 14px;
+        margin-bottom: 18px;
+        font-size: 0.85rem;
+        line-height: 1.4;
+    }
+
+    .share-preview-author {
+        font-weight: 800;
+        color: var(--sports-text-main, #0f172a);
+        margin-bottom: 4px;
+    }
+
+    .share-preview-text {
+        color: var(--sports-text-muted, #475467);
+        margin: 0;
+    }
+
+    .share-preview-image {
+        max-height: 90px;
+        border-radius: 8px;
+        margin-top: 8px;
+        object-fit: cover;
+    }
+
+    .share-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .share-option-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px;
+        border-radius: 10px;
+        font-size: 0.84rem;
+        font-weight: 700;
+        background: var(--input-bg, #f1f5f9);
+        border: 1px solid var(--sports-border, #e2e8f0);
+        color: var(--sports-text-main, #0f172a);
+        cursor: pointer;
+        transition: all 0.18s ease;
+    }
+
+    .share-option-btn:hover {
+        background: #fff7ed;
+        border-color: var(--primary-orange, #ff5722);
+        color: var(--primary-orange, #ff5722);
+    }
+
+    .share-copied-toast {
+        margin-top: 14px;
+        background: #10b981;
+        color: #ffffff;
+        font-size: 0.82rem;
+        font-weight: 800;
+        padding: 8px 14px;
+        border-radius: 8px;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        animation: postFadeIn 0.2s ease;
+    }
+
+    /* ── Dark Mode Overrides ── */
+    html.dark-mode .community-hero-banner,
+    html.dark-mode .create-post-card,
+    html.dark-mode .comm-filter-tab,
+    html.dark-mode .feed-post-card,
+    html.dark-mode .community-sidebar-card,
+    html.dark-mode .community-empty,
+    html.dark-mode .skeleton-card,
+    html.dark-mode .share-modal {
+        background: #19202e;
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    html.dark-mode .community-hero-title,
+    html.dark-mode .feed-author-name,
+    html.dark-mode .feed-post-body,
+    html.dark-mode .sidebar-card-title,
+    html.dark-mode .guideline-text h5,
+    html.dark-mode .quick-nav-link,
+    html.dark-mode .community-empty p,
+    html.dark-mode .share-modal-header h3,
+    html.dark-mode .share-preview-author {
+        color: #f8fafc;
+    }
+
+    html.dark-mode .community-hero-desc,
+    html.dark-mode .post-time,
+    html.dark-mode .comment-meta-row,
+    html.dark-mode .guideline-text p,
+    html.dark-mode .share-preview-text,
+    html.dark-mode .quick-tag-label {
+        color: #94a3b8;
+    }
+
+    html.dark-mode .post-textarea,
+    html.dark-mode .community-search-input,
+    html.dark-mode .comment-input-wrap,
+    html.dark-mode .comment-item,
+    html.dark-mode .share-post-preview,
+    html.dark-mode .quick-nav-link {
+        background: #0f131a;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #f1f5f9;
+    }
+
+    html.dark-mode .post-textarea:focus,
+    html.dark-mode .comment-input-wrap:focus-within {
+        background: #141923;
+        border-color: var(--primary-orange, #ff5722);
+    }
+
+    html.dark-mode .quick-tag-chip,
+    html.dark-mode .trending-chip,
+    html.dark-mode .post-action-btn,
+    html.dark-mode .feed-action,
+    html.dark-mode .community-refresh-btn,
+    html.dark-mode .posts-count-badge,
+    html.dark-mode .share-option-btn {
+        background: #141923;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #f1f5f9;
+    }
+
+    html.dark-mode .comm-filter-tab:hover,
+    html.dark-mode .quick-tag-chip:hover,
+    html.dark-mode .trending-chip:hover,
+    html.dark-mode .post-action-btn:hover,
+    html.dark-mode .feed-action:hover,
+    html.dark-mode .community-refresh-btn:hover,
+    html.dark-mode .quick-nav-link:hover,
+    html.dark-mode .share-option-btn:hover {
+        background: #1c2332;
+        border-color: var(--primary-orange, #ff5722);
+        color: var(--primary-orange, #ff5722);
+    }
+
+    html.dark-mode .feed-post-card.is-announcement {
+        border-color: rgba(245, 158, 11, 0.35);
+        background: linear-gradient(180deg, rgba(245, 158, 11, 0.12) 0%, #19202e 70px);
+    }
+
+    html.dark-mode .post-announcement-ribbon {
+        background: rgba(245, 158, 11, 0.15);
+        border-color: rgba(245, 158, 11, 0.35);
+        color: #fcd34d;
+    }
+
+    html.dark-mode .create-post-footer,
+    html.dark-mode .feed-post-footer,
+    html.dark-mode .comment-section {
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    html.dark-mode .comment-text {
+        color: #e2e8f0;
+    }
+
+    html.dark-mode .sk-avatar,
+    html.dark-mode .sk-line {
+        background: #1f2838;
+    }
+
+    @media (max-width: 960px) {
+        .community-grid-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .community-sidebar {
+            order: 2;
+        }
+
+        .community-hero-banner {
+            padding: 20px;
+        }
+
+        .community-search-box {
+            width: 100%;
+        }
+
+        .community-search-input {
+            width: 100%;
+        }
+
+        .community-search-input:focus {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="community-page-wrapper">
+
+    <!-- ── 1. HERO COMMAND BANNER ── -->
+    <header class="community-hero-banner animate-entry">
+        <div class="community-hero-info">
+            <span class="community-hero-tag">
+                <i class="ph ph-chats-circle"></i> Official Community Lounge
+            </span>
+            <h1 class="community-hero-title">Pickleball Community Feed</h1>
+            <p class="community-hero-desc">
+                Connect with local players, discover drill techniques, share match highlights, and stay updated on official club announcements.
+            </p>
+        </div>
+
+        <div class="community-hero-actions">
+            <!-- Search Box -->
+            <div class="community-search-box">
+                <i class="ph ph-magnifying-glass"></i>
+                <input type="text" id="community-search-input" class="community-search-input" placeholder="Search discussions & tags..." autocomplete="off">
+            </div>
+
+            <!-- Refresh Feed Button -->
+            <button class="community-refresh-btn" id="btn-refresh-feed" title="Refresh feed for new updates">
+                <i class="ph ph-arrows-clockwise"></i> Refresh
+            </button>
+
+            <!-- Total Posts Count Badge -->
+            <span class="posts-count-badge" id="posts-count-label">
+                <i class="ph ph-chat-circle-dots"></i> Loading...
+            </span>
+        </div>
+    </header>
+
+    <!-- ── 2. SMART FEED BANNER (Shown for unviewed post) ── -->
+    <div class="smart-feed-banner" id="smart-feed-banner" style="display:none;">
+        <i class="ph ph-sparkle"></i>
+        <span id="smart-feed-message">Here's something you haven't seen yet!</span>
+        <button class="smart-feed-close" id="btn-close-banner" aria-label="Dismiss banner">
+            <i class="ph ph-x"></i>
         </button>
     </div>
-</div>
 
-<!-- ── Smart Feed Banner (shown when displaying unviewed post) ── -->
-<div class="smart-feed-banner" id="smart-feed-banner" style="display:none;">
-    <i class="ph ph-sparkle"></i>
-    <span id="smart-feed-message">Here's something you haven't seen yet!</span>
-    <button class="smart-feed-close" id="btn-close-banner">
-        <i class="ph ph-x"></i>
-    </button>
-</div>
+    <!-- ── 3. DUAL-COLUMN COMMUNITY GRID ── -->
+    <div class="community-grid-layout">
 
-<!-- ── Create Post Card ──────────────────────────── -->
-<div class="create-post-card">
-    <div class="create-post-top">
-        <div class="community-avatar" id="current-user-avatar">?</div>
-        <div class="post-compose-area">
-            <textarea id="post-textarea" class="post-textarea" placeholder="What's on your mind? Share with the community..." rows="3"></textarea>
-            <!-- Image Preview -->
-            <div class="post-image-preview-wrap" id="post-image-preview-wrap" style="display:none;">
-                <img id="post-image-preview" src="" alt="Preview" class="post-image-preview" />
-                <button class="post-image-remove" id="btn-remove-image" title="Remove image">
-                    <i class="ph ph-x-circle"></i>
+        <!-- ── LEFT / MAIN FEED COLUMN ── -->
+        <main class="community-feed-main">
+
+            <!-- ── CREATE POST CARD ── -->
+            <div class="create-post-card">
+                <div class="create-post-top">
+                    <div class="community-avatar" id="current-user-avatar">?</div>
+                    <div class="post-compose-area">
+                        <textarea id="post-textarea" class="post-textarea" placeholder="What's on your mind? Share game results, training drills, or questions with the community..." rows="3"></textarea>
+
+                        <!-- Image Preview Box -->
+                        <div class="post-image-preview-wrap" id="post-image-preview-wrap" style="display:none;">
+                            <img id="post-image-preview" src="" alt="Post Preview" class="post-image-preview" />
+                            <button class="post-image-remove" id="btn-remove-image" title="Remove selected image">
+                                <i class="ph ph-x-circle"></i>
+                            </button>
+                        </div>
+
+                        <!-- Quick Hashtag Inserter Row -->
+                        <div class="quick-tags-wrap">
+                            <span class="quick-tag-label"><i class="ph ph-tag"></i> Quick Tags:</span>
+                            <button type="button" class="quick-tag-chip" data-tag="#OpenPlay"><i class="ph ph-hash"></i>OpenPlay</button>
+                            <button type="button" class="quick-tag-chip" data-tag="#ThirdShotDrop"><i class="ph ph-hash"></i>ThirdShotDrop</button>
+                            <button type="button" class="quick-tag-chip" data-tag="#DrillTip"><i class="ph ph-hash"></i>DrillTip</button>
+                            <button type="button" class="quick-tag-chip" data-tag="#LookingForPartner"><i class="ph ph-hash"></i>LookingForPartner</button>
+                            <button type="button" class="quick-tag-chip" data-tag="#MatchRecap"><i class="ph ph-hash"></i>MatchRecap</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="create-post-footer">
+                    <div class="create-post-actions">
+                        <label for="post-image-input" class="post-action-btn" title="Attach a court photo or highlight">
+                            <i class="ph ph-image"></i>
+                            <span>Attach Photo</span>
+                            <input type="file" id="post-image-input" accept="image/*" style="display:none;" />
+                        </label>
+                    </div>
+                    <button id="btn-post" class="btn-post" title="Publish post to community feed">
+                        <i class="ph ph-paper-plane-tilt"></i> Publish Post
+                    </button>
+                </div>
+            </div>
+
+            <!-- ── CATEGORY FILTER TABS ── -->
+            <div class="community-filter-bar" role="tablist">
+                <button type="button" class="comm-filter-tab active" data-filter="all">
+                    <i class="ph ph-squares-four"></i> All Discussions
+                </button>
+                <button type="button" class="comm-filter-tab" data-filter="announcements">
+                    <i class="ph ph-megaphone"></i> Announcements
+                </button>
+                <button type="button" class="comm-filter-tab" data-filter="matchplay">
+                    <i class="ph ph-tennis-ball"></i> Match Play & Recaps
+                </button>
+                <button type="button" class="comm-filter-tab" data-filter="drills">
+                    <i class="ph ph-lightbulb"></i> Tips & Strategy
                 </button>
             </div>
-        </div>
+
+            <!-- ── DYNAMIC POSTS FEED ── -->
+            <div id="community-feed-wrapper">
+                <!-- Skeleton loader -->
+                <div class="feed-skeleton">
+                    <div class="skeleton-card">
+                        <div class="sk-avatar"></div>
+                        <div class="sk-lines">
+                            <div class="sk-line sk-line-short"></div>
+                            <div class="sk-line"></div>
+                            <div class="sk-line sk-line-medium"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-card">
+                        <div class="sk-avatar"></div>
+                        <div class="sk-lines">
+                            <div class="sk-line sk-line-short"></div>
+                            <div class="sk-line"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-card">
+                        <div class="sk-avatar"></div>
+                        <div class="sk-lines">
+                            <div class="sk-line sk-line-short"></div>
+                            <div class="sk-line sk-line-medium"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- ── RIGHT SIDEBAR COLUMN ── -->
+        <aside class="community-sidebar">
+
+            <!-- Sidebar Card 1: Trending Hashtags -->
+            <section class="community-sidebar-card" aria-label="Trending Community Topics">
+                <h3 class="sidebar-card-title">
+                    <i class="ph ph-trend-up"></i> Trending Court Topics
+                </h3>
+                <div class="trending-tags-grid">
+                    <a href="javascript:void(0)" class="trending-chip" data-search="#InterBarangayLeague"><i class="ph ph-hash"></i>InterBarangayLeague</a>
+                    <a href="javascript:void(0)" class="trending-chip" data-search="#ThirdShotDrop"><i class="ph ph-hash"></i>ThirdShotDrop</a>
+                    <a href="javascript:void(0)" class="trending-chip" data-search="#SiniloanOpen"><i class="ph ph-hash"></i>SiniloanOpen</a>
+                    <a href="javascript:void(0)" class="trending-chip" data-search="#SaturdayOpenPlay"><i class="ph ph-hash"></i>SaturdayOpenPlay</a>
+                    <a href="javascript:void(0)" class="trending-chip" data-search="#PaddleDrills"><i class="ph ph-hash"></i>PaddleDrills</a>
+                    <a href="javascript:void(0)" class="trending-chip" data-search="#DinkLife"><i class="ph ph-hash"></i>DinkLife</a>
+                </div>
+            </section>
+
+            <!-- Sidebar Card 2: Court Sportsmanship Code -->
+            <section class="community-sidebar-card" aria-label="Community Sportsmanship Code">
+                <h3 class="sidebar-card-title">
+                    <i class="ph ph-shield-check"></i> Court Sportsmanship Code
+                </h3>
+                <div class="guideline-item">
+                    <div class="guideline-icon"><i class="ph ph-handshake"></i></div>
+                    <div class="guideline-text">
+                        <h5>Call Lines Honestly</h5>
+                        <p>Give opponents the benefit of doubt on close line calls. Keep games positive!</p>
+                    </div>
+                </div>
+                <div class="guideline-item">
+                    <div class="guideline-icon"><i class="ph ph-arrows-clockwise"></i></div>
+                    <div class="guideline-text">
+                        <h5>Open Play Rotation</h5>
+                        <p>Cycle 4 on, 4 off when courts are busy so everyone gets fair game time.</p>
+                    </div>
+                </div>
+                <div class="guideline-item">
+                    <div class="guideline-icon"><i class="ph ph-trophy"></i></div>
+                    <div class="guideline-text">
+                        <h5>Paddle Tap Tradition</h5>
+                        <p>Always tap paddle grips at the net after every match to celebrate great rallies.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sidebar Card 3: Quick Play & Club Shortcuts -->
+            <section class="community-sidebar-card" aria-label="Quick Platform Shortcuts">
+                <h3 class="sidebar-card-title">
+                    <i class="ph ph-compass"></i> Play & Compete
+                </h3>
+                <a href="{{ url_for('player.matchmaker') }}" class="quick-nav-link">
+                    <span><i class="ph ph-lightning" style="color: #ff5722; margin-right: 6px;"></i> Open Play Matchmaker</span>
+                    <i class="ph ph-caret-right" style="color: var(--sports-text-muted);"></i>
+                </a>
+                <a href="{{ url_for('player.clubs') }}" class="quick-nav-link">
+                    <span><i class="ph ph-shield" style="color: #6366f1; margin-right: 6px;"></i> Browse Pickleball Clubs</span>
+                    <i class="ph ph-caret-right" style="color: var(--sports-text-muted);"></i>
+                </a>
+                <a href="{{ url_for('player.events') }}" class="quick-nav-link">
+                    <span><i class="ph ph-medal" style="color: #f59e0b; margin-right: 6px;"></i> Tournaments & Ladders</span>
+                    <i class="ph ph-caret-right" style="color: var(--sports-text-muted);"></i>
+                </a>
+            </section>
+
+        </aside>
+
     </div>
-    <div class="create-post-footer">
-        <div class="create-post-actions">
-            <label for="post-image-input" class="post-action-btn" title="Add photo">
-                <i class="ph ph-image"></i>
-                <span>Photo</span>
-                <input type="file" id="post-image-input" accept="image/*" style="display:none;" />
-            </label>
-        </div>
-        <button id="btn-post" class="btn-post">
-            <i class="ph ph-paper-plane-tilt"></i> Post
-        </button>
-    </div>
+
 </div>
 
-<!-- ── Dynamic Posts Feed ────────────────────────── -->
-<div id="community-feed-wrapper">
-    <!-- Skeleton loader -->
-    <div class="feed-skeleton">
-        <div class="skeleton-card">
-            <div class="sk-avatar"></div>
-            <div class="sk-lines">
-                <div class="sk-line sk-line-short"></div>
-                <div class="sk-line"></div>
-                <div class="sk-line sk-line-medium"></div>
-            </div>
-        </div>
-        <div class="skeleton-card">
-            <div class="sk-avatar"></div>
-            <div class="sk-lines">
-                <div class="sk-line sk-line-short"></div>
-                <div class="sk-line"></div>
-            </div>
-        </div>
-        <div class="skeleton-card">
-            <div class="sk-avatar"></div>
-            <div class="sk-lines">
-                <div class="sk-line sk-line-short"></div>
-                <div class="sk-line sk-line-medium"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ── Share Modal ────────────────────────────────── -->
+<!-- ── SHARE POST MODAL ── -->
 <div class="share-modal-overlay" id="share-modal-overlay" style="display:none;">
     <div class="share-modal">
         <div class="share-modal-header">
-            <h3><i class="ph ph-share-network"></i> Share Post</h3>
-            <button class="share-modal-close" id="btn-close-share">
+            <h3><i class="ph ph-share-network"></i> Share Discussion</h3>
+            <button class="share-modal-close" id="btn-close-share" aria-label="Close share dialog">
                 <i class="ph ph-x"></i>
             </button>
         </div>
@@ -110,7 +1563,7 @@
             </button>
         </div>
         <div class="share-copied-toast" id="share-copied-toast" style="display:none;">
-            <i class="ph ph-check-circle"></i> Copied!
+            <i class="ph ph-check-circle"></i> Link copied to clipboard!
         </div>
     </div>
 </div>

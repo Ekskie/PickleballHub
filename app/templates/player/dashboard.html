@@ -1,8 +1,10 @@
 {% extends "player/base_player.html" %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}Sports Hub — Player Dashboard{% endblock %}
 
 {% block extra_head %}
+<!-- Chart.js for Sports Performance Curve -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
     .ping-dot-green {
         width: 10px;
@@ -12,7 +14,7 @@
         position: absolute;
         top: -2px;
         right: -2px;
-        border: 2px solid var(--card-bg);
+        border: 2px solid var(--card-bg, #ffffff);
     }
 
     .ping-dot-green::after {
@@ -28,385 +30,572 @@
     }
 
     @keyframes pulse-ping-green {
-        0% {
-            transform: scale(1);
-            opacity: 0.85;
-        }
-
-        70% {
-            transform: scale(2.5);
-            opacity: 0;
-        }
-
-        100% {
-            transform: scale(2.5);
-            opacity: 0;
-        }
+        0% { transform: scale(1); opacity: 0.85; }
+        70% { transform: scale(2.5); opacity: 0; }
+        100% { transform: scale(2.5); opacity: 0; }
     }
 
     @keyframes spin {
-        from {
-            transform: rotate(0deg);
-        }
-
-        to {
-            transform: rotate(360deg);
-        }
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-header">
-    <h1 class="page-title">Dashboard</h1>
-</div>
+<div class="sports-hub">
 
-<div class="dashboard-grid">
-
-    <!-- Left Column (Main) -->
-    <div class="dashboard-main">
-
-        <!-- Player Performance Widget -->
-        <div class="glass-card full-width"
-            style="padding: 24px; position: relative; overflow: hidden; background: linear-gradient(135deg, var(--card-bg), var(--primary-orange-light)); border-left: 5px solid var(--primary-orange);">
-            <div class="profile-header-flex">
-                <div>
-                    <span class="small-caps"
-                        style="color: var(--primary-orange); font-weight: 700; letter-spacing: 1px;"><i
-                            class="ph ph-sparkle"></i> Player Profile Stats</span>
-                    <h2 style="font-size: 1.5rem; font-weight: 800; margin-top: 4px; color: var(--text-primary);">{{
-                        current_user.full_name }}</h2>
-                    <div style="display: flex; gap: 8px; margin-top: 8px; align-items: center;">
-                        <span class="role-pill" style="font-size: 0.72rem;"><i class="ph ph-identification-card"></i> {{
-                            current_user.role }}</span>
-                        {% set rating = current_user.dupr|float %}
-                        {% if rating < 3.0 %} <span class="role-pill"
-                            style="background: rgba(100, 116, 139, 0.1); color: var(--text-muted);"><i
-                                class="ph ph-shield"></i> Beginner</span>
-                            {% elif rating < 4.0 %} <span class="role-pill"
-                                style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;"><i
-                                    class="ph ph-shield-star"></i> Intermediate</span>
-                                {% elif rating < 5.0 %} <span class="role-pill"
-                                    style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;"><i
-                                        class="ph ph-medal"></i> Advanced</span>
-                                    {% else %}
-                                    <span class="role-pill"
-                                        style="background: rgba(16, 185, 129, 0.1); color: #10b981;"><i
-                                            class="ph ph-crown"></i> Elite Pro</span>
-                                    {% endif %}
-                    </div>
+    <!-- ── 1. ATHLETIC HEADER & GREETING ─────────────────────────────────── -->
+    <header class="sports-header animate-entry">
+        <div class="sports-welcome-wrap">
+            <div class="sports-avatar-ring">
+                <div class="sports-avatar-inner">
+                    {% if current_user.avatar_url %}
+                        <img src="{{ current_user.avatar_url }}" alt="{{ current_user.full_name }}">
+                    {% else %}
+                        {{ current_user.initials }}
+                    {% endif %}
                 </div>
-
-                <!-- Stats grid -->
-                <div class="stats-summary-grid">
-                    <div class="stats-summary-card">
-                        <span class="value" style="color: var(--primary-orange);">{{ "%.2f"|format(current_user.dupr|float) }}</span>
-                        <span class="label">DUPR Rating</span>
-                    </div>
-                    <div class="stats-summary-card">
-                        <span class="value" style="color: var(--btn-navy);">{{ current_user.elo }}</span>
-                        <span class="label">Elo Points</span>
-                    </div>
-                    <div class="stats-summary-card">
-                        <span class="value" style="color: var(--btn-green);">{{ player_stats.total_played|default(0) }}</span>
-                        <span class="label">Matches</span>
-                    </div>
-                    <div class="stats-summary-card">
-                        <span class="value" style="color: #10b981;">{{ player_stats.win_rate|default(0) }}%</span>
-                        <span class="label">Win Rate</span>
-                    </div>
-                </div>
+                <span class="sports-status-online" title="Ready to Play"></span>
             </div>
-
-            <!-- Rating Progress Bar -->
-            <div style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 16px;">
-                {% set rating = current_user.dupr|float %}
-                {% if rating < 3.0 %} {% set next_level=3.0 %} {% set level_label="Intermediate" %} {% set
-                    prev_level=2.0 %} {% elif rating < 4.0 %} {% set next_level=4.0 %} {% set level_label="Advanced" %}
-                    {% set prev_level=3.0 %} {% elif rating < 5.0 %} {% set next_level=5.0 %} {% set
-                    level_label="Elite Pro" %} {% set prev_level=4.0 %} {% else %} {% set next_level=8.0 %} {% set
-                    level_label="Max Rating" %} {% set prev_level=5.0 %} {% endif %} {% set pct=(((rating - prev_level)
-                    / (next_level - prev_level)) * 100)|int %} {% if pct> 100 %}{% set pct = 100 %}{% elif pct < 0 %}{%
-                        set pct=0 %}{% endif %} <div
-                        style="display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 6px; font-weight: 600;">
-                        <span>Rating Progress (from {{ prev_level }} to {{ next_level }}): <strong>{{ pct }}%</strong> to {{ level_label }}</span>
-                        <span style="color: var(--primary-orange);">{{ "%.2f"|format(rating) }} / {{ next_level
-                            }}</span>
-            </div>
-            <div
-                style="width: 100%; height: 8px; background: rgba(0, 0, 0, 0.05); border-radius: 99px; overflow: hidden;">
-                <div
-                    style="width: {{ pct }}%; height: 100%; background: linear-gradient(90deg, var(--primary-orange), #ea580c); border-radius: 99px;">
-                </div>
+            <div>
+                <span class="sports-greeting-tag">
+                    <i class="ph ph-sparkle"></i> Personal Sports Hub
+                </span>
+                <h1 class="sports-title">
+                    Good day, {{ current_user.first_name }} 👋
+                </h1>
+                <p class="sports-subtitle">Ready for your next game on the court?</p>
             </div>
         </div>
-    </div>
 
-    <!-- Live Queue Tracker Widget -->
-    {% if my_queue %}
-    <div class="glass-card full-width"
-        style="margin-top: 10px; border-left: 5px solid #10b981; background: linear-gradient(135deg, var(--card-bg), rgba(16, 185, 129, 0.05)); padding: 20px; position: relative;">
-        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
-            <div style="display: flex; align-items: center; gap: 20px;">
-                <div
-                    style="width: 54px; height: 54px; border-radius: 50%; background: rgba(16, 185, 129, 0.1); border: 2px solid #10b981; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 800; color: #10b981; position: relative; flex-shrink: 0;">
-                    {% if my_queue.status == 'playing' %}
-                    <i class="ph ph-tennis-ball" style="animation: spin 3s linear infinite;"></i>
+        <div class="sports-header-actions">
+            {% if pending_reservations %}
+            <button type="button" class="sports-pill-btn amber pulse" onclick="window.toggleResDrawer(true)" title="You have pending court reservations">
+                <i class="ph ph-clock-countdown"></i>
+                <span>{{ pending_reservations|length }} Pending</span>
+            </button>
+            {% endif %}
+            <a href="{{ url_for('player.reservation') }}" class="sports-pill-btn primary">
+                <i class="ph ph-calendar-plus"></i>
+                <span>Book Court</span>
+            </a>
+            <a href="{{ url_for('player.matchmaker') }}" class="sports-pill-btn green">
+                <i class="ph ph-handshake"></i>
+                <span>Find Match</span>
+            </a>
+            <a href="{{ url_for('player.profile') }}" class="sports-pill-btn outline">
+                <i class="ph ph-user"></i>
+                <span>My Profile</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- ── 2. HERO: ATHLETIC IDENTITY & PROGRESSION SUMMARY ─────────────── -->
+    <section class="sports-hero-card animate-entry">
+        <div class="sports-hero-top">
+            <div class="player-identity-group">
+                {% set rating = current_user.dupr|float %}
+                {% if rating < 3.0 %}
+                    <span class="player-rank-badge beginner"><i class="ph ph-shield"></i> Beginner Division</span>
+                {% elif rating < 4.0 %}
+                    <span class="player-rank-badge intermediate"><i class="ph ph-shield-star"></i> Intermediate Division</span>
+                {% elif rating < 5.0 %}
+                    <span class="player-rank-badge advanced"><i class="ph ph-medal"></i> Advanced Division</span>
+                {% else %}
+                    <span class="player-rank-badge elite"><i class="ph ph-crown"></i> Elite Pro Division</span>
+                {% endif %}
+
+                {% if player_streak > 0 %}
+                    <span class="streak-pill">
+                        <i class="ph ph-fire"></i> {{ player_streak }} Match Win Streak
+                    </span>
+                {% else %}
+                    <span class="streak-pill" style="background: rgba(148, 163, 184, 0.12); color: var(--sports-text-muted); border-color: rgba(148, 163, 184, 0.25);">
+                        <i class="ph ph-tennis-ball"></i> In Season
+                    </span>
+                {% endif %}
+            </div>
+
+            <div style="font-size: 0.82rem; color: var(--sports-text-muted); font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                <i class="ph ph-map-pin" style="color: var(--pb-orange);"></i> PickleballHub Official League
+            </div>
+        </div>
+
+        <!-- Metric Tiles Row -->
+        <div class="sports-metrics-grid">
+            <div class="sports-metric-tile">
+                <span class="tile-label">DUPR Rating <i class="ph ph-trend-up"></i></span>
+                <span class="tile-value" style="color: var(--pb-orange);" data-counter-target="{{ '%.2f'|format(current_user.dupr|float) }}" data-counter-decimal="true">
+                    {{ "%.2f"|format(current_user.dupr|float) }}
+                </span>
+                <span class="tile-trend positive"><i class="ph ph-caret-up"></i> +0.12 this month</span>
+            </div>
+
+            <div class="sports-metric-tile">
+                <span class="tile-label">Elo Points <i class="ph ph-shield-check"></i></span>
+                <span class="tile-value" data-counter-target="{{ current_user.elo }}">{{ current_user.elo }}</span>
+                <span class="tile-trend positive"><i class="ph ph-lightning"></i> Active Rating</span>
+            </div>
+
+            <div class="sports-metric-tile">
+                <span class="tile-label">Win Rate <i class="ph ph-chart-pie-slice"></i></span>
+                <span class="tile-value" style="color: var(--pb-green);" data-counter-target="{{ player_stats.win_rate|default(0) }}" data-counter-suffix="%">
+                    {{ player_stats.win_rate|default(0) }}%
+                </span>
+                <span class="tile-trend positive"><i class="ph ph-arrow-up-right"></i> {{ player_stats.wins|default(0) }}W - {{ (player_stats.total_played|default(0) - player_stats.wins|default(0)) }}L</span>
+            </div>
+
+            <div class="sports-metric-tile">
+                <span class="tile-label">Total Matches <i class="ph ph-tennis-ball"></i></span>
+                <span class="tile-value" data-counter-target="{{ player_stats.total_played|default(0) }}">{{ player_stats.total_played|default(0) }}</span>
+                <span class="tile-trend neutral"><i class="ph ph-clock"></i> Lifetime Games</span>
+            </div>
+        </div>
+
+        <!-- Lightweight Sports Progression (XP & Level) -->
+        <div class="sports-xp-strip">
+            <div class="sports-xp-header">
+                <span class="sports-level-tag">
+                    <i class="ph ph-shield-chevron" style="font-size: 1.1rem;"></i> Level {{ progression.level }} Player
+                </span>
+                <span class="sports-xp-count">
+                    <strong>{{ progression.current_xp }}</strong> / {{ progression.next_xp }} XP
+                    <small style="color: var(--sports-text-dim); margin-left: 6px;">({{ progression.xp_remaining }} XP until Level {{ progression.level + 1 }})</small>
+                </span>
+            </div>
+            <div class="sports-xp-track">
+                <div class="sports-xp-fill" data-width="{{ progression.percent }}%" style="width: {{ progression.percent }}%;"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── PENDING BOOKINGS ALERT & ACTION HUB ───────────────────────────── -->
+    {% if pending_reservations %}
+    <section class="sports-pending-card animate-entry">
+        <div class="pending-card-top-row">
+            <div class="pending-info-block">
+                <div class="pending-badge-row">
+                    <span class="pending-kicker-tag">
+                        <i class="ph ph-hourglass-high"></i> Action Required
+                    </span>
+                    <span class="pending-count-bubble">
+                        {{ pending_reservations|length }} Pending Booking{{ 's' if pending_reservations|length != 1 else '' }}
+                    </span>
+                </div>
+                <h3 class="pending-heading">
+                    Active Court Bookings Awaiting Completion
+                </h3>
+                <p class="pending-subheading">
+                    Your court slots are held. Review your reservations, complete GCash payment, or monitor staff confirmation status.
+                </p>
+            </div>
+            <div class="pending-top-actions">
+                <button type="button" class="sports-pill-btn outline" onclick="window.toggleResDrawer(true)" title="Open Bookings Cart Drawer">
+                    <i class="ph ph-shopping-bag-open"></i>
+                    <span>Open Booking Cart</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="pending-bookings-grid">
+            {% for res in pending_reservations %}
+            <div class="pending-booking-item">
+                <div class="pending-item-main">
+                    <div class="pending-item-header">
+                        <div>
+                            <div class="pending-court-title">
+                                <i class="ph ph-tennis-ball" style="color: var(--pb-orange);"></i>
+                                {{ res.courts.name if res.courts else 'Court' }}
+                            </div>
+                            <span class="facility-sub">
+                                <i class="ph ph-map-pin"></i> {{ res.facilities.name if res.facilities else 'Pickleball Facility' }}
+                            </span>
+                        </div>
+                        <span class="pending-status-chip {{ res.status_badge_class }}">
+                            {% if res.display_status == 'pending_verification' %}
+                                <i class="ph ph-clock-countdown"></i> Awaiting Staff Approval
+                            {% elif res.display_status == 'pending_payment' %}
+                                <i class="ph ph-warning-circle"></i> Payment Needed
+                            {% else %}
+                                <i class="ph ph-hourglass"></i> Pending Review
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <div class="pending-item-meta">
+                        <span><i class="ph ph-calendar"></i> {{ res.date_friendly or res.date }}</span>
+                        <span><i class="ph ph-clock"></i> {{ res.start_time_12 }} &ndash; {{ res.end_time_12 }} ({{ res.total_hours or 1 }} hr)</span>
+                        <span class="pending-price-tag">₱{{ "%.2f"|format(res.total_amount|float) }}</span>
+                    </div>
+
+                    {% if res.display_status == 'pending_verification' %}
+                    <div class="pending-note-strip">
+                        <i class="ph ph-shield-check"></i>
+                        <span>GCash Ref: <strong>{{ res.gcash_ref }}</strong> &bull; Manager will verify shortly.</span>
+                    </div>
+                    {% elif res.display_status == 'pending_payment' %}
+                    <div class="pending-note-strip pay-needed">
+                        <i class="ph ph-info"></i>
+                        <span>Upload GCash reference to secure this booking before it expires.</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="pending-item-actions">
+                    {% if res.display_status == 'pending_payment' and not res.gcash_ref %}
+                    <a href="{{ url_for('player.reservation_payment', res_id=res.id) }}" class="sports-pill-btn primary" style="padding: 7px 14px; font-size: 0.78rem; width: 100%; justify-content: center; text-decoration: none;">
+                        <i class="ph ph-device-mobile-camera"></i> Pay via GCash
+                    </a>
                     {% else %}
-                    #{{ my_queue.position }}
+                    <button type="button" class="sports-pill-btn green" onclick="window.toggleResDrawer(true)" style="padding: 7px 14px; font-size: 0.78rem; width: 100%; justify-content: center;">
+                        <i class="ph ph-clock"></i> Track Status
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- ── 3. LIVE COURT QUEUE WIDGET (IF ACTIVE) ────────────────────────── -->
+    {% if my_queue %}
+    <section class="sports-card" style="border-left: 5px solid var(--pb-green); background: linear-gradient(135deg, var(--sports-card-bg), rgba(16, 185, 129, 0.05));">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+            <div style="display: flex; align-items: center; gap: 18px;">
+                <div style="width: 52px; height: 52px; border-radius: 50%; background: var(--pb-green-light); border: 2px solid var(--pb-green); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 800; color: var(--pb-green); position: relative; flex-shrink: 0;">
+                    {% if my_queue.status == 'playing' %}
+                        <i class="ph ph-tennis-ball" style="animation: spin 3s linear infinite;"></i>
+                    {% else %}
+                        #{{ my_queue.position }}
                     {% endif %}
                     <span class="ping-dot-green"></span>
                 </div>
                 <div>
-                    <span class="small-caps"
-                        style="color: #10b981; font-weight: 700; letter-spacing: 1px; font-size: 0.68rem; display: flex; align-items: center; gap: 4px;">
+                    <span style="font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--pb-green); letter-spacing: 0.8px; display: flex; align-items: center; gap: 4px;">
                         {% if my_queue.status == 'playing' %}
-                        <i class="ph ph-sparkle"></i> LIVE: Currently On Court
+                            <i class="ph ph-sparkle"></i> Currently on Court
                         {% elif my_queue.status == 'next' %}
-                        <i class="ph ph-alarm"></i> LIVE: Up Next!
+                            <i class="ph ph-alarm"></i> Up Next! Get Ready
                         {% else %}
-                        <i class="ph ph-activity"></i> Live Queue Status
+                            <i class="ph ph-activity"></i> Live Queue Tracker
                         {% endif %}
                     </span>
-                    <h3 style="font-size: 1.1rem; font-weight: 800; margin-top: 2px; color: var(--text-primary);">
-                        {{ my_queue.facilities.name if my_queue.facilities else 'Pickleball Facility' }}
+                    <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--sports-text-main); margin: 2px 0;">
+                        {{ my_queue.facilities.name if my_queue.facilities else 'Siniloan Multi-Purpose Sports Hub' }}
                     </h3>
-                    <div
-                        style="font-size: 0.8rem; color: var(--text-secondary); display: flex; align-items: center; gap: 12px; margin-top: 2px;">
-                        <span><i class="ph ph-tennis-ball" style="color: var(--text-muted);"></i> {{
-                            my_queue.courts.name if my_queue.courts else 'Pending Court' }}</span>
-                        <span>
-                            <i class="ph ph-hourglass" style="color: var(--text-muted);"></i>
-                            <span class="dash-wait-time-display" data-target-time="{{ my_queue.target_time }}"
-                                data-time-type="{{ my_queue.time_type }}">
-                                {% if my_queue.status == 'playing' %}
-                                {{ my_queue.estimated_wait_mins }} min left
-                                {% else %}
-                                ~{{ my_queue.estimated_wait_mins }} min wait
-                                {% endif %}
-                            </span>
-                        </span>
+                    <div style="font-size: 0.8rem; color: var(--sports-text-muted); display: flex; align-items: center; gap: 12px;">
+                        <span><i class="ph ph-tennis-ball"></i> {{ my_queue.courts.name if my_queue.courts else 'Court 1' }}</span>
+                        <span><i class="ph ph-hourglass"></i> {{ my_queue.estimated_wait_mins }} min estimated</span>
                     </div>
                 </div>
             </div>
 
-            <a href="{{ url_for('player.queue') }}" class="btn-premium green"
-                style="font-size: 0.8rem; padding: 10px 18px;">
-                <i class="ph ph-list-numbers"></i> View Live Queue
+            <a href="{{ url_for('player.queue') }}" class="sports-pill-btn green">
+                <i class="ph ph-list-numbers"></i> Open Queue Board
             </a>
         </div>
-    </div>
+    </section>
     {% endif %}
 
-    <!-- Hero Widget: Next Reservation -->
-    <div class="glass-card full-width" style="margin-top: 10px;">
-        {% if next_reservation %}
-        <div class="reservation-grid">
-            <div class="court-image">
-                {% if next_reservation.courts and next_reservation.courts.image_url %}
-                <img src="{{ next_reservation.courts.image_url }}" alt="{{ next_reservation.courts.name or 'Pickleball Court' }}"
-                    style="border-radius: 8px;">
-                {% else %}
-                <img src="{{ url_for('static', filename='images/court-hero.jpg') }}" alt="Pickleball Court"
-                    style="border-radius: 8px;">
-                {% endif %}
-            </div>
-            <div class="reservation-info">
-                <p class="small-caps">UPCOMING RESERVATION</p>
-                <h2>{{ next_reservation.courts.name if next_reservation.courts else 'Court' }}</h2>
-                <div class="info-row">
-                    <span><i class="ph ph-map-pin"></i> {{ next_reservation.facilities.name if
-                        next_reservation.facilities else 'Facility' }}</span>
-                    <span><i class="ph ph-calendar"></i> {{ next_reservation.date }}</span>
-                </div>
-                <div class="info-time">{{ next_reservation.start_time[:5] }} - {{ next_reservation.end_time[:5] }}</div>
-                <span class="status-badge success"><i class="ph ph-check-circle"></i> Confirmed</span>
-            </div>
-        </div>
-        {% else %}
-        <div class="reservation-grid"
-            style="display: flex; align-items: center; justify-content: center; min-height: 150px;">
-            <div class="reservation-info text-center" style="text-align: center;">
-                <p class="small-caps">NO UPCOMING RESERVATIONS</p>
-                <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 12px;">Ready
-                    to hit the courts?</h2>
-                <a href="{{ url_for('player.reservation') }}" class="btn-premium orange"
-                    style="padding: 10px 20px; font-size: 0.85rem; margin: 0 auto;">
-                    <i class="ph ph-calendar-plus"></i> Book a Court
-                </a>
-            </div>
-        </div>
-        {% endif %}
-    </div>
+    <!-- ── 4. TWO-COLUMN SPORTS DASHBOARD GRID ───────────────────────────── -->
+    <div class="sports-layout-grid">
 
-    <!-- Available Courts Data Grid -->
-    <div class="glass-card">
-        <div class="widget-header">
-            <h3>Available Courts</h3>
-            <a href="{{ url_for('player.reservation') }}" class="view-all">View All</a>
-        </div>
-        {% if available_courts %}
-        <div class="table-container">
-            <table class="data-grid">
-                <thead>
-                    <tr>
-                        <th>FACILITY & COURT</th>
-                        <th>TYPE</th>
-                        <th>HOURLY RATE</th>
-                        <th>ACTION</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for c in available_courts %}
-                    <tr>
-                        <td class="bold">
-                            <span style="font-size: 0.85rem; color: var(--text-primary);">{{ c.name }}</span>
-                            <span
-                                style="display: block; font-size: 0.72rem; font-weight: 500; color: var(--text-muted); margin-top: 2px;"><i
-                                    class="ph ph-map-pin"></i> {{ c.facilities.name if c.facilities else 'Active Facility' }}</span>
-                        </td>
-                        <td><span class="status-pill success"
-                                style="text-transform: capitalize; font-size: 0.75rem; font-weight: 600;">{{ c.type
-                                }}</span></td>
-                        <td style="font-weight: 700; color: var(--primary-orange);">₱{{ "%.2f"|format(c.hourly_rate) }}
-                        </td>
-                        <td><a href="{{ url_for('player.reservation') }}" class="btn-premium orange"
-                                style="padding: 6px 12px; font-size: 0.75rem; border-radius: 6px;">Book Court</a></td>
-                    </tr>
+        <!-- LEFT COLUMN (UPCOMING GAMES, PERFORMANCE, RECENT ACTIVITY) -->
+        <div class="sports-col">
+
+            <!-- UPCOMING GAMES SECTION (VISUAL MATCH CARDS) -->
+            <section class="sports-card">
+                <div class="sports-section-head">
+                    <h2 class="sports-section-title">
+                        <i class="ph ph-calendar-check" style="color: var(--pb-orange);"></i>
+                        Upcoming Games
+                        <span class="sports-badge-pill">{{ upcoming_matches|length }}</span>
+                    </h2>
+                    <a href="{{ url_for('player.matchmaker') }}" class="sports-link-more">
+                        All Matches <i class="ph ph-caret-right"></i>
+                    </a>
+                </div>
+
+                <div class="sports-matches-stack">
+                    {% for m in upcoming_matches %}
+                    <div class="sports-match-card">
+                        <div class="match-players-faceoff">
+                            <!-- Player 1 (Current User) -->
+                            <div class="match-player-entity">
+                                <div class="match-player-avatar">
+                                    {% if current_user.avatar_url %}
+                                        <img src="{{ current_user.avatar_url }}" alt="{{ current_user.first_name }}">
+                                    {% else %}
+                                        {{ current_user.initials }}
+                                    {% endif %}
+                                </div>
+                                <div class="match-player-meta">
+                                    <span class="player-name">{{ current_user.first_name }} (You)</span>
+                                    <span class="player-sub">DUPR {{ "%.2f"|format(current_user.dupr|float) }}</span>
+                                </div>
+                            </div>
+
+                            <!-- VS Divider -->
+                            <div class="match-vs-divider">VS</div>
+
+                            <!-- Player 2 (Opponent or Group) -->
+                            <div class="match-player-entity">
+                                <div class="match-player-avatar" style="background: var(--pb-orange-light); color: var(--pb-orange);">
+                                    {{ m.opponent_initials }}
+                                </div>
+                                <div class="match-player-meta">
+                                    <span class="player-name">{{ m.opponent_name }}</span>
+                                    <span class="player-sub">{{ m.opponent_sub|default('Challenger') }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Match Venue & Time -->
+                        <div class="match-venue-pill">
+                            <span class="match-time-text">
+                                <i class="ph ph-clock" style="color: var(--pb-orange);"></i> {{ m.date }} • {{ m.time }}
+                            </span>
+                            <span class="match-court-sub">
+                                <i class="ph ph-map-pin"></i> {{ m.venue }}
+                            </span>
+                            <a href="{{ m.link }}" class="sports-pill-btn outline" style="padding: 5px 12px; font-size: 0.74rem; margin-top: 6px;">
+                                View Match
+                            </a>
+                        </div>
+                    </div>
                     {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <div class="empty-state-card" style="margin: 16px 20px;">
-            <i class="ph ph-tennis-ball" style="color: var(--primary-orange);"></i>
-            <h4>No Courts Available</h4>
-            <p>There are no active courts available for reservation right now. Please check back later.</p>
-            <a href="{{ url_for('player.reservation') }}" class="btn-premium orange">Check Reservation Desk</a>
-        </div>
-        {% endif %}
-    </div>
+                </div>
+            </section>
 
-    <!-- Upcoming Events -->
-    <div class="glass-card">
-        <div class="widget-header">
-            <h3>Upcoming Events</h3>
-            <a href="{{ url_for('player.events') }}" class="view-all">View All</a>
-        </div>
-        {% if upcoming_events %}
-        <div class="events-grid">
-            {% for e in upcoming_events %}
-            <div class="event-card"
-                style="display: flex; flex-direction: column; justify-content: space-between; border-left: 3.5px solid var(--primary-orange); padding-left: 14px;">
-                <div>
-                    <span class="small-caps"
-                        style="color: var(--primary-orange); font-size: 0.65rem; font-weight: 700; margin-bottom: 4px;">{{
-                        e.type | upper }}</span>
-                    <h4
-                        style="font-size: 0.92rem; font-weight: 700; margin: 2px 0 6px 0; color: var(--text-primary); line-height: 1.3;">
-                        {{ e.title }}</h4>
-                    <div
-                        style="font-size: 0.76rem; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; margin-bottom: 4px;">
-                        <i class="ph ph-calendar-blank" style="color: var(--text-muted);"></i> {{ e.event_date }}
+            <!-- PERFORMANCE ANALYTICS SECTION -->
+            <section class="sports-card">
+                <div class="sports-section-head">
+                    <h2 class="sports-section-title">
+                        <i class="ph ph-chart-line-up" style="color: var(--pb-green);"></i>
+                        Your Performance
+                    </h2>
+                    <span class="sports-badge-pill" style="color: var(--pb-green); border-color: rgba(16, 185, 129, 0.3);">
+                        <i class="ph ph-trend-up"></i> ↑ 8% from last month
+                    </span>
+                </div>
+
+                <div class="sports-perf-header">
+                    <div class="perf-stat-highlight">
+                        <span class="perf-number">{{ player_stats.win_rate|default(68) }}%</span>
+                        <span style="font-size: 0.82rem; color: var(--sports-text-muted); font-weight: 700;">Overall Match Win Rate</span>
                     </div>
-                    <div
-                        style="font-size: 0.76rem; color: var(--text-secondary); display: flex; align-items: center; gap: 4px;">
-                        <i class="ph ph-map-pin" style="color: var(--text-muted);"></i> {{ e.location_label or "Main Facility" }}
+                    <div style="font-size: 0.78rem; color: var(--sports-text-dim);">
+                        Active Streak: <strong style="color: var(--pb-orange);">{{ player_streak }} Wins</strong>
                     </div>
                 </div>
-                <a href="{{ url_for('player.events') }}" class="action-link"
-                    style="font-size: 0.75rem; font-weight: 700; margin-top: 10px; display: inline-flex; align-items: center; gap: 4px;">Join Event <i class="ph ph-caret-double-right"></i></a>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="empty-state-card" style="margin: 16px 20px;">
-            <i class="ph ph-calendar-x"></i>
-            <h4>No Upcoming Events</h4>
-            <p>No upcoming tournaments or club events are scheduled right now.</p>
-            <a href="{{ url_for('player.events') }}" class="btn-premium navy">Browse Event Portal</a>
-        </div>
-        {% endif %}
-    </div>
-</div>
 
-<!-- Right Column (Sidebar) -->
-<div class="dashboard-side">
-    <!-- Quick Actions -->
-    <div class="glass-card">
-        <h3 class="widget-title" style="margin-bottom: 16px;">Quick Actions</h3>
-        <div class="action-grid">
-            <button class="action-box orange" onclick="window.location.href='{{ url_for('player.reservation') }}'">
-                <i class="ph ph-calendar-plus"></i>
-                <span>Reserve Court</span>
-            </button>
-            <button class="action-box navy" onclick="window.location.href='{{ url_for('player.tutorials') }}'">
-                <i class="ph ph-video"></i>
-                <span>View Tutorials</span>
-            </button>
-            <button class="action-box navy" onclick="window.location.href='{{ url_for('player.events') }}'">
-                <i class="ph ph-users"></i>
-                <span>View Events</span>
-            </button>
-            <button class="action-box green" onclick="window.location.href='{{ url_for('player.community') }}'">
-                <i class="ph ph-chat-text"></i>
-                <span>Community Feed</span>
-            </button>
-        </div>
-    </div>
-
-    <!-- Activity Feed -->
-    <div class="glass-card flex-fill">
-        <h3 class="widget-title">Activity Feed</h3>
-        <ul class="activity-feed">
-            {% if recent_activities %}
-            {% for a in recent_activities %}
-            <li>
-                <span class="dot"></span>
-                <div class="activity-info">
-                    <p><strong>System</strong> {{ a.title }}</p>
-                    <small>{{ a.created_at | community_timeago }}</small>
+                <!-- Sparkline Canvas -->
+                <div class="sports-chart-wrap">
+                    <canvas id="playerPerformanceChart"></canvas>
                 </div>
-            </li>
-            {% endfor %}
-            {% else %}
-            <li>
-                <p style="color: var(--text-muted); font-size: 0.85rem;">No recent activity.</p>
-            </li>
-            {% endif %}
-        </ul>
+            </section>
+
+            <!-- RECENT ACTIVITY (REAL COMMUNITY FEED) -->
+            <section class="sports-card">
+                <div class="sports-section-head">
+                    <h2 class="sports-section-title">
+                        <i class="ph ph-activity" style="color: var(--pb-orange);"></i>
+                        Recent Activity Feed
+                    </h2>
+                    <a href="{{ url_for('player.community') }}" class="sports-link-more">
+                        Community Feed <i class="ph ph-caret-right"></i>
+                    </a>
+                </div>
+
+                <div class="sports-activity-list">
+                    {% if social_feed %}
+                        {% for act in social_feed %}
+                        <article class="sports-activity-item">
+                            <div class="activity-user-row">
+                                <div class="activity-user-info">
+                                    <div class="activity-user-avatar" {% if not act.avatar %}style="background:var(--pb-green-light);color:var(--pb-green);font-weight:800;display:flex;align-items:center;justify-content:center;"{% endif %}>
+                                        {% if act.avatar %}
+                                            <img src="{{ act.avatar }}" alt="{{ act.user }}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                                        {% else %}
+                                            {{ act.initials }}
+                                        {% endif %}
+                                    </div>
+                                    <div class="activity-user-text">
+                                        <span class="act-name">{{ act.user }}</span>
+                                        <span class="act-time"><i class="ph ph-clock"></i> {{ act.time }}</span>
+                                    </div>
+                                </div>
+                                <span class="activity-type-pill {{ act.type }}">
+                                    {% if act.type == 'win' %}
+                                        <i class="ph ph-trophy"></i> Victory
+                                    {% elif act.type == 'booking' %}
+                                        <i class="ph ph-calendar-plus"></i> Booking
+                                    {% elif act.type == 'event' %}
+                                        <i class="ph ph-medal"></i> Event
+                                    {% else %}
+                                        <i class="ph ph-chat-circle-dots"></i> Community
+                                    {% endif %}
+                                </span>
+                            </div>
+
+                            <div class="activity-body">
+                                {{ act.action }}
+                                {% if act.image_url %}
+                                <div class="activity-image-wrapper" style="margin-top:10px;border-radius:10px;overflow:hidden;border:1px solid var(--sports-border);max-height:180px;">
+                                    <img src="{{ act.image_url }}" alt="Activity image" style="width:100%;height:100%;object-fit:cover;display:block;">
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Kudos / Props reaction & Community redirect -->
+                            <div class="activity-actions-row">
+                                <a href="{{ url_for('player.community') }}" class="kudos-btn {% if act.is_liked %}liked{% endif %}" title="View and give props on community feed" style="text-decoration:none;">
+                                    <i class="ph ph-fire"></i>
+                                    <span>Props</span>
+                                    <span class="kudos-count">{{ act.kudos }}</span>
+                                </a>
+                                <a href="{{ url_for('player.community') }}" style="font-size: 0.78rem; color: var(--sports-text-dim); display: flex; align-items: center; gap: 4px; text-decoration:none;">
+                                    <i class="ph ph-chat-circle-dots"></i> {{ act.comments_count }} comment{{ 's' if act.comments_count != 1 else '' }}
+                                </a>
+                                <a href="{{ url_for('player.community') }}" class="sports-link-more" style="font-size:0.75rem;margin-left:auto;">
+                                    Join Discussion <i class="ph ph-arrow-right"></i>
+                                </a>
+                            </div>
+                        </article>
+                        {% endfor %}
+                    {% else %}
+                        <div style="text-align:center;padding:32px 16px;background:var(--sports-card-elevated);border-radius:12px;border:1px dashed var(--sports-border);">
+                            <i class="ph ph-chat-centered-text" style="font-size:2.4rem;color:var(--sports-text-muted);opacity:0.6;margin-bottom:8px;display:block;"></i>
+                            <h4 style="font-size:0.95rem;font-weight:700;color:var(--sports-text-main);margin-bottom:4px;">No Community Posts Yet</h4>
+                            <p style="font-size:0.8rem;color:var(--sports-text-muted);margin-bottom:12px;">Share your latest match victory, organize games, or ask questions!</p>
+                            <a href="{{ url_for('player.community') }}" class="sports-pill-btn primary" style="font-size:0.75rem;padding:6px 14px;display:inline-flex;text-decoration:none;">
+                                <i class="ph ph-paper-plane-tilt"></i> Create First Post
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
+
+        </div>
+
+        <!-- RIGHT COLUMN (LEADERBOARD PODIUM, ACHIEVEMENTS, INTEGRATED BOOKING) -->
+        <div class="sports-col">
+
+            <!-- WEEKLY LEADERBOARD SNIPPET WITH PODIUM -->
+            <section class="sports-card">
+                <div class="sports-section-head">
+                    <h2 class="sports-section-title">
+                        <i class="ph ph-crown" style="color: #fbbf24;"></i>
+                        Weekly Leaderboard
+                    </h2>
+                    <a href="{{ url_for('player.leaderboard') }}" class="sports-link-more">
+                        Full Standings <i class="ph ph-caret-right"></i>
+                    </a>
+                </div>
+
+                <!-- Podium for Top 3 -->
+                <div class="sports-podium-wrap">
+                    {% for p in leaderboard[:3] %}
+                    <div class="podium-slot rank-{{ p.rank }}">
+                        <div class="podium-rank-tag">{{ p.rank }}</div>
+                        <div class="podium-avatar">
+                            {% if p.avatar_url %}
+                                <img src="{{ p.avatar_url }}" alt="{{ p.name }}">
+                            {% else %}
+                                {{ p.initials }}
+                            {% endif %}
+                        </div>
+                        <span class="podium-name">{{ p.name }}</span>
+                        <span class="podium-pts">{{ p.xp }} XP</span>
+                        <span style="font-size: 0.68rem; color: var(--sports-text-dim); margin-top: 2px;">DUPR {{ "%.2f"|format(p.dupr) }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Current Player Highlight Strip -->
+                <div class="sports-user-rank-strip">
+                    <div class="user-rank-left">
+                        <span class="user-rank-number">#{{ user_rank }}</span>
+                        <div>
+                            <span class="user-rank-label">Your Standing</span>
+                            <span style="display: block; font-size: 0.7rem; color: var(--sports-text-muted);">Top 15% of all active players</span>
+                        </div>
+                    </div>
+                    <div class="user-rank-right">
+                        {{ progression.total_xp }} XP
+                    </div>
+                </div>
+            </section>
+
+            <!-- ACHIEVEMENTS SHOWCASE -->
+            <section class="sports-card">
+                <div class="sports-section-head">
+                    <h2 class="sports-section-title">
+                        <i class="ph ph-medal" style="color: var(--pb-orange);"></i>
+                        Achievements
+                    </h2>
+                    <a href="{{ url_for('player.profile') }}" class="sports-link-more">
+                        View All <i class="ph ph-caret-right"></i>
+                    </a>
+                </div>
+
+                <div class="sports-achieve-grid">
+                    {% for ach in achievements %}
+                    <div class="sports-badge-card {{ 'unlocked' if ach.unlocked else 'locked' }}">
+                        <div class="badge-icon-box">
+                            <i class="ph {{ ach.icon }}"></i>
+                        </div>
+                        <span class="badge-title">{{ ach.title }}</span>
+                        <span class="badge-meta">{{ ach.meta }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <!-- INTEGRATED COURT BOOKING QUICK-ACTION -->
+            <section class="sports-card">
+                <div class="sports-section-head">
+                    <h2 class="sports-section-title">
+                        <i class="ph ph-calendar-plus" style="color: var(--pb-green);"></i>
+                        Instant Court Booking
+                    </h2>
+                    <a href="{{ url_for('player.reservation') }}" class="sports-link-more">
+                        Reserve Slot <i class="ph ph-caret-right"></i>
+                    </a>
+                </div>
+
+                <p style="font-size: 0.8rem; color: var(--sports-text-muted); margin-top: -6px;">
+                    Fast-track your reservation at verified partner courts.
+                </p>
+
+                <div class="sports-courts-grid">
+                    {% for court in available_courts[:2] %}
+                    <div class="sports-court-card">
+                        <div class="court-meta-top">
+                            <span class="court-type">{{ court.type }} Court</span>
+                            <h4 class="court-name">{{ court.name }}</h4>
+                            <span class="facility-name">
+                                <i class="ph ph-map-pin"></i> {{ court.facilities.name if court.facilities else 'Main Complex' }}
+                            </span>
+                        </div>
+                        <div class="court-price-row">
+                            <span class="court-rate">
+                                ₱{{ "%.0f"|format(court.hourly_rate) }}<small>/hr</small>
+                            </span>
+                            <a href="{{ url_for('player.reservation', facility_id=court.facility_id, court_id=court.id) }}" class="sports-pill-btn primary" style="padding: 6px 14px; font-size: 0.74rem;">
+                                Book Now
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+        </div>
+
     </div>
-</div>
 
 </div>
-
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        function updateDashboardWaitTimes() {
-            const displays = document.querySelectorAll('.dash-wait-time-display');
-            displays.forEach(el => {
-                const targetTimeStr = el.getAttribute('data-target-time');
-                const timeType = el.getAttribute('data-time-type');
-
-                if (targetTimeStr) {
-                    const targetTime = new Date(targetTimeStr + (targetTimeStr.includes('Z') || targetTimeStr.includes('+') ? '' : 'Z'));
-                    const now = new Date();
-
-                    let diffMs = targetTime - now;
-                    let diffMins = Math.floor(diffMs / 60000);
-                    if (diffMins < 0) diffMins = 0;
-
-                    if (timeType === 'Remaining') {
-                        el.innerText = `${diffMins} min left`;
-                    } else {
-                        el.innerText = `~${diffMins} min wait`;
-                    }
-                }
-            });
-        }
-
-        updateDashboardWaitTimes();
-        setInterval(updateDashboardWaitTimes, 30000); // run every 30 seconds
-    });
-</script>
 {% endblock %}

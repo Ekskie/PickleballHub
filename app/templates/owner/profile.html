@@ -1,341 +1,1007 @@
 {% extends "owner/base_owner.html" %}
 
-{% block title %}Profile Management{% endblock %}
+{% block title %}Owner Profile & Settings{% endblock %}
 
 {% block extra_head %}
 <style>
-    .profile-layout {
-        display: grid;
-        grid-template-columns: 1fr 1.6fr;
-        gap: 24px;
-        align-items: start;
-    }
+/* ── Profile Hub Container ── */
+.profile-hub-container {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
 
-    /* ---- Left: Profile Card ---- */
-    .profile-card {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        gap: 8px;
-    }
+/* ── Hero Profile Header Card ── */
+.owner-hero-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 20px;
+    padding: 24px 28px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+    position: relative;
+    overflow: hidden;
+}
 
-    .profile-avatar {
-        width: 72px;
-        height: 72px;
-        background: var(--btn-navy);
-        color: #fff;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem;
-        font-weight: 700;
-        margin-bottom: 8px;
-    }
+.owner-hero-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, var(--primary-orange) 0%, #ea580c 50%, #f59e0b 100%);
+}
 
-    .profile-card h2 {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: var(--text-primary);
-    }
+.owner-hero-identity {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex: 1;
+    min-width: 280px;
+}
 
-    .profile-card .player-id {
-        font-size: 0.8rem;
-        color: var(--text-muted);
-        margin-bottom: 12px;
-    }
+.hero-avatar-wrap {
+    position: relative;
+    cursor: pointer;
+    flex-shrink: 0;
+}
 
-    .profile-contact {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        margin-bottom: 12px;
-    }
+.hero-avatar-box {
+    width: 84px;
+    height: 84px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    font-weight: 800;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+    border: 2px solid var(--card-bg, #ffffff);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
 
-    .contact-row {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 0.875rem;
-        color: var(--text-secondary);
-    }
+.hero-avatar-wrap:hover .hero-avatar-box {
+    transform: scale(1.03);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+}
 
-    .contact-row i {
-        font-size: 1.1rem;
-        color: var(--text-muted);
-        flex-shrink: 0;
-    }
+.hero-avatar-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
 
-    .membership-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: var(--btn-green-light);
-        color: var(--btn-green);
-        font-size: 0.75rem;
-        font-weight: 600;
-        padding: 4px 10px;
-        border-radius: 20px;
-    }
+.avatar-badge-edit {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--primary-orange);
+    color: #ffffff;
+    border: 2px solid var(--card-bg, #ffffff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.15s ease;
+}
 
-    html.dark-mode .membership-badge {
-        background: rgba(41, 163, 86, 0.15);
-        color: #4ade80;
-    }
+.hero-avatar-wrap:hover .avatar-badge-edit {
+    transform: scale(1.12);
+}
 
-    .btn-edit-profile {
-        width: 100%;
-        margin-top: 8px;
-        padding: 12px;
-        border: 1px solid var(--border-color);
-        background: transparent;
-        color: var(--text-primary);
-        border-radius: 8px;
-        font-size: 0.875rem;
-        font-weight: 600;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        transition: var(--transition);
-    }
+.owner-hero-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
 
-    .btn-edit-profile:hover {
-        background: var(--input-bg);
-        border-color: var(--text-muted);
-    }
+.owner-hero-name {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0;
+    letter-spacing: -0.3px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
 
-    /* ---- Right: Stats Card ---- */
-    .stats-section-title {
-        font-size: 1rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 16px;
-    }
+.badge-owner-role {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+    border: 1px solid rgba(16, 185, 129, 0.28);
+    font-size: 0.74rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
 
-    .stat-boxes {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
-        margin-bottom: 24px;
-    }
+.owner-id-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    background: var(--input-bg, #f8fafc);
+    border: 1px solid var(--border-color, #eaecf0);
+    padding: 3px 10px;
+    border-radius: 8px;
+    width: fit-content;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
 
-    .stat-box {
-        background: var(--bg-color);
-        border: 1px solid var(--border-color);
-        border-radius: 10px;
-        padding: 16px;
-        text-align: center;
-    }
+.owner-id-chip:hover {
+    color: var(--primary-orange);
+    border-color: var(--primary-orange);
+}
 
-    .stat-box .stat-value {
-        font-size: 1.75rem;
-        font-weight: 700;
-        display: block;
-        margin-bottom: 4px;
-    }
+.owner-joined-date {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
 
-    .stat-box .stat-label {
-        font-size: 0.75rem;
-        color: var(--text-muted);
-    }
+.owner-hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
 
-    .stat-box.orange .stat-value {
-        color: var(--primary-orange);
-    }
+.btn-hero-action {
+    background: var(--input-bg, #f8fafc);
+    border: 1px solid var(--border-color, #eaecf0);
+    color: var(--text-primary);
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+}
 
-    .stat-box.navy .stat-value {
-        color: var(--btn-navy);
-    }
+.btn-hero-action:hover {
+    background: var(--border-color, #eaecf0);
+    transform: translateY(-1px);
+}
 
-    html.dark-mode .stat-box.navy .stat-value {
-        color: #93c5fd;
-    }
+/* ── Executive KPI Statistics ── */
+.stats-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
 
-    .stat-box.green .stat-value {
-        color: var(--btn-green);
-    }
+.kpi-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 16px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
 
-    /* Fairness Rating */
-    .fairness-label {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: var(--text-primary);
-        margin-bottom: 10px;
-    }
+.kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
+    border-color: rgba(225, 86, 35, 0.35);
+}
 
-    .fairness-bar-wrap {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 6px;
-    }
+.kpi-icon-badge {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
 
-    .fairness-track {
-        flex: 1;
-        height: 8px;
-        background: var(--border-color);
-        border-radius: 99px;
-        overflow: hidden;
-    }
+.kpi-icon-orange {
+    background: rgba(225, 86, 35, 0.12);
+    color: var(--primary-orange);
+}
 
-    .fairness-fill {
-        height: 100%;
-        background: var(--btn-green);
-        border-radius: 99px;
-        width: 85%;
-        transition: width 0.6s ease;
-    }
+.kpi-icon-navy {
+    background: rgba(30, 41, 59, 0.12);
+    color: #1e293b;
+}
 
-    .fairness-score {
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: var(--btn-green);
-        white-space: nowrap;
-    }
+html.dark-mode .kpi-icon-navy {
+    background: rgba(147, 197, 253, 0.15);
+    color: #93c5fd;
+}
 
-    .fairness-note {
-        font-size: 0.75rem;
-        color: var(--text-muted);
-        margin-bottom: 20px;
-    }
+.kpi-icon-green {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+}
 
-    /* Recent Activity */
-    .recent-activity-title {
-        font-size: 0.875rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 12px;
-    }
+.kpi-icon-teal {
+    background: rgba(14, 165, 233, 0.12);
+    color: #0284c7;
+}
 
-    .activity-list {
-        list-style: none;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
+.kpi-details {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
 
-    .activity-list li {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-    }
+.kpi-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+}
 
-    .activity-list li .dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--primary-orange);
-        flex-shrink: 0;
+.kpi-value {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.kpi-subtext {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Main Dual Grid Layout ── */
+.profile-content-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 22px;
+    align-items: start;
+}
+
+@media (max-width: 960px) {
+    .profile-content-grid {
+        grid-template-columns: 1fr;
     }
+}
+
+/* ── Section Cards ── */
+.settings-section-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.section-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border-color, #eaecf0);
+}
+
+.section-header-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-icon-box {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(225, 86, 35, 0.12);
+    color: var(--primary-orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.section-icon-box.blue {
+    background: rgba(59, 130, 246, 0.12);
+    color: #3b82f6;
+}
+
+.section-icon-box.green {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+}
+
+.section-header-title h3 {
+    margin: 0;
+    font-size: 1.08rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.section-header-title p {
+    margin: 2px 0 0 0;
+    font-size: 0.76rem;
+    color: var(--text-muted);
+}
+
+/* Forms Styling */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+
+.form-group label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--input-bg, #f8fafc);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 0.88rem;
+    font-family: inherit;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-orange);
+    background: var(--card-bg);
+    box-shadow: 0 0 0 3px rgba(225, 86, 35, 0.12);
+}
+
+.form-group input[readonly] {
+    opacity: 0.75;
+    cursor: not-allowed;
+    background: var(--input-bg);
+}
+
+.form-row-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+@media (max-width: 520px) {
+    .form-row-two-col {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Password Input with eye toggle */
+.password-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input-wrap input {
+    padding-right: 40px;
+}
+
+.btn-toggle-eye {
+    position: absolute;
+    right: 8px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 6px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-toggle-eye:hover {
+    color: var(--text-primary);
+}
+
+.btn-primary-save {
+    background: linear-gradient(135deg, var(--primary-orange) 0%, #ea580c 100%);
+    color: #ffffff;
+    border: none;
+    padding: 11px 22px;
+    border-radius: 11px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(225, 86, 35, 0.32);
+    transition: all 0.2s ease;
+    margin-top: 6px;
+}
+
+.btn-primary-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(225, 86, 35, 0.42);
+    filter: brightness(1.04);
+}
+
+/* ── Facilities Portfolio List ── */
+.facilities-portfolio-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.facility-portfolio-item {
+    background: var(--input-bg, #f8fafc);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    transition: all 0.15s ease;
+}
+
+.facility-portfolio-item:hover {
+    border-color: rgba(225, 86, 35, 0.35);
+    background: var(--card-bg, #ffffff);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.03);
+}
+
+.facility-item-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.facility-item-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba(225, 86, 35, 0.1);
+    color: var(--primary-orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.facility-item-info {
+    min-width: 0;
+}
+
+.facility-item-name {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.facility-item-sub {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+}
+
+.facility-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.btn-facility-link {
+    background: transparent;
+    border: 1px solid var(--border-color, #eaecf0);
+    color: var(--text-secondary);
+    padding: 5px 10px;
+    border-radius: 7px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s ease;
+}
+
+.btn-facility-link:hover {
+    background: var(--input-bg);
+    color: var(--text-primary);
+    border-color: var(--text-muted);
+}
+
+/* ── Recent Activity Feed ── */
+.activity-feed-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.activity-feed-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: var(--input-bg, #f8fafc);
+    border: 1px solid var(--border-color, #eaecf0);
+    font-size: 0.82rem;
+}
+
+.activity-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.82rem;
+    font-weight: 800;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.activity-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.activity-text-col {
+    flex: 1;
+    min-width: 0;
+}
+
+.activity-title {
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.activity-sub {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    margin-top: 1px;
+}
+
+.activity-date-badge {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    white-space: nowrap;
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-header">
-    <h1 class="page-title">Profile Settings</h1>
-</div>
+<div class="profile-hub-container">
 
-<div class="profile-layout">
-
-    <!-- Left: Profile Card -->
-    <div class="glass-card">
-        <form method="POST" action="{{ url_for(request.blueprint ~ '.profile') }}" class="profile-card" enctype="multipart/form-data">
-            <div class="profile-avatar" style="position: relative; cursor: pointer; transition: transform 0.2s;" onclick="document.getElementById('avatar-input').click()" title="Click to change profile picture" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
-                {% if current_user.avatar_url %}
-                    <img src="{{ current_user.avatar_url }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
-                {% else %}
-                    {{ current_user.initials }}
-                {% endif %}
-                <div style="position: absolute; bottom: -4px; right: -4px; background: var(--primary-orange); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--card-bg); font-size: 0.8rem; box-shadow: var(--shadow-sm);">
+    <!-- ── Hero Profile Header Card ── -->
+    <div class="owner-hero-card">
+        <div class="owner-hero-identity">
+            <div class="hero-avatar-wrap" onclick="document.getElementById('avatar-input').click()" title="Click to upload new profile photo">
+                <div class="hero-avatar-box">
+                    {% if current_user.avatar_url %}
+                    <img id="avatar-preview-img" src="{{ current_user.avatar_url }}" alt="Profile Photo">
+                    {% else %}
+                    <span id="avatar-preview-fallback">{{ current_user.initials }}</span>
+                    {% endif %}
+                </div>
+                <div class="avatar-badge-edit">
                     <i class="ph ph-camera"></i>
                 </div>
             </div>
-            <input type="file" id="avatar-input" name="avatar" accept="image/*" style="display: none;" onchange="previewAvatar(this)">
-            
-            <div style="width: 100%; margin-bottom: 15px; text-align: left;">
-                <label style="font-size: 0.8rem; color: var(--text-muted);">First Name</label>
-                <input type="text" name="first_name" value="{{ current_user.first_name }}" required 
-                       style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg); color: var(--text-primary); margin-bottom: 10px;">
-                
-                <label style="font-size: 0.8rem; color: var(--text-muted);">Last Name</label>
-                <input type="text" name="last_name" value="{{ current_user.last_name }}" required 
-                       style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg); color: var(--text-primary);">
-            </div>
-            
-            <p class="player-id" style="margin-top: 0;">Owner ID: PBH-{{ current_user.id[:8] | upper if current_user.id else '' }}</p>
 
-            <div class="profile-contact">
-                <div class="contact-row">
-                    <i class="ph ph-envelope"></i>
-                    <span>{{ current_user.email or '—' }} (Read-only)</span>
+            <div class="owner-hero-meta">
+                <h1 class="owner-hero-name">
+                    {{ current_user.first_name }} {{ current_user.last_name }}
+                    <span class="badge-owner-role">
+                        <i class="ph ph-seal-check"></i> Facility Owner
+                    </span>
+                </h1>
+
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <div class="owner-id-chip" onclick="copyOwnerId('PBH-{{ current_user.id[:8] | upper if current_user.id else '' }}')" title="Click to copy Owner ID">
+                        <i class="ph ph-identification-badge"></i>
+                        <span>Owner ID: PBH-{{ current_user.id[:8] | upper if current_user.id else '' }}</span>
+                        <i class="ph ph-copy" style="font-size: 0.75rem;"></i>
+                    </div>
+
+                    {% if stats.member_since %}
+                    <span class="owner-joined-date">
+                        <i class="ph ph-calendar-blank"></i> Member since {{ stats.member_since }}
+                    </span>
+                    {% endif %}
                 </div>
-                <div class="contact-row">
-                    <i class="ph ph-phone"></i>
-                    <input type="text" name="phone" value="{{ current_user.phone or '' }}" placeholder="Phone Number" 
-                           style="width: 100%; padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--input-bg); color: var(--text-primary);">
-                </div>
-                <div class="contact-row">
-                    <i class="ph ph-shield-check"></i>
-                    <span class="membership-badge">Facility Owner</span>
-                </div>
-            </div>
-
-            <button type="submit" class="btn-edit-profile" style="background: var(--btn-navy); color: white; border: none;">
-                <i class="ph ph-floppy-disk"></i> Save Profile
-            </button>
-        </form>
-    </div>
-
-    <!-- Right: Statistics & Activity -->
-    <div class="glass-card">
-        <p class="stats-section-title">Owner Statistics</p>
-
-        <div class="stat-boxes">
-            <div class="stat-box orange">
-                <span class="stat-value">{{ stats.facilities if stats else 0 }}</span>
-                <span class="stat-label">Facilities</span>
-            </div>
-            <div class="stat-box navy">
-                <span class="stat-value">{{ stats.courts if stats else 0 }}</span>
-                <span class="stat-label">Total Courts</span>
-            </div>
-            <div class="stat-box green">
-                <span class="stat-value">{{ stats.staff if stats else 0 }}</span>
-                <span class="stat-label">Active Staff</span>
             </div>
         </div>
 
-        <p class="recent-activity-title">Recent Actions</p>
-        <ul class="activity-list">
-            <li><span class="dot"></span> Managed facility courts & staff assignments</li>
-            <li><span class="dot"></span> Reviewed tournament brackets and registrations</li>
-            <li><span class="dot"></span> Monitored live revenue reports and dashboards</li>
-        </ul>
+        <div class="owner-hero-actions">
+            <a href="{{ url_for('owner.facilities') }}" class="btn-hero-action">
+                <i class="ph ph-buildings" style="color: var(--primary-orange);"></i> Venues ({{ stats.facilities }})
+            </a>
+            <a href="{{ url_for('owner.courts') }}" class="btn-hero-action">
+                <i class="ph ph-intersect" style="color: #3b82f6;"></i> Courts ({{ stats.courts }})
+            </a>
+            <a href="{{ url_for('owner.staff') }}" class="btn-hero-action">
+                <i class="ph ph-users-three" style="color: #10b981;"></i> Staff ({{ stats.staff }})
+            </a>
+        </div>
+    </div>
+
+    <!-- ── Executive KPI Portfolio Summary ── -->
+    <div class="stats-kpi-grid">
+        <a href="{{ url_for('owner.facilities') }}" class="kpi-card">
+            <div class="kpi-icon-badge kpi-icon-orange">
+                <i class="ph ph-buildings"></i>
+            </div>
+            <div class="kpi-details">
+                <span class="kpi-label">Facilities Owned</span>
+                <span class="kpi-value">{{ stats.facilities }}</span>
+                <span class="kpi-subtext">Active sports complexes</span>
+            </div>
+        </a>
+
+        <a href="{{ url_for('owner.courts') }}" class="kpi-card">
+            <div class="kpi-icon-badge kpi-icon-navy">
+                <i class="ph ph-intersect"></i>
+            </div>
+            <div class="kpi-details">
+                <span class="kpi-label">Total Courts</span>
+                <span class="kpi-value">{{ stats.courts }}</span>
+                <span class="kpi-subtext">Indoor & outdoor courts</span>
+            </div>
+        </a>
+
+        <a href="{{ url_for('owner.staff') }}" class="kpi-card">
+            <div class="kpi-icon-badge kpi-icon-green">
+                <i class="ph ph-users-three"></i>
+            </div>
+            <div class="kpi-details">
+                <span class="kpi-label">Active Staff</span>
+                <span class="kpi-value">{{ stats.staff }}</span>
+                <span class="kpi-subtext">Front desk personnel</span>
+            </div>
+        </a>
+
+        <a href="{{ url_for('owner.payment_ledger') }}" class="kpi-card">
+            <div class="kpi-icon-badge kpi-icon-teal">
+                <i class="ph ph-currency-circle-dollar"></i>
+            </div>
+            <div class="kpi-details">
+                <span class="kpi-label">Verified Revenue</span>
+                <span class="kpi-value">₱{{ "%.2f"|format(stats.total_revenue) }}</span>
+                <span class="kpi-subtext">From {{ stats.total_bookings }} reservations</span>
+            </div>
+        </a>
+    </div>
+
+    <!-- ── Main Settings & Operations Grid ── -->
+    <div class="profile-content-grid">
+
+        <!-- ── Left Column: Personal Profile & Security ── -->
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+
+            <!-- Card 1: Personal Profile Form -->
+            <div class="settings-section-card">
+                <div class="section-header-row">
+                    <div class="section-header-title">
+                        <div class="section-icon-box">
+                            <i class="ph ph-user-circle"></i>
+                        </div>
+                        <div>
+                            <h3>Personal Information</h3>
+                            <p>Update your display name, contact phone, and avatar photo.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ url_for('owner.profile') }}" enctype="multipart/form-data" id="profileForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <!-- Hidden Avatar File Input -->
+                    <input type="file" id="avatar-input" name="avatar" accept="image/*" style="display: none;" onchange="previewAvatar(this)">
+
+                    <!-- First Name & Last Name (2 cols) -->
+                    <div class="form-row-two-col">
+                        <div class="form-group">
+                            <label><i class="ph ph-identification-card"></i> First Name *</label>
+                            <input type="text" name="first_name" value="{{ current_user.first_name }}" required placeholder="e.g. John">
+                        </div>
+                        <div class="form-group">
+                            <label>Last Name *</label>
+                            <input type="text" name="last_name" value="{{ current_user.last_name }}" required placeholder="e.g. Doe">
+                        </div>
+                    </div>
+
+                    <!-- Email Address (Read-only Auth) -->
+                    <div class="form-group">
+                        <label>
+                            <i class="ph ph-envelope"></i> Account Email (Read-Only)
+                            <span style="font-size:0.72rem; color:var(--text-muted); font-weight:normal;">• Verified</span>
+                        </label>
+                        <input type="email" value="{{ current_user.email or '' }}" readonly>
+                        <small style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">
+                            Email address is managed by Supabase authentication credentials.
+                        </small>
+                    </div>
+
+                    <!-- Contact Phone -->
+                    <div class="form-group">
+                        <label><i class="ph ph-phone"></i> Mobile / Contact Phone</label>
+                        <input type="tel" name="phone" value="{{ current_user.phone or '' }}" placeholder="e.g. +63 912 345 6789">
+                    </div>
+
+                    <button type="submit" class="btn-primary-save">
+                        <i class="ph ph-floppy-disk"></i> Save Profile Changes
+                    </button>
+                </form>
+            </div>
+
+            <!-- Card 2: Security & Password -->
+            <div class="settings-section-card">
+                <div class="section-header-row">
+                    <div class="section-header-title">
+                        <div class="section-icon-box blue">
+                            <i class="ph ph-shield-lock"></i>
+                        </div>
+                        <div>
+                            <h3>Security & Password</h3>
+                            <p>Keep your account secure by using a strong password.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ url_for('owner.change_password') }}" id="passwordForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="form-group">
+                        <label><i class="ph ph-key"></i> Current Password *</label>
+                        <div class="password-input-wrap">
+                            <input type="password" name="old_password" id="oldPasswordInput" required placeholder="Enter current password">
+                            <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('oldPasswordInput', this)" aria-label="Toggle password view">
+                                <i class="ph ph-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-row-two-col">
+                        <div class="form-group">
+                            <label><i class="ph ph-lock-simple"></i> New Password *</label>
+                            <div class="password-input-wrap">
+                                <input type="password" name="new_password" id="newPasswordInput" required minlength="8" placeholder="Min. 8 characters">
+                                <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('newPasswordInput', this)" aria-label="Toggle password view">
+                                    <i class="ph ph-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="ph ph-lock-simple-open"></i> Confirm New Password *</label>
+                            <div class="password-input-wrap">
+                                <input type="password" name="confirm_password" id="confirmPasswordInput" required minlength="8" placeholder="Repeat new password">
+                                <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('confirmPasswordInput', this)" aria-label="Toggle password view">
+                                    <i class="ph ph-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary-save" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
+                        <i class="ph ph-lock-key"></i> Update Password
+                    </button>
+                </form>
+            </div>
+
+        </div>
+
+        <!-- ── Right Column: Facilities Hub & Real Activity ── -->
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+
+            <!-- Card 3: Facilities Portfolio Hub -->
+            <div class="settings-section-card">
+                <div class="section-header-row">
+                    <div class="section-header-title">
+                        <div class="section-icon-box green">
+                            <i class="ph ph-buildings"></i>
+                        </div>
+                        <div>
+                            <h3>My Venues & Facilities</h3>
+                            <p>Overview of your managed pickleball sports hubs.</p>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('owner.facilities') }}" class="btn-facility-link" style="color: var(--primary-orange); border-color: rgba(225, 86, 35, 0.3);">
+                        <i class="ph ph-arrow-up-right"></i> All Facilities
+                    </a>
+                </div>
+
+                <div class="facilities-portfolio-list">
+                    {% if facilities %}
+                    {% for fac in facilities %}
+                    <div class="facility-portfolio-item">
+                        <div class="facility-item-left">
+                            <div class="facility-item-icon">
+                                <i class="ph ph-buildings"></i>
+                            </div>
+                            <div class="facility-item-info">
+                                <div class="facility-item-name" title="{{ fac.name }}">{{ fac.name }}</div>
+                                <div class="facility-item-sub">
+                                    <span><i class="ph ph-map-pin"></i> {{ fac.location or 'Siniloan, Laguna' }}</span>
+                                    <span>•</span>
+                                    <span><strong>{{ fac.court_count or 0 }}</strong> courts</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="facility-item-actions">
+                            <a href="{{ url_for('owner.courts', facility=fac.id) }}" class="btn-facility-link" title="Manage courts">
+                                <i class="ph ph-intersect"></i> Courts
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 0.85rem;">
+                        <i class="ph ph-buildings" style="font-size: 1.8rem; opacity: 0.4; display: block; margin-bottom: 6px;"></i>
+                        No facilities registered yet.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Card 4: Real Operational Activity Feed -->
+            <div class="settings-section-card">
+                <div class="section-header-row">
+                    <div class="section-header-title">
+                        <div class="section-icon-box">
+                            <i class="ph ph-activity"></i>
+                        </div>
+                        <div>
+                            <h3>Recent Facility Activity</h3>
+                            <p>Live stream of player reservations and payments.</p>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('owner.payment_ledger') }}" class="btn-facility-link">
+                        <i class="ph ph-receipt"></i> Ledger
+                    </a>
+                </div>
+
+                <div class="activity-feed-list">
+                    {% if recent_activity %}
+                    {% for act in recent_activity %}
+                    <div class="activity-feed-item">
+                        <div class="activity-avatar">
+                            {% if act.avatar_url %}
+                            <img src="{{ act.avatar_url }}" alt="Player">
+                            {% else %}
+                            <i class="ph ph-user"></i>
+                            {% endif %}
+                        </div>
+                        <div class="activity-text-col">
+                            <div class="activity-title">{{ act.title }}</div>
+                            <div class="activity-sub">{{ act.subtitle }}</div>
+                        </div>
+                        <span class="activity-date-badge">
+                            {{ act.date }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 0.85rem;">
+                        <i class="ph ph-receipt" style="font-size: 1.8rem; opacity: 0.4; display: block; margin-bottom: 6px;"></i>
+                        No recent activity recorded yet.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+
     </div>
 
 </div>
 
 <script>
-    function previewAvatar(input) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const avatarDiv = document.querySelector('.profile-avatar');
-                avatarDiv.innerHTML = `
-                    <img src="${e.target.result}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
-                    <div style="position: absolute; bottom: -4px; right: -4px; background: var(--primary-orange); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--card-bg); font-size: 0.8rem; box-shadow: var(--shadow-sm);">
-                        <i class="ph ph-camera"></i>
-                    </div>
-                `;
+/* ── Live Avatar Preview ── */
+function previewAvatar(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const avatarBox = document.querySelector('.hero-avatar-box');
+            if (avatarBox) {
+                avatarBox.innerHTML = `<img src="${e.target.result}" alt="New Avatar Preview" style="width:100%;height:100%;object-fit:cover;">`;
             }
-            reader.readAsDataURL(input.files[0]);
-        }
+        };
+        reader.readAsDataURL(input.files[0]);
     }
+}
+
+/* ── 1-Click Copy Owner ID ── */
+function copyOwnerId(idText) {
+    if (!idText) return;
+    navigator.clipboard.writeText(idText).then(() => {
+        alert('Copied Owner ID to clipboard: ' + idText);
+    });
+}
+
+/* ── Toggle Password Visibility ── */
+function togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        if (icon) icon.className = 'ph ph-eye-slash';
+    } else {
+        input.type = 'password';
+        if (icon) icon.className = 'ph ph-eye';
+    }
+}
+
+/* ── Validate Password Form ── */
+document.getElementById('passwordForm').addEventListener('submit', function(e) {
+    const newPwd = document.getElementById('newPasswordInput').value;
+    const confirmPwd = document.getElementById('confirmPasswordInput').value;
+
+    if (newPwd !== confirmPwd) {
+        e.preventDefault();
+        alert('New passwords do not match. Please verify and try again.');
+    }
+});
 </script>
 {% endblock %}

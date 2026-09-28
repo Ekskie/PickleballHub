@@ -1,20 +1,91 @@
 {% extends "base.html" %}
 
 {% block sidebar_menu %}
-<li class="{% if request.endpoint == 'owner.dashboard' %}active{% endif %}"><a
-                href="{{ url_for('owner.dashboard') }}"><i class="ph ph-squares-four"></i> Overview</a></li>
-<li class="{% if request.endpoint == 'owner.facilities' %}active{% endif %}"><a
-                href="{{ url_for('owner.facilities') }}"><i class="ph ph-buildings"></i> My Facilities</a></li>
-<li class="{% if request.endpoint == 'owner.courts' %}active{% endif %}"><a href="{{ url_for('owner.courts') }}"><i
-                        class="ph ph-intersect"></i> Courts & Pricing</a></li>
-<li class="{% if request.endpoint == 'owner.payment_ledger' %}active{% endif %}"><a href="{{ url_for('owner.payment_ledger') }}"><i
-                        class="ph ph-receipt"></i> Payment Ledger</a></li>
-<li class="{% if request.endpoint in ['owner.events','owner.create_event_page'] %}active{% endif %}"><a
-                href="{{ url_for('owner.events') }}"><i class="ph ph-trophy"></i> Events</a></li>
-<li class="{% if request.endpoint == 'owner.staff' %}active{% endif %}"><a href="{{ url_for('owner.staff') }}"><i
-                        class="ph ph-users-three"></i> Staff Management</a></li>
-<li class="{% if request.endpoint == 'owner.community' %}active{% endif %}"><a
-                href="{{ url_for('owner.community') }}"><i class="ph ph-users-three"></i> Community</a></li>
-<li class="{% if request.endpoint == 'owner.messages' %}active{% endif %}"><a href="{{ url_for('owner.messages') }}"><i
-                        class="ph ph-chat-circle-dots"></i> Messages</a></li>
+<li class="{% if request.endpoint == 'owner.dashboard' %}active{% endif %}">
+    <a href="{{ url_for('owner.dashboard') }}">
+        <i class="ph ph-squares-four"></i>
+        <span>Overview</span>
+    </a>
+</li>
+
+<!-- Facility & Operations Dropdown -->
+{% set is_fac_active = request.endpoint in ['owner.facilities', 'owner.courts', 'owner.court_schedule', 'owner.staff'] %}
+<li class="sidebar-dropdown-group {% if is_fac_active %}open active-group{% endif %}" data-group="owner-fac">
+    <button type="button" class="sidebar-dropdown-btn" onclick="toggleSidebarDropdown(this)">
+        <span class="dropdown-btn-label">
+            <i class="ph ph-buildings group-icon"></i>
+            <span>Facility & Courts</span>
+        </span>
+        <i class="ph ph-caret-down dropdown-arrow"></i>
+    </button>
+    <ul class="sidebar-subnav">
+        <li class="{% if request.endpoint == 'owner.facilities' %}active{% endif %}">
+            <a href="{{ url_for('owner.facilities') }}"><i class="ph ph-buildings"></i> <span>My Facilities</span></a>
+        </li>
+        <li class="{% if request.endpoint == 'owner.courts' %}active{% endif %}">
+            <a href="{{ url_for('owner.courts') }}"><i class="ph ph-intersect"></i> <span>Courts & Pricing</span></a>
+        </li>
+        <li class="{% if request.endpoint == 'owner.court_schedule' %}active{% endif %}">
+            <a href="{{ url_for('owner.court_schedule') }}"><i class="ph ph-calendar-check"></i> <span>Court Schedule</span></a>
+        </li>
+        <li class="{% if request.endpoint == 'owner.staff' %}active{% endif %}">
+            <a href="{{ url_for('owner.staff') }}"><i class="ph ph-users-three"></i> <span>Staff Management</span></a>
+        </li>
+    </ul>
+</li>
+
+<!-- Finance & Events Dropdown -->
+{% set is_fin_active = request.endpoint in ['owner.payment_ledger', 'owner.events', 'owner.create_event_page'] %}
+<li class="sidebar-dropdown-group {% if is_fin_active %}open active-group{% endif %}" data-group="owner-fin">
+    <button type="button" class="sidebar-dropdown-btn" onclick="toggleSidebarDropdown(this)">
+        <span class="dropdown-btn-label">
+            <i class="ph ph-receipt group-icon"></i>
+            <span>Finance & Events</span>
+        </span>
+        <i class="ph ph-caret-down dropdown-arrow"></i>
+    </button>
+    <ul class="sidebar-subnav">
+        <li class="{% if request.endpoint == 'owner.payment_ledger' %}active{% endif %}">
+            <a href="{{ url_for('owner.payment_ledger') }}"><i class="ph ph-receipt"></i> <span>Payment Ledger</span></a>
+        </li>
+        <li class="{% if request.endpoint in ['owner.events', 'owner.create_event_page'] %}active{% endif %}">
+            <a href="{{ url_for('owner.events') }}"><i class="ph ph-trophy"></i> <span>Events</span></a>
+        </li>
+    </ul>
+</li>
+
+<!-- Communication Dropdown -->
+{% set is_comm_active = request.endpoint in ['owner.community', 'owner.messages'] %}
+<li class="sidebar-dropdown-group {% if is_comm_active %}open active-group{% endif %}" data-group="owner-comm">
+    <button type="button" class="sidebar-dropdown-btn" onclick="toggleSidebarDropdown(this)">
+        <span class="dropdown-btn-label">
+            <i class="ph ph-chats-circle group-icon"></i>
+            <span>Communication</span>
+        </span>
+        <i class="ph ph-caret-down dropdown-arrow"></i>
+    </button>
+    <ul class="sidebar-subnav">
+        <li class="{% if request.endpoint == 'owner.community' %}active{% endif %}">
+            <a href="{{ url_for('owner.community') }}"><i class="ph ph-users-three"></i> <span>Community</span></a>
+        </li>
+        <li class="{% if request.endpoint == 'owner.messages' %}active{% endif %}">
+            <a href="{{ url_for('owner.messages') }}"><i class="ph ph-chat-circle-dots"></i> <span>Messages</span></a>
+        </li>
+    </ul>
+</li>
+
+<!-- Subscription & Plan -->
+<li class="{% if request.endpoint and request.endpoint.startswith('billing.') %}active{% endif %}">
+    <a href="{{ url_for('billing.subscription_page') }}">
+        <i class="ph ph-crown-simple" style="color:#8b5cf6;"></i>
+        <span>Facility Subscription</span>
+        {% if current_user.is_elite %}
+        <span class="nav-tier-tag elite" style="background:#1e1b4b; color:#818cf8; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:10px; margin-left:auto;">ELITE</span>
+        {% elif current_user.is_pro %}
+        <span class="nav-tier-tag pro" style="background:#10b981; color:#fff; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:10px; margin-left:auto;">PRO</span>
+        {% else %}
+        <span class="nav-tier-tag upgrade" style="background:rgba(139,92,246,0.15); color:#8b5cf6; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:10px; margin-left:auto;">UPGRADE</span>
+        {% endif %}
+    </a>
+</li>
 {% endblock %}

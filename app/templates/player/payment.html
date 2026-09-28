@@ -66,7 +66,7 @@
         <div class="pay-row"><span class="pl">Court</span><span class="pv">{{ court.name or '—' }} ({{ court.type or '' }})</span></div>
         <div class="pay-row"><span class="pl">Facility</span><span class="pv">{{ fac.name or '—' }}</span></div>
         <div class="pay-row"><span class="pl">Date</span><span class="pv">{{ reservation.date }}</span></div>
-        <div class="pay-row"><span class="pl">Time</span><span class="pv">{{ reservation.start_time[:5] }} – {{ reservation.end_time[:5] }}</span></div>
+        <div class="pay-row"><span class="pl">Time</span><span class="pv">{{ reservation.start_time_12 or (reservation.start_time | time12) }} – {{ reservation.end_time_12 or (reservation.end_time | time12) }}</span></div>
         <div class="pay-row"><span class="pl">Duration</span><span class="pv">{{ reservation.total_hours|int }} hour{{ 's' if reservation.total_hours != 1 }}</span></div>
         <div class="pay-row"><span class="pl">Rate</span><span class="pv">₱{{ '%.2f'|format(reservation.hourly_rate) }}/hr</span></div>
         <div class="pay-total">

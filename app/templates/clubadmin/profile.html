@@ -1,350 +1,1331 @@
 {% extends "clubadmin/base_clubadmin.html" %}
 
-{% block title %}Profile Management{% endblock %}
+{% block title %}Administrator Profile - {{ g.club.name if g.club else 'PickleballHub' }}{% endblock %}
 
 {% block extra_head %}
 <style>
-    .profile-layout {
-        display: grid;
-        grid-template-columns: 1fr 1.6fr;
-        gap: 24px;
-        align-items: start;
-    }
+/* ── Club Administrator Profile Styles ── */
+.admin-profile-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding-bottom: 40px;
+}
 
-    /* ---- Left: Profile Card ---- */
-    .profile-card {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        gap: 8px;
-    }
+/* ── Top Executive Hero Card ── */
+.admin-hero-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 20px;
+    padding: 26px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    position: relative;
+    overflow: hidden;
+}
 
-    .profile-avatar {
-        width: 72px;
-        height: 72px;
-        background: var(--btn-navy);
-        color: #fff;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem;
-        font-weight: 700;
-        margin-bottom: 8px;
-    }
+.admin-hero-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ff5722 0%, #ea580c 50%, #f59e0b 100%);
+}
 
-    .profile-card h2 {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: var(--text-primary);
-    }
+.admin-hero-identity {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    flex-wrap: wrap;
+}
 
-    .profile-card .player-id {
-        font-size: 0.8rem;
-        color: var(--text-muted);
-        margin-bottom: 12px;
-    }
+.hero-avatar-wrap {
+    position: relative;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
 
-    .profile-contact {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        margin-bottom: 12px;
-    }
+.hero-avatar-wrap:hover {
+    transform: scale(1.03);
+}
 
-    .contact-row {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 0.875rem;
-        color: var(--text-secondary);
-    }
+.hero-avatar-box {
+    width: 86px;
+    height: 86px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    font-weight: 800;
+    overflow: hidden;
+    border: 3px solid rgba(255, 87, 34, 0.35);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
 
-    .contact-row i {
-        font-size: 1.1rem;
-        color: var(--text-muted);
-        flex-shrink: 0;
-    }
+.hero-avatar-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
 
-    .membership-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: var(--btn-green-light);
-        color: var(--btn-green);
-        font-size: 0.75rem;
-        font-weight: 600;
-        padding: 4px 10px;
-        border-radius: 20px;
-    }
+.hero-avatar-cam-badge {
+    position: absolute;
+    bottom: -3px;
+    right: -3px;
+    background: var(--primary-orange, #ff5722);
+    color: #ffffff;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.92rem;
+    border: 2.5px solid var(--card-bg, #ffffff);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transition: background 0.15s ease, transform 0.15s ease;
+}
 
-    html.dark-mode .membership-badge {
-        background: rgba(41, 163, 86, 0.15);
-        color: #4ade80;
-    }
+.hero-avatar-wrap:hover .hero-avatar-cam-badge {
+    transform: scale(1.1);
+    background: #ea580c;
+}
 
-    .btn-edit-profile {
-        width: 100%;
-        margin-top: 8px;
-        padding: 12px;
-        border: 1px solid var(--border-color);
-        background: transparent;
-        color: var(--text-primary);
-        border-radius: 8px;
-        font-size: 0.875rem;
-        font-weight: 600;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        transition: var(--transition);
-    }
+.hero-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
 
-    .btn-edit-profile:hover {
-        background: var(--input-bg);
-        border-color: var(--text-muted);
-    }
+.hero-badges-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
 
-    /* ---- Right: Stats Card ---- */
-    .stats-section-title {
-        font-size: 1rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 16px;
-    }
+.admin-role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--primary-orange, #ff5722);
+    background: rgba(255, 87, 34, 0.08);
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 87, 34, 0.22);
+}
 
-    .stat-boxes {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
-        margin-bottom: 24px;
-    }
+.admin-id-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--text-secondary, #64748b);
+    background: var(--input-bg, #f1f5f9);
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border-color, #e2e8f0);
+}
 
-    .stat-box {
-        background: var(--bg-color);
-        border: 1px solid var(--border-color);
-        border-radius: 10px;
-        padding: 16px;
-        text-align: center;
-    }
+.admin-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.08);
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
 
-    .stat-box .stat-value {
-        font-size: 1.75rem;
-        font-weight: 700;
-        display: block;
-        margin-bottom: 4px;
-    }
+.pulse-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: currentColor;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    animation: pulseGlow 2s infinite;
+}
 
-    .stat-box .stat-label {
-        font-size: 0.75rem;
-        color: var(--text-muted);
-    }
+@keyframes pulseGlow {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
 
-    .stat-box.orange .stat-value {
-        color: var(--primary-orange);
-    }
+.hero-name {
+    font-size: 1.65rem;
+    font-weight: 800;
+    color: var(--text-primary, #0f172a);
+    margin: 0;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
-    .stat-box.navy .stat-value {
-        color: var(--btn-navy);
-    }
+.hero-affiliation {
+    font-size: 0.88rem;
+    color: var(--text-secondary, #64748b);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
 
-    html.dark-mode .stat-box.navy .stat-value {
-        color: #93c5fd;
-    }
+.hero-affiliation strong {
+    color: var(--text-primary, #1e293b);
+}
 
-    .stat-box.green .stat-value {
-        color: var(--btn-green);
-    }
+.hero-action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
 
-    /* Fairness Rating */
-    .fairness-label {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: var(--text-primary);
-        margin-bottom: 10px;
-    }
+.btn-hero-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-size: 0.86rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 1px solid var(--border-color, #e2e8f0);
+    background: var(--input-bg, #f8fafc);
+    color: var(--text-primary, #1e293b);
+}
 
-    .fairness-bar-wrap {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 6px;
-    }
+.btn-hero-action:hover {
+    background: var(--card-bg, #ffffff);
+    border-color: var(--primary-orange, #ff5722);
+    color: var(--primary-orange, #ff5722);
+    transform: translateY(-1px);
+}
 
-    .fairness-track {
-        flex: 1;
-        height: 8px;
-        background: var(--border-color);
-        border-radius: 99px;
-        overflow: hidden;
-    }
+.btn-hero-action.primary {
+    background: linear-gradient(135deg, var(--primary-orange, #ff5722) 0%, #ea580c 100%);
+    color: #ffffff !important;
+    border: none;
+    box-shadow: 0 4px 14px rgba(255, 87, 34, 0.3);
+}
 
-    .fairness-fill {
-        height: 100%;
-        background: var(--btn-green);
-        border-radius: 99px;
-        width: 85%;
-        transition: width 0.6s ease;
-    }
+.btn-hero-action.primary:hover {
+    box-shadow: 0 6px 20px rgba(255, 87, 34, 0.45);
+    background: linear-gradient(135deg, #ff6633 0%, #f97316 100%);
+}
 
-    .fairness-score {
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: var(--btn-green);
-        white-space: nowrap;
-    }
+/* ── Two-Column Layout Grid ── */
+.admin-profile-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1.75fr);
+    gap: 24px;
+    align-items: start;
+}
 
-    .fairness-note {
-        font-size: 0.75rem;
-        color: var(--text-muted);
-        margin-bottom: 20px;
+@media (max-width: 1024px) {
+    .admin-profile-grid {
+        grid-template-columns: 1fr;
     }
+}
 
-    /* Recent Activity */
-    .recent-activity-title {
-        font-size: 0.875rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 12px;
-    }
+/* ── Left Column: Form & Account Security ── */
+.admin-form-column {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
 
-    .activity-list {
-        list-style: none;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
+.admin-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 20px;
+    padding: 26px 28px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.02);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    transition: box-shadow 0.25s ease, border-color 0.25s ease;
+}
 
-    .activity-list li {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-    }
+.admin-card:focus-within {
+    box-shadow: 0 8px 26px rgba(255, 87, 34, 0.06);
+    border-color: rgba(255, 87, 34, 0.35);
+}
 
-    .activity-list li .dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--primary-orange);
-        flex-shrink: 0;
+.card-title-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    border-bottom: 1px solid var(--border-color, #f1f5f9);
+    padding-bottom: 16px;
+}
+
+.card-icon-box {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(255, 87, 34, 0.12) 0%, rgba(234, 88, 12, 0.05) 100%);
+    color: var(--primary-orange, #ff5722);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+    border: 1px solid rgba(255, 87, 34, 0.2);
+}
+
+.card-title-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.card-title-content h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-primary, #0f172a);
+    margin: 0;
+}
+
+.card-title-content p {
+    font-size: 0.83rem;
+    color: var(--text-secondary, #64748b);
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* ── Form Inputs ── */
+.form-grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+@media (max-width: 580px) {
+    .form-grid-2col {
+        grid-template-columns: 1fr;
     }
+}
+
+.form-group-custom {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.form-label-custom {
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: var(--text-primary, #1e293b);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.form-label-custom .req-star {
+    color: #ef4444;
+}
+
+.input-with-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-prefix-icon {
+    position: absolute;
+    left: 14px;
+    color: var(--text-secondary, #94a3b8);
+    font-size: 1.15rem;
+    pointer-events: none;
+    transition: color 0.2s ease;
+}
+
+.input-with-icon input {
+    padding-left: 42px !important;
+}
+
+.form-input-custom {
+    width: 100%;
+    padding: 11px 14px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border-color, #e2e8f0);
+    background: var(--input-bg, #f8fafc);
+    color: var(--text-primary, #0f172a);
+    font-family: inherit;
+    font-size: 0.9rem;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-sizing: border-box;
+}
+
+.form-input-custom:hover {
+    border-color: #cbd5e1;
+}
+
+.form-input-custom:focus {
+    outline: none;
+    border-color: var(--primary-orange, #ff5722);
+    background: var(--card-bg, #ffffff);
+    box-shadow: 0 0 0 3.5px rgba(255, 87, 34, 0.12);
+}
+
+.form-input-custom[readonly] {
+    background: var(--input-bg, #f1f5f9);
+    cursor: not-allowed;
+    color: var(--text-secondary, #64748b);
+    border-color: var(--border-color, #e2e8f0);
+}
+
+.input-with-icon input:focus ~ .input-prefix-icon {
+    color: var(--primary-orange, #ff5722);
+}
+
+.field-helper {
+    font-size: 0.77rem;
+    color: var(--text-secondary, #64748b);
+    line-height: 1.35;
+    margin-top: 2px;
+}
+
+.btn-copy-id {
+    position: absolute;
+    right: 10px;
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #cbd5e1);
+    color: var(--text-secondary, #64748b);
+    border-radius: 8px;
+    padding: 5px 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-copy-id:hover {
+    color: var(--primary-orange, #ff5722);
+    border-color: var(--primary-orange, #ff5722);
+}
+
+.email-verified-pill {
+    position: absolute;
+    right: 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+    padding: 2px 8px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Administrative Privileges Box */
+.admin-privileges-box {
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(255, 87, 34, 0.04) 0%, rgba(245, 158, 11, 0.04) 100%);
+    border: 1px solid rgba(255, 87, 34, 0.2);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.privilege-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.privilege-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-primary, #0f172a);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.privilege-title i {
+    color: var(--primary-orange, #ff5722);
+}
+
+.privilege-tag {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #ea580c;
+    background: rgba(234, 88, 12, 0.1);
+    padding: 2px 8px;
+    border-radius: 8px;
+}
+
+.privileges-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.privilege-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: var(--text-secondary, #64748b);
+}
+
+.privilege-item i {
+    color: #10b981;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+/* Submit Button */
+.btn-save-profile {
+    width: 100%;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 0.94rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary-orange, #ff5722) 0%, #ea580c 100%);
+    color: #ffffff !important;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 18px rgba(255, 87, 34, 0.35);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-save-profile:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255, 87, 34, 0.45);
+    background: linear-gradient(135deg, #ff6633 0%, #f97316 100%);
+}
+
+.btn-save-profile:active {
+    transform: translateY(0);
+}
+
+.btn-spinner {
+    display: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── Right Column: Club Governance & Oversight ── */
+.admin-stats-column {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Operational Metrics 4-Tile Grid */
+.operational-metrics-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 20px;
+    padding: 26px 28px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.02);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.metrics-tiles-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+@media (max-width: 580px) {
+    .metrics-tiles-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.metric-tile {
+    border: 1.5px solid var(--border-color, #eaecf0);
+    border-radius: 16px;
+    padding: 18px;
+    background: var(--input-bg, #f8fafc);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    text-decoration: none;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.metric-tile:hover {
+    border-color: var(--primary-orange, #ff5722);
+    transform: translateY(-2px);
+    background: var(--card-bg, #ffffff);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+}
+
+.metric-tile-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.45rem;
+    flex-shrink: 0;
+}
+
+.metric-tile.orange .metric-tile-icon {
+    background: rgba(255, 87, 34, 0.12);
+    color: var(--primary-orange, #ff5722);
+}
+
+.metric-tile.blue .metric-tile-icon {
+    background: rgba(59, 130, 246, 0.12);
+    color: #2563eb;
+}
+
+.metric-tile.green .metric-tile-icon {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+}
+
+.metric-tile.purple .metric-tile-icon {
+    background: rgba(168, 85, 247, 0.12);
+    color: #9333ea;
+}
+
+.metric-tile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.metric-tile-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-primary, #0f172a);
+    line-height: 1.2;
+}
+
+.metric-tile-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary, #64748b);
+}
+
+.metric-tile-sub {
+    font-size: 0.72rem;
+    color: var(--text-muted, #94a3b8);
+}
+
+/* ── Managed Club Snapshot Card ── */
+.managed-club-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 20px;
+    padding: 24px 28px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.02);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.managed-club-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.managed-club-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    background: var(--input-bg, #f8fafc);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 16px;
+    padding: 16px 20px;
+}
+
+.managed-club-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.managed-crest-box {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 2px solid rgba(255, 87, 34, 0.25);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.managed-crest-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.managed-crest-initials {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #ffffff;
+    background: linear-gradient(135deg, #ff5722 0%, #f59e0b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.managed-club-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.managed-club-name {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--text-primary, #0f172a);
+    margin: 0;
+}
+
+.managed-club-loc {
+    font-size: 0.82rem;
+    color: var(--text-secondary, #64748b);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.managed-club-loc i {
+    color: var(--primary-orange, #ff5722);
+}
+
+.managed-plan-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--primary-orange, #ff5722);
+    background: rgba(255, 87, 34, 0.1);
+    padding: 3px 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 87, 34, 0.2);
+    width: fit-content;
+}
+
+.btn-edit-club {
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #cbd5e1);
+    color: var(--text-primary, #1e293b);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.btn-edit-club:hover {
+    border-color: var(--primary-orange, #ff5722);
+    color: var(--primary-orange, #ff5722);
+    transform: translateY(-1px);
+}
+
+/* ── Recent Admin Activity Feed ── */
+.admin-activity-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 20px;
+    padding: 26px 28px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.02);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.activity-stream {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--input-bg, #f8fafc);
+    border: 1px solid var(--border-color, #f1f5f9);
+    transition: background 0.15s ease;
+}
+
+.activity-item:hover {
+    background: var(--card-bg, #ffffff);
+    border-color: var(--border-color, #e2e8f0);
+}
+
+.activity-icon-badge {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.activity-icon-badge.member {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+}
+
+.activity-icon-badge.event {
+    background: rgba(59, 130, 246, 0.12);
+    color: #2563eb;
+}
+
+.activity-icon-badge.dues {
+    background: rgba(255, 87, 34, 0.12);
+    color: var(--primary-orange, #ff5722);
+}
+
+.activity-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+
+.activity-title-text {
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: var(--text-primary, #0f172a);
+}
+
+.activity-desc-text {
+    font-size: 0.8rem;
+    color: var(--text-secondary, #64748b);
+}
+
+.activity-empty-state {
+    text-align: center;
+    padding: 24px 16px;
+    color: var(--text-secondary, #94a3b8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.activity-empty-state i {
+    font-size: 2rem;
+    color: var(--text-muted, #cbd5e1);
+}
+
+/* ── Dark Mode Refinements ── */
+[data-theme="dark"] .admin-hero-card,
+[data-theme="dark"] .admin-card,
+[data-theme="dark"] .operational-metrics-card,
+[data-theme="dark"] .managed-club-card,
+[data-theme="dark"] .admin-activity-card {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+[data-theme="dark"] .metric-tile,
+[data-theme="dark"] .managed-club-body,
+[data-theme="dark"] .activity-item {
+    background: #0f172a;
+    border-color: #334155;
+}
+
+[data-theme="dark"] .metric-tile:hover,
+[data-theme="dark"] .activity-item:hover {
+    background: #162032;
+    border-color: #475569;
+}
+
+[data-theme="dark"] .admin-id-badge {
+    background: #0f172a;
+    border-color: #334155;
+}
+
+[data-theme="dark"] .admin-privileges-box {
+    background: rgba(255, 87, 34, 0.05);
+    border-color: rgba(255, 87, 34, 0.25);
+}
+
+[data-theme="dark"] .btn-edit-club,
+[data-theme="dark"] .btn-copy-id {
+    background: #1e293b;
+    border-color: #334155;
+    color: #e2e8f0;
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-header">
-    <h1 class="page-title">Profile Settings</h1>
-</div>
+<div class="admin-profile-container">
 
-<div class="profile-layout">
-
-    <!-- Left: Profile Card -->
-    <div class="glass-card">
-        <form method="POST" action="{{ url_for(request.blueprint ~ '.profile') }}" class="profile-card" enctype="multipart/form-data">
-            <div class="profile-avatar" style="position: relative; cursor: pointer; transition: transform 0.2s;" onclick="document.getElementById('avatar-input').click()" title="Click to change profile picture" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
-                {% if current_user.avatar_url %}
-                    <img src="{{ current_user.avatar_url }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
-                {% else %}
-                    {{ current_user.initials }}
-                {% endif %}
-                <div style="position: absolute; bottom: -4px; right: -4px; background: var(--primary-orange); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--card-bg); font-size: 0.8rem; box-shadow: var(--shadow-sm);">
+    <!-- ── Top Executive Hero Card ── -->
+    <div class="admin-hero-card">
+        <div class="admin-hero-identity">
+            <!-- Profile Avatar with Click-to-Upload & Instant Preview -->
+            <div class="hero-avatar-wrap" onclick="document.getElementById('avatar-input').click()" title="Click to upload a new profile photo">
+                <div class="hero-avatar-box" id="heroAvatarBox">
+                    {% if current_user.avatar_url %}
+                        <img src="{{ current_user.avatar_url }}" id="heroAvatarImg" alt="Administrator Photo">
+                    {% else %}
+                        <span id="heroAvatarInitials">{{ current_user.initials or 'CA' }}</span>
+                    {% endif %}
+                </div>
+                <div class="hero-avatar-cam-badge" title="Change Avatar">
                     <i class="ph ph-camera"></i>
                 </div>
             </div>
-            <input type="file" id="avatar-input" name="avatar" accept="image/*" style="display: none;" onchange="previewAvatar(this)">
-            
-            <div style="width: 100%; margin-bottom: 15px; text-align: left;">
-                <label style="font-size: 0.8rem; color: var(--text-muted);">First Name</label>
-                <input type="text" name="first_name" value="{{ current_user.first_name }}" required 
-                       style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg); color: var(--text-primary); margin-bottom: 10px;">
-                
-                <label style="font-size: 0.8rem; color: var(--text-muted);">Last Name</label>
-                <input type="text" name="last_name" value="{{ current_user.last_name }}" required 
-                       style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg); color: var(--text-primary);">
-            </div>
-            
-            <p class="player-id" style="margin-top: 0;">Player ID: PBH-{{ current_user.id[:8] | upper if current_user.id else '544A69CB' }}</p>
 
-            <div class="profile-contact">
-                <div class="contact-row">
-                    <i class="ph ph-envelope"></i>
-                    <span>{{ current_user.email or '—' }} (Read-only)</span>
+            <!-- Identity Info -->
+            <div class="hero-meta">
+                <div class="hero-badges-row">
+                    <span class="admin-role-badge">
+                        <i class="ph ph-shield-star"></i> Club Administrator
+                    </span>
+                    <span class="admin-id-badge">
+                        <i class="ph ph-identification-badge"></i> CAD-{{ current_user.id[:8]|upper if current_user.id else 'B197467C' }}
+                    </span>
+                    <span class="admin-status-badge">
+                        <span class="pulse-dot"></span> Active Official
+                    </span>
                 </div>
-                <div class="contact-row">
-                    <i class="ph ph-phone"></i>
-                    <input type="text" name="phone" value="{{ current_user.phone or '' }}" placeholder="Phone Number" 
-                           style="width: 100%; padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--input-bg); color: var(--text-primary);">
-                </div>
-                <div class="contact-row">
-                    <i class="ph ph-shield-check"></i>
-                    <span class="membership-badge">Free</span>
-                </div>
+                <h1 class="hero-name">
+                    {{ current_user.full_name|title if current_user.full_name else 'Club Administrator' }}
+                </h1>
+                <p class="hero-affiliation">
+                    <i class="ph ph-buildings" style="color: var(--primary-orange);"></i>
+                    Official Managing Director for <strong>{{ g.club.name if g.club else 'Pickleball Club' }}</strong>
+                </p>
             </div>
+        </div>
 
-            <button type="submit" class="btn-edit-profile" style="background: var(--btn-navy); color: white; border: none;">
-                <i class="ph ph-floppy-disk"></i> Save Profile
-            </button>
-        </form>
+        <!-- Hero Actions -->
+        <div class="hero-action-buttons">
+            <a href="{{ url_for('clubadmin.dashboard') }}" class="btn-hero-action">
+                <i class="ph ph-squares-four"></i>
+                <span>Club Overview</span>
+            </a>
+            <a href="{{ url_for('clubadmin.club_setup') }}" class="btn-hero-action primary">
+                <i class="ph ph-gear"></i>
+                <span>Club Setup & Branding</span>
+            </a>
+        </div>
     </div>
 
-    <!-- Right: Statistics & Activity -->
-    <div class="glass-card">
-        <p class="stats-section-title">Player Statistics</p>
+    <!-- ── Two-Column Layout Grid ── -->
+    <div class="admin-profile-grid">
 
-        <div class="stat-boxes">
-            <div class="stat-box orange">
-                <span class="stat-value">{{ stats.courts if stats else 0 }}</span>
-                <span class="stat-label">Courts Booked</span>
-            </div>
-            <div class="stat-box navy">
-                <span class="stat-value">{{ stats.events if stats else 0 }}</span>
-                <span class="stat-label">Events Joined</span>
-            </div>
-            <div class="stat-box green">
-                <span class="stat-value">{{ stats.tournaments if stats else 0 }}</span>
-                <span class="stat-label">Tournaments</span>
+        <!-- ── Left Column: Administrator Account & Credentials Form ── -->
+        <div class="admin-form-column">
+            <div class="admin-card">
+                <div class="card-title-row">
+                    <div class="card-icon-box">
+                        <i class="ph ph-user-circle-gear"></i>
+                    </div>
+                    <div class="card-title-content">
+                        <h2>Administrator Credentials</h2>
+                        <p>Manage your official identity, contact numbers, and security credentials.</p>
+                    </div>
+                </div>
+
+                <!-- Form -->
+                <form method="POST" action="{{ url_for('clubadmin.profile') }}" enctype="multipart/form-data" id="adminProfileForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="file" id="avatar-input" name="avatar" accept="image/png, image/jpeg, image/webp" style="display: none;">
+
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                        <!-- Name row -->
+                        <div class="form-grid-2col">
+                            <div class="form-group-custom">
+                                <label for="first_name" class="form-label-custom">
+                                    First Name <span class="req-star">*</span>
+                                </label>
+                                <div class="input-with-icon">
+                                    <i class="ph ph-user input-prefix-icon"></i>
+                                    <input type="text" id="first_name" name="first_name" 
+                                           class="form-input-custom" 
+                                           value="{{ current_user.first_name }}" 
+                                           required 
+                                           autocomplete="given-name">
+                                </div>
+                            </div>
+                            <div class="form-group-custom">
+                                <label for="last_name" class="form-label-custom">
+                                    Last Name <span class="req-star">*</span>
+                                </label>
+                                <div class="input-with-icon">
+                                    <i class="ph ph-user input-prefix-icon"></i>
+                                    <input type="text" id="last_name" name="last_name" 
+                                           class="form-input-custom" 
+                                           value="{{ current_user.last_name }}" 
+                                           required 
+                                           autocomplete="family-name">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Admin ID (Read-only with Copy) -->
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">
+                                Administrator ID
+                            </label>
+                            <div class="input-with-icon">
+                                <i class="ph ph-fingerprint input-prefix-icon"></i>
+                                <input type="text" id="adminIdField" class="form-input-custom" 
+                                       value="CAD-{{ current_user.id[:8]|upper if current_user.id else 'B197467C' }}" 
+                                       readonly>
+                                <button type="button" class="btn-copy-id" id="btnCopyAdminId" onclick="copyAdminId()" title="Copy ID">
+                                    <i class="ph ph-copy"></i>
+                                    <span>Copy</span>
+                                </button>
+                            </div>
+                            <span class="field-helper">Official identifier used for system logs, receipts, and tournament sanctions.</span>
+                        </div>
+
+                        <!-- Email Address (Read-only) -->
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">
+                                Registered Email
+                            </label>
+                            <div class="input-with-icon">
+                                <i class="ph ph-envelope input-prefix-icon"></i>
+                                <input type="email" class="form-input-custom" 
+                                       value="{{ current_user.email or 'clubadmin@gmail.com' }}" 
+                                       readonly>
+                                <span class="email-verified-pill">
+                                    <i class="ph ph-seal-check"></i> Verified
+                                </span>
+                            </div>
+                            <span class="field-helper">Used for security alerts, password resets, and official platform notifications.</span>
+                        </div>
+
+                        <!-- Phone Number -->
+                        <div class="form-group-custom">
+                            <label for="phone" class="form-label-custom">
+                                Official Contact Phone <span class="req-star">*</span>
+                            </label>
+                            <div class="input-with-icon">
+                                <i class="ph ph-phone input-prefix-icon"></i>
+                                <input type="text" id="phone" name="phone" 
+                                       class="form-input-custom" 
+                                       value="{{ current_user.phone or '' }}" 
+                                       placeholder="(091) 234-5678" 
+                                       autocomplete="tel">
+                            </div>
+                            <span class="field-helper">Primary contact number visible to club members and tournament participants.</span>
+                        </div>
+
+                        <!-- Administrative Access & Privileges Box -->
+                        <div class="admin-privileges-box">
+                            <div class="privilege-header">
+                                <span class="privilege-title">
+                                    <i class="ph ph-shield-check"></i> Administrative Authority
+                                </span>
+                                <span class="privilege-tag">Full Club Admin</span>
+                            </div>
+                            <ul class="privileges-list">
+                                <li class="privilege-item">
+                                    <i class="ph ph-check-circle"></i> Member Roster & Dossiers
+                                </li>
+                                <li class="privilege-item">
+                                    <i class="ph ph-check-circle"></i> GCash Dues & Payment Ledger
+                                </li>
+                                <li class="privilege-item">
+                                    <i class="ph ph-check-circle"></i> Tournament Organization
+                                </li>
+                                <li class="privilege-item">
+                                    <i class="ph ph-check-circle"></i> Casual Match Ratings Logger
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn-save-profile" id="btnSaveProfile">
+                            <div class="btn-spinner" id="btnSaveSpinner"></div>
+                            <i class="ph ph-floppy-disk" id="btnSaveIcon"></i>
+                            <span id="btnSaveText">Save Administrator Profile</span>
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
 
-        <p class="fairness-label">Fairness Rating</p>
-        <div class="fairness-bar-wrap">
-            <div class="fairness-track">
-                <div class="fairness-fill"></div>
-            </div>
-            <span class="fairness-score">0.85</span>
-        </div>
-        <p class="fairness-note">Your fairness score is based on peak-time booking frequency. Higher is better.</p>
+        <!-- ── Right Column: Club Governance & Operational Overview ── -->
+        <div class="admin-stats-column">
 
-        <p class="recent-activity-title">Recent Activity</p>
-        <ul class="activity-list">
-            <li><span class="dot"></span> Booked Court 2 – Apr 28</li>
-            <li><span class="dot"></span> Joined Weekend Doubles</li>
-            <li><span class="dot"></span> Completed session – Court 1</li>
-        </ul>
+            <!-- Card 1: Operational Performance & Metrics -->
+            <div class="operational-metrics-card">
+                <div class="card-title-row">
+                    <div class="card-icon-box">
+                        <i class="ph ph-chart-line-up"></i>
+                    </div>
+                    <div class="card-title-content">
+                        <h2>Club Operations & Performance</h2>
+                        <p>Live management indicators for {{ g.club.name if g.club else 'your club' }}.</p>
+                    </div>
+                </div>
+
+                <div class="metrics-tiles-grid">
+                    <!-- Tile 1: Members -->
+                    <a href="{{ url_for('clubadmin.members') }}" class="metric-tile orange" title="View Member Roster">
+                        <div class="metric-tile-icon">
+                            <i class="ph ph-users"></i>
+                        </div>
+                        <div class="metric-tile-info">
+                            <span class="metric-tile-value">{{ stats.members if stats else 0 }}</span>
+                            <span class="metric-tile-label">Active Club Members</span>
+                            <span class="metric-tile-sub">Registered Roster</span>
+                        </div>
+                    </a>
+
+                    <!-- Tile 2: Events -->
+                    <a href="{{ url_for('clubadmin.events') }}" class="metric-tile blue" title="View Club Events">
+                        <div class="metric-tile-icon">
+                            <i class="ph ph-trophy"></i>
+                        </div>
+                        <div class="metric-tile-info">
+                            <span class="metric-tile-value">{{ stats.events if stats else 0 }}</span>
+                            <span class="metric-tile-label">Events & Tournaments</span>
+                            <span class="metric-tile-sub">Sanctioned Activities</span>
+                        </div>
+                    </a>
+
+                    <!-- Tile 3: Dues -->
+                    <a href="{{ url_for('clubadmin.ledger') }}" class="metric-tile green" title="View Payment Ledger">
+                        <div class="metric-tile-icon">
+                            <i class="ph ph-receipt"></i>
+                        </div>
+                        <div class="metric-tile-info">
+                            <span class="metric-tile-value">₱{{ "%.2f"|format(stats.total_dues) if stats and stats.total_dues else '0.00' }}</span>
+                            <span class="metric-tile-label">Recorded Dues</span>
+                            <span class="metric-tile-sub">Payment Ledger Revenue</span>
+                        </div>
+                    </a>
+
+                    <!-- Tile 4: Pending -->
+                    <a href="{{ url_for('clubadmin.members') }}" class="metric-tile purple" title="Review Applications">
+                        <div class="metric-tile-icon">
+                            <i class="ph ph-clock-countdown"></i>
+                        </div>
+                        <div class="metric-tile-info">
+                            <span class="metric-tile-value">{{ stats.pending if stats else 0 }}</span>
+                            <span class="metric-tile-label">Pending Verifications</span>
+                            <span class="metric-tile-sub">{% if stats and stats.pending > 0 %}Needs Review{% else %}All Caught Up{% endif %}</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Card 2: Managed Club Governance Dossier -->
+            <div class="managed-club-card">
+                <div class="managed-club-header">
+                    <div class="card-title-content">
+                        <h2 style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin: 0;">Managed Club Organization</h2>
+                        <p style="font-size: 0.82rem; color: var(--text-secondary); margin: 0;">Your primary sanctioned pickleball organization.</p>
+                    </div>
+                </div>
+
+                <div class="managed-club-body">
+                    <div class="managed-club-left">
+                        <div class="managed-crest-box">
+                            {% if g.club and g.club.logo_url %}
+                                <img src="{{ g.club.logo_url }}" alt="Club Crest">
+                            {% else %}
+                                <span class="managed-crest-initials">{{ g.club.name[:2] if g.club and g.club.name else 'PB' }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="managed-club-meta">
+                            <h3 class="managed-club-name">{{ g.club.name if g.club else 'Siniloan Pickleball Club' }}</h3>
+                            <span class="managed-club-loc">
+                                <i class="ph ph-map-pin"></i>
+                                {{ g.club.location if g.club and g.club.location else 'Siniloan, Laguna' }}
+                            </span>
+                            <span class="managed-plan-pill">
+                                {% if g.club and g.club.membership_type == 'paid' %}
+                                    <i class="ph ph-crown"></i> Paid • ₱{{ "%.2f"|format(g.club.membership_fee) if g.club.membership_fee else '50.00' }} • {{ (g.club.membership_duration or 'Lifetime')|capitalize }}
+                                {% else %}
+                                    <i class="ph ph-check"></i> Free to Join Community
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('clubadmin.club_setup') }}" class="btn-edit-club">
+                        <i class="ph ph-gear"></i>
+                        <span>Edit Club Setup</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Card 3: Recent Administrative Activity -->
+            <div class="admin-activity-card">
+                <div class="card-title-row">
+                    <div class="card-icon-box">
+                        <i class="ph ph-clock-counter-clockwise"></i>
+                    </div>
+                    <div class="card-title-content">
+                        <h2>Recent Club Activity</h2>
+                        <p>Latest member joins, tournament registrations, and management logs.</p>
+                    </div>
+                </div>
+
+                {% if stats and stats.recent_activity %}
+                <ul class="activity-stream">
+                    {% for act in stats.recent_activity %}
+                    <li class="activity-item">
+                        <div class="activity-icon-badge {% if act.type == 'member' %}member{% elif act.type == 'event' %}event{% else %}dues{% endif %}">
+                            {% if act.type == 'member' %}
+                                <i class="ph ph-user-plus"></i>
+                            {% elif act.type == 'event' %}
+                                <i class="ph ph-calendar-star"></i>
+                            {% else %}
+                                <i class="ph ph-receipt"></i>
+                            {% endif %}
+                        </div>
+                        <div class="activity-content">
+                            <span class="activity-title-text">{{ act.title or 'Club Activity' }}</span>
+                            <span class="activity-desc-text">{{ act.message or '' }}</span>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="activity-empty-state">
+                    <i class="ph ph-bell-simple-slash"></i>
+                    <span>No recent administrative alerts recorded yet.</span>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+
     </div>
 
 </div>
 
+<!-- ── Embedded JavaScript for Avatar Preview, Copy ID, and Submission ── -->
 <script>
-    function previewAvatar(input) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const avatarDiv = document.querySelector('.profile-avatar');
-                avatarDiv.innerHTML = `
-                    <img src="${e.target.result}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
-                    <div style="position: absolute; bottom: -4px; right: -4px; background: var(--primary-orange); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--card-bg); font-size: 0.8rem; box-shadow: var(--shadow-sm);">
-                        <i class="ph ph-camera"></i>
-                    </div>
-                `;
+document.addEventListener('DOMContentLoaded', function() {
+    const avatarInput = document.getElementById('avatar-input');
+    const heroAvatarBox = document.getElementById('heroAvatarBox');
+
+    // Instant Avatar Preview
+    if (avatarInput) {
+        avatarInput.addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('Avatar file size must be less than 5MB.');
+                    this.value = '';
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    heroAvatarBox.innerHTML = `
+                        <img src="${evt.target.result}" id="heroAvatarImg" alt="Administrator Photo" style="width: 100%; height: 100%; object-fit: cover;">
+                    `;
+                };
+                reader.readAsDataURL(file);
             }
-            reader.readAsDataURL(input.files[0]);
-        }
+        });
     }
+
+    // Copy Admin ID
+    window.copyAdminId = function() {
+        const adminIdField = document.getElementById('adminIdField');
+        if (adminIdField) {
+            navigator.clipboard.writeText(adminIdField.value).then(() => {
+                const btn = document.getElementById('btnCopyAdminId');
+                if (btn) {
+                    btn.innerHTML = `<i class="ph ph-check" style="color: #10b981;"></i> <span style="color: #10b981;">Copied!</span>`;
+                    setTimeout(() => {
+                        btn.innerHTML = `<i class="ph ph-copy"></i> <span>Copy</span>`;
+                    }, 2000);
+                }
+            }).catch(err => {
+                console.error('Failed to copy ID:', err);
+            });
+        }
+    };
+
+    // Form Submit Loading Feedback
+    const form = document.getElementById('adminProfileForm');
+    if (form) {
+        form.addEventListener('submit', function() {
+            const btn = document.getElementById('btnSaveProfile');
+            const spinner = document.getElementById('btnSaveSpinner');
+            const icon = document.getElementById('btnSaveIcon');
+            const text = document.getElementById('btnSaveText');
+
+            btn.disabled = true;
+            btn.style.opacity = '0.85';
+            spinner.style.display = 'block';
+            icon.style.display = 'none';
+            text.textContent = 'Saving Profile...';
+        });
+    }
+});
 </script>
 {% endblock %}

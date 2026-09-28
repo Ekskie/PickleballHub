@@ -1,17 +1,375 @@
 {% extends "facilitystaff/base_facilitystaff.html" %}
 
-{% block title %}Queue Management{% endblock %}
+{% block title %}Queue Management & Live Waitlist • PickleballHub{% endblock %}
 
 {% block extra_head %}
 <style>
-    /* ----- PREMIUM TABLE STYLE ----- */
+    /* ==========================================================================
+       QUEUE MANAGEMENT COMMAND CENTER STYLES
+       ========================================================================== */
+
+    /* Hero Banner */
+    .queue-hero-banner {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    }
+
+    .queue-hero-banner::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-orange) 0%, #f97316 40%, var(--btn-green) 100%);
+    }
+
+    .queue-header-flex {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .queue-venue-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 8px;
+    }
+
+    .live-pulse-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: var(--btn-green);
+        box-shadow: 0 0 0 rgba(34, 197, 94, 0.7);
+        animation: livePulse 1.8s infinite;
+        display: inline-block;
+    }
+
+    @keyframes livePulse {
+        0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+        70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+    }
+
+    .queue-title-group h1 {
+        font-size: 1.85rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        letter-spacing: -0.5px;
+        margin: 0 0 6px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .queue-subtitle {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    .queue-meta-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .digital-clock-pill {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        padding: 8px 16px;
+        border-radius: 12px;
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .clock-icon-pulse {
+        color: var(--primary-orange);
+        animation: spinClock 12s linear infinite;
+    }
+
+    @keyframes spinClock {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .desk-btn-primary {
+        background: linear-gradient(135deg, var(--primary-orange), #ea580c);
+        color: #ffffff;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-size: 0.88rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        box-shadow: 0 4px 12px rgba(225, 86, 35, 0.25);
+    }
+
+    .desk-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(225, 86, 35, 0.35);
+        color: #ffffff;
+    }
+
+    .desk-btn-outline {
+        background: var(--input-bg);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        padding: 10px 16px;
+        border-radius: 10px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .desk-btn-outline:hover {
+        border-color: var(--primary-orange);
+        color: var(--primary-orange);
+        background: rgba(225, 86, 35, 0.05);
+    }
+
+    /* Operations Pulse KPI Grid */
+    .queue-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .kpi-card-box {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        padding: 18px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .kpi-card-box:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+    }
+
+    .kpi-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .kpi-tag {
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        letter-spacing: 0.5px;
+    }
+
+    .kpi-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    .kpi-num {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        letter-spacing: -0.5px;
+        line-height: 1.2;
+    }
+
+    .kpi-caption {
+        font-size: 0.78rem;
+        color: var(--text-secondary);
+        margin-top: 6px;
+    }
+
+    /* Court Availability Quick Strip */
+    .court-strip-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+    }
+
+    .court-strip-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .court-strip-title {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .court-strip-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 12px;
+    }
+
+    .court-mini-chip {
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 12px 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .court-mini-chip.ready {
+        border-left: 3px solid var(--btn-green);
+    }
+
+    .court-mini-chip.in-use {
+        border-left: 3px solid var(--primary-orange);
+    }
+
+    .court-mini-chip.maintenance {
+        border-left: 3px solid #ef4444;
+    }
+
+    .court-chip-name {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 2px;
+    }
+
+    .court-chip-sub {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+    }
+
+    /* Queue Controls & Filter Toolbar */
+    .queue-toolbar {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        padding: 14px 20px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 14px;
+    }
+
+    .search-box-wrap {
+        position: relative;
+        min-width: 280px;
+    }
+
+    .search-box-wrap i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        font-size: 1rem;
+    }
+
+    .search-field {
+        width: 100%;
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 8px 12px 8px 36px;
+        font-size: 0.85rem;
+        color: var(--text-primary);
+        outline: none;
+        transition: border-color 0.2s ease;
+    }
+
+    .search-field:focus {
+        border-color: var(--primary-orange);
+    }
+
+    .status-tab-group {
+        display: flex;
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 3px;
+        gap: 4px;
+    }
+
+    .status-tab-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-secondary);
+        padding: 6px 14px;
+        border-radius: 7px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .status-tab-btn:hover {
+        color: var(--text-primary);
+    }
+
+    .status-tab-btn.active {
+        background: var(--card-bg);
+        color: var(--primary-orange);
+        font-weight: 700;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Premium Table Styling */
     .premium-table {
         border-collapse: separate;
         border-spacing: 0;
         width: 100%;
         margin-top: 10px;
     }
-    
+
     .premium-table th {
         font-size: 0.75rem;
         font-weight: 600;
@@ -22,40 +380,39 @@
         border-bottom: 1px solid var(--border-color);
         background: var(--input-bg);
     }
-    
+
     .premium-table th:first-child {
         border-top-left-radius: 8px;
         border-bottom-left-radius: 8px;
     }
-    
+
     .premium-table th:last-child {
         border-top-right-radius: 8px;
         border-bottom-right-radius: 8px;
     }
-    
+
     .queue-row-item {
         transition: background-color 0.2s ease, transform 0.2s ease;
     }
-    
+
     .queue-row-item:hover {
         background-color: rgba(229, 231, 235, 0.2);
     }
-    
+
     html.dark-mode .queue-row-item:hover {
         background-color: rgba(255, 255, 255, 0.02);
     }
-    
+
     .premium-table td {
         padding: 16px;
         border-bottom: 1px solid var(--border-color);
         vertical-align: middle;
     }
-    
+
     .premium-table tr:last-child td {
         border-bottom: none;
     }
-    
-    /* Position Indicator */
+
     .position-number {
         display: inline-flex;
         align-items: center;
@@ -69,14 +426,13 @@
         font-size: 0.85rem;
         border: 1px solid var(--border-color);
     }
-    
+
     .playing-dash {
         color: var(--primary-orange);
         font-weight: 700;
         font-size: 1.2rem;
     }
-    
-    /* Interactive Player Link */
+
     .player-avatar-mini {
         width: 32px;
         height: 32px;
@@ -87,20 +443,15 @@
         justify-content: center;
         border: 1px solid var(--border-color);
         background: var(--input-bg);
-        transition: transform 0.2s ease, border-color 0.2s ease;
+        cursor: pointer;
+        transition: transform 0.2s ease;
     }
-    
-    .player-avatar-mini img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    
+
     .player-avatar-mini:hover {
         transform: scale(1.1);
         border-color: var(--primary-orange);
     }
-    
+
     .player-initials-mini {
         width: 32px;
         height: 32px;
@@ -112,510 +463,826 @@
         justify-content: center;
         font-size: 0.8rem;
         font-weight: 700;
-        border: 1px solid rgba(225, 86, 35, 0.15);
     }
-    
-    .walkin-avatar {
-        background: var(--border-color);
-        color: var(--text-muted);
-        border: 1px solid var(--border-color);
-    }
-    
+
     .player-name-link {
-        font-weight: 600;
+        font-weight: 700;
         color: var(--text-primary);
-        transition: color 0.2s ease;
+        cursor: pointer;
         text-decoration: none;
     }
-    
+
     .player-name-link:hover {
         color: var(--primary-orange);
-        text-decoration: underline;
     }
-    
-    .guest-name-text {
-        font-weight: 600;
-        color: var(--text-primary);
-    }
-    
-    .chat-shortcut-link {
-        color: var(--text-muted);
-        display: inline-flex;
-        align-items: center;
-        padding: 4px;
-        border-radius: 4px;
-        transition: color 0.2s, background-color 0.2s;
-    }
-    
-    .chat-shortcut-link:hover {
-        color: var(--primary-orange);
-        background-color: var(--primary-orange-light);
-    }
-    
-    /* Queue Counter Badge */
-    .queue-count-badge {
-        font-size: 0.75rem;
-        font-weight: 700;
-        background: var(--primary-orange-light);
-        color: var(--primary-orange);
-        padding: 4px 10px;
-        border-radius: 12px;
-        border: 1px solid rgba(225, 86, 35, 0.15);
-    }
-    
-    /* ----- GLOWING STATUS BADGES ----- */
-    .status-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        padding: 4px 10px;
-        border-radius: 12px;
-        line-height: 1;
-        border: 1px solid transparent;
-    }
-    
-    .dot-indicator {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-    }
-    
-    .orange-glow {
-        background: rgba(225, 86, 35, 0.08);
-        color: var(--primary-orange);
-        border-color: rgba(225, 86, 35, 0.2);
-    }
-    .bg-orange { background: var(--primary-orange); box-shadow: 0 0 6px var(--primary-orange); }
-    
-    .green-glow {
-        background: var(--btn-green-light);
-        color: var(--btn-green);
-        border-color: rgba(41, 163, 86, 0.2);
-    }
-    .bg-green { background: var(--btn-green); box-shadow: 0 0 6px var(--btn-green); }
-    
-    .gray-glow {
-        background: var(--input-bg);
-        color: var(--text-secondary);
-        border-color: var(--border-color);
-    }
-    .bg-gray { background: var(--text-muted); }
-    
-    /* ----- ACTIONS BUTTONS ----- */
-    .btn-action {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 12px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        border-radius: 6px;
-        border: none;
-        cursor: pointer;
-        color: white;
-        transition: transform 0.15s ease, background-color 0.2s;
-    }
-    
-    .btn-action-icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 30px;
-        height: 30px;
-        border-radius: 6px;
-        border: none;
-        cursor: pointer;
-        transition: transform 0.15s ease, background-color 0.2s;
-    }
-    
-    .btn-action:hover, .btn-action-icon:hover {
-        transform: translateY(-1px);
-    }
-    
-    .btn-action:active, .btn-action-icon:active {
-        transform: translateY(1px);
-    }
-    
-    .green-btn { background: var(--btn-green); }
-    .green-btn:hover { background: #228a48; }
-    
-    .navy-btn { background: var(--btn-navy); }
-    .navy-btn:hover { background: #13182b; }
-    
-    .completed-btn { background: var(--btn-navy); }
-    .completed-btn:hover { background: #13182b; }
-    
-    .orange-btn { background: var(--primary-orange); color: white; }
-    .orange-btn:hover { background: var(--primary-orange-hover); }
-    
-    .red-btn { background: #fee2e2; color: #ef4444; }
-    .red-btn:hover { background: #fecaca; }
-    
-    /* ----- SLIDE-OVER DRAWER (PLAYER PROFILE) ----- */
+
+    /* Slide-over Profile Drawer Panel */
     .drawer-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(15, 18, 25, 0.4);
+        background: rgba(15, 23, 42, 0.6);
         backdrop-filter: blur(4px);
-        z-index: 999998 !important;
+        z-index: 2147483642;
+        display: none;
         opacity: 0;
-        pointer-events: none;
         transition: opacity 0.3s ease;
     }
-    
-    .drawer-overlay.open {
+
+    .drawer-overlay.active {
+        display: block;
         opacity: 1;
-        pointer-events: auto;
     }
-    
+
     .drawer-panel {
         position: fixed;
         top: 0;
-        right: 0;
-        bottom: 0;
-        width: 420px;
-        max-width: 100%;
-        background: var(--sidebar-bg);
+        right: -480px;
+        width: 480px;
+        max-width: 90vw;
+        height: 100vh;
+        background: var(--card-bg);
         border-left: 1px solid var(--border-color);
-        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
-        z-index: 999999 !important;
-        transform: translateX(100%);
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.25);
+        z-index: 2147483643;
         display: flex;
         flex-direction: column;
+        transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    
+
     .drawer-panel.open {
-        transform: translateX(0);
+        right: 0;
     }
-    
+
     .drawer-header {
         padding: 20px 24px;
         border-bottom: 1px solid var(--border-color);
         display: flex;
-        align-items: center;
         justify-content: space-between;
-    }
-    
-    .drawer-header h3 {
-        margin: 0;
-        font-size: 1.15rem;
-        font-weight: 700;
-        color: var(--text-primary);
-    }
-    
-    .drawer-close-btn {
-        background: none;
-        border: none;
-        color: var(--text-muted);
-        cursor: pointer;
-        padding: 6px;
-        border-radius: 50%;
-        display: flex;
         align-items: center;
-        justify-content: center;
-        transition: background-color 0.2s, color 0.2s;
     }
-    
-    .drawer-close-btn:hover {
-        background-color: var(--input-bg);
-        color: var(--text-primary);
-    }
-    
+
     .drawer-content {
         flex: 1;
         overflow-y: auto;
         padding: 24px;
     }
-    
-    /* Loading state */
-    .drawer-loading {
+
+    /* Modals */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(15, 23, 42, 0.7);
+        backdrop-filter: blur(6px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2147483640;
+        padding: 20px;
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+        opacity: 1;
+    }
+
+    .modal-box {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        width: 100%;
+        max-width: 580px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+        z-index: 2147483641;
+        transform: scale(0.95);
+        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .modal-overlay.active .modal-box {
+        transform: scale(1);
+    }
+
+    .modal-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 1.3rem;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .modal-close:hover {
+        color: var(--text-primary);
+        background: var(--input-bg);
+    }
+
+    .modal-body {
+        padding: 24px;
+    }
+
+    .modal-footer {
+        padding: 16px 24px;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 12px;
+        background: var(--input-bg);
+    }
+
+    .field-label {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .field-input {
+        width: 100%;
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-size: 0.88rem;
+        color: var(--text-primary);
+        outline: none;
+        transition: border-color 0.2s ease;
+    }
+
+    .field-input:focus {
+        border-color: var(--primary-orange);
+    }
+
+    .walkin-pm-chip {
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
-        gap: 12px;
-        flex: 1;
-        color: var(--text-muted);
+        gap: 6px;
+        padding: 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        background: var(--input-bg);
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
     }
-    
-    .drawer-spinner {
+
+    .walkin-pm-chip:hover {
+        border-color: var(--primary-orange);
+        color: var(--text-primary);
+    }
+
+    .walkin-pm-chip.active {
+        border-color: var(--primary-orange);
+        background: var(--primary-orange-light);
+        color: var(--primary-orange);
+        font-weight: 700;
+    }
+
+    .walkin-total-card {
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 16px;
+    }
+
+    .walkin-total-badge {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--btn-green);
+    }
+
+    .scan-viewfinder {
+        width: 100%;
+        height: 220px;
+        border-radius: 14px;
+        background: #0f172a;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px dashed rgba(255, 255, 255, 0.2);
+        margin-bottom: 16px;
+    }
+
+    .scan-laser-line {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, #22c55e, #10b981, transparent);
+        box-shadow: 0 0 14px #22c55e;
+        animation: scanSweep 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes scanSweep {
+        0% { top: 15%; }
+        100% { top: 85%; }
+    }
+
+    /* Spin animation for icons */
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .ph-spin {
+        animation: spin 1s linear infinite;
+        display: inline-block;
+    }
+
+    /* Queue Table Action Buttons */
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-1px);
+    }
+
+    .green-btn {
+        background: rgba(34, 197, 94, 0.14);
+        color: #16a34a;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+    .green-btn:hover {
+        background: #16a34a;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);
+    }
+
+    .navy-btn {
+        background: rgba(37, 99, 235, 0.14);
+        color: #2563eb;
+        border: 1px solid rgba(37, 99, 235, 0.3);
+    }
+    .navy-btn:hover {
+        background: #2563eb;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    }
+
+    .completed-btn {
+        background: rgba(16, 185, 129, 0.14);
+        color: #059669;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .completed-btn:hover {
+        background: #059669;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+    }
+
+    .btn-action-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         width: 32px;
         height: 32px;
-        border: 3px solid var(--border-color);
-        border-top-color: var(--primary-orange);
+        border-radius: 8px;
+        font-size: 0.95rem;
+        cursor: pointer;
+        border: 1px solid var(--border-color);
+        background: var(--input-bg);
+        transition: all 0.2s ease;
+    }
+    .btn-action-icon:hover {
+        transform: scale(1.05);
+    }
+
+    .orange-btn {
+        color: var(--primary-orange);
+        border-color: rgba(225, 86, 35, 0.3);
+        background: rgba(225, 86, 35, 0.1);
+    }
+    .orange-btn:hover {
+        background: var(--primary-orange);
+        color: #ffffff;
+    }
+
+    .red-btn {
+        color: #ef4444;
+        border-color: rgba(239, 68, 68, 0.3);
+        background: rgba(239, 68, 68, 0.1);
+    }
+    .red-btn:hover {
+        background: #ef4444;
+        color: #ffffff;
+    }
+
+    /* Status Badges */
+    .queue-count-badge {
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--text-secondary);
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 700;
+    }
+
+    .green-glow {
+        background: rgba(34, 197, 94, 0.12);
+        color: #16a34a;
+        border: 1px solid rgba(34, 197, 94, 0.25);
+    }
+
+    .orange-glow {
+        background: rgba(225, 86, 35, 0.12);
+        color: var(--primary-orange);
+        border: 1px solid rgba(225, 86, 35, 0.25);
+    }
+
+    .gray-glow {
+        background: rgba(100, 116, 139, 0.12);
+        color: #64748b;
+        border: 1px solid rgba(100, 116, 139, 0.25);
+    }
+
+    .dot-indicator {
+        width: 7px;
+        height: 7px;
         border-radius: 50%;
-        animation: spin 0.8s linear infinite;
+        display: inline-block;
     }
-    
-    @keyframes spin {
-        to { transform: rotate(360deg); }
+    .bg-green {
+        background-color: #22c55e;
+        box-shadow: 0 0 6px #22c55e;
     }
-    
-    /* ----- PROFILE DRAWER CONTENT DETAILS ----- */
+    .bg-orange {
+        background-color: var(--primary-orange);
+        box-shadow: 0 0 6px var(--primary-orange);
+    }
+    .bg-gray {
+        background-color: #94a3b8;
+    }
+
+    .walkin-avatar {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+        color: #ffffff !important;
+        font-weight: 800 !important;
+    }
+
+    .guest-name-text {
+        font-weight: 700;
+        color: var(--text-primary);
+        font-size: 0.88rem;
+    }
+
+    .chat-shortcut-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        border-radius: 6px;
+        background: var(--input-bg);
+        color: var(--text-muted);
+        border: 1px solid var(--border-color);
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    .chat-shortcut-link:hover {
+        color: var(--primary-orange);
+        border-color: var(--primary-orange);
+        background: rgba(225, 86, 35, 0.08);
+    }
+
+    /* Player Profile Modal & Drawer */
     .player-profile-modal-body {
         display: flex;
         flex-direction: column;
         gap: 20px;
     }
-    
     .profile-header-card {
         text-align: center;
         background: var(--input-bg);
         border: 1px solid var(--border-color);
-        border-radius: 12px;
-        padding: 24px 16px;
+        border-radius: 14px;
+        padding: 20px;
     }
-    
     .profile-avatar-wrapper {
-        width: 80px;
-        height: 80px;
+        width: 72px;
+        height: 72px;
         border-radius: 50%;
-        overflow: hidden;
         margin: 0 auto 12px;
-        border: 2px solid var(--primary-orange);
-        box-shadow: 0 4px 10px rgba(225, 86, 35, 0.15);
+        overflow: hidden;
+        border: 3px solid var(--primary-orange);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--card-bg);
     }
-    
     .profile-avatar-wrapper img {
         width: 100%;
         height: 100%;
         object-fit: cover;
     }
-    
     .profile-avatar-initials {
-        width: 100%;
-        height: 100%;
-        background: var(--primary-orange-light);
+        font-size: 1.5rem;
+        font-weight: 800;
         color: var(--primary-orange);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.8rem;
-        font-weight: 700;
     }
-    
     .profile-name-title {
-        font-size: 1.2rem;
-        font-weight: 700;
-        margin: 0 0 4px 0;
+        font-size: 1.25rem;
+        font-weight: 800;
         color: var(--text-primary);
+        margin: 0 0 4px 0;
     }
-    
     .profile-role-badge {
         font-size: 0.75rem;
-        font-weight: 600;
-        color: var(--text-muted);
+        font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        color: var(--text-muted);
     }
-    
     .profile-ratings-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-columns: repeat(3, 1fr);
         gap: 10px;
-        margin-top: 18px;
+        margin-top: 16px;
     }
-    
     .rating-badge-card {
-        display: flex;
-        flex-direction: column;
-        padding: 10px 6px;
-        background: var(--sidebar-bg);
+        background: var(--card-bg);
         border: 1px solid var(--border-color);
-        border-radius: 8px;
+        border-radius: 10px;
+        padding: 8px 10px;
+        text-align: center;
     }
-    
     .rating-label {
-        font-size: 0.65rem;
-        font-weight: 600;
-        color: var(--text-muted);
-        text-transform: uppercase;
-        margin-bottom: 4px;
-    }
-    
-    .rating-value {
-        font-size: 1.05rem;
+        font-size: 0.7rem;
         font-weight: 700;
-        color: var(--text-primary);
+        color: var(--text-muted);
+        display: block;
+        text-transform: uppercase;
     }
-    
-    /* Section Cards */
+    .rating-value {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        display: block;
+        margin-top: 2px;
+    }
     .profile-section-card {
-        background: var(--sidebar-bg);
+        background: var(--input-bg);
         border: 1px solid var(--border-color);
         border-radius: 12px;
-        padding: 20px;
+        padding: 16px;
     }
-    
     .section-card-title {
-        font-size: 0.95rem;
+        font-size: 0.88rem;
         font-weight: 700;
         color: var(--text-primary);
-        margin: 0 0 14px 0;
+        margin: 0 0 12px 0;
         display: flex;
         align-items: center;
         gap: 8px;
-        border-bottom: 1px solid var(--border-color);
-        padding-bottom: 8px;
     }
-    
-    .section-card-title i {
-        color: var(--primary-orange);
-        font-size: 1.15rem;
-    }
-    
     .detail-info-row {
         display: flex;
         justify-content: space-between;
-        font-size: 0.85rem;
-        margin-bottom: 10px;
+        font-size: 0.82rem;
+        padding: 6px 0;
+        border-bottom: 1px dashed var(--border-color);
     }
-    
     .detail-info-row:last-child {
-        margin-bottom: 0;
+        border-bottom: none;
     }
-    
     .detail-label {
         color: var(--text-muted);
+        font-weight: 600;
         display: flex;
         align-items: center;
         gap: 6px;
     }
-    
     .detail-value {
-        font-weight: 600;
         color: var(--text-primary);
+        font-weight: 700;
     }
-    
-    /* Stats grid inside drawer */
     .profile-stats-container {
         display: grid;
-        grid-template-columns: 1fr 1fr 1fr 1fr;
+        grid-template-columns: repeat(4, 1fr);
         gap: 8px;
     }
-    
     .stat-box-mini {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 12px 6px;
-        border-radius: 8px;
-        background: var(--input-bg);
+        background: var(--card-bg);
         border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 10px 8px;
+        text-align: center;
     }
-    
     .stat-number {
-        font-size: 1.1rem;
-        font-weight: 700;
+        font-size: 1.15rem;
+        font-weight: 800;
         color: var(--text-primary);
+        display: block;
     }
-    
     .stat-lbl {
-        font-size: 0.65rem;
-        font-weight: 600;
+        font-size: 0.7rem;
         color: var(--text-muted);
-        text-transform: uppercase;
+        font-weight: 600;
+        display: block;
         margin-top: 2px;
     }
-    
-    .stat-box-mini.win { border-color: rgba(41, 163, 86, 0.2); }
-    .stat-box-mini.win .stat-number { color: var(--btn-green); }
-    
-    .stat-box-mini.loss { border-color: rgba(239, 68, 68, 0.2); }
+    .stat-box-mini.win .stat-number { color: #16a34a; }
     .stat-box-mini.loss .stat-number { color: #ef4444; }
-    
-    .stat-box-mini.rate { border-color: rgba(225, 86, 35, 0.2); }
     .stat-box-mini.rate .stat-number { color: var(--primary-orange); }
-    
-    /* Matches inside drawer */
+
     .modal-match-history-list {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 8px;
     }
-    
     .modal-match-item {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 10px 12px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 10px 12px;
-        border-radius: 8px;
-        background: var(--input-bg);
-        border: 1px solid var(--border-color);
+        gap: 10px;
     }
-    
     .match-meta-info {
         display: flex;
         flex-direction: column;
         gap: 2px;
     }
-    
     .match-event-name {
         font-size: 0.8rem;
         font-weight: 700;
         color: var(--text-primary);
     }
-    
     .match-opponent {
         font-size: 0.72rem;
         color: var(--text-muted);
     }
-    
     .match-score-result {
         display: flex;
         align-items: center;
         gap: 8px;
     }
-    
     .match-score-val {
-        font-size: 0.8rem;
-        font-weight: 600;
+        font-size: 0.82rem;
+        font-weight: 700;
         color: var(--text-secondary);
     }
-    
     .match-result-pill {
-        font-size: 0.65rem;
-        font-weight: 700;
-        padding: 2px 6px;
-        border-radius: 4px;
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-size: 0.7rem;
+        font-weight: 800;
     }
-    
-    .match-result-pill.win { background: #e6f6ee; color: var(--btn-green); }
-    .match-result-pill.loss { background: #fee2e2; color: #ef4444; }
-    .match-result-pill.draw { background: var(--border-color); color: var(--text-secondary); }
-    
+    .match-result-pill.win {
+        background: rgba(34, 197, 94, 0.15);
+        color: #16a34a;
+    }
+    .match-result-pill.loss {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+    }
+    .match-result-pill.draw {
+        background: rgba(148, 163, 184, 0.15);
+        color: #64748b;
+    }
     .no-matches-text {
-        font-size: 0.8rem;
+        font-size: 0.82rem;
         color: var(--text-muted);
         text-align: center;
-        margin: 10px 0 0;
+        margin: 8px 0;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-header">
-    <h1 class="page-title">Live Waitlist</h1>
+<!-- ==========================================================================
+     1. HERO COMMAND BANNER
+     ========================================================================== -->
+<div class="queue-hero-banner">
+    <div class="queue-header-flex">
+        <div class="queue-title-group">
+            <div class="queue-venue-badge">
+                <span class="live-pulse-dot"></span>
+                <span>{{ facility_name }}</span>
+                <span style="opacity: 0.6;">• Live Queue Hub</span>
+            </div>
+            <h1>
+                <i class="ph ph-users-three" style="color: var(--primary-orange);"></i>
+                <span>Queue Management & Live Waitlist</span>
+            </h1>
+            <p class="queue-subtitle">
+                Real-time player waitlist dispatch, turn calling, and court assignments
+            </p>
+        </div>
+
+        <div class="queue-meta-right">
+            <!-- Digital Clock -->
+            <div class="digital-clock-pill">
+                <i class="ph ph-clock clock-icon-pulse"></i>
+                <span id="liveQueueClock">--:--:-- PST</span>
+            </div>
+
+            <!-- Fast Action Buttons -->
+            <button type="button" class="desk-btn-primary" onclick="openModal('quickWalkinModal')">
+                <i class="ph ph-user-plus"></i>
+                <span>+ Register Walk-In</span>
+            </button>
+            <button type="button" class="desk-btn-outline" onclick="openModal('scanPassModal')">
+                <i class="ph ph-qr-code"></i>
+                <span>Scan Pass</span>
+            </button>
+            <button type="button" class="desk-btn-outline" onclick="fetchQueueUpdate()" title="Refresh Queue">
+                <i class="ph ph-arrows-clockwise"></i>
+            </button>
+        </div>
+    </div>
 </div>
 
+<!-- ==========================================================================
+     2. OPERATIONS PULSE KPI CARDS
+     ========================================================================== -->
+<div class="queue-kpi-grid">
+    <!-- Active Waitlist -->
+    <div class="kpi-card-box">
+        <div class="kpi-head">
+            <span class="kpi-tag">Active Waitlist</span>
+            <div class="kpi-icon" style="background: rgba(37, 99, 235, 0.1); color: #2563eb;">
+                <i class="ph ph-hourglass"></i>
+            </div>
+        </div>
+        <div class="kpi-num" id="kpiWaitlist" style="color: #2563eb;">{{ queue_stats.total_waiting }}</div>
+        <div class="kpi-caption">Players waiting in line</div>
+    </div>
+
+    <!-- Called Up / Next Up -->
+    <div class="kpi-card-box">
+        <div class="kpi-head">
+            <span class="kpi-tag">Called Up</span>
+            <div class="kpi-icon" style="background: rgba(217, 119, 6, 0.1); color: #d97706;">
+                <i class="ph ph-megaphone-simple"></i>
+            </div>
+        </div>
+        <div class="kpi-num" id="kpiCalled" style="color: #d97706;">{{ queue_stats.total_next }}</div>
+        <div class="kpi-caption">Ready to take court</div>
+    </div>
+
+    <!-- Currently Playing -->
+    <div class="kpi-card-box">
+        <div class="kpi-head">
+            <span class="kpi-tag">In Play</span>
+            <div class="kpi-icon" style="background: rgba(225, 86, 35, 0.1); color: var(--primary-orange);">
+                <i class="ph ph-tennis-ball"></i>
+            </div>
+        </div>
+        <div class="kpi-num" id="kpiPlaying" style="color: var(--primary-orange);">{{ queue_stats.total_playing }}</div>
+        <div class="kpi-caption">Matches currently ongoing</div>
+    </div>
+
+    <!-- Courts Available -->
+    <div class="kpi-card-box">
+        <div class="kpi-head">
+            <span class="kpi-tag">Courts Ready</span>
+            <div class="kpi-icon" style="background: rgba(34, 197, 94, 0.1); color: var(--btn-green);">
+                <i class="ph ph-check-circle"></i>
+            </div>
+        </div>
+        <div class="kpi-num" style="color: var(--btn-green);"><span id="kpiCourtsReady">{{ queue_stats.available_courts }}</span> <span style="font-size: 1rem; font-weight: 600; color: var(--text-muted);">/ <span id="kpiCourtsTotal">{{ courts|length }}</span></span></div>
+        <div class="kpi-caption">Available for immediate assignment</div>
+    </div>
+</div>
+
+<!-- ==========================================================================
+     3. COURT AVAILABILITY QUICK STRIP
+     ========================================================================== -->
+{% if court_status_list %}
+<div class="court-strip-card">
+    <div class="court-strip-header">
+        <div class="court-strip-title">
+            <i class="ph ph-layout" style="color: var(--primary-orange);"></i>
+            <span>Court Status Strip (Today)</span>
+        </div>
+        <a href="{{ url_for('facilitystaff.schedule') }}" class="desk-btn-outline" style="padding: 4px 10px; font-size: 0.78rem;">
+            <span>View Full Schedule</span>
+            <i class="ph ph-arrow-up-right"></i>
+        </a>
+    </div>
+    <div class="court-strip-grid" id="courtStripGrid">
+        {% for c in court_status_list %}
+        <div class="court-mini-chip {% if c.status == 'Available' %}ready{% elif c.status == 'In Use' %}in-use{% else %}maintenance{% endif %}" id="chipCourt-{{ c.id }}">
+            <div style="flex: 1; min-width: 0;">
+                <div class="court-chip-name">{{ c.name }}</div>
+                <div class="court-chip-sub">
+                    {% if c.status == 'Available' %}
+                    <span style="color: var(--btn-green); font-weight: 700;">● Ready</span> • ₱{{ c.hourly_rate|int }}/hr
+                    {% elif c.status == 'In Use' %}
+                    <span style="color: var(--primary-orange); font-weight: 700;">● In Play</span> • {{ c.sub_text }}
+                    {% else %}
+                    <span style="color: #ef4444; font-weight: 700;">● Maintenance</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+                {% if c.status == 'Available' %}
+                <button type="button" class="desk-btn-primary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="openWalkinForCourt('{{ c.id }}', '{{ c.name|escape }}', {{ c.hourly_rate }})" title="Dispatch Player to Court">
+                    + Dispatch
+                </button>
+                <button type="button" class="desk-btn-outline" style="padding: 4px 8px; font-size: 0.75rem; border-radius: 8px;" onclick="toggleCourtMaintenance('{{ c.id }}')" title="Mark as Maintenance">
+                    <i class="ph ph-wrench"></i>
+                </button>
+                {% elif c.status == 'Maintenance' %}
+                <button type="button" class="desk-btn-outline" style="padding: 4px 10px; font-size: 0.75rem; color: var(--btn-green); border-color: rgba(34, 197, 94, 0.4);" onclick="toggleCourtMaintenance('{{ c.id }}')" title="Restore to Available">
+                    <i class="ph ph-arrow-counter-clockwise"></i> Ready
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- ==========================================================================
+     4. QUEUE CONTROLS TOOLBAR
+     ========================================================================== -->
+<div class="queue-toolbar">
+    <div class="search-box-wrap">
+        <i class="ph ph-magnifying-glass"></i>
+        <input type="text" id="queueSearchInput" class="search-field" placeholder="Search player name, court, or position..." onkeyup="filterQueueRows()" oninput="filterQueueRows()">
+    </div>
+
+    <div class="status-tab-group">
+        <button type="button" class="status-tab-btn active" onclick="filterQueueStatus('all', this)">All (<span id="tabCountAll">{{ queues|length }}</span>)</button>
+        <button type="button" class="status-tab-btn" onclick="filterQueueStatus('waiting', this)">Waiting (<span id="tabCountWaiting">{{ queue_stats.total_waiting }}</span>)</button>
+        <button type="button" class="status-tab-btn" onclick="filterQueueStatus('next', this)">Next Up (<span id="tabCountNext">{{ queue_stats.total_next }}</span>)</button>
+        <button type="button" class="status-tab-btn" onclick="filterQueueStatus('playing', this)">Playing (<span id="tabCountPlaying">{{ queue_stats.total_playing }}</span>)</button>
+    </div>
+</div>
+
+<!-- ==========================================================================
+     5. LIVE WAITLIST TABLE
+     ========================================================================== -->
 <div id="queue-container">
     {% include 'facilitystaff/partials/queue_content.html' %}
 </div>
+{% endblock %}
 
+{% block modals %}
 <!-- Slide-over Profile Drawer Panel -->
 <div id="profile-drawer-overlay" class="drawer-overlay" onclick="closePlayerDetails()"></div>
 <div id="profile-drawer" class="drawer-panel">
     <div class="drawer-header">
-        <h3>Player Profile</h3>
-        <button class="drawer-close-btn" onclick="closePlayerDetails()" aria-label="Close panel">
+        <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700;">Player Profile</h3>
+        <button class="modal-close" onclick="closePlayerDetails()" aria-label="Close panel">
             <i class="ph ph-x"></i>
         </button>
     </div>
-    <div id="drawer-loading-indicator" class="drawer-loading" style="display: none;">
-        <div class="drawer-spinner"></div>
+    <div id="drawer-loading-indicator" class="drawer-loading" style="display: none; padding: 40px; text-align: center; color: var(--text-muted);">
+        <div class="drawer-spinner" style="margin: 0 auto 12px; width: 32px; height: 32px; border: 3px solid var(--border-color); border-top-color: var(--primary-orange); border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
         <p>Loading player details...</p>
     </div>
     <div id="profile-drawer-content" class="drawer-content">
@@ -623,121 +1290,432 @@
     </div>
 </div>
 
+<!-- Quick Walk-In Registration Modal -->
+<div id="quickWalkinModal" class="modal-overlay">
+    <div class="modal-box">
+        <form method="POST" action="{{ url_for('facilitystaff.walkin') }}" id="quickWalkinForm" onsubmit="handleQuickWalkinSubmit(event)">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="redirect_to" value="queue">
+
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(225, 86, 35, 0.12); display: flex; align-items: center; justify-content: center; color: var(--primary-orange); font-size: 1.35rem; flex-shrink: 0;">
+                        <i class="ph ph-user-plus"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">Quick Walk-In Registration</h3>
+                        <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">Direct court dispatch with instant payment logging</p>
+                    </div>
+                </div>
+                <button type="button" class="modal-close" onclick="closeModal('quickWalkinModal')" aria-label="Close modal">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div id="walkinModalAlert" style="display: none;"></div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+                    <div>
+                        <label class="field-label">Guest Name *</label>
+                        <input type="text" name="guest_name" id="modalGuestName" required class="field-input" placeholder="e.g. Maria Santos" autocomplete="off">
+                    </div>
+                    <div>
+                        <label class="field-label">Phone (Optional)</label>
+                        <input type="tel" name="guest_phone" id="modalGuestPhone" class="field-input" placeholder="0912 345 6789">
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label class="field-label" style="margin-bottom: 0;">Select Court *</label>
+                        <span id="selectedCourtBadge" style="font-size: 0.75rem; font-weight: 600; color: #16a34a; background: rgba(34, 197, 94, 0.1); padding: 2px 8px; border-radius: 6px;">Ready For Dispatch</span>
+                    </div>
+                    <select name="court_id" id="modalCourtSelect" required class="field-input" onchange="calculateWalkinTotal()">
+                        <option value="" data-rate="0">-- Select Court --</option>
+                        {% for court in courts %}
+                        <option value="{{ court.id }}" data-rate="{{ court.hourly_rate }}">{{ court.name }} — ₱{{ court.hourly_rate|int }}/hr</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+                    <div>
+                        <label class="field-label">Duration</label>
+                        <select name="duration" id="modalDurationSelect" class="field-input" onchange="calculateWalkinTotal()">
+                            <option value="1">1 Hour</option>
+                            <option value="1.5">1.5 Hours</option>
+                            <option value="2">2 Hours</option>
+                            <option value="3">3 Hours</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="field-label">Party Size</label>
+                        <input type="number" name="party_size" id="modalPartySize" value="1" min="1" max="16" required class="field-input">
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label class="field-label">Payment Method *</label>
+                    <div style="display: flex; gap: 10px;">
+                        <label style="flex: 1; cursor: pointer;">
+                            <input type="radio" name="payment_method" value="cash" checked style="display: none;" onchange="toggleGcashRef(false)">
+                            <div class="walkin-pm-chip active" id="pm-chip-cash">
+                                <i class="ph ph-money" style="font-size: 1.25rem;"></i>
+                                <span>Cash</span>
+                            </div>
+                        </label>
+                        <label style="flex: 1; cursor: pointer;">
+                            <input type="radio" name="payment_method" value="gcash" style="display: none;" onchange="toggleGcashRef(true)">
+                            <div class="walkin-pm-chip" id="pm-chip-gcash">
+                                <i class="ph ph-device-mobile" style="font-size: 1.25rem;"></i>
+                                <span>GCash</span>
+                            </div>
+                        </label>
+                        <label style="flex: 1; cursor: pointer;">
+                            <input type="radio" name="payment_method" value="qr_ph" style="display: none;" onchange="toggleGcashRef(true)">
+                            <div class="walkin-pm-chip" id="pm-chip-qr">
+                                <i class="ph ph-qr-code" style="font-size: 1.25rem;"></i>
+                                <span>QR Ph</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="modalGcashRefSection" style="display: none; margin-bottom: 16px;">
+                    <div style="display: flex; gap: 16px; align-items: center; background: var(--input-bg); border: 1px solid var(--border-color); padding: 14px; border-radius: 12px; margin-bottom: 12px;">
+                        <div style="width: 80px; height: 80px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); background: white; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                            <img src="{{ url_for('static', filename='images/gcash_qr.png') }}" alt="Counter QR" style="width: 100%; height: 100%; object-fit: contain;">
+                        </div>
+                        <div>
+                            <div style="font-size: 0.88rem; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">Front Desk Merchant QR</div>
+                            <div style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.35;">Have customer scan QR code with GCash / Maya / banking app, then enter reference code below.</div>
+                        </div>
+                    </div>
+                    <label class="field-label">Reference Number (Optional)</label>
+                    <input type="text" name="gcash_ref" id="modalGcashRef" class="field-input" placeholder="e.g. 1029 3847 56">
+                </div>
+
+                <div class="walkin-total-card">
+                    <div>
+                        <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); letter-spacing: 0.5px;">Total Amount Due</div>
+                        <div id="modalCalcSummary" style="font-size: 0.84rem; color: var(--text-secondary); margin-top: 3px; font-weight: 600;">₱0.00 × 1h = ₱0.00</div>
+                    </div>
+                    <div id="modalTotalDue" class="walkin-total-badge">₱0.00</div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="desk-btn-outline" onclick="closeModal('quickWalkinModal')">Cancel</button>
+                <button type="submit" id="walkinSubmitBtn" class="desk-btn-primary" style="background: linear-gradient(135deg, var(--btn-green), #16a34a); box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25); min-width: 220px; justify-content: center;">
+                    <i class="ph ph-check-circle" id="walkinBtnIcon"></i>
+                    <span id="walkinBtnText">Confirm Walk-In & Dispatch</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Digital Pass Verification Modal -->
+<div id="scanPassModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(225, 86, 35, 0.12); display: flex; align-items: center; justify-content: center; color: var(--primary-orange); font-size: 1.3rem; flex-shrink: 0;">
+                    <i class="ph ph-qr-code"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">Digital Pass & Booking Verification</h3>
+                    <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">Scan player QR code or verify reservation reference</p>
+                </div>
+            </div>
+            <button type="button" class="modal-close" onclick="closeModal('scanPassModal'); stopCameraScanner();" aria-label="Close modal">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="scan-viewfinder" id="scanViewfinder">
+                <video id="scanVideoEl" autoplay playsinline muted style="display: none; width: 100%; height: 100%; object-fit: cover;"></video>
+                <div class="scan-laser-line"></div>
+                <div id="scanIconPlaceholder" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 1;">
+                    <i class="ph ph-camera" style="font-size: 3rem; color: rgba(255, 255, 255, 0.4);"></i>
+                    <span style="font-size: 0.78rem; color: rgba(255, 255, 255, 0.6); font-weight: 600;">Front Desk Optical Terminal</span>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 16px;">
+                <button type="button" id="btnToggleCam" class="desk-btn-outline" style="font-size: 0.8rem; padding: 6px 14px;" onclick="toggleCameraScanner()">
+                    <i class="ph ph-video-camera"></i> <span id="camToggleText">Start Camera Scanner</span>
+                </button>
+                <button type="button" class="desk-btn-outline" style="font-size: 0.8rem; padding: 6px 14px;" onclick="testSamplePass()">
+                    <i class="ph ph-lightning"></i> Test Demo Pass
+                </button>
+            </div>
+
+            <div style="background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                <label class="field-label">Manual Pass Code / Booking Ref / Player Name</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="manualPassInput" class="field-input" placeholder="e.g. Booking ID, player name, or pass code" onkeypress="if(event.key==='Enter') verifyPassCode()">
+                    <button type="button" class="desk-btn-primary" onclick="verifyPassCode()" style="white-space: nowrap;">
+                        <i class="ph ph-magnifying-glass"></i> Verify
+                    </button>
+                </div>
+            </div>
+
+            <div id="passResultBox" style="display: none; padding: 16px; border-radius: 12px; margin-bottom: 12px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Reassign Court Modal -->
+<div id="reassignCourtModal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 440px;">
+        <div class="modal-header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(37, 99, 235, 0.1); color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                    <i class="ph ph-arrows-left-right"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--text-primary);">Reassign Court</h3>
+                    <p style="margin: 2px 0 0 0; font-size: 0.78rem; color: var(--text-secondary);">Switch queued player to another court</p>
+                </div>
+            </div>
+            <button type="button" class="modal-close" onclick="closeModal('reassignCourtModal')">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="reassignQueueId">
+            <div style="margin-bottom: 16px;">
+                <label class="field-label">Current Court</label>
+                <input type="text" id="reassignCurrentCourt" class="field-input" readonly style="opacity: 0.85;">
+            </div>
+            <div style="margin-bottom: 16px;">
+                <label class="field-label">New Court Assignment *</label>
+                <select id="reassignNewCourtSelect" class="field-input">
+                    {% for court in courts %}
+                    <option value="{{ court.id }}">{{ court.name }} — ₱{{ court.hourly_rate|int }}/hr</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="desk-btn-outline" onclick="closeModal('reassignCourtModal')">Cancel</button>
+            <button type="button" class="desk-btn-primary" onclick="submitReassignCourt()">Confirm Assignment</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
 <script>
+    let currentStatusFilter = 'all';
+    let cameraStream = null;
+
     document.addEventListener("DOMContentLoaded", () => {
-        // Move drawer and overlay to body to escape stacking context
+        // Move modals to body
+        ['quickWalkinModal', 'scanPassModal', 'reassignCourtModal'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el && el.parentElement !== document.body) document.body.appendChild(el);
+        });
+
         const drawer = document.getElementById('profile-drawer');
         const overlay = document.getElementById('profile-drawer-overlay');
-        if (drawer) document.body.appendChild(drawer);
-        if (overlay) document.body.appendChild(overlay);
+        if (drawer && drawer.parentElement !== document.body) document.body.appendChild(drawer);
+        if (overlay && overlay.parentElement !== document.body) document.body.appendChild(overlay);
 
-        // --- 1. Client-side Realtime Countdown ---
-        function updateWaitTimes() {
-            const displays = document.querySelectorAll('.wait-time-display');
-            displays.forEach(el => {
-                const targetTimeStr = el.getAttribute('data-target-time');
-                const timeType = el.getAttribute('data-time-type');
-                
-                if (targetTimeStr) {
-                    const targetTime = new Date(targetTimeStr + (targetTimeStr.includes('Z') || targetTimeStr.includes('+') ? '' : 'Z'));
-                    const now = new Date();
-                    
-                    let diffMs = 0;
-                    if (timeType === 'Wait') {
-                        diffMs = targetTime - now;
-                    } else if (timeType === 'Remaining') {
-                        diffMs = targetTime - now;
-                    }
-                    
-                    let diffMins = Math.floor(diffMs / 60000);
-                    
-                    // Trigger alert if time is up
-                    if (timeType === 'Remaining' && diffMins < 0) {
-                        el.innerText = `Time's Up!`;
-                        el.style.color = '#ef4444'; // Red alert
-                    } else {
-                        if (diffMins < 0) diffMins = 0;
-                        if (timeType === 'Remaining') {
-                            el.innerText = `${diffMins} min left`;
-                        } else {
-                            el.innerText = `~${diffMins} min`;
-                        }
-                    }
-                }
-            });
+        // 1. Digital Clock (Ticking Manila / PST time)
+        function updateQueueClock() {
+            const clockEl = document.getElementById('liveQueueClock');
+            if (!clockEl) return;
+            const now = new Date();
+            clockEl.textContent = now.toLocaleTimeString('en-US', {
+                timeZone: 'Asia/Manila',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            }) + ' PST';
         }
+        updateQueueClock();
+        setInterval(updateQueueClock, 1000);
 
-        // Run immediately and every 1 minute
+        // 2. Realtime countdown
         updateWaitTimes();
-        setInterval(updateWaitTimes, 60000);
+        setInterval(updateWaitTimes, 30000);
 
-        // Expose to window so ajax partial reload can reinitialize wait times
-        window.updateWaitTimes = updateWaitTimes;
+        // 3. Initial fee calculation
+        calculateWalkinTotal();
 
-        // --- 2. Supabase Realtime Subscription ---
-        function initStaffQueueRealtime() {
-            if (typeof supabaseClient !== 'undefined' && supabaseClient) {
-                const queueChannel = supabaseClient.channel('staff-queue-channel')
-                    .on(
-                        'postgres_changes',
-                        { event: '*', schema: 'public', table: 'court_queues' },
-                        (payload) => {
-                            fetch("{{ url_for('facilitystaff.queue_partial') }}")
-                                .then(response => response.text())
-                                .then(html => {
-                                    document.getElementById('queue-container').innerHTML = html;
-                                    updateWaitTimes();
-                                })
-                                .catch(error => console.error('Error fetching updated queue:', error));
-                        }
-                    )
-                    .subscribe();
-                    
-                window.addEventListener("beforeunload", () => {
-                    supabaseClient.removeChannel(queueChannel);
-                });
-            }
-        }
-        if (typeof supabaseClient !== 'undefined' && supabaseClient) {
-            initStaffQueueRealtime();
-        } else {
-            window.addEventListener("supabase-ready", initStaffQueueRealtime);
-        }
+        // 4. Auto-refresh background polling every 15 seconds
+        setInterval(() => {
+            fetchQueueUpdate(true);
+        }, 15000);
     });
 
-    async function updateQueueStatus(queueId, nextStatus, button) {
+    // Helper: CSRF token
+    function getStaffCsrfToken() {
+        const meta = document.querySelector('meta[name="csrf-token"]');
+        if (meta) return meta.getAttribute('content');
+        const formToken = document.querySelector('input[name="csrf_token"]');
+        return formToken ? formToken.value : '';
+    }
+
+    // --- REFRESH QUEUE AJAX ---
+    async function fetchQueueUpdate(isBackground = false) {
+        const refreshIcon = document.querySelector('button[title="Refresh Queue"] i');
+        if (!isBackground && refreshIcon) refreshIcon.classList.add('ph-spin');
+
+        try {
+            const resp = await fetch('{{ url_for("facilitystaff.queue_partial") }}?format=json', {
+                headers: { 'Accept': 'application/json' }
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                if (data.success) {
+                    const container = document.getElementById('queue-container');
+                    if (container && data.html) {
+                        container.innerHTML = data.html;
+                        updateWaitTimes();
+                        filterQueueRows();
+                    }
+
+                    // Update KPI counters
+                    if (data.stats) {
+                        const kw = document.getElementById('kpiWaitlist');
+                        if (kw) kw.innerText = data.stats.total_waiting;
+                        const kc = document.getElementById('kpiCalled');
+                        if (kc) kc.innerText = data.stats.total_next;
+                        const kp = document.getElementById('kpiPlaying');
+                        if (kp) kp.innerText = data.stats.total_playing;
+                        const kr = document.getElementById('kpiCourtsReady');
+                        if (kr) kr.innerText = data.stats.available_courts;
+
+                        // Toolbar counts
+                        const ta = document.getElementById('tabCountAll');
+                        if (ta) ta.innerText = data.stats.total_active;
+                        const tw = document.getElementById('tabCountWaiting');
+                        if (tw) tw.innerText = data.stats.total_waiting;
+                        const tn = document.getElementById('tabCountNext');
+                        if (tn) tn.innerText = data.stats.total_next;
+                        const tp = document.getElementById('tabCountPlaying');
+                        if (tp) tp.innerText = data.stats.total_playing;
+                    }
+
+                    // Update court strip chips if available
+                    if (data.court_status_list && data.court_status_list.length > 0) {
+                        data.court_status_list.forEach(c => {
+                            const chip = document.getElementById(`chipCourt-${c.id}`);
+                            if (chip) {
+                                chip.className = `court-mini-chip ${c.status === 'Available' ? 'ready' : (c.status === 'In Use' ? 'in-use' : 'maintenance')}`;
+                                const sub = chip.querySelector('.court-chip-sub');
+                                if (sub) {
+                                    if (c.status === 'Available') {
+                                        sub.innerHTML = `<span style="color: var(--btn-green); font-weight: 700;">● Ready</span> • ₱${Math.round(c.hourly_rate)}/hr`;
+                                    } else if (c.status === 'In Use') {
+                                        sub.innerHTML = `<span style="color: var(--primary-orange); font-weight: 700;">● In Play</span> • ${c.sub_text}`;
+                                    } else {
+                                        sub.innerHTML = `<span style="color: #ef4444; font-weight: 700;">● Maintenance</span>`;
+                                    }
+                                }
+                            }
+                        });
+                    }
+
+                    if (!isBackground && typeof showToast === 'function') {
+                        showToast('Queue Updated', 'Live waitlist and court status are up to date.', 'info');
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('Error updating queue:', e);
+        } finally {
+            if (refreshIcon) refreshIcon.classList.remove('ph-spin');
+        }
+    }
+
+    // --- REALTIME COUNTDOWN ---
+    function updateWaitTimes() {
+        const displays = document.querySelectorAll('.wait-time-display');
+        displays.forEach(el => {
+            const targetTimeStr = el.getAttribute('data-target-time');
+            const timeType = el.getAttribute('data-time-type');
+
+            if (targetTimeStr) {
+                const targetTime = new Date(targetTimeStr + (targetTimeStr.includes('Z') || targetTimeStr.includes('+') ? '' : 'Z'));
+                const now = new Date();
+
+                const diffMs = targetTime - now;
+                let diffMins = Math.floor(diffMs / 60000);
+
+                if (timeType === 'Remaining' && diffMins <= 0) {
+                    el.innerText = `Time's Up!`;
+                    el.style.color = '#ef4444';
+                    el.style.fontWeight = '800';
+                } else {
+                    if (diffMins < 0) diffMins = 0;
+                    if (timeType === 'Remaining') {
+                        el.innerText = `${diffMins} min left`;
+                        el.style.color = 'var(--primary-orange)';
+                    } else {
+                        el.innerText = `~${diffMins} mins`;
+                        el.style.color = 'var(--text-primary)';
+                    }
+                }
+            }
+        });
+    }
+
+    // --- INSTANT SEARCH & STATUS FILTER ---
+    function filterQueueStatus(status, btn) {
+        currentStatusFilter = status;
+        document.querySelectorAll('.status-tab-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        filterQueueRows();
+    }
+
+    function filterQueueRows() {
+        const query = (document.getElementById('queueSearchInput')?.value || '').trim().toLowerCase();
+        document.querySelectorAll('.queue-row-item').forEach(row => {
+            const rowText = row.innerText.toLowerCase();
+            const matchesQuery = !query || rowText.includes(query);
+
+            let matchesStatus = true;
+            if (currentStatusFilter !== 'all') {
+                const rowStatus = row.getAttribute('data-status') || '';
+                matchesStatus = (rowStatus.toLowerCase() === currentStatusFilter.toLowerCase());
+            }
+
+            row.style.display = (matchesQuery && matchesStatus) ? '' : 'none';
+        });
+    }
+
+    // --- QUEUE ACTIONS ---
+    async function updateQueueStatus(queueId, newStatus, button) {
         if (button) button.disabled = true;
         try {
-            const response = await fetch("{{ url_for('facilitystaff.update_queue') }}", {
+            const csrfToken = getStaffCsrfToken();
+            const resp = await fetch(`{{ url_for('facilitystaff.update_queue') }}`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
-                body: JSON.stringify({
-                    queue_id: queueId,
-                    status: nextStatus
-                })
+                body: JSON.stringify({ queue_id: queueId, status: newStatus })
             });
-            const res = await response.json();
+            const res = await resp.json();
             if (res.success) {
-                showToast('Success', res.message, 'success');
-                // Fetch and update the queue partial html immediately
-                try {
-                    const partialResponse = await fetch("{{ url_for('facilitystaff.queue_partial') }}");
-                    if (partialResponse.ok) {
-                        const html = await partialResponse.text();
-                        document.getElementById('queue-container').innerHTML = html;
-                        if (window.updateWaitTimes) window.updateWaitTimes();
-                    }
-                } catch (refreshErr) {
-                    console.error('Error refreshing queue after update:', refreshErr);
+                if (typeof showToast === 'function') {
+                    showToast('Queue Updated', res.message || `Status set to ${newStatus}.`, 'success');
                 }
+                fetchQueueUpdate(true);
             } else {
-                showToast('Error', res.message || 'Failed to update queue.', 'error');
+                alert(res.message || 'Failed to update queue.');
                 if (button) button.disabled = false;
             }
-        } catch(err) {
-            showToast('Error', 'An error occurred.', 'error');
+        } catch (err) {
+            alert('An error occurred updating queue.');
             if (button) button.disabled = false;
         }
     }
@@ -745,60 +1723,454 @@
     async function nudgePlayer(playerId, button) {
         if (button) button.disabled = true;
         try {
-            const response = await fetch(`/facilitystaff/nudge/${playerId}`, {
+            const csrfToken = getStaffCsrfToken();
+            const resp = await fetch(`/facilitystaff/player/${playerId}/nudge`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
                 }
             });
-            const res = await response.json();
+            const res = await resp.json();
             if (res.success) {
-                showToast('Nudged', res.message, 'success');
+                if (typeof showToast === 'function') {
+                    showToast('Player Nudged', res.message || 'Court alert notification sent!', 'warning');
+                } else {
+                    alert(res.message);
+                }
             } else {
-                showToast('Error', res.message || 'Failed to nudge player.', 'error');
+                alert(res.message || 'Failed to nudge player.');
             }
-        } catch(err) {
-            showToast('Error', 'An error occurred.', 'error');
+        } catch (err) {
+            alert('An error occurred nudging player.');
         }
         if (button) button.disabled = false;
     }
 
-    // --- 3. AJAX Profile Details Drawer ---
-    async function openPlayerDetails(playerId) {
-        const drawer = document.getElementById('profile-drawer');
-        const overlay = document.getElementById('profile-drawer-overlay');
-        const content = document.getElementById('profile-drawer-content');
-        const loader = document.getElementById('drawer-loading-indicator');
-        
-        if (!drawer || !overlay || !content || !loader) return;
-        
-        // Open drawer visual state
-        content.innerHTML = '';
-        loader.style.display = 'flex';
-        drawer.classList.add('open');
-        overlay.classList.add('open');
-        
-        try {
-            const response = await fetch(`/facilitystaff/player/${playerId}/details`);
-            if (response.ok) {
-                const html = await response.text();
-                content.innerHTML = html;
-            } else {
-                content.innerHTML = '<div style="text-align:center; padding: 30px; color: var(--text-muted);"><p><i class="ph ph-warning-circle" style="font-size:2rem; color:#ef4444; margin-bottom:8px; display:block;"></i>Failed to load player details.</p></div>';
-            }
-        } catch (err) {
-            console.error('Error loading player details:', err);
-            content.innerHTML = '<div style="text-align:center; padding: 30px; color: var(--text-muted);"><p><i class="ph ph-warning-circle" style="font-size:2rem; color:#ef4444; margin-bottom:8px; display:block;"></i>An error occurred while loading player details.</p></div>';
-        } finally {
-            loader.style.display = 'none';
+    // --- MODAL CONTROLS ---
+    function openModal(id) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.classList.add('active');
+            document.body.style.overflow = 'hidden';
         }
     }
-    
+
+    function closeModal(id) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    }
+
+    // Close on backdrop / ESC
+    document.addEventListener('click', (e) => {
+        if (e.target.classList && e.target.classList.contains('modal-overlay')) {
+            e.target.classList.remove('active');
+            document.body.style.overflow = '';
+            if (cameraStream) stopCameraScanner();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+            closePlayerDetails();
+            document.body.style.overflow = '';
+            if (cameraStream) stopCameraScanner();
+        }
+    });
+
+    // --- QUICK WALKIN ---
+    function openWalkinForCourt(courtId, courtName, rate) {
+        const courtSelect = document.getElementById('modalCourtSelect');
+        if (courtSelect && courtId) {
+            courtSelect.value = courtId;
+        }
+        const badge = document.getElementById('selectedCourtBadge');
+        if (badge) {
+            badge.textContent = courtName ? `${courtName}` : 'Ready For Dispatch';
+        }
+        calculateWalkinTotal();
+        openModal('quickWalkinModal');
+    }
+
+    function calculateWalkinTotal() {
+        const courtSelect = document.getElementById('modalCourtSelect');
+        const durationSelect = document.getElementById('modalDurationSelect');
+        const totalDueEl = document.getElementById('modalTotalDue');
+        const calcSummaryEl = document.getElementById('modalCalcSummary');
+
+        if (!courtSelect || !durationSelect || !totalDueEl) return;
+
+        const selectedOption = courtSelect.options[courtSelect.selectedIndex];
+        const rate = parseFloat(selectedOption?.getAttribute('data-rate') || 0);
+        const duration = parseFloat(durationSelect.value || 1);
+        const total = rate * duration;
+
+        totalDueEl.innerText = `₱${total.toFixed(2)}`;
+        if (calcSummaryEl) {
+            calcSummaryEl.innerText = `₱${rate.toFixed(2)} × ${duration}h = ₱${total.toFixed(2)}`;
+        }
+    }
+
+    function toggleGcashRef(show) {
+        const sec = document.getElementById('modalGcashRefSection');
+        if (sec) sec.style.display = show ? 'block' : 'none';
+
+        ['cash', 'gcash', 'qr'].forEach(k => {
+            const el = document.getElementById(`pm-chip-${k}`);
+            if (el) el.classList.remove('active');
+        });
+
+        const activeRadio = document.querySelector('input[name="payment_method"]:checked');
+        if (activeRadio) {
+            const val = activeRadio.value;
+            const chipId = val === 'cash' ? 'pm-chip-cash' : (val === 'gcash' ? 'pm-chip-gcash' : 'pm-chip-qr');
+            const chip = document.getElementById(chipId);
+            if (chip) chip.classList.add('active');
+        }
+    }
+
+    async function handleQuickWalkinSubmit(e) {
+        e.preventDefault();
+        const form = document.getElementById('quickWalkinForm');
+        const alertBox = document.getElementById('walkinModalAlert');
+        const submitBtn = document.getElementById('walkinSubmitBtn');
+        const btnText = document.getElementById('walkinBtnText');
+        const btnIcon = document.getElementById('walkinBtnIcon');
+
+        if (alertBox) {
+            alertBox.style.display = 'none';
+            alertBox.innerHTML = '';
+        }
+
+        const formData = new FormData(form);
+        const courtId = formData.get('court_id');
+        const guestName = formData.get('guest_name');
+
+        if (!courtId || !guestName) {
+            showWalkinAlert('Please specify guest name and select a court.', 'error');
+            return;
+        }
+
+        submitBtn.disabled = true;
+        btnText.innerText = 'Dispatching Court...';
+        btnIcon.className = 'ph ph-spinner ph-spin';
+
+        try {
+            const resp = await fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            });
+
+            const data = await resp.json();
+            if (data.success) {
+                closeModal('quickWalkinModal');
+                if (typeof showToast === 'function') {
+                    showToast('Walk-In Dispatched', data.message || `Dispatched to court!`, 'success');
+                }
+                form.reset();
+                calculateWalkinTotal();
+                fetchQueueUpdate(true);
+            } else {
+                showWalkinAlert(data.message || 'Error creating walk-in reservation.', 'error');
+            }
+        } catch (err) {
+            form.submit();
+        } finally {
+            submitBtn.disabled = false;
+            btnText.innerText = 'Confirm Walk-In & Dispatch';
+            btnIcon.className = 'ph ph-check-circle';
+        }
+    }
+
+    function showWalkinAlert(msg, type) {
+        const alertBox = document.getElementById('walkinModalAlert');
+        if (!alertBox) return;
+        const isError = type === 'error';
+        alertBox.style.display = 'block';
+        alertBox.style.padding = '12px 14px';
+        alertBox.style.borderRadius = '10px';
+        alertBox.style.marginBottom = '14px';
+        alertBox.style.fontSize = '0.84rem';
+        alertBox.style.fontWeight = '600';
+        alertBox.style.backgroundColor = isError ? 'rgba(239, 68, 68, 0.12)' : 'rgba(34, 197, 94, 0.12)';
+        alertBox.style.color = isError ? '#ef4444' : '#16a34a';
+        alertBox.style.border = `1px solid ${isError ? 'rgba(239, 68, 68, 0.25)' : 'rgba(34, 197, 94, 0.25)'}`;
+        alertBox.innerHTML = `<i class="ph ${isError ? 'ph-warning-circle' : 'ph-check-circle'}" style="margin-right: 6px;"></i> ${msg}`;
+    }
+
+    // --- CAMERA SCANNER LOGIC ---
+    async function toggleCameraScanner() {
+        if (cameraStream) {
+            stopCameraScanner();
+        } else {
+            startCameraScanner();
+        }
+    }
+
+    async function startCameraScanner() {
+        const video = document.getElementById('scanVideoEl');
+        const placeholder = document.getElementById('scanIconPlaceholder');
+        const text = document.getElementById('camToggleText');
+        if (!video) return;
+
+        try {
+            cameraStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment' }
+            });
+            video.srcObject = cameraStream;
+            video.style.display = 'block';
+            if (placeholder) placeholder.style.display = 'none';
+            if (text) text.innerText = 'Stop Camera Scanner';
+        } catch (err) {
+            alert('Camera could not be accessed. You can enter pass code or booking reference manually.');
+        }
+    }
+
+    function stopCameraScanner() {
+        const video = document.getElementById('scanVideoEl');
+        const placeholder = document.getElementById('scanIconPlaceholder');
+        const text = document.getElementById('camToggleText');
+
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+            cameraStream = null;
+        }
+        if (video) {
+            video.srcObject = null;
+            video.style.display = 'none';
+        }
+        if (placeholder) placeholder.style.display = 'flex';
+        if (text) text.innerText = 'Start Camera Scanner';
+    }
+
+    function testSamplePass() {
+        const input = document.getElementById('manualPassInput');
+        if (input) {
+            // Find any first visible player name or sample code
+            const sampleName = document.querySelector('.player-name-link')?.innerText?.trim() || 'Maria';
+            input.value = sampleName;
+            verifyPassCode();
+        }
+    }
+
+    // --- PASS VERIFICATION LOGIC ---
+    async function verifyPassCode() {
+        const input = document.getElementById('manualPassInput');
+        const box = document.getElementById('passResultBox');
+        if (!input || !box) return;
+
+        const val = input.value.trim();
+        if (!val) {
+            alert('Please enter a Pass Code or Booking Reference.');
+            return;
+        }
+
+        box.style.display = 'block';
+        box.style.background = 'var(--input-bg)';
+        box.style.border = '1px solid var(--border-color)';
+        box.innerHTML = `<div style="text-align: center; color: var(--text-muted);"><i class="ph ph-spinner ph-spin" style="margin-right: 6px;"></i> Verifying pass with registry...</div>`;
+
+        try {
+            const csrfToken = getStaffCsrfToken();
+            const resp = await fetch("{{ url_for('facilitystaff.verify_pass') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ code: val })
+            });
+            const data = await resp.json();
+
+            if (data.success && data.found) {
+                box.style.background = 'rgba(34, 197, 94, 0.1)';
+                box.style.border = '1px solid rgba(34, 197, 94, 0.3)';
+                box.style.color = 'var(--text-primary)';
+                box.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 6px; font-weight: 800; color: #16a34a; font-size: 0.95rem;">
+                                <i class="ph ph-check-circle" style="font-size: 1.25rem;"></i> Valid Booking Pass
+                            </div>
+                            <div style="font-weight: 700; color: var(--text-primary); font-size: 1.05rem; margin-top: 4px;">
+                                ${data.player_name}
+                            </div>
+                            <div style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 2px;">
+                                ${data.court_name} • ${data.time_slot}
+                            </div>
+                        </div>
+                        <div>
+                            <button type="button" class="desk-btn-primary" style="background: linear-gradient(135deg, #16a34a, #15803d); font-size: 0.82rem; padding: 8px 16px;" onclick="checkinPassReservation('${data.reservation_id}')">
+                                <i class="ph ph-check"></i> Check In to Queue
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                box.style.background = 'rgba(239, 68, 68, 0.1)';
+                box.style.border = '1px solid rgba(239, 68, 68, 0.25)';
+                box.style.color = '#ef4444';
+                box.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <i class="ph ph-warning-circle" style="font-size: 1.4rem;"></i>
+                        <div>
+                            <div style="font-weight: 700;">Verification Failed</div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">${data.message || 'No matching booking found.'}</div>
+                        </div>
+                    </div>
+                `;
+            }
+        } catch (e) {
+            box.style.background = 'rgba(239, 68, 68, 0.1)';
+            box.style.border = '1px solid rgba(239, 68, 68, 0.25)';
+            box.style.color = '#ef4444';
+            box.innerHTML = '<div style="font-size: 0.85rem;"><i class="ph ph-warning"></i> Error contacting verification server.</div>';
+        }
+    }
+
+    async function checkinPassReservation(resId) {
+        if (!resId) return;
+        try {
+            const csrfToken = getStaffCsrfToken();
+            const resp = await fetch('/facilitystaff/checkin-reservation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ reservation_id: resId })
+            });
+            const data = await resp.json();
+            if (data.success) {
+                closeModal('scanPassModal');
+                stopCameraScanner();
+                if (typeof showToast === 'function') {
+                    showToast('Checked In', data.message || 'Player pass confirmed and added to waitlist!', 'success');
+                } else {
+                    alert(data.message || 'Checked in successfully!');
+                }
+                fetchQueueUpdate(true);
+            } else {
+                alert(data.message || 'Check-in failed.');
+            }
+        } catch (e) {
+            alert('Error during check-in.');
+        }
+    }
+
+    // --- REASSIGN COURT MODAL ---
+    function openReassignModal(queueId, currentCourtId, currentCourtName) {
+        const modal = document.getElementById('reassignCourtModal');
+        const qInput = document.getElementById('reassignQueueId');
+        const cInput = document.getElementById('reassignCurrentCourt');
+        const select = document.getElementById('reassignNewCourtSelect');
+
+        if (qInput) qInput.value = queueId;
+        if (cInput) cInput.value = currentCourtName || 'Any Available';
+        if (select && currentCourtId) select.value = currentCourtId;
+
+        openModal('reassignCourtModal');
+    }
+
+    async function submitReassignCourt() {
+        const queueId = document.getElementById('reassignQueueId')?.value;
+        const courtId = document.getElementById('reassignNewCourtSelect')?.value;
+
+        if (!queueId || !courtId) return;
+
+        try {
+            const csrfToken = getStaffCsrfToken();
+            const resp = await fetch('/facilitystaff/queue/reassign-court', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ queue_id: queueId, court_id: courtId })
+            });
+            const res = await resp.json();
+            if (res.success) {
+                closeModal('reassignCourtModal');
+                if (typeof showToast === 'function') {
+                    showToast('Court Reassigned', res.message, 'success');
+                }
+                fetchQueueUpdate(true);
+            } else {
+                alert(res.message || 'Failed to reassign court.');
+            }
+        } catch (e) {
+            alert('Error reassigning court.');
+        }
+    }
+
+    // --- COURT MAINTENANCE TOGGLE ---
+    async function toggleCourtMaintenance(courtId) {
+        if (!courtId) return;
+        try {
+            const csrfToken = getStaffCsrfToken();
+            const resp = await fetch(`/facilitystaff/court/${courtId}/toggle-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                }
+            });
+            const res = await resp.json();
+            if (res.success) {
+                if (typeof showToast === 'function') {
+                    showToast('Court Status Updated', res.message, res.status === 'maintenance' ? 'warning' : 'success');
+                }
+                fetchQueueUpdate(true);
+            } else {
+                alert(res.message || 'Could not update court status.');
+            }
+        } catch (e) {
+            alert('Error updating court status.');
+        }
+    }
+
+    // --- PLAYER PROFILE DRAWER ---
+    function openPlayerDetails(playerId) {
+        const drawer = document.getElementById('profile-drawer');
+        const overlay = document.getElementById('profile-drawer-overlay');
+        const loading = document.getElementById('drawer-loading-indicator');
+        const content = document.getElementById('profile-drawer-content');
+
+        if (!drawer || !overlay) return;
+
+        overlay.classList.add('active');
+        drawer.classList.add('open');
+        document.body.style.overflow = 'hidden';
+
+        if (loading) loading.style.display = 'block';
+        if (content) content.innerHTML = '';
+
+        fetch(`/facilitystaff/player/${playerId}/details`)
+            .then(res => res.text())
+            .then(html => {
+                if (loading) loading.style.display = 'none';
+                if (content) content.innerHTML = html;
+            })
+            .catch(err => {
+                if (loading) loading.style.display = 'none';
+                if (content) content.innerHTML = '<p style="text-align:center; color: #ef4444; padding: 20px;">Failed to load player details.</p>';
+            });
+    }
+
     function closePlayerDetails() {
         const drawer = document.getElementById('profile-drawer');
         const overlay = document.getElementById('profile-drawer-overlay');
         if (drawer) drawer.classList.remove('open');
-        if (overlay) overlay.classList.remove('open');
+        if (overlay) overlay.classList.remove('active');
+        document.body.style.overflow = '';
     }
 </script>
 {% endblock %}

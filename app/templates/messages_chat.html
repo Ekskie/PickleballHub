@@ -1,67 +1,1417 @@
-{# messages_chat.html — Shared messages macro used by all role templates #}
+{# messages_chat.html — Sports Platform 2.0 Direct Messaging Macro #}
 {% macro render_messages() %}
-<div class="dashboard-header">
-    <h1 class="page-title">Messages</h1>
-</div>
 
-<div class="messages-layout">
-    <!-- Contacts Panel -->
-    <div class="contacts-panel">
-        <div class="contacts-header">
-            <h4><i class="ph ph-chat-circle-dots"></i> Conversations</h4>
-            <button class="new-chat-btn" id="newChatBtn" title="New Conversation">
-                <i class="ph ph-plus"></i>
-            </button>
-        </div>
-        <div class="contacts-search-wrap">
-            <input class="contacts-search" type="text" id="contactsSearch" placeholder="Filter conversations…">
-        </div>
-        <div class="contacts-list" id="contactsList">
-            <!-- Dynamically populated -->
-        </div>
-    </div>
+<style>
+    /* ==========================================================================
+       MESSAGES & CHAT — SPORTS PLATFORM 2.0 (LIGHT & DARK DUAL THEME)
+       ========================================================================== */
+    .messages-page-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        width: 100%;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding-bottom: 120px; /* Clearance for floating cart widget */
+    }
 
-    <!-- Chat Window -->
-    <div class="chat-window">
-        <div class="chat-header" id="chatHeader" style="display:none;">
-            <button class="chat-back-btn" id="chatBackBtn" title="Back to conversations">
-                <i class="ph ph-caret-left"></i>
-            </button>
-            <div class="chat-header-avatar" id="chatHeaderAvatar">?</div>
-            <div class="chat-header-info">
-                <h3 id="chatHeaderName">—</h3>
-                <span class="chat-header-sub" id="chatHeaderRole"></span>
+    /* ── Hero Banner ── */
+    .messages-hero-banner {
+        position: relative;
+        background: var(--card-bg, #ffffff);
+        border: 1.5px solid var(--border-color, #eaecf0);
+        border-radius: 20px;
+        padding: 24px 30px;
+        box-shadow: 0 4px 16px rgba(16, 24, 40, 0.05);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+        transition: background 0.3s ease, border-color 0.3s ease;
+    }
+
+    .messages-hero-banner::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #ff5722, #f59e0b, #0ea5e9);
+        z-index: 2;
+    }
+
+    .messages-hero-banner::before {
+        content: "";
+        position: absolute;
+        top: -40px;
+        right: -40px;
+        width: 260px;
+        height: 260px;
+        background: radial-gradient(circle, rgba(255, 87, 34, 0.1) 0%, rgba(14, 165, 233, 0.04) 60%, transparent 80%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .messages-hero-info {
+        position: relative;
+        z-index: 1;
+        flex: 1;
+        min-width: 280px;
+    }
+
+    .messages-hero-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.74rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: var(--primary-orange, #ff5722);
+        background: rgba(255, 87, 34, 0.1);
+        padding: 4px 12px;
+        border-radius: 9999px;
+        margin-bottom: 8px;
+    }
+
+    .messages-hero-title {
+        font-size: 1.85rem;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        color: var(--text-primary, #0f172a);
+        line-height: 1.2;
+        margin: 0 0 6px 0;
+    }
+
+    .messages-hero-desc {
+        font-size: 0.92rem;
+        color: var(--text-muted, #475467);
+        line-height: 1.5;
+        margin: 0;
+        max-width: 650px;
+    }
+
+    .messages-hero-actions {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .hero-stat-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 12px;
+        background: var(--input-bg, #f8fafc);
+        border: 1px solid var(--border-color, #eaecf0);
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--text-primary, #0f172a);
+    }
+
+    .hero-stat-badge i {
+        color: var(--primary-orange, #ff5722);
+        font-size: 1.1rem;
+    }
+
+    .btn-new-chat-hero {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, #ff5722 0%, #ea580c 100%);
+        color: #ffffff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-size: 0.88rem;
+        font-weight: 800;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(225, 86, 35, 0.35);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-new-chat-hero:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(225, 86, 35, 0.45);
+    }
+
+    /* ── Main Chat Layout ── */
+    .messages-layout {
+        display: grid;
+        grid-template-columns: 340px 1fr;
+        height: 720px;
+        background: var(--card-bg, #ffffff);
+        border: 1.5px solid var(--border-color, #eaecf0);
+        border-radius: 20px;
+        box-shadow: 0 8px 24px rgba(16, 24, 40, 0.06);
+        overflow: hidden;
+        margin: 0;
+        transition: border-color 0.3s ease, background 0.3s ease;
+    }
+
+    /* ── Contacts Panel (Left) ── */
+    .contacts-panel {
+        border-right: 1.5px solid var(--border-color, #eaecf0);
+        display: flex;
+        flex-direction: column;
+        background: var(--card-bg, #ffffff);
+        overflow: hidden;
+        transition: border-color 0.3s ease;
+    }
+
+    .contacts-header {
+        padding: 18px 20px 14px;
+        border-bottom: 1.5px solid var(--border-color, #eaecf0);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+        gap: 12px;
+    }
+
+    .contacts-header-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .contacts-header-title h4 {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--text-primary, #0f172a);
+        margin: 0;
+    }
+
+    .convo-count-badge {
+        font-size: 0.72rem;
+        font-weight: 800;
+        color: var(--primary-orange, #ff5722);
+        background: rgba(255, 87, 34, 0.1);
+        padding: 2px 8px;
+        border-radius: 9999px;
+    }
+
+    .new-chat-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #ff5722 0%, #ea580c 100%);
+        border: none;
+        color: #ffffff;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 2px 8px rgba(225, 86, 35, 0.3);
+        flex-shrink: 0;
+    }
+
+    .new-chat-btn:hover {
+        transform: scale(1.08);
+        box-shadow: 0 4px 14px rgba(225, 86, 35, 0.45);
+    }
+
+    /* ── Contacts Search & Filter Tabs ── */
+    .contacts-controls-wrap {
+        padding: 12px 16px;
+        border-bottom: 1.5px solid var(--border-color, #eaecf0);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        background: var(--input-bg, #f8fafc);
+    }
+
+    .contacts-search-box {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+
+    .contacts-search-box i {
+        position: absolute;
+        left: 12px;
+        color: var(--text-muted, #94a3b8);
+        font-size: 0.95rem;
+        pointer-events: none;
+    }
+
+    .contacts-search {
+        width: 100%;
+        padding: 8px 12px 8px 36px;
+        border: 1.5px solid var(--border-color, #eaecf0);
+        border-radius: 10px;
+        background: var(--card-bg, #ffffff);
+        color: var(--text-primary, #0f172a);
+        font-size: 0.84rem;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .contacts-search:focus {
+        border-color: var(--primary-orange, #ff5722);
+        box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.12);
+    }
+
+    /* Filter Chips (All, Unread, Staff, Players) */
+    .convo-filter-chips {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        padding-bottom: 2px;
+        scrollbar-width: none;
+    }
+
+    .convo-filter-chips::-webkit-scrollbar {
+        display: none;
+    }
+
+    .convo-chip {
+        padding: 4px 10px;
+        border-radius: 9999px;
+        border: 1px solid var(--border-color, #eaecf0);
+        background: var(--card-bg, #ffffff);
+        color: var(--text-muted, #64748b);
+        font-size: 0.72rem;
+        font-weight: 700;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.2s ease;
+    }
+
+    .convo-chip:hover {
+        border-color: var(--primary-orange, #ff5722);
+        color: var(--primary-orange, #ff5722);
+    }
+
+    .convo-chip.active {
+        background: var(--primary-orange, #ff5722);
+        border-color: var(--primary-orange, #ff5722);
+        color: #ffffff;
+    }
+
+    /* ── Contacts List ── */
+    .contacts-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 6px 0;
+    }
+
+    .contact-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 18px;
+        cursor: pointer;
+        border-bottom: 1px solid rgba(234, 236, 240, 0.5);
+        transition: background 0.18s ease, transform 0.18s ease;
+        border-left: 3.5px solid transparent;
+        position: relative;
+    }
+
+    .contact-item:hover {
+        background: rgba(255, 87, 34, 0.04);
+    }
+
+    .contact-item.active {
+        background: rgba(255, 87, 34, 0.08);
+        border-left-color: var(--primary-orange, #ff5722);
+    }
+
+    .contact-item.unread {
+        background: rgba(255, 87, 34, 0.03);
+        border-left-color: var(--primary-orange, #ff5722);
+    }
+
+    .contact-item.unread .contact-name {
+        font-weight: 800;
+        color: var(--text-primary, #0f172a);
+    }
+
+    .contact-item.unread .contact-snippet {
+        color: var(--text-primary, #0f172a);
+        font-weight: 700;
+    }
+
+    .contact-avatar-wrap {
+        position: relative;
+        flex-shrink: 0;
+    }
+
+    .contact-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        font-weight: 800;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .contact-online-dot {
+        position: absolute;
+        bottom: -1px;
+        right: -1px;
+        width: 11px;
+        height: 11px;
+        background: #10b981;
+        border: 2px solid var(--card-bg, #ffffff);
+        border-radius: 50%;
+    }
+
+    .contact-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .contact-top-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+        margin-bottom: 2px;
+    }
+
+    .contact-name-wrap {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+        flex: 1;
+    }
+
+    .contact-name {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--text-primary, #0f172a);
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Role Badges in contact items */
+    .convo-role-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 0.65rem;
+        font-weight: 800;
+        padding: 1px 6px;
+        border-radius: 5px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        flex-shrink: 0;
+    }
+
+    .convo-role-badge.badge-admin {
+        background: rgba(99, 102, 241, 0.12);
+        color: #4f46e5;
+        border: 1px solid rgba(99, 102, 241, 0.25);
+    }
+
+    .convo-role-badge.badge-owner {
+        background: rgba(16, 185, 129, 0.12);
+        color: #059669;
+        border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .convo-role-badge.badge-staff {
+        background: rgba(14, 165, 233, 0.12);
+        color: #0284c7;
+        border: 1px solid rgba(14, 165, 233, 0.25);
+    }
+
+    .convo-role-badge.badge-club {
+        background: rgba(245, 158, 11, 0.12);
+        color: #d97706;
+        border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+
+    .convo-role-badge.badge-player {
+        background: rgba(255, 87, 34, 0.1);
+        color: #ea580c;
+        border: 1px solid rgba(255, 87, 34, 0.2);
+    }
+
+    .contact-time {
+        font-size: 0.68rem;
+        color: var(--text-muted, #94a3b8);
+        white-space: nowrap;
+        font-weight: 600;
+    }
+
+    .contact-bottom-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .contact-snippet {
+        font-size: 0.76rem;
+        color: var(--text-muted, #64748b);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0;
+        flex: 1;
+    }
+
+    .unread-badge {
+        background: var(--primary-orange, #ff5722);
+        color: #ffffff;
+        font-size: 0.62rem;
+        font-weight: 800;
+        min-width: 18px;
+        height: 18px;
+        border-radius: 9999px;
+        padding: 0 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 6px rgba(255, 87, 34, 0.35);
+        flex-shrink: 0;
+    }
+
+    .contacts-empty {
+        padding: 40px 20px;
+        text-align: center;
+        color: var(--text-muted, #94a3b8);
+        font-size: 0.86rem;
+        line-height: 1.6;
+    }
+
+    .contacts-empty i {
+        font-size: 2.2rem;
+        display: block;
+        margin-bottom: 10px;
+        opacity: 0.4;
+        color: var(--primary-orange, #ff5722);
+    }
+
+    /* ── Chat Window (Right) ── */
+    .chat-window {
+        display: flex;
+        flex-direction: column;
+        background: var(--card-bg, #ffffff);
+        overflow: hidden;
+        position: relative;
+    }
+
+    .chat-header {
+        padding: 14px 24px;
+        border-bottom: 1.5px solid var(--border-color, #eaecf0);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        flex-shrink: 0;
+        background: var(--card-bg, #ffffff);
+        transition: border-color 0.3s ease;
+    }
+
+    .chat-header-main {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+    }
+
+    .chat-back-btn {
+        display: none;
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        background: var(--input-bg, #f8fafc);
+        border: 1px solid var(--border-color, #eaecf0);
+        color: var(--text-primary, #0f172a);
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        cursor: pointer;
+    }
+
+    .chat-header-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.95rem;
+        font-weight: 800;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        flex-shrink: 0;
+        overflow: hidden;
+    }
+
+    .chat-header-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+    }
+
+    .chat-header-name-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .chat-header-info h3 {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--text-primary, #0f172a);
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .chat-status-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.72rem;
+        color: var(--text-muted, #64748b);
+        font-weight: 600;
+    }
+
+    .status-pulse-dot {
+        width: 7px;
+        height: 7px;
+        background: #10b981;
+        border-radius: 50%;
+        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    }
+
+    .chat-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .chat-action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: var(--input-bg, #f8fafc);
+        border: 1px solid var(--border-color, #eaecf0);
+        color: var(--text-muted, #64748b);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+    }
+
+    .chat-action-btn:hover {
+        background: rgba(255, 87, 34, 0.1);
+        border-color: var(--primary-orange, #ff5722);
+        color: var(--primary-orange, #ff5722);
+    }
+
+    /* ── Empty Placeholder Hub ── */
+    .chat-placeholder {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at 50% 35%, rgba(255, 87, 34, 0.04) 0%, transparent 70%);
+        padding: 30px;
+        text-align: center;
+    }
+
+    .placeholder-icon-wrap {
+        width: 80px;
+        height: 80px;
+        border-radius: 24px;
+        background: linear-gradient(135deg, rgba(255, 87, 34, 0.15) 0%, rgba(245, 158, 11, 0.1) 100%);
+        border: 1.5px solid rgba(255, 87, 34, 0.25);
+        color: var(--primary-orange, #ff5722);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.6rem;
+        margin-bottom: 20px;
+        box-shadow: 0 8px 24px rgba(255, 87, 34, 0.12);
+        animation: floatIcon 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes floatIcon {
+        from { transform: translateY(0); }
+        to { transform: translateY(-6px); }
+    }
+
+    .chat-placeholder h3 {
+        font-size: 1.35rem;
+        font-weight: 900;
+        color: var(--text-primary, #0f172a);
+        margin: 0 0 8px 0;
+        letter-spacing: -0.02em;
+    }
+
+    .chat-placeholder p {
+        font-size: 0.9rem;
+        color: var(--text-muted, #64748b);
+        max-width: 440px;
+        line-height: 1.5;
+        margin: 0 0 24px 0;
+    }
+
+    .placeholder-quick-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        max-width: 580px;
+        width: 100%;
+        margin-bottom: 24px;
+    }
+
+    .placeholder-card {
+        background: var(--input-bg, #f8fafc);
+        border: 1px solid var(--border-color, #eaecf0);
+        border-radius: 14px;
+        padding: 14px 16px;
+        text-align: left;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .placeholder-card:hover {
+        border-color: var(--primary-orange, #ff5722);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(16, 24, 40, 0.05);
+    }
+
+    .placeholder-card-icon {
+        font-size: 1.25rem;
+        color: var(--primary-orange, #ff5722);
+        margin-bottom: 6px;
+    }
+
+    .placeholder-card-title {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: var(--text-primary, #0f172a);
+        margin: 0 0 3px 0;
+    }
+
+    .placeholder-card-sub {
+        font-size: 0.74rem;
+        color: var(--text-muted, #64748b);
+        margin: 0;
+        line-height: 1.3;
+    }
+
+    .btn-placeholder-new {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, #ff5722 0%, #ea580c 100%);
+        color: #ffffff;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-size: 0.92rem;
+        font-weight: 800;
+        cursor: pointer;
+        box-shadow: 0 4px 16px rgba(225, 86, 35, 0.35);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-placeholder-new:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 22px rgba(225, 86, 35, 0.45);
+    }
+
+    /* ── Chat Messages Stream ── */
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 24px 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        background: var(--input-bg, #f8fafc);
+        scroll-behavior: smooth;
+    }
+
+    .msg-date-sep {
+        align-self: center;
+        font-size: 0.72rem;
+        color: var(--text-muted, #64748b);
+        font-weight: 700;
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--border-color, #eaecf0);
+        padding: 4px 14px;
+        border-radius: 9999px;
+        margin: 14px 0 8px 0;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .msg-group {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        margin-bottom: 10px;
+    }
+
+    .msg-group.sent {
+        align-items: flex-end;
+    }
+
+    .msg-group.received {
+        align-items: flex-start;
+    }
+
+    .msg-sender-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--text-muted, #64748b);
+        margin-bottom: 4px;
+        padding: 0 6px;
+    }
+
+    .msg-bubble-wrap {
+        display: flex;
+        flex-direction: column;
+        max-width: 72%;
+    }
+
+    .msg-bubble-wrap.sent {
+        align-items: flex-end;
+    }
+
+    .msg-bubble-wrap.received {
+        align-items: flex-start;
+    }
+
+    .msg-bubble {
+        padding: 12px 18px;
+        border-radius: 18px;
+        font-size: 0.88rem;
+        line-height: 1.5;
+        word-break: break-word;
+        position: relative;
+        box-shadow: 0 2px 6px rgba(16, 24, 40, 0.04);
+    }
+
+    .msg-bubble.sent {
+        background: linear-gradient(135deg, #ff5722 0%, #ea580c 100%);
+        color: #ffffff;
+        border-bottom-right-radius: 4px;
+        box-shadow: 0 4px 14px rgba(225, 86, 35, 0.25);
+    }
+
+    .msg-bubble.received {
+        background: var(--card-bg, #ffffff);
+        color: var(--text-primary, #0f172a);
+        border: 1.5px solid var(--border-color, #eaecf0);
+        border-bottom-left-radius: 4px;
+    }
+
+    .msg-meta {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 4px;
+        padding: 0 4px;
+    }
+
+    .msg-time {
+        font-size: 0.67rem;
+        color: var(--text-muted, #94a3b8);
+        font-weight: 600;
+    }
+
+    .msg-read-status {
+        font-size: 0.72rem;
+        line-height: 1;
+        font-weight: 800;
+    }
+
+    .msg-read-status.read {
+        color: #10b981;
+    }
+
+    .msg-read-status.sent-ok {
+        color: var(--text-muted, #94a3b8);
+    }
+
+    /* ── Quick Court Reply Chips ── */
+    .quick-court-replies {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 20px;
+        background: var(--card-bg, #ffffff);
+        border-top: 1px solid var(--border-color, #eaecf0);
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .quick-court-replies::-webkit-scrollbar {
+        display: none;
+    }
+
+    .quick-reply-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 12px;
+        background: var(--input-bg, #f8fafc);
+        border: 1px solid var(--border-color, #eaecf0);
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--text-primary, #0f172a);
+        white-space: nowrap;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .quick-reply-pill:hover {
+        background: rgba(255, 87, 34, 0.1);
+        border-color: var(--primary-orange, #ff5722);
+        color: var(--primary-orange, #ff5722);
+        transform: translateY(-1px);
+    }
+
+    /* ── Chat Input ── */
+    .chat-input-wrap {
+        padding: 14px 20px;
+        border-top: 1.5px solid var(--border-color, #eaecf0);
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-shrink: 0;
+        background: var(--card-bg, #ffffff);
+        transition: border-color 0.3s ease;
+    }
+
+    .chat-input {
+        flex: 1;
+        padding: 12px 20px;
+        border: 1.5px solid var(--border-color, #eaecf0);
+        border-radius: 9999px;
+        background: var(--input-bg, #f8fafc);
+        color: var(--text-primary, #0f172a);
+        font-size: 0.9rem;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .chat-input:focus {
+        border-color: var(--primary-orange, #ff5722);
+        background: var(--card-bg, #ffffff);
+        box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.12);
+    }
+
+    .chat-input::placeholder {
+        color: var(--text-muted, #94a3b8);
+    }
+
+    .send-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #ff5722 0%, #ea580c 100%);
+        border: none;
+        color: #ffffff;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+        box-shadow: 0 4px 12px rgba(225, 86, 35, 0.35);
+        flex-shrink: 0;
+    }
+
+    .send-btn:hover {
+        transform: scale(1.08);
+        box-shadow: 0 6px 18px rgba(225, 86, 35, 0.45);
+    }
+
+    .send-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    /* ── New Chat Modal ── */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.65);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        backdrop-filter: blur(6px);
+        padding: 20px;
+    }
+
+    .modal-overlay.open {
+        display: flex;
+    }
+
+    .modal-box {
+        background: var(--card-bg, #ffffff);
+        border: 1.5px solid var(--border-color, #eaecf0);
+        border-radius: 20px;
+        padding: 26px;
+        width: 100%;
+        max-width: 480px;
+        box-shadow: 0 20px 50px rgba(15, 23, 42, 0.2);
+        animation: modalIn 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes modalIn {
+        from { opacity: 0; transform: scale(0.96) translateY(-10px); }
+        to { opacity: 1; transform: none; }
+    }
+
+    .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+    }
+
+    .modal-header h3 {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--text-primary, #0f172a);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+    }
+
+    .modal-close-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: var(--input-bg, #f8fafc);
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted, #94a3b8);
+        font-size: 1rem;
+        transition: all 0.2s ease;
+    }
+
+    .modal-close-btn:hover {
+        background: #fee2e2;
+        color: #ef4444;
+    }
+
+    .user-search-input {
+        width: 100%;
+        padding: 12px 18px;
+        border: 1.5px solid var(--border-color, #eaecf0);
+        border-radius: 12px;
+        background: var(--input-bg, #f8fafc);
+        color: var(--text-primary, #0f172a);
+        font-size: 0.9rem;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        margin-bottom: 14px;
+    }
+
+    .user-search-input:focus {
+        border-color: var(--primary-orange, #ff5722);
+        background: var(--card-bg, #ffffff);
+        box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.12);
+    }
+
+    .user-search-results {
+        max-height: 280px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .search-hint {
+        text-align: center;
+        color: var(--text-muted, #94a3b8);
+        font-size: 0.85rem;
+        padding: 24px 0;
+        margin: 0;
+    }
+
+    .user-result-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all 0.18s ease;
+    }
+
+    .user-result-item:hover {
+        background: rgba(255, 87, 34, 0.06);
+        border-color: rgba(255, 87, 34, 0.2);
+    }
+
+    .user-result-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    .user-result-name {
+        font-size: 0.88rem;
+        font-weight: 800;
+        color: var(--text-primary, #0f172a);
+        margin: 0 0 2px 0;
+    }
+
+    .user-result-role {
+        font-size: 0.72rem;
+        color: var(--text-muted, #64748b);
+    }
+
+    /* ── Dark Mode Overrides ── */
+    html.dark-mode .messages-hero-banner,
+    html.dark-mode .messages-layout,
+    html.dark-mode .contacts-panel,
+    html.dark-mode .chat-window,
+    html.dark-mode .chat-header,
+    html.dark-mode .modal-box,
+    html.dark-mode .quick-court-replies {
+        background: #19202e;
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    html.dark-mode .messages-hero-title,
+    html.dark-mode .contacts-header-title h4,
+    html.dark-mode .contact-name,
+    html.dark-mode .chat-header-info h3,
+    html.dark-mode .chat-placeholder h3,
+    html.dark-mode .placeholder-card-title,
+    html.dark-mode .modal-header h3,
+    html.dark-mode .user-result-name,
+    html.dark-mode .hero-stat-badge {
+        color: #f8fafc;
+    }
+
+    html.dark-mode .messages-hero-desc,
+    html.dark-mode .contact-snippet,
+    html.dark-mode .contact-time,
+    html.dark-mode .chat-status-indicator,
+    html.dark-mode .chat-placeholder p,
+    html.dark-mode .placeholder-card-sub,
+    html.dark-mode .search-hint,
+    html.dark-mode .user-result-role {
+        color: #94a3b8;
+    }
+
+    html.dark-mode .contacts-controls-wrap,
+    html.dark-mode .chat-messages,
+    html.dark-mode .chat-placeholder {
+        background: #0f131a;
+    }
+
+    html.dark-mode .contacts-search,
+    html.dark-mode .chat-input,
+    html.dark-mode .user-search-input {
+        background: #141923;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #f1f5f9;
+    }
+
+    html.dark-mode .contacts-search:focus,
+    html.dark-mode .chat-input:focus,
+    html.dark-mode .user-search-input:focus {
+        border-color: var(--primary-orange, #ff5722);
+        background: #19202e;
+    }
+
+    html.dark-mode .convo-chip,
+    html.dark-mode .quick-reply-pill,
+    html.dark-mode .chat-action-btn,
+    html.dark-mode .hero-stat-badge,
+    html.dark-mode .placeholder-card {
+        background: #141923;
+        border-color: rgba(255, 255, 255, 0.08);
+        color: #f1f5f9;
+    }
+
+    html.dark-mode .convo-chip:hover,
+    html.dark-mode .quick-reply-pill:hover,
+    html.dark-mode .placeholder-card:hover {
+        background: #1c2332;
+        border-color: var(--primary-orange, #ff5722);
+        color: var(--primary-orange, #ff5722);
+    }
+
+    html.dark-mode .contact-item {
+        border-bottom-color: rgba(255, 255, 255, 0.05);
+    }
+
+    html.dark-mode .contact-item:hover {
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    html.dark-mode .contact-item.active {
+        background: rgba(255, 87, 34, 0.14);
+    }
+
+    html.dark-mode .msg-bubble.received {
+        background: #19202e;
+        border-color: rgba(255, 255, 255, 0.08);
+        color: #f8fafc;
+    }
+
+    html.dark-mode .msg-date-sep {
+        background: #19202e;
+        border-color: rgba(255, 255, 255, 0.08);
+        color: #94a3b8;
+    }
+
+    html.dark-mode .chat-input-wrap,
+    html.dark-mode .contacts-header,
+    html.dark-mode .contacts-controls-wrap {
+        border-color: rgba(255, 255, 255, 0.08);
+        background: #19202e;
+    }
+
+    /* ── Mobile Responsive (< 880px) ── */
+    @media (max-width: 880px) {
+        .messages-layout {
+            grid-template-columns: 1fr;
+            height: calc(100vh - 160px);
+        }
+
+        .contacts-panel {
+            display: flex;
+        }
+
+        .chat-window {
+            display: none;
+        }
+
+        .messages-layout.chat-active .contacts-panel {
+            display: none;
+        }
+
+        .messages-layout.chat-active .chat-window {
+            display: flex;
+        }
+
+        .chat-back-btn {
+            display: flex;
+        }
+
+        .placeholder-quick-cards {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="messages-page-wrapper">
+
+    <!-- ── 1. HERO COMMAND BANNER ── -->
+    <header class="messages-hero-banner">
+        <div class="messages-hero-info">
+            <span class="messages-hero-tag">
+                <i class="ph ph-chat-teardrop-dots"></i> Direct Court Chat
+            </span>
+            <h1 class="messages-hero-title">Direct Messages & Staff Connect</h1>
+            <p class="messages-hero-desc">
+                Chat directly with court facility staff, club captains, tournament organizers, and fellow open play players.
+            </p>
+        </div>
+
+        <div class="messages-hero-actions">
+            <div class="hero-stat-badge" id="heroConvoCountBadge">
+                <i class="ph ph-chat-circle-dots"></i>
+                <span id="heroConvoCountText">Loading chats...</span>
             </div>
-        </div>
-
-        <div class="chat-placeholder" id="chatPlaceholder">
-            <i class="ph ph-chats-circle"></i>
-            <h3>Your Messages</h3>
-            <p>Select a conversation or tap <strong>+</strong> to start one</p>
-        </div>
-
-        <div class="chat-messages" id="chatMessages" style="display:none;"></div>
-
-        <div class="chat-input-wrap" id="chatInputWrap" style="display:none;">
-            <input class="chat-input" type="text" placeholder="Type a message…" id="msgInput" autocomplete="off">
-            <button class="send-btn" id="sendMsgBtn" title="Send">
-                <i class="ph ph-paper-plane-tilt"></i>
+            <button type="button" class="btn-new-chat-hero" id="heroNewChatBtn" title="Start a new message">
+                <i class="ph ph-plus-circle"></i> Start Conversation
             </button>
         </div>
+    </header>
+
+    <!-- ── 2. TWO-COLUMN CHAT INTERFACE ── -->
+    <div class="messages-layout">
+
+        <!-- ── Left: Contacts & Conversations Panel ── -->
+        <aside class="contacts-panel" aria-label="Conversation list">
+            <div class="contacts-header">
+                <div class="contacts-header-title">
+                    <h4>Conversations</h4>
+                    <span class="convo-count-badge" id="convoCountPill">0</span>
+                </div>
+                <button class="new-chat-btn" id="newChatBtn" title="New Conversation">
+                    <i class="ph ph-plus"></i>
+                </button>
+            </div>
+
+            <div class="contacts-controls-wrap">
+                <!-- Search Box -->
+                <div class="contacts-search-box">
+                    <i class="ph ph-magnifying-glass"></i>
+                    <input class="contacts-search" type="text" id="contactsSearch" placeholder="Filter conversations or players…" autocomplete="off">
+                </div>
+
+                <!-- Fast Filter Chips -->
+                <div class="convo-filter-chips" role="tablist">
+                    <button type="button" class="convo-chip active" data-filter="all">All</button>
+                    <button type="button" class="convo-chip" data-filter="unread">Unread</button>
+                    <button type="button" class="convo-chip" data-filter="staff">Staff & Clubs</button>
+                    <button type="button" class="convo-chip" data-filter="players">Players</button>
+                </div>
+            </div>
+
+            <!-- Scrollable Contacts List -->
+            <div class="contacts-list" id="contactsList">
+                <div class="contacts-empty">
+                    <i class="ph ph-circle-notch" style="animation: spin 0.8s linear infinite;"></i>
+                    Loading your conversations...
+                </div>
+            </div>
+        </aside>
+
+        <!-- ── Right: Active Chat Window ── -->
+        <main class="chat-window">
+
+            <!-- Chat Active Header -->
+            <div class="chat-header" id="chatHeader" style="display:none;">
+                <div class="chat-header-main">
+                    <button class="chat-back-btn" id="chatBackBtn" title="Back to conversations">
+                        <i class="ph ph-caret-left"></i>
+                    </button>
+                    <div class="chat-header-avatar" id="chatHeaderAvatar">?</div>
+                    <div class="chat-header-info">
+                        <div class="chat-header-name-row">
+                            <h3 id="chatHeaderName">—</h3>
+                            <span id="chatHeaderRoleBadge"></span>
+                        </div>
+                        <span class="chat-status-indicator" id="chatHeaderRole">
+                            <span class="status-pulse-dot"></span> Active in PickleballHub
+                        </span>
+                    </div>
+                </div>
+
+                <div class="chat-header-actions">
+                    <button type="button" class="chat-action-btn" id="refreshChatBtn" title="Refresh messages">
+                        <i class="ph ph-arrows-clockwise"></i>
+                    </button>
+                    <button type="button" class="chat-action-btn" id="closeChatBtn" title="Close conversation">
+                        <i class="ph ph-x"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat Empty Placeholder -->
+            <div class="chat-placeholder" id="chatPlaceholder">
+                <div class="placeholder-icon-wrap">
+                    <i class="ph ph-chats-circle"></i>
+                </div>
+                <h3>Your Direct Messages</h3>
+                <p>Select an ongoing conversation from the left, or reach out to court staff and players directly.</p>
+
+                <!-- Quick Action Cards -->
+                <div class="placeholder-quick-cards">
+                    <div class="placeholder-card" id="cardQuickStaff">
+                        <i class="ph ph-headset placeholder-card-icon"></i>
+                        <h4 class="placeholder-card-title">Facility Staff Desk</h4>
+                        <p class="placeholder-card-sub">Ask questions about court bookings, rackets, or ball rentals.</p>
+                    </div>
+                    <div class="placeholder-card" id="cardQuickClubs">
+                        <i class="ph ph-shield placeholder-card-icon"></i>
+                        <h4 class="placeholder-card-title">Club Captains</h4>
+                        <p class="placeholder-card-sub">Coordinate team practice, schedules, and club matches.</p>
+                    </div>
+                    <div class="placeholder-card" id="cardQuickPlayers">
+                        <i class="ph ph-tennis-ball placeholder-card-icon"></i>
+                        <h4 class="placeholder-card-title">Match Play Partners</h4>
+                        <p class="placeholder-card-sub">Organize casual games, open play sets, or doubles pairs.</p>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-placeholder-new" id="placeholderNewChatBtn">
+                    <i class="ph ph-paper-plane-tilt"></i> Start New Conversation
+                </button>
+            </div>
+
+            <!-- Messages Stream -->
+            <div class="chat-messages" id="chatMessages" style="display:none;"></div>
+
+            <!-- Quick Court Replies Bar (Visible only when chat is open) -->
+            <div class="quick-court-replies" id="quickRepliesWrap" style="display:none;">
+                <span style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.4px; margin-right:4px;">Quick:</span>
+                <button type="button" class="quick-reply-pill" data-text="On my way to the court! 🎾">On my way! 🎾</button>
+                <button type="button" class="quick-reply-pill" data-text="Ready for our match!">Ready to play! ⚡</button>
+                <button type="button" class="quick-reply-pill" data-text="Which court number are we on?">Which court number? 📍</button>
+                <button type="button" class="quick-reply-pill" data-text="Great game today, thanks for the match! 🙌">Great game today! 🙌</button>
+                <button type="button" class="quick-reply-pill" data-text="See you next practice!">See you next time! 👋</button>
+            </div>
+
+            <!-- Chat Composer Input -->
+            <div class="chat-input-wrap" id="chatInputWrap" style="display:none;">
+                <input class="chat-input" type="text" placeholder="Type your message… (Press Enter to send)" id="msgInput" autocomplete="off">
+                <button class="send-btn" id="sendMsgBtn" title="Send Message">
+                    <i class="ph ph-paper-plane-tilt"></i>
+                </button>
+            </div>
+
+        </main>
     </div>
 </div>
 
-<!-- New Chat Modal -->
-<div class="modal-overlay" id="newChatModal">
+<!-- ── 3. NEW CHAT MODAL ── -->
+<div class="modal-overlay" id="newChatModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal-box">
         <div class="modal-header">
-            <h3><i class="ph ph-magnifying-glass"></i> New Conversation</h3>
-            <button class="modal-close-btn" id="modalCloseBtn"><i class="ph ph-x"></i></button>
+            <h3 id="modalTitle"><i class="ph ph-magnifying-glass"></i> New Conversation</h3>
+            <button class="modal-close-btn" id="modalCloseBtn" aria-label="Close modal"><i class="ph ph-x"></i></button>
         </div>
-        <input class="user-search-input" type="text" placeholder="Search by name…" id="userSearchInput" autocomplete="off">
+        <input class="user-search-input" type="text" placeholder="Search player or staff by name…" id="userSearchInput" autocomplete="off">
         <div class="user-search-results" id="userSearchResults">
-            <p class="search-hint">Start typing to find a user...</p>
+            <p class="search-hint">Start typing a name to find court staff, club leaders, or players...</p>
         </div>
     </div>
 </div>
+
 {% endmacro %}

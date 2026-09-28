@@ -4,334 +4,965 @@
 
 {% block extra_head %}
 <style>
-    .events-page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-
-    .joined-count {
-        font-size: 0.875rem;
-        color: var(--text-muted);
-        font-weight: 500;
-    }
-
-    .filter-pills {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 24px;
-        flex-wrap: wrap;
-    }
-
-    .filter-pill {
-        padding: 7px 18px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        cursor: pointer;
-        border: 1px solid var(--border-color);
-        background: var(--card-bg);
-        color: var(--text-secondary);
-        transition: all 0.2s;
-    }
-
-    .filter-pill.active {
-        background: var(--primary-orange);
-        color: white;
-        border-color: var(--primary-orange);
-    }
-
-    .filter-pill:hover:not(.active) {
-        border-color: var(--text-muted);
-        color: var(--text-primary);
-    }
-
-    .events-cards-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
-    }
-
-    .event-card-full {
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
-        border-radius: 16px;
-        box-shadow: var(--shadow-card);
+    /* ==========================================================================
+       EVENTS & TOURNAMENTS — SPORTS PLATFORM 2.0 (LIGHT & DARK DUAL THEME)
+       ========================================================================== */
+    .events-page-wrapper {
         display: flex;
         flex-direction: column;
-        transition: box-shadow 0.2s, transform 0.2s;
-        overflow: hidden;
+        gap: 24px;
+        width: 100%;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding-bottom: 140px; /* Generous clearance for floating bookings cart widget */
     }
 
-    .event-card-full:hover {
-        box-shadow: var(--shadow-hover);
-        transform: translateY(-4px);
-    }
-
-    .event-card-banner {
-        height: 140px;
-        background-size: cover;
-        background-position: center;
+    /* ── Hero Banner ── */
+    .events-hero-banner {
         position: relative;
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        border-radius: 20px;
+        padding: 28px 32px;
+        box-shadow: 0 4px 16px rgba(16, 24, 40, 0.05);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        flex-wrap: wrap;
+        transition: background 0.3s ease, border-color 0.3s ease;
     }
 
-    .event-card-banner::after {
-        content: '';
+    .events-hero-banner::after {
+        content: "";
         position: absolute;
-        bottom: 0;
+        top: 0;
         left: 0;
         right: 0;
-        height: 50%;
-        background: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, transparent 100%);
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-orange, #ff5722), #f59e0b);
+        z-index: 2;
     }
 
-    .event-card-content {
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
+    .events-hero-banner::before {
+        content: "";
+        position: absolute;
+        top: -40px;
+        right: -40px;
+        width: 320px;
+        height: 320px;
+        background: radial-gradient(circle, rgba(225, 86, 35, 0.08) 0%, rgba(245, 158, 11, 0.04) 60%, transparent 80%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .events-hero-info {
+        position: relative;
+        z-index: 1;
         flex: 1;
+        min-width: 280px;
     }
 
-    .event-card-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-    }
-
-    .event-type-badge {
-        font-size: 0.65rem;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-        padding: 3px 8px;
-        border-radius: 4px;
-    }
-
-    .badge-tournament {
-        color: var(--primary-orange);
-        background: var(--primary-orange-light);
-    }
-
-    .badge-social {
-        color: #0369a1;
-        background: #e0f2fe;
-    }
-
-    .badge-training {
-        color: #7c3aed;
-        background: #ede9fe;
-    }
-
-    .badge-league {
-        color: #b45309;
-        background: #fef3c7;
-    }
-
-    html.dark-mode .badge-social {
-        background: rgba(3, 105, 161, 0.15);
-    }
-
-    html.dark-mode .badge-training {
-        background: rgba(124, 58, 237, 0.15);
-    }
-
-    html.dark-mode .badge-league {
-        background: rgba(180, 83, 9, 0.15);
-    }
-
-    .event-reg-badge {
-        font-size: 0.65rem;
-        font-weight: 600;
-        padding: 3px 8px;
-        border-radius: 4px;
-    }
-
-    .reg-open {
-        background: rgba(74, 222, 128, 0.9);
-        color: #fff;
-        backdrop-filter: blur(4px);
-    }
-
-    .reg-full {
-        background: rgba(239, 68, 68, 0.9);
-        color: #fff;
-        backdrop-filter: blur(4px);
-    }
-
-    .reg-soon {
-        background: rgba(0, 0, 0, 0.5);
-        color: #fff;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(4px);
-    }
-
-    html.dark-mode .reg-open {
-        background: rgba(41, 163, 86, 0.15);
-        color: #4ade80;
-    }
-
-    .event-card-full h3 {
-        font-size: 1rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        line-height: 1.3;
-    }
-
-    .event-meta {
-        display: flex;
-        flex-direction: column;
+    .events-hero-tag {
+        display: inline-flex;
+        align-items: center;
         gap: 6px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: var(--primary-orange, #ff5722);
+        background: var(--primary-orange-light, rgba(225, 86, 35, 0.12));
+        padding: 4px 12px;
+        border-radius: 9999px;
+        margin-bottom: 10px;
     }
 
-    .event-meta-row {
+    .events-hero-title {
+        font-size: 1.85rem;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        color: var(--sports-text-main, #0f172a);
+        line-height: 1.2;
+        margin: 0 0 8px 0;
+    }
+
+    .events-hero-desc {
+        font-size: 0.92rem;
+        color: var(--sports-text-muted, #475467);
+        line-height: 1.5;
+        margin: 0;
+        max-width: 680px;
+    }
+
+    .events-hero-actions {
+        position: relative;
+        z-index: 1;
         display: flex;
         align-items: center;
-        gap: 8px;
-        font-size: 0.8rem;
-        color: var(--text-secondary);
+        gap: 12px;
+        flex-shrink: 0;
     }
 
-    .event-meta-row i {
-        font-size: 1rem;
-        color: var(--text-muted);
+    .btn-my-tournaments-hero {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 22px;
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #d0d5dd);
+        border-radius: 14px;
+        color: var(--sports-text-main, #0f172a);
+        text-decoration: none;
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     }
 
-    .event-capacity-bar {
-        height: 4px;
-        background: var(--border-color);
-        border-radius: 2px;
-        overflow: hidden;
+    .btn-my-tournaments-hero:hover {
+        border-color: var(--primary-orange, #ff5722);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(225, 86, 35, 0.15);
     }
 
-    .event-capacity-fill {
-        height: 100%;
-        background: var(--primary-orange);
-        border-radius: 2px;
-        transition: width 0.4s;
-    }
-
-    .event-capacity-fill.near-full {
-        background: #f59e0b;
-    }
-
-    .event-capacity-fill.full {
-        background: #ef4444;
-    }
-
-    .event-capacity-label {
-        font-size: 0.72rem;
-        color: var(--text-muted);
-        margin-top: 4px;
-    }
-
-    .btn-join-now {
-        width: 100%;
-        padding: 11px;
-        background: var(--primary-orange);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background 0.2s, transform 0.2s;
-        margin-top: auto;
-    }
-
-    .btn-join-now:hover {
-        background: var(--primary-orange-hover);
-        transform: translateY(-1px);
-    }
-
-    .btn-registered {
-        width: 100%;
-        padding: 11px;
-        background: rgba(74, 222, 128, 0.12);
-        color: #4ade80;
-        border: 1.5px solid rgba(74, 222, 128, 0.3);
-        border-radius: 8px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        cursor: default;
-        margin-top: auto;
+    .my-tournaments-hero-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, var(--primary-orange, #ff5722), #ea580c);
+        color: #ffffff;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
+        font-size: 1.2rem;
+        position: relative;
+        flex-shrink: 0;
+        box-shadow: 0 2px 8px rgba(225, 86, 35, 0.25);
     }
 
-    .btn-notify-me {
-        width: 100%;
-        padding: 11px;
-        background: transparent;
-        color: var(--text-secondary);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        font-size: 0.85rem;
+    .my-tournaments-badge-dot {
+        position: absolute;
+        top: -3px;
+        right: -3px;
+        width: 10px;
+        height: 10px;
+        background: #10b981;
+        border-radius: 50%;
+        border: 2px solid #ffffff;
+    }
+
+    .my-tournaments-hero-text {
+        display: flex;
+        flex-direction: column;
+        text-align: left;
+    }
+
+    .my-tournaments-hero-title {
+        font-size: 0.88rem;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+
+    .my-tournaments-hero-sub {
+        font-size: 0.74rem;
+        color: var(--sports-text-muted, #475467);
+        line-height: 1.2;
+        margin-top: 2px;
         font-weight: 600;
+    }
+
+    /* ── Metric Stat Tiles Strip ── */
+    .events-metrics-strip {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+    }
+
+    .metric-filter-card {
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        border-radius: 16px;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
         cursor: pointer;
-        transition: border-color 0.2s, color 0.2s;
-        margin-top: auto;
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 1px 3px rgba(16, 24, 40, 0.04);
+        user-select: none;
     }
 
-    .btn-notify-me:hover {
-        border-color: var(--text-muted);
-        color: var(--text-primary);
+    .metric-filter-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+        border-color: var(--primary-orange, #ff5722);
     }
 
-    .btn-detail-link {
-        display: block;
-        text-align: center;
-        font-size: 0.78rem;
-        color: var(--text-muted);
-        text-decoration: none;
-        margin-top: -4px;
+    .metric-filter-card.active {
+        border-color: var(--primary-orange, #ff5722);
+        background: var(--primary-orange-light, rgba(225, 86, 35, 0.08));
     }
 
-    .btn-detail-link:hover {
-        color: var(--primary-orange);
+    .metric-icon-box {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        flex-shrink: 0;
     }
 
-    .empty-events {
-        grid-column: 1/-1;
-        text-align: center;
-        padding: 60px 20px;
+    .metric-icon-box.orange { background: rgba(225, 86, 35, 0.12); color: var(--primary-orange, #ff5722); }
+    .metric-icon-box.green { background: rgba(16, 185, 129, 0.12); color: #10b981; }
+    .metric-icon-box.blue { background: rgba(59, 130, 246, 0.12); color: #3b82f6; }
+    .metric-icon-box.purple { background: rgba(139, 92, 246, 0.12); color: #8b5cf6; }
+
+    .metric-text-group {
+        display: flex;
+        flex-direction: column;
     }
 
-    .empty-events i {
-        font-size: 3.5rem;
-        color: var(--text-muted);
+    .metric-val {
+        font-size: 1.45rem;
+        font-weight: 900;
+        color: var(--sports-text-main, #0f172a);
+        line-height: 1.1;
     }
 
-    .empty-events h3 {
-        font-size: 1.1rem;
-        color: var(--text-primary);
-        margin: 12px 0 8px;
-    }
-
-    .empty-events p {
-        font-size: 0.85rem;
-        color: var(--text-muted);
-    }
-
-    .entry-fee-tag {
-        font-size: 0.72rem;
+    .metric-lbl {
+        font-size: 0.76rem;
         font-weight: 700;
-        padding: 2px 7px;
-        border-radius: 4px;
-        background: rgba(99, 102, 241, 0.12);
-        color: #818cf8;
+        color: var(--sports-text-muted, #475467);
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        margin-top: 2px;
     }
 
-    @media (max-width:900px) {
-        .events-cards-grid {
+    /* ── Toolbar Card (Search, Filters, Sort) ── */
+    .events-toolbar-card {
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        border-radius: 18px;
+        padding: 16px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        box-shadow: 0 1px 3px rgba(16, 24, 40, 0.04);
+    }
+
+    .events-toolbar-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    /* Search Box */
+    .events-search-wrap {
+        position: relative;
+        flex: 1;
+        min-width: 260px;
+    }
+
+    .events-search-wrap i.search-prefix {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.15rem;
+        color: var(--sports-text-dim, #94a3b8);
+        pointer-events: none;
+    }
+
+    .events-search-input {
+        width: 100%;
+        padding: 11px 40px 11px 42px;
+        background: var(--input-bg, #f8fafc);
+        border: 1.5px solid var(--sports-border, #d0d5dd);
+        border-radius: 12px;
+        font-size: 0.88rem;
+        color: var(--sports-text-main, #0f172a);
+        transition: all 0.2s ease;
+        outline: none;
+    }
+
+    .events-search-input:focus {
+        border-color: var(--primary-orange, #ff5722);
+        background: #ffffff;
+        box-shadow: 0 0 0 3px rgba(225, 86, 35, 0.12);
+    }
+
+    .events-search-clear {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--sports-text-dim, #94a3b8);
+        cursor: pointer;
+        padding: 4px;
+        display: none;
+        font-size: 1.1rem;
+        border-radius: 50%;
+        transition: color 0.15s ease;
+    }
+
+    .events-search-clear:hover {
+        color: var(--primary-orange, #ff5722);
+    }
+
+    /* Filter Pills */
+    .filter-pills-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .filter-pill-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 9999px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        background: var(--sports-card-bg, #ffffff);
+        color: var(--sports-text-muted, #475467);
+        transition: all 0.2s ease;
+        user-select: none;
+    }
+
+    .filter-pill-btn:hover:not(.active) {
+        border-color: var(--primary-orange, #ff5722);
+        color: var(--primary-orange, #ff5722);
+    }
+
+    .filter-pill-btn.active {
+        background: var(--primary-orange, #ff5722);
+        border-color: var(--primary-orange, #ff5722);
+        color: #ffffff;
+        box-shadow: 0 3px 12px rgba(225, 86, 35, 0.25);
+    }
+
+    .filter-pill-badge {
+        font-size: 0.72rem;
+        padding: 1px 7px;
+        border-radius: 9999px;
+        background: #f1f5f9;
+        color: #475467;
+        font-weight: 800;
+        border: 1px solid #e2e8f0;
+    }
+
+    .filter-pill-btn.active .filter-pill-badge {
+        background: rgba(255, 255, 255, 0.25);
+        color: #ffffff;
+        border-color: transparent;
+    }
+
+    /* Sort Control */
+    .sort-control-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .sort-select-label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--sports-text-muted, #475467);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .events-sort-select {
+        padding: 9px 34px 9px 12px;
+        background: var(--input-bg, #f8fafc) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 12px center;
+        border: 1.5px solid var(--sports-border, #d0d5dd);
+        border-radius: 12px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--sports-text-main, #0f172a);
+        cursor: pointer;
+        outline: none;
+        appearance: none;
+        transition: border-color 0.2s ease;
+    }
+
+    .events-sort-select:focus {
+        border-color: var(--primary-orange, #ff5722);
+    }
+
+    /* Status Readout Bar */
+    .results-status-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.82rem;
+        color: var(--sports-text-muted, #475467);
+        padding-top: 4px;
+        border-top: 1px solid var(--sports-border, #eaecf0);
+    }
+
+    .results-count-bold {
+        font-weight: 700;
+        color: var(--sports-text-main, #0f172a);
+    }
+
+    .reset-filters-link {
+        color: var(--primary-orange, #ff5722);
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .reset-filters-link:hover {
+        text-decoration: underline;
+    }
+
+    /* ── Events Cards Grid ── */
+    .events-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 24px;
+    }
+
+    /* ── Individual Event Card Pro ── */
+    .event-card-pro {
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        border-radius: 18px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 1px 3px rgba(16, 24, 40, 0.04);
+        transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.24s ease;
+        position: relative;
+    }
+
+    .event-card-pro:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+        border-color: rgba(225, 86, 35, 0.35);
+    }
+
+    /* Card Banner */
+    .event-card-banner {
+        height: 145px;
+        position: relative;
+        background: linear-gradient(135deg, #1e293b, #0f172a);
+        background-size: cover;
+        background-position: center;
+        overflow: hidden;
+    }
+
+    .event-banner-scrim {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(15, 23, 42, 0.92) 0%, rgba(15, 23, 42, 0.35) 60%, rgba(15, 23, 42, 0.5) 100%);
+        z-index: 1;
+    }
+
+    .event-banner-top-badges {
+        position: absolute;
+        top: 12px;
+        left: 14px;
+        right: 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 2;
+    }
+
+    .event-type-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        border-radius: 9999px;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+    }
+
+    .event-type-badge.badge-tournament {
+        color: #ffffff;
+        background: linear-gradient(135deg, var(--primary-orange, #ff5722), #ea580c);
+        box-shadow: 0 2px 8px rgba(225, 86, 35, 0.35);
+    }
+
+    .event-type-badge.badge-social {
+        color: #ffffff;
+        background: linear-gradient(135deg, #0284c7, #0369a1);
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+    }
+
+    .event-type-badge.badge-training {
+        color: #ffffff;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        box-shadow: 0 2px 8px rgba(124, 58, 237, 0.35);
+    }
+
+    .event-type-badge.badge-league {
+        color: #ffffff;
+        background: linear-gradient(135deg, #d97706, #b45309);
+        box-shadow: 0 2px 8px rgba(217, 119, 6, 0.35);
+    }
+
+    .event-status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        border-radius: 9999px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+    }
+
+    .event-status-pill.open {
+        background: rgba(16, 185, 129, 0.95);
+        color: #ffffff;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    }
+
+    .event-status-pill.full {
+        background: rgba(239, 68, 68, 0.95);
+        color: #ffffff;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    }
+
+    .event-status-pill.soon {
+        background: rgba(15, 23, 42, 0.85);
+        color: #ffffff;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .event-prizepool-pill {
+        position: absolute;
+        bottom: 12px;
+        left: 14px;
+        z-index: 2;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-size: 0.76rem;
+        font-weight: 800;
+        background: rgba(245, 158, 11, 0.95);
+        color: #ffffff;
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+    }
+
+    /* Card Content Body */
+    .event-card-body {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        gap: 12px;
+    }
+
+    .event-title-link {
+        text-decoration: none;
+        color: var(--sports-text-main, #0f172a);
+        font-size: 1.12rem;
+        font-weight: 800;
+        line-height: 1.3;
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        transition: color 0.18s ease;
+    }
+
+    .event-title-link:hover {
+        color: var(--primary-orange, #ff5722);
+    }
+
+    .event-meta-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .event-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.82rem;
+        color: var(--sports-text-muted, #475467);
+        font-weight: 500;
+    }
+
+    .event-meta-item i {
+        font-size: 1rem;
+        color: var(--primary-orange, #ff5722);
+        flex-shrink: 0;
+    }
+
+    .event-fee-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 4px;
+        padding-top: 10px;
+        border-top: 1px solid var(--sports-border, #eaecf0);
+    }
+
+    .event-fee-badge {
+        font-size: 0.74rem;
+        font-weight: 800;
+        padding: 3px 8px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .event-fee-badge.free {
+        background: rgba(16, 185, 129, 0.12);
+        color: #059669;
+        border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .event-fee-badge.paid {
+        background: rgba(225, 86, 35, 0.12);
+        color: #d04512;
+        border: 1px solid rgba(225, 86, 35, 0.25);
+    }
+
+    .event-players-text {
+        font-size: 0.8rem;
+        color: var(--sports-text-muted, #475467);
+        font-weight: 600;
+    }
+
+    .event-players-text strong {
+        color: var(--sports-text-main, #0f172a);
+    }
+
+    /* Capacity Progress Bar */
+    .capacity-bar-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .capacity-track {
+        height: 6px;
+        background: #f1f5f9;
+        border-radius: 9999px;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+    }
+
+    .capacity-fill {
+        height: 100%;
+        background: #10b981;
+        border-radius: 9999px;
+        transition: width 0.4s ease;
+    }
+
+    .capacity-fill.near-full { background: #f59e0b; }
+    .capacity-fill.full { background: #ef4444; }
+
+    .capacity-label-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.72rem;
+        color: var(--sports-text-muted, #64748b);
+        font-weight: 600;
+    }
+
+    /* Action Tray */
+    .event-action-tray {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: auto;
+        padding-top: 6px;
+    }
+
+    .btn-event-details {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: var(--sports-text-main, #0f172a);
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #d0d5dd);
+        text-decoration: none;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .btn-event-details:hover {
+        border-color: var(--primary-orange, #ff5722);
+        color: var(--primary-orange, #ff5722);
+        background: #fff7ed;
+    }
+
+    .btn-event-main {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 10px 16px;
+        border-radius: 12px;
+        font-size: 0.84rem;
+        font-weight: 700;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        flex: 1;
+        white-space: nowrap;
+        font-family: inherit;
+    }
+
+    .btn-event-main.join {
+        background: linear-gradient(135deg, var(--primary-orange, #ff5722), #ea580c);
+        color: #ffffff;
+        box-shadow: 0 3px 12px rgba(225, 86, 35, 0.25);
+    }
+
+    .btn-event-main.join:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(225, 86, 35, 0.35);
+    }
+
+    .btn-event-main.registered {
+        background: rgba(16, 185, 129, 0.12);
+        color: #059669;
+        border: 1.5px solid rgba(16, 185, 129, 0.3);
+        cursor: default;
+    }
+
+    .btn-event-main.waitlist {
+        background: rgba(245, 158, 11, 0.12);
+        color: #b45309;
+        border: 1.5px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .btn-event-main.waitlist:hover {
+        background: rgba(245, 158, 11, 0.2);
+    }
+
+    .btn-event-main.disabled {
+        background: #f1f5f9;
+        color: #94a3b8;
+        border: 1px solid #e2e8f0;
+        cursor: not-allowed;
+    }
+
+    /* Empty State */
+    .events-empty-state {
+        grid-column: 1 / -1;
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px dashed var(--sports-border, #eaecf0);
+        border-radius: 20px;
+        padding: 56px 24px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+    }
+
+    .empty-state-icon-ring {
+        width: 76px;
+        height: 76px;
+        border-radius: 50%;
+        background: rgba(225, 86, 35, 0.08);
+        border: 1.5px solid rgba(225, 86, 35, 0.2);
+        color: var(--primary-orange, #ff5722);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2rem;
+    }
+
+    .empty-state-title {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--sports-text-main, #0f172a);
+        margin: 0;
+    }
+
+    .empty-state-desc {
+        font-size: 0.9rem;
+        color: var(--sports-text-muted, #475467);
+        max-width: 440px;
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    .btn-empty-reset {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #ffffff;
+        background: var(--primary-orange, #ff5722);
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-empty-reset:hover {
+        background: var(--primary-orange-hover, #ea580c);
+        transform: translateY(-2px);
+    }
+
+    /* ==========================================================================
+       DARK MODE OVERRIDES
+       ========================================================================== */
+    html.dark-mode .events-hero-banner,
+    html.dark-mode .metric-filter-card,
+    html.dark-mode .events-toolbar-card,
+    html.dark-mode .event-card-pro,
+    html.dark-mode .events-empty-state {
+        background: #19202e;
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    html.dark-mode .events-hero-title,
+    html.dark-mode .metric-val,
+    html.dark-mode .event-title-link,
+    html.dark-mode .empty-state-title {
+        color: #f8fafc;
+    }
+
+    html.dark-mode .events-hero-desc,
+    html.dark-mode .metric-lbl,
+    html.dark-mode .event-meta-item,
+    html.dark-mode .event-players-text,
+    html.dark-mode .empty-state-desc {
+        color: #94a3b8;
+    }
+
+    html.dark-mode .events-search-input,
+    html.dark-mode .events-sort-select {
+        background: #0f131a;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #f1f5f9;
+    }
+
+    html.dark-mode .filter-pill-btn {
+        background: #141923;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #94a3b8;
+    }
+
+    html.dark-mode .filter-pill-badge {
+        background: rgba(255, 255, 255, 0.08);
+        color: #94a3b8;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    html.dark-mode .btn-my-tournaments-hero,
+    html.dark-mode .btn-event-details {
+        background: #141923;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #f1f5f9;
+    }
+
+    html.dark-mode .btn-my-tournaments-hero:hover,
+    html.dark-mode .btn-event-details:hover {
+        background: #1c2332;
+        border-color: var(--primary-orange, #ff5722);
+    }
+
+    html.dark-mode .event-fee-row,
+    html.dark-mode .results-status-bar {
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    html.dark-mode .capacity-track {
+        background: #121620;
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    html.dark-mode .btn-event-main.registered {
+        background: rgba(16, 185, 129, 0.15);
+        color: #4ade80;
+        border-color: rgba(16, 185, 129, 0.35);
+    }
+
+    html.dark-mode .btn-event-main.disabled {
+        background: #121620;
+        color: #64748b;
+        border-color: rgba(255, 255, 255, 0.06);
+    }
+
+    /* ── Responsive Queries ── */
+    @media (max-width: 1024px) {
+        .events-metrics-strip {
             grid-template-columns: repeat(2, 1fr);
         }
     }
 
-    @media (max-width:580px) {
+    @media (max-width: 768px) {
+        .events-hero-banner {
+            padding: 22px 20px;
+        }
+
+        .events-hero-title {
+            font-size: 1.55rem;
+        }
+
+        .events-hero-actions {
+            width: 100%;
+        }
+
+        .btn-my-tournaments-hero {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .events-metrics-strip {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .events-toolbar-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .sort-control-wrap {
+            justify-content: space-between;
+        }
+
         .events-cards-grid {
             grid-template-columns: 1fr;
         }
@@ -340,121 +971,412 @@
 {% endblock %}
 
 {% block content %}
-<div class="events-page-header">
-    <h1 class="page-title">Events & Tournaments</h1>
-    <span class="joined-count"><i class="ph ph-check-circle"></i> {{ joined_count }} joined</span>
-    <a href="{{ url_for('player.my_tournaments') }}" class="action-box orange"
-        style="padding:8px 18px;border:none;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.9rem;display:flex;align-items:center;gap:6px;">
-        <i class="ph ph-trophy"></i> My Tournaments
-    </a>
-</div>
+<div class="events-page-wrapper">
 
-
-<div class="filter-pills">
-    <button class="filter-pill active" onclick="filterEvents('all',this)">All</button>
-    <button class="filter-pill" onclick="filterEvents('tournament',this)">Tournament</button>
-    <button class="filter-pill" onclick="filterEvents('social',this)">Social</button>
-    <button class="filter-pill" onclick="filterEvents('training',this)">Training</button>
-    <button class="filter-pill" onclick="filterEvents('league',this)">League</button>
-</div>
-
-<div class="events-cards-grid" id="eventsGrid">
-    {% if events %}
-    {% for ev in events %}
-    {% set pct = ((ev.registered_count / ev.max_players) * 100)|int if ev.max_players else 0 %}
-    {% set default_img =
-    'https://plus.unsplash.com/premium_photo-1709048991290-1d36455a2895?q=80&w=870&auto=format&fit=crop' %}
-    <div class="event-card-full" data-type="{{ ev.type }}">
-        <div class="event-card-banner"
-            style="background-image: url('{{ ev.image_url if ev.image_url else default_img }}');">
-            <div style="position: absolute; top: 12px; left: 12px; z-index: 2;">
-                <span class="event-type-badge badge-{{ ev.type }}">{{ ev.type|capitalize }}</span>
-            </div>
-            <div style="position: absolute; bottom: 12px; right: 12px; z-index: 2;">
-                {% if ev.status == 'full' %}
-                <span class="event-reg-badge reg-full"><i class="ph ph-prohibit"></i> Full</span>
-                {% elif ev.status == 'registration_open' %}
-                <span class="event-reg-badge reg-open"><i class="ph ph-check-circle"></i> Open</span>
-                {% else %}
-                <span class="event-reg-badge reg-soon">Coming Soon</span>
-                {% endif %}
-            </div>
+    <!-- ── 1. ATHLETIC HERO COMMAND BANNER ── -->
+    <header class="events-hero-banner animate-entry">
+        <div class="events-hero-info">
+            <span class="events-hero-tag">
+                <i class="ph ph-trophy"></i> Official Competitions & Sessions
+            </span>
+            <h1 class="events-hero-title">Events & Tournaments</h1>
+            <p class="events-hero-desc">
+                Compete in sanctioned tournaments, join social dinking open play mixers, or level up your skills in official training clinics.
+            </p>
         </div>
 
-        <div class="event-card-content">
-
-            <h3>{{ ev.title }}</h3>
-
-            <div class="event-meta">
-                <div class="event-meta-row"><i class="ph ph-calendar-blank"></i> {{ ev.event_date }}</div>
-                <div class="event-meta-row"><i class="ph ph-clock"></i> {{ ev.start_time[:5] }} – {{ ev.end_time[:5] }}
-                </div>
-                <div class="event-meta-row">
-                    <i class="ph ph-map-pin"></i>
-                    {% if ev.facilities %}{{ ev.facilities.name }}{% endif %}
-                    {% if ev.location_label %} · {{ ev.location_label }}{% endif %}
-                    {% if not ev.facilities and not ev.location_label %}—{% endif %}
-                </div>
-                <div class="event-meta-row">
-                    <i class="ph ph-users"></i> {{ ev.registered_count }} / {{ ev.max_players }} players
-                    {% if ev.entry_fee and ev.entry_fee > 0 %}
-                    &nbsp;<span class="entry-fee-tag">₱{{ '%.2f'|format(ev.entry_fee|float) }} entry</span>
-                    {% else %}
-                    &nbsp;<span class="entry-fee-tag"
-                        style="background:rgba(74,222,128,0.12);color:#4ade80;">Free</span>
+        <div class="events-hero-actions">
+            <a href="{{ url_for('player.my_tournaments') }}" class="btn-my-tournaments-hero" title="View all tournaments you registered for">
+                <div class="my-tournaments-hero-icon">
+                    <i class="ph ph-trophy"></i>
+                    {% if joined_count > 0 %}
+                    <span class="my-tournaments-badge-dot" title="{{ joined_count }} Active Registrations"></span>
                     {% endif %}
                 </div>
-            </div>
-
-            <!-- Capacity bar -->
-            <div>
-                <div class="event-capacity-bar">
-                    <div class="event-capacity-fill {% if pct >= 90 %}full{% elif pct >= 70 %}near-full{% endif %}"
-                        style="width:{{ pct }}%;"></div>
+                <div class="my-tournaments-hero-text">
+                    <span class="my-tournaments-hero-title">My Tournaments</span>
+                    <span class="my-tournaments-hero-sub">{{ joined_count }} Registered</span>
                 </div>
-                <div class="event-capacity-label">{{ pct }}% full</div>
+                <i class="ph ph-caret-right" style="color: var(--sports-text-dim); margin-left: 4px;"></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- ── 2. SEARCH, FILTERS & SORT TOOLBAR ── -->
+    <section class="events-toolbar-card" aria-label="Events Filters and Sorting">
+        <div class="events-toolbar-row">
+            <!-- Search Box -->
+            <div class="events-search-wrap">
+                <i class="ph ph-magnifying-glass search-prefix"></i>
+                <input type="text" id="eventSearchInput" class="events-search-input" placeholder="Search by event title, court venue, or format..." autocomplete="off">
+                <button type="button" id="eventSearchClear" class="events-search-clear" onclick="clearEventSearch()" aria-label="Clear Search">
+                    <i class="ph ph-x"></i>
+                </button>
             </div>
 
-            {% if ev.id in registered_ids %}
-            <div class="btn-registered"><i class="ph ph-check-circle"></i> Registered</div>
-            <form method="POST" action="{{ url_for('player.unregister_event', event_id=ev.id) }}" style="margin:0;">
-                <button type="submit" class="btn-notify-me" style="margin-top:-6px;font-size:0.78rem;padding:7px;"
-                    onclick="return confirm('Unregister from this event?')">
-                    Cancel Registration
+            <!-- Filter Pills -->
+            <div class="filter-pills-wrap" role="tablist">
+                <button type="button" class="filter-pill-btn active" data-filter="all" onclick="setEventFilter('all')" role="tab">
+                    <i class="ph ph-squares-four"></i>
+                    <span>All</span>
+                    <span class="filter-pill-badge">{{ events|length }}</span>
                 </button>
-            </form>
-            {% elif ev.status == 'registration_open' %}
-            <form method="POST" action="{{ url_for('player.register_event', event_id=ev.id) }}" style="margin:0;">
-                <button type="submit" class="btn-join-now">Join Now</button>
-            </form>
-            {% elif ev.status == 'full' %}
-            <form method="POST" action="{{ url_for('player.register_event', event_id=ev.id) }}" style="margin:0;">
-                <button type="submit" class="btn-notify-me">Join Waitlist</button>
-            </form>
-            {% else %}
-            <button class="btn-notify-me" disabled>Coming Soon</button>
-            {% endif %}
+                <button type="button" class="filter-pill-btn" data-filter="my-events" onclick="setEventFilter('my-events')" role="tab">
+                    <i class="ph ph-check-circle"></i>
+                    <span>My Events</span>
+                    <span class="filter-pill-badge">{{ joined_count }}</span>
+                </button>
+                <button type="button" class="filter-pill-btn" data-filter="tournament" onclick="setEventFilter('tournament')" role="tab">
+                    <i class="ph ph-trophy"></i>
+                    <span>Tournaments</span>
+                    <span class="filter-pill-badge">{{ tournament_count }}</span>
+                </button>
+                <button type="button" class="filter-pill-btn" data-filter="social" onclick="setEventFilter('social')" role="tab">
+                    <i class="ph ph-users-three"></i>
+                    <span>Social</span>
+                    <span class="filter-pill-badge">{{ social_count }}</span>
+                </button>
+                <button type="button" class="filter-pill-btn" data-filter="training" onclick="setEventFilter('training')" role="tab">
+                    <i class="ph ph-barbell"></i>
+                    <span>Training</span>
+                    <span class="filter-pill-badge">{{ training_count }}</span>
+                </button>
+                <button type="button" class="filter-pill-btn" data-filter="league" onclick="setEventFilter('league')" role="tab">
+                    <i class="ph ph-medal"></i>
+                    <span>Leagues</span>
+                    <span class="filter-pill-badge">{{ league_count }}</span>
+                </button>
+            </div>
 
-            <a href="{{ url_for('player.event_detail', event_id=ev.id) }}" class="btn-detail-link">View Details →</a>
+            <!-- Sort Dropdown -->
+            <div class="sort-control-wrap">
+                <label for="eventSortSelect" class="sort-select-label">
+                    <i class="ph ph-arrows-down-up"></i> Sort:
+                </label>
+                <select id="eventSortSelect" class="events-sort-select" onchange="applyEventFiltersAndSort()">
+                    <option value="date-asc">Soonest Date</option>
+                    <option value="popular-desc">Filling Fast</option>
+                    <option value="prize-desc">Highest Prize Pool</option>
+                    <option value="fee-asc">Lowest Fee</option>
+                    <option value="title-asc">Title (A - Z)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Status & Results Count Bar -->
+        <div class="results-status-bar">
+            <span>Showing <span class="results-count-bold" id="eventResultsCount">{{ events|length }}</span> of {{ events|length }} events</span>
+            <a href="javascript:void(0)" id="resetEventFiltersBtn" class="reset-filters-link" onclick="resetAllEventFilters()" style="display: none;">
+                <i class="ph ph-arrow-counter-clockwise"></i> Reset Filters
+            </a>
+        </div>
+    </section>
+
+    <!-- ── 4. EVENTS CARDS GRID ── -->
+    <div class="events-cards-grid" id="eventsGridContainer">
+        {% if events %}
+            {% for ev in events %}
+            {% set pct = ((ev.registered_count / ev.max_players) * 100)|int if ev.max_players else 0 %}
+            {% set spots_left = (ev.max_players - ev.registered_count) if ev.max_players else 0 %}
+            {% set is_registered = (ev.id in registered_ids) %}
+            {% set facility_label = (ev.facilities.name ~ ' · ' ~ (ev.facilities.location or '')) if ev.facilities else (ev.location_label or 'Facility Courts') %}
+
+            <article class="event-card-pro"
+                     data-id="{{ ev.id }}"
+                     data-title="{{ (ev.title or '')|lower }}"
+                     data-venue="{{ (facility_label or '')|lower }}"
+                     data-type="{{ ev.type or 'tournament' }}"
+                     data-status="{{ ev.status }}"
+                     data-date="{{ ev.event_date }}"
+                     data-registered="{{ 'yes' if is_registered else 'no' }}"
+                     data-pct="{{ pct }}"
+                     data-fee="{{ ev.entry_fee or 0 }}"
+                     data-prize="{{ ev.prize_pool or 0 }}"
+                     data-index="{{ loop.index0 }}">
+
+                <!-- Card Banner -->
+                <div class="event-card-banner" style="{% if ev.image_url %}background-image: url('{{ ev.image_url }}');{% endif %}">
+                    <div class="event-banner-scrim"></div>
+
+                    <!-- Top Badges -->
+                    <div class="event-banner-top-badges">
+                        <span class="event-type-badge badge-{{ ev.type }}">
+                            {% if ev.type == 'tournament' %}
+                            <i class="ph ph-trophy"></i>
+                            {% elif ev.type == 'social' %}
+                            <i class="ph ph-users-three"></i>
+                            {% elif ev.type == 'training' %}
+                            <i class="ph ph-barbell"></i>
+                            {% else %}
+                            <i class="ph ph-medal"></i>
+                            {% endif %}
+                            {{ ev.type|capitalize }}
+                        </span>
+
+                        {% if ev.status == 'full' %}
+                        <span class="event-status-pill full"><i class="ph ph-prohibit"></i> Full</span>
+                        {% elif ev.status == 'registration_open' %}
+                        <span class="event-status-pill open"><i class="ph ph-check-circle"></i> Open</span>
+                        {% else %}
+                        <span class="event-status-pill soon"><i class="ph ph-clock"></i> Upcoming</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Prize Pool Pill if applicable -->
+                    {% if ev.prize_pool and ev.prize_pool > 0 %}
+                    <span class="event-prizepool-pill" title="Official Tournament Prize Pool">
+                        <i class="ph ph-coins"></i> ₱{{ "%.0f"|format(ev.prize_pool) }} Prize Pool
+                    </span>
+                    {% endif %}
+                </div>
+
+                <!-- Card Body -->
+                <div class="event-card-body">
+                    <!-- Title -->
+                    <a href="{{ url_for('player.event_detail', event_id=ev.id) }}" class="event-title-link" title="{{ ev.title }}">
+                        {{ ev.title }}
+                    </a>
+
+                    <!-- Meta Rows -->
+                    <div class="event-meta-group">
+                        <div class="event-meta-item">
+                            <i class="ph ph-calendar"></i>
+                            <span>{{ ev.event_date }} &bull; {{ ev.start_time[:5] }} – {{ ev.end_time[:5] }}</span>
+                        </div>
+                        <div class="event-meta-item">
+                            <i class="ph ph-map-pin"></i>
+                            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ facility_label }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Fee & Registered Info -->
+                    <div class="event-fee-row">
+                        {% if ev.entry_fee and ev.entry_fee > 0 %}
+                        <span class="event-fee-badge paid">
+                            <i class="ph ph-tag"></i> ₱{{ '%.2f'|format(ev.entry_fee|float) }} Entry
+                        </span>
+                        {% else %}
+                        <span class="event-fee-badge free">
+                            <i class="ph ph-sparkle"></i> Free Entry
+                        </span>
+                        {% endif %}
+
+                        <span class="event-players-text">
+                            <strong>{{ ev.registered_count }}</strong> / {{ ev.max_players }} Players
+                        </span>
+                    </div>
+
+                    <!-- Capacity Bar -->
+                    <div class="capacity-bar-wrap">
+                        <div class="capacity-track">
+                            <div class="capacity-fill {% if pct >= 90 %}full{% elif pct >= 70 %}near-full{% endif %}" style="width: {{ pct }}%;"></div>
+                        </div>
+                        <div class="capacity-label-row">
+                            <span>{{ pct }}% full</span>
+                            <span>{% if spots_left > 0 %}{{ spots_left }} spots left{% else %}Capacity reached{% endif %}</span>
+                        </div>
+                    </div>
+
+                    <!-- Action Tray -->
+                    <div class="event-action-tray">
+                        <a href="{{ url_for('player.event_detail', event_id=ev.id) }}" class="btn-event-details" title="View event details & brackets">
+                            <i class="ph ph-info"></i> Details
+                        </a>
+
+                        {% if is_registered %}
+                        <div class="btn-event-main registered" title="You are registered for this event">
+                            <i class="ph ph-check-circle-fill"></i> Joined
+                        </div>
+                        {% elif ev.status == 'registration_open' %}
+                        <form method="POST" action="{{ url_for('player.register_event', event_id=ev.id) }}" style="flex: 1; margin: 0;">
+                            <button type="submit" class="btn-event-main join" style="width: 100%;">
+                                {% if ev.entry_fee and ev.entry_fee > 0 %}
+                                <i class="ph ph-ticket"></i> Join • ₱{{ "%.0f"|format(ev.entry_fee) }}
+                                {% else %}
+                                <i class="ph ph-plus-circle"></i> Join Event
+                                {% endif %}
+                            </button>
+                        </form>
+                        {% elif ev.status == 'full' %}
+                        <form method="POST" action="{{ url_for('player.register_event', event_id=ev.id) }}" style="flex: 1; margin: 0;">
+                            <button type="submit" class="btn-event-main waitlist" style="width: 100%;" title="Join waiting list">
+                                <i class="ph ph-clock-countdown"></i> Join Waitlist
+                            </button>
+                        </form>
+                        {% else %}
+                        <button type="button" class="btn-event-main disabled" disabled title="Registration opening soon">
+                            Coming Soon
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        {% else %}
+            <!-- Initial Empty State -->
+            <div class="events-empty-state">
+                <div class="empty-state-icon-ring">
+                    <i class="ph ph-trophy"></i>
+                </div>
+                <h3 class="empty-state-title">No Events Available</h3>
+                <p class="empty-state-desc">There are no upcoming tournaments or sessions scheduled right now. Check back soon!</p>
+            </div>
+        {% endif %}
+
+        <!-- Filtered Zero Match Empty State -->
+        <div id="eventFilterEmptyState" class="events-empty-state" style="display: none;">
+            <div class="empty-state-icon-ring">
+                <i class="ph ph-magnifying-glass"></i>
+            </div>
+            <h3 class="empty-state-title">No Matching Events Found</h3>
+            <p class="empty-state-desc">We couldn't find any events or tournaments matching your current search terms or filter selection.</p>
+            <button type="button" class="btn-empty-reset" onclick="resetAllEventFilters()">
+                <i class="ph ph-arrow-counter-clockwise"></i> Reset All Filters
+            </button>
         </div>
     </div>
-    {% endfor %}
-    {% else %}
-    <div class="empty-events">
-        <i class="ph ph-trophy"></i>
-        <h3>No Events Available</h3>
-        <p>There are no upcoming events right now. Check back soon!</p>
-    </div>
-    {% endif %}
+
 </div>
 
+<!-- ── CLIENT-SIDE INTERACTIVITY SCRIPT ── -->
 <script>
-    function filterEvents(type, btn) {
-        document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
-        btn.classList.add('active');
-        document.querySelectorAll('.event-card-full').forEach(card => {
-            card.style.display = (type === 'all' || card.dataset.type === type) ? '' : 'none';
+    let currentEventFilter = 'all';
+
+    function setEventFilter(filterType) {
+        currentEventFilter = filterType;
+
+        // Update filter pills active state
+        document.querySelectorAll('.filter-pill-btn').forEach(btn => {
+            if (btn.getAttribute('data-filter') === filterType) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
         });
+
+        applyEventFiltersAndSort();
     }
+
+    function clearEventSearch() {
+        const input = document.getElementById('eventSearchInput');
+        if (input) {
+            input.value = '';
+            document.getElementById('eventSearchClear').style.display = 'none';
+            applyEventFiltersAndSort();
+        }
+    }
+
+    function resetAllEventFilters() {
+        const input = document.getElementById('eventSearchInput');
+        if (input) input.value = '';
+        const sort = document.getElementById('eventSortSelect');
+        if (sort) sort.value = 'date-asc';
+        setEventFilter('all');
+    }
+
+    function applyEventFiltersAndSort() {
+        const searchInput = document.getElementById('eventSearchInput');
+        const clearBtn = document.getElementById('eventSearchClear');
+        const query = (searchInput ? searchInput.value : '').trim().toLowerCase();
+        
+        if (clearBtn) {
+            clearBtn.style.display = query.length > 0 ? 'block' : 'none';
+        }
+
+        const sortSelect = document.getElementById('eventSortSelect');
+        const sortValue = sortSelect ? sortSelect.value : 'date-asc';
+
+        const cards = Array.from(document.querySelectorAll('.event-card-pro'));
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+            const title = card.getAttribute('data-title') || '';
+            const venue = card.getAttribute('data-venue') || '';
+            const type = card.getAttribute('data-type') || '';
+            const isReg = card.getAttribute('data-registered') === 'yes';
+
+            // 1. Search matching
+            let matchesSearch = true;
+            if (query.length > 0) {
+                matchesSearch = title.includes(query) || venue.includes(query) || type.includes(query);
+            }
+
+            // 2. Filter matching
+            let matchesFilter = true;
+            if (currentEventFilter === 'my-events') {
+                matchesFilter = isReg;
+            } else if (currentEventFilter !== 'all') {
+                matchesFilter = (type === currentEventFilter);
+            }
+
+            if (matchesSearch && matchesFilter) {
+                card.style.display = 'flex';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // 3. Sorting
+        const grid = document.getElementById('eventsGridContainer');
+        if (grid && cards.length > 0) {
+            cards.sort((a, b) => {
+                if (sortValue === 'date-asc') {
+                    const dateA = a.getAttribute('data-date') || '';
+                    const dateB = b.getAttribute('data-date') || '';
+                    return dateA.localeCompare(dateB);
+                } else if (sortValue === 'popular-desc') {
+                    const pctA = parseInt(a.getAttribute('data-pct') || '0', 10);
+                    const pctB = parseInt(b.getAttribute('data-pct') || '0', 10);
+                    return pctB - pctA;
+                } else if (sortValue === 'prize-desc') {
+                    const prizeA = parseFloat(a.getAttribute('data-prize') || '0');
+                    const prizeB = parseFloat(b.getAttribute('data-prize') || '0');
+                    return prizeB - prizeA;
+                } else if (sortValue === 'fee-asc') {
+                    const feeA = parseFloat(a.getAttribute('data-fee') || '0');
+                    const feeB = parseFloat(b.getAttribute('data-fee') || '0');
+                    return feeA - feeB;
+                } else if (sortValue === 'title-asc') {
+                    const tA = a.getAttribute('data-title') || '';
+                    const tB = b.getAttribute('data-title') || '';
+                    return tA.localeCompare(tB);
+                }
+                return 0;
+            });
+
+            cards.forEach(card => grid.appendChild(card));
+        }
+
+        // 4. Update count
+        const countSpan = document.getElementById('eventResultsCount');
+        if (countSpan) countSpan.textContent = visibleCount;
+
+        // 5. Toggle empty state & reset link
+        const emptyState = document.getElementById('eventFilterEmptyState');
+        const resetLink = document.getElementById('resetEventFiltersBtn');
+        const isFiltered = query.length > 0 || currentEventFilter !== 'all';
+
+        if (resetLink) {
+            resetLink.style.display = isFiltered ? 'inline-flex' : 'none';
+        }
+
+        if (emptyState) {
+            if (visibleCount === 0 && cards.length > 0) {
+                emptyState.style.display = 'flex';
+                grid.appendChild(emptyState);
+            } else {
+                emptyState.style.display = 'none';
+            }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('eventSearchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', applyEventFiltersAndSort);
+        }
+        applyEventFiltersAndSort();
+    });
 </script>
 {% endblock %}

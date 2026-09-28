@@ -2,60 +2,425 @@
 
 {% block title %}My Clubs{% endblock %}
 
-{% block content %}
-<div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center;">
-    <div>
-        <h1 class="page-title">My Clubs</h1>
-        <p style="color: var(--text-muted); margin-top: 5px;">Clubs you have joined or requested to join.</p>
-    </div>
-    <a href="{{ url_for('player.clubs') }}" class="btn-cancel" style="padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; border: 1px solid var(--border-color); color: var(--text-primary);">
-        <i class="ph ph-magnifying-glass"></i> Browse More
-    </a>
-</div>
+{% block extra_head %}
+<style>
+    .my-clubs-container {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        width: 100%;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding-bottom: 120px;
+    }
 
-<div class="clubs-list" style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
-    {% if my_clubs %}
-        {% for membership in my_clubs %}
-        <div class="glass-card" style="display: flex; align-items: center; justify-content: space-between; padding: 20px;">
-            <a href="{{ url_for('player.club_detail', club_id=membership.clubs.id) }}" style="text-decoration: none; display: flex; align-items: center; gap: 20px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1.0'">
-                {% if membership.clubs.logo_url %}
-                <img src="{{ membership.clubs.logo_url }}" alt="Logo" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">
-                {% else %}
-                <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--text-muted); flex-shrink: 0;">
-                    <i class="ph ph-shield"></i>
-                </div>
-                {% endif %}
-                
-                <div>
-                    <h3 style="margin: 0 0 5px 0; font-size: 1.1rem; color: var(--text-primary);">{{ membership.clubs.name }}</h3>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <span style="font-size: 0.85rem; color: var(--text-muted);">Joined: {{ membership.joined_at.split('T')[0] }}</span>
-                        
-                        {% if membership.status == 'active' %}
-                            <span style="background: rgba(74, 222, 128, 0.15); color: #4ade80; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Active</span>
-                        {% elif membership.status == 'pending' %}
-                            <span style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Pending Approval</span>
+    .my-clubs-hero-banner {
+        position: relative;
+        background: var(--sports-card-bg, #ffffff);
+        border: 1px solid var(--sports-border, #e2e8f0);
+        border-radius: 20px;
+        padding: 28px 32px;
+        box-shadow: var(--sports-shadow-md, 0 4px 16px rgba(15, 23, 42, 0.05));
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .my-clubs-hero-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: #10b981;
+        background: rgba(16, 185, 129, 0.12);
+        padding: 4px 12px;
+        border-radius: 9999px;
+        margin-bottom: 10px;
+    }
+
+    .my-clubs-hero-title {
+        font-size: 1.85rem;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        color: var(--sports-text-main, #0f172a);
+        line-height: 1.2;
+        margin: 0 0 8px 0;
+    }
+
+    .my-clubs-hero-desc {
+        font-size: 0.92rem;
+        color: var(--sports-text-muted, #64748b);
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    .btn-browse-more {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 22px;
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #e2e8f0);
+        border-radius: 14px;
+        color: var(--sports-text-main, #0f172a);
+        font-size: 0.86rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.22s ease;
+        box-shadow: var(--sports-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.04));
+    }
+
+    .btn-browse-more:hover {
+        border-color: var(--primary-orange, #ff5722);
+        color: var(--primary-orange, #ff5722);
+        transform: translateY(-2px);
+    }
+
+    .my-clubs-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .my-club-card {
+        background: var(--sports-card-bg, #ffffff);
+        border: 1px solid var(--sports-border, #e2e8f0);
+        border-radius: 18px;
+        padding: 20px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        box-shadow: var(--sports-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.04));
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .my-club-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--sports-shadow-md, 0 4px 16px rgba(0, 0, 0, 0.06));
+        border-color: rgba(225, 86, 35, 0.3);
+    }
+
+    .my-club-left {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        text-decoration: none;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .my-club-avatar-circle {
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        border: 2px solid var(--sports-border, #e2e8f0);
+        background: var(--sports-card-bg, #ffffff);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .my-club-avatar-circle img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .my-club-fallback-avatar {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        font-weight: 900;
+        color: #ffffff;
+    }
+
+    .avatar-grad-0 { background: linear-gradient(135deg, #ff5722, #ea580c); }
+    .avatar-grad-1 { background: linear-gradient(135deg, #10b981, #059669); }
+    .avatar-grad-2 { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+    .avatar-grad-3 { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+    .avatar-grad-4 { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+    .my-club-details {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .my-club-name {
+        margin: 0 0 6px 0;
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--sports-text-main, #0f172a);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        transition: color 0.15s ease;
+    }
+
+    .my-club-card:hover .my-club-name {
+        color: var(--primary-orange, #ff5722);
+    }
+
+    .my-club-meta-row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .my-club-joined-date {
+        font-size: 0.82rem;
+        color: var(--sports-text-muted, #64748b);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .status-badge-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 10px;
+        border-radius: 9999px;
+        font-size: 0.74rem;
+        font-weight: 700;
+    }
+
+    .status-badge-pill.active {
+        background: rgba(16, 185, 129, 0.12);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .status-badge-pill.pending {
+        background: rgba(245, 158, 11, 0.12);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+
+    .my-club-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+    }
+
+    .btn-view-club-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 9px 18px;
+        border-radius: 12px;
+        font-size: 0.84rem;
+        font-weight: 700;
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #e2e8f0);
+        color: var(--sports-text-main, #0f172a);
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-view-club-pill:hover {
+        border-color: var(--primary-orange, #ff5722);
+        color: var(--primary-orange, #ff5722);
+    }
+
+    .btn-leave-club {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: #ef4444;
+        border: 1px solid transparent;
+        background: none;
+        cursor: pointer;
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+
+    .btn-leave-club:hover {
+        background: rgba(239, 68, 68, 0.1);
+        border-color: rgba(239, 68, 68, 0.2);
+    }
+
+    .my-clubs-empty {
+        background: var(--sports-card-bg, #ffffff);
+        border: 1px dashed var(--sports-border, #e2e8f0);
+        border-radius: 20px;
+        padding: 56px 24px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+    }
+
+    .my-clubs-empty-icon {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: rgba(225, 86, 35, 0.08);
+        border: 1.5px solid rgba(225, 86, 35, 0.2);
+        color: var(--primary-orange, #ff5722);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2rem;
+    }
+
+    /* Dark Mode */
+    html.dark-mode .my-clubs-hero-banner,
+    html.dark-mode .my-club-card,
+    html.dark-mode .my-clubs-empty {
+        background: #19202e;
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    html.dark-mode .btn-browse-more,
+    html.dark-mode .btn-view-club-pill {
+        background: #141923;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #f1f5f9;
+    }
+
+    html.dark-mode .btn-browse-more:hover,
+    html.dark-mode .btn-view-club-pill:hover {
+        border-color: var(--primary-orange, #ff5722);
+        color: var(--primary-orange, #ff5722);
+    }
+
+    html.dark-mode .my-club-avatar-circle {
+        background: #141923;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    @media (max-width: 768px) {
+        .my-club-card {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 16px;
+        }
+
+        .my-club-actions {
+            justify-content: space-between;
+            padding-top: 12px;
+            border-top: 1px solid var(--sports-border, #e2e8f0);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="my-clubs-container">
+
+    <!-- Hero Banner -->
+    <header class="my-clubs-hero-banner animate-entry">
+        <div>
+            <span class="my-clubs-hero-tag">
+                <i class="ph ph-shield-check"></i> Club Memberships
+            </span>
+            <h1 class="my-clubs-hero-title">My Clubs</h1>
+            <p class="my-clubs-hero-desc">
+                Clubs and athletic communities you have joined or applied to join.
+            </p>
+        </div>
+
+        <a href="{{ url_for('player.clubs') }}" class="btn-browse-more" title="Browse all available clubs">
+            <i class="ph ph-magnifying-glass"></i> Browse More Clubs
+        </a>
+    </header>
+
+    <!-- My Clubs List -->
+    <div class="my-clubs-list">
+        {% if my_clubs %}
+            {% for membership in my_clubs %}
+            {% set grad_index = loop.index0 % 5 %}
+            {% set words = (membership.clubs.name or 'PB').split() %}
+            {% if words|length >= 2 %}
+                {% set initials = (words[0][0] + words[1][0])|upper %}
+            {% else %}
+                {% set initials = (words[0][:2])|upper %}
+            {% endif %}
+
+            <div class="my-club-card">
+                <a href="{{ url_for('player.club_detail', club_id=membership.clubs.id) }}" class="my-club-left" title="View club details">
+                    <div class="my-club-avatar-circle">
+                        {% if membership.clubs.logo_url %}
+                        <img src="{{ membership.clubs.logo_url }}" 
+                             alt="{{ membership.clubs.name }}" 
+                             loading="lazy"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="my-club-fallback-avatar avatar-grad-{{ grad_index }}" style="display: none;">
+                            {{ initials }}
+                        </div>
+                        {% else %}
+                        <div class="my-club-fallback-avatar avatar-grad-{{ grad_index }}" style="display: flex;">
+                            {{ initials }}
+                        </div>
                         {% endif %}
                     </div>
+                    
+                    <div class="my-club-details">
+                        <h3 class="my-club-name">{{ membership.clubs.name }}</h3>
+                        <div class="my-club-meta-row">
+                            <span class="my-club-joined-date">
+                                <i class="ph ph-calendar"></i>
+                                Joined: {{ membership.joined_at.split('T')[0] if membership.joined_at else 'Recent' }}
+                            </span>
+                            
+                            {% if membership.status == 'active' %}
+                                <span class="status-badge-pill active"><i class="ph ph-check-circle"></i> Active Member</span>
+                            {% elif membership.status == 'pending' %}
+                                <span class="status-badge-pill pending"><i class="ph ph-hourglass-high"></i> Pending Approval</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+                
+                <div class="my-club-actions">
+                    <a href="{{ url_for('player.club_detail', club_id=membership.clubs.id) }}" class="btn-view-club-pill">
+                        <i class="ph ph-arrow-right"></i> View Club
+                    </a>
+
+                    <form action="{{ url_for('player.leave_club', club_id=membership.clubs.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to leave {{ membership.clubs.name }}?');">
+                        <button type="submit" class="btn-leave-club" title="Leave this club">
+                            <i class="ph ph-sign-out"></i> Leave
+                        </button>
+                    </form>
                 </div>
-            </a>
-            
-            <div>
-                <form action="{{ url_for('player.leave_club', club_id=membership.clubs.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to leave this club?');">
-                    <button type="submit" class="action-link" style="color: #ef4444; border: none; background: none; cursor: pointer; padding: 8px; border-radius: 8px; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.1)'" onmouseout="this.style.background='none'">
-                        <i class="ph ph-sign-out" style="font-size: 1.2rem;"></i> Leave Club
-                    </button>
-                </form>
             </div>
-        </div>
-        {% endfor %}
-    {% else %}
-        <div class="glass-card" style="text-align: center; padding: 40px; color: var(--text-muted);">
-            <p>You haven't joined any clubs yet.</p>
-            <a href="{{ url_for('player.clubs') }}" class="action-box orange" style="display: inline-block; margin-top: 15px; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">
-                Find a Club
-            </a>
-        </div>
-    {% endif %}
+            {% endfor %}
+        {% else %}
+            <div class="my-clubs-empty">
+                <div class="my-clubs-empty-icon">
+                    <i class="ph ph-shield-plus"></i>
+                </div>
+                <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--sports-text-main);">No Club Memberships Yet</h3>
+                <p style="margin: 0; color: var(--sports-text-muted); font-size: 0.9rem; max-width: 420px; line-height: 1.5;">
+                    Join local pickleball clubs to participate in member discussions, exclusive matches, and regional leagues.
+                </p>
+                <a href="{{ url_for('player.clubs') }}" class="sports-pill-btn primary" style="margin-top: 6px; text-decoration: none;">
+                    <i class="ph ph-magnifying-glass"></i> Explore Clubs Directory
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
 </div>
 {% endblock %}

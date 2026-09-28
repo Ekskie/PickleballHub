@@ -7,18 +7,29 @@ from app.clubadmin import clubadmin_bp
 @clubadmin_bp.route('/members')
 @require_role('clubadmin')
 def members():
-    db = get_db()
+    db = get_admin_db() or get_db()
     members_list = []
+    stats = {
+        'total': 0,
+        'active': 0,
+        'pending': 0,
+        'expired': 0,
+        'avg_dupr': '0.00'
+    }
     
     if g.club:
         try:
             resp = db.table('club_memberships').select(
-                'id, status, joined_at, gcash_ref, player_id, profiles!player_id(first_name, last_name, phone, elo, dupr, proficiency, avatar_url, email)'
+                'id, status, joined_at, expires_at, gcash_ref, receipt_url, player_id, '
+                'profiles!player_id(first_name, last_name, phone, elo, dupr, proficiency, avatar_url, email)'
             ).eq('club_id', g.club['id']).order('joined_at', desc=True).execute()
             members_list = resp.data or []
             
             # Post-process to calculate fallbacks/initials
             from app.ratings import get_initial_rating
+            total_dupr = 0.0
+            dupr_count = 0
+            
             for m in members_list:
                 prof = m.get('profiles') or {}
                 if prof:
@@ -32,12 +43,31 @@ def members():
                         elo_def, dupr_def = get_initial_rating(prof.get('proficiency'))
                         if elo is None: prof['elo'] = elo_def
                         if dupr is None: prof['dupr'] = dupr_def
+                    
+                    try:
+                        d_val = float(prof.get('dupr') or 0)
+                        if d_val > 0:
+                            total_dupr += d_val
+                            dupr_count += 1
+                    except (ValueError, TypeError):
+                        pass
+
+            # Calculate KPI stats
+            stats['total'] = len(members_list)
+            stats['active'] = sum(1 for m in members_list if m.get('status') == 'active')
+            stats['pending'] = sum(1 for m in members_list if m.get('status') == 'pending')
+            stats['expired'] = sum(1 for m in members_list if m.get('status') == 'expired')
+            if dupr_count > 0:
+                stats['avg_dupr'] = f"{total_dupr / dupr_count:.2f}"
+            else:
+                stats['avg_dupr'] = "3.00"
+
         except Exception as e:
             from flask import current_app
             current_app.logger.error(f"Error listing members for club {g.club['id']}: {e}")
             flash('An error occurred. Please try again.', 'error')
             
-    return render_template('clubadmin/members.html', members=members_list)
+    return render_template('clubadmin/members.html', members=members_list, stats=stats)
 
 @clubadmin_bp.route('/members/<player_id>/details')
 @require_role('clubadmin')
@@ -144,7 +174,7 @@ def member_details(player_id):
 @clubadmin_bp.route('/members/<membership_id>/approve', methods=['POST'])
 @require_role('clubadmin')
 def approve_member(membership_id):
-    db = get_db()
+    db = get_admin_db() or get_db()
     if not g.club:
         return redirect(url_for('clubadmin.dashboard'))
         
@@ -167,25 +197,41 @@ def approve_member(membership_id):
             update_data['expires_at'] = expires_at
             
         db.table('club_memberships').update(update_data).eq('id', membership_id).eq('club_id', g.club['id']).execute()
-        flash("Member approved successfully.", "success")
+        flash("Member verified and approved successfully.", "success")
     except Exception as e:
         from flask import current_app
         current_app.logger.error(f"Error approving membership {membership_id}: {e}")
         flash('An error occurred. Please try again.', 'error')
-    return redirect(url_for('clubadmin.members'))
+    return redirect(request.form.get('next') or request.referrer or url_for('clubadmin.members'))
+
+@clubadmin_bp.route('/members/<membership_id>/reject', methods=['POST'])
+@require_role('clubadmin')
+def reject_member(membership_id):
+    db = get_admin_db() or get_db()
+    if not g.club:
+        return redirect(url_for('clubadmin.dashboard'))
+        
+    try:
+        db.table('club_memberships').update({'status': 'rejected'}).eq('id', membership_id).eq('club_id', g.club['id']).execute()
+        flash("Member application rejected.", "info")
+    except Exception as e:
+        from flask import current_app
+        current_app.logger.error(f"Error rejecting membership {membership_id}: {e}")
+        flash('An error occurred. Please try again.', 'error')
+    return redirect(request.form.get('next') or request.referrer or url_for('clubadmin.members'))
 
 @clubadmin_bp.route('/members/<membership_id>/remove', methods=['POST'])
 @require_role('clubadmin')
 def remove_member(membership_id):
-    db = get_db()
+    db = get_admin_db() or get_db()
     if not g.club:
         return redirect(url_for('clubadmin.dashboard'))
         
     try:
         db.table('club_memberships').delete().eq('id', membership_id).eq('club_id', g.club['id']).execute()
-        flash("Member removed.", "success")
+        flash("Member removed from club roster.", "success")
     except Exception as e:
         from flask import current_app
         current_app.logger.error(f"Error removing membership {membership_id}: {e}")
         flash('An error occurred. Please try again.', 'error')
-    return redirect(url_for('clubadmin.members'))
+    return redirect(request.form.get('next') or request.referrer or url_for('clubadmin.members'))

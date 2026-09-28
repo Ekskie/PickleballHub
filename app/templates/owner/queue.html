@@ -154,41 +154,50 @@ async function updateQueueStatus(queueId, nextStatus) {
     }
 }
 
-async function deleteQueueItem(queueId) {
-    if (!confirm('Remove player from queue?')) return;
-    
-    const row = document.getElementById(`queue-row-${queueId}`);
-    if (!row) return;
+function deleteQueueItem(queueId) {
+    showConfirmModal({
+        title: 'Remove Player',
+        message: 'Remove this player from the active queue?',
+        confirmText: 'Remove',
+        danger: true,
+        onConfirm: async () => {
+            const row = document.getElementById(`queue-row-${queueId}`);
+            if (!row) return;
 
-    try {
-        const response = await fetch("{{ url_for('owner.update_queue') }}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                queue_id: queueId,
-                status: 'cancelled'
-            })
-        });
+            try {
+                const response = await fetch("{{ url_for('owner.update_queue') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        queue_id: queueId,
+                        status: 'cancelled'
+                    })
+                });
 
-        const result = await response.json();
-        if (result.success) {
-            showToast('Success', 'Player removed from queue.', 'success');
-            row.style.opacity = '0';
-            row.style.transform = 'translateX(20px)';
-            setTimeout(() => {
-                const tbody = row.parentNode;
-                row.remove();
-                recalculateQueuePositions(tbody);
-            }, 300);
-        } else {
-            showToast('Error', result.message || 'Failed to remove player.', 'error');
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showToast('Success', 'Player removed from queue.', 'success');
+                    row.style.opacity = '0';
+                    row.style.transform = 'translateX(20px)';
+                    row.style.transition = 'opacity 0.3s, transform 0.3s';
+                    setTimeout(() => {
+                        const tbody = row.parentNode;
+                        row.remove();
+                        checkEmptyQueue();
+                        recalculateQueuePositions(tbody);
+                    }, 300);
+                } else {
+                    showToast('Error', result.message || 'Failed to remove player.', 'error');
+                }
+            } catch (err) {
+                console.error('AJAX queue delete error:', err);
+                showToast('Error', 'An unexpected error occurred.', 'error');
+            }
         }
-    } catch (err) {
-        console.error('AJAX queue delete error:', err);
-        showToast('Error', 'An unexpected error occurred.', 'error');
-    }
+    });
 }
 
 function recalculateQueuePositions(tbody) {

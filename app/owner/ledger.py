@@ -10,12 +10,23 @@ from app.owner.routes import PH_TZ
 @require_role('owner')
 def payment_ledger():
     owner_id = session.get('user_id')
-    db = get_db()
+    db = get_admin_db() or get_db()
     transactions = []
+    facilities_data = []
+    stats = {
+        'total_verified_revenue': 0.0,
+        'pending_revenue': 0.0,
+        'pending_count': 0,
+        'confirmed_count': 0,
+        'completed_count': 0,
+        'approved_count': 0,
+        'declined_count': 0,
+        'total_transactions': 0
+    }
     
     try:
         # Fetch facilities owned by this owner
-        fac_resp = db.table('facilities').select('id, name').eq('owner_id', owner_id).execute()
+        fac_resp = db.table('facilities').select('id, name').eq('owner_id', owner_id).order('name').execute()
         facilities_data = fac_resp.data or []
         fac_ids = [f['id'] for f in facilities_data]
         
@@ -25,7 +36,7 @@ def payment_ledger():
                 'id, date, start_time, end_time, total_amount, status, gcash_ref, receipt_url, created_at, player_id, facility_id, '
                 'profiles(first_name, last_name, phone, avatar_url), '
                 'courts(name, type), '
-                'facilities(name)'
+                'facilities(id, name)'
             ).in_('facility_id', fac_ids).neq('gcash_ref', None).neq('gcash_ref', '').order('created_at', desc=True).execute()
             
             transactions = resp.data or []
@@ -36,12 +47,37 @@ def payment_ledger():
                 first = (prof.get('first_name') or ' ')[0]
                 last = (prof.get('last_name') or ' ')[0]
                 prof['initials'] = (first + last).upper().strip() or '?'
+
+            # Compute rich financial and operational stats
+            total_verified_revenue = sum(float(t.get('total_amount') or 0) for t in transactions if t.get('status') in ['confirmed', 'completed'])
+            pending_revenue = sum(float(t.get('total_amount') or 0) for t in transactions if t.get('status') == 'pending_payment')
+            pending_count = sum(1 for t in transactions if t.get('status') == 'pending_payment')
+            confirmed_count = sum(1 for t in transactions if t.get('status') == 'confirmed')
+            completed_count = sum(1 for t in transactions if t.get('status') == 'completed')
+            approved_count = confirmed_count + completed_count
+            declined_count = sum(1 for t in transactions if t.get('status') == 'cancelled')
+
+            stats = {
+                'total_verified_revenue': total_verified_revenue,
+                'pending_revenue': pending_revenue,
+                'pending_count': pending_count,
+                'confirmed_count': confirmed_count,
+                'completed_count': completed_count,
+                'approved_count': approved_count,
+                'declined_count': declined_count,
+                'total_transactions': len(transactions)
+            }
+
+            # Attach transaction count to each facility for filter dropdown
+            for f in facilities_data:
+                f['tx_count'] = sum(1 for t in transactions if t.get('facility_id') == f['id'])
+
     except Exception as e:
         from flask import current_app
         current_app.logger.error(f"Error loading payment ledger for owner {owner_id}: {e}")
         flash('An error occurred loading ledger. Please try again.', 'error')
         
-    return render_template('owner/ledger.html', transactions=transactions)
+    return render_template('owner/ledger.html', transactions=transactions, facilities=facilities_data, stats=stats)
 
 
 @owner_bp.route('/ledger/<reservation_id>/approve', methods=['POST'])

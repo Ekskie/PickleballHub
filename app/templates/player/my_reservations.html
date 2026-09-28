@@ -125,7 +125,7 @@
                 </div>
                 <div class="res-meta-item">
                     <i class="ph ph-clock"></i>
-                    <span><strong>{{ r.start_time[:5] }} – {{ r.end_time[:5] }}</strong></span>
+                    <span><strong>{{ r.start_time_12 or (r.start_time | time12) }} – {{ r.end_time_12 or (r.end_time | time12) }}</strong></span>
                 </div>
                 <div class="res-meta-item">
                     <i class="ph ph-hourglass"></i>
@@ -149,6 +149,35 @@
                 </div>
                 {% endif %}
             </div>
+
+            <!-- Facility Host / Contact -->
+            {% if fac.owner and fac.owner.id %}
+            <div style="display:flex;align-items:center;justify-content:space-between;background:var(--input-bg);padding:8px 12px;border-radius:10px;border:1px solid var(--border-color);margin-top:4px;">
+                <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+                    <div style="width:28px;height:28px;font-size:0.68rem;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,87,34,0.12);color:var(--primary-orange);border:1.5px solid rgba(255,87,34,0.35);font-weight:800;flex-shrink:0;overflow:hidden;">
+                        {% if fac.owner.avatar_url %}
+                            <img src="{{ fac.owner.avatar_url }}" alt="{{ fac.owner.full_name }}" style="width:100%;height:100%;object-fit:cover;">
+                        {% else %}
+                            {{ fac.owner.initials }}
+                        {% endif %}
+                    </div>
+                    <div style="min-width:0;">
+                        <span style="font-size:0.78rem;font-weight:700;color:var(--text-primary);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ fac.owner.full_name }}</span>
+                        <span style="font-size:0.68rem;color:var(--text-muted);display:flex;align-items:center;gap:3px;"><i class="ph ph-crown" style="color:#f59e0b;"></i> Facility Owner</span>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+                    {% if fac.owner.phone %}
+                    <a href="tel:{{ fac.owner.phone }}" style="width:26px;height:26px;border-radius:50%;border:1px solid var(--border-color);background:var(--card-bg);color:var(--text-muted);display:inline-flex;align-items:center;justify-content:center;font-size:0.75rem;text-decoration:none;" title="Call {{ fac.owner.phone }}">
+                        <i class="ph ph-phone"></i>
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('player.messages') }}?chat_user={{ fac.owner.id }}" style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;text-decoration:none;background:rgba(255,87,34,0.12);color:var(--primary-orange);border:1px solid rgba(255,87,34,0.35);" title="Chat with facility owner">
+                        <i class="ph ph-chat-circle-dots"></i> Chat
+                    </a>
+                </div>
+            </div>
+            {% endif %}
 
             <!-- Footer: price + actions -->
             <div class="res-footer">

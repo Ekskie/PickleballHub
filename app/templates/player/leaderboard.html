@@ -1,98 +1,582 @@
 {% extends "player/base_player.html" %}
 
-{% block title %}Leaderboard{% endblock %}
+{% block title %}Global Leaderboards — PickleballHub{% endblock %}
 
 {% block extra_head %}
 <style>
-    .leaderboard-layout {
+    /* ==========================================================================
+       LEADERBOARDS — SPORTS PLATFORM 2.0 (LIGHT & DARK DUAL THEME)
+       ========================================================================== */
+    .leaderboard-page-wrapper {
         display: flex;
         flex-direction: column;
         gap: 24px;
+        width: 100%;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding-bottom: 140px; /* Clearance for floating bookings cart widget */
     }
 
-    /* Podium Layout for Top 3 */
+    /* ── Hero Banner ── */
+    .leaderboard-hero-banner {
+        position: relative;
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        border-radius: 20px;
+        padding: 26px 32px;
+        box-shadow: 0 4px 16px rgba(16, 24, 40, 0.05);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+        transition: background 0.3s ease, border-color 0.3s ease;
+    }
+
+    .leaderboard-hero-banner::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #f59e0b, var(--primary-orange, #ff5722), #6366f1);
+        z-index: 2;
+    }
+
+    .leaderboard-hero-banner::before {
+        content: "";
+        position: absolute;
+        top: -40px;
+        right: -40px;
+        width: 280px;
+        height: 280px;
+        background: radial-gradient(circle, rgba(245, 158, 11, 0.1) 0%, rgba(225, 86, 35, 0.04) 60%, transparent 80%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .leaderboard-hero-info {
+        position: relative;
+        z-index: 1;
+        flex: 1;
+        min-width: 280px;
+    }
+
+    .leaderboard-hero-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.74rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: var(--primary-orange, #ff5722);
+        background: var(--primary-orange-light, rgba(225, 86, 35, 0.12));
+        padding: 4px 12px;
+        border-radius: 9999px;
+        margin-bottom: 10px;
+    }
+
+    .leaderboard-hero-title {
+        font-size: 1.85rem;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        color: var(--sports-text-main, #0f172a);
+        line-height: 1.2;
+        margin: 0 0 8px 0;
+    }
+
+    .leaderboard-hero-desc {
+        font-size: 0.92rem;
+        color: var(--sports-text-muted, #475467);
+        line-height: 1.5;
+        margin: 0;
+        max-width: 680px;
+    }
+
+    .leaderboard-hero-actions {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+    }
+
+    .btn-matchmaker-shortcut {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 18px;
+        background: var(--sports-card-bg, #ffffff);
+        color: var(--sports-text-main, #0f172a);
+        border: 1.5px solid var(--sports-border, #d0d5dd);
+        border-radius: 12px;
+        font-size: 0.84rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    .btn-matchmaker-shortcut:hover {
+        border-color: var(--primary-orange, #ff5722);
+        color: var(--primary-orange, #ff5722);
+        transform: translateY(-2px);
+    }
+
+    /* ── Current User Standing Hero Card (Light & Dark Polished) ── */
+    .user-standing-card {
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid rgba(225, 86, 35, 0.35);
+        border-radius: 18px;
+        padding: 18px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        box-shadow: 0 4px 16px rgba(225, 86, 35, 0.08);
+        transition: background 0.3s ease, border-color 0.3s ease;
+    }
+
+    .user-standing-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .user-standing-avatar {
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, var(--primary-orange, #ff5722), #ea580c);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        font-weight: 900;
+        box-shadow: 0 2px 10px rgba(225, 86, 35, 0.3);
+        flex-shrink: 0;
+        overflow: hidden;
+    }
+
+    .user-standing-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .user-standing-title {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--sports-text-main, #0f172a);
+        margin: 0;
+    }
+
+    .user-standing-chips {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .standing-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 9999px;
+        font-size: 0.78rem;
+        font-weight: 800;
+        background: var(--input-bg, #f8fafc);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        color: var(--sports-text-main, #0f172a);
+    }
+
+    .standing-chip strong {
+        color: var(--primary-orange, #ff5722);
+    }
+
+    .btn-jump-rank {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 9px 18px;
+        background: var(--primary-orange, #ff5722);
+        color: #ffffff;
+        border-radius: 12px;
+        font-size: 0.82rem;
+        font-weight: 800;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(225, 86, 35, 0.25);
+    }
+
+    .btn-jump-rank:hover {
+        background: var(--primary-orange-hover, #ea580c);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(225, 86, 35, 0.35);
+    }
+
+    /* ── Athletic Stepped Podium (Top 3) — Light Mode Enhanced ── */
     .podium-container {
         display: flex;
         justify-content: center;
         align-items: flex-end;
         gap: 20px;
-        margin: 20px 0 30px;
-    }
-
-    @media (max-width: 768px) {
-        .podium-container {
-            flex-direction: column;
-            align-items: center;
-            gap: 16px;
-        }
+        margin: 10px 0 10px 0;
+        padding: 10px 0 16px 0;
     }
 
     .podium-card {
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        border-radius: 14px;
-        padding: 20px;
+        background: #ffffff;
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        border-radius: 20px;
+        padding: 26px 20px 20px 20px;
         text-align: center;
         display: flex;
         flex-direction: column;
         align-items: center;
         width: 100%;
-        max-width: 200px;
+        max-width: 260px;
         position: relative;
+        box-shadow: 0 4px 16px rgba(16, 24, 40, 0.05);
+        transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s ease, border-color 0.24s ease;
     }
 
+    .podium-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 32px rgba(15, 23, 42, 0.1);
+    }
+
+    /* Stepped Heights with Refined Light Mode Athletic Gradients */
     .podium-card.first {
-        height: 240px;
-        border-color: #fbbf24;
-        box-shadow: 0 4px 20px rgba(251, 191, 36, 0.1);
+        order: 2;
+        min-height: 310px;
+        border: 2px solid #f59e0b;
+        background: linear-gradient(180deg, #ffffff 50%, #fef3c7 100%);
+        box-shadow: 0 10px 30px rgba(245, 158, 11, 0.18);
     }
 
     .podium-card.second {
-        height: 200px;
-        border-color: #94a3b8;
+        order: 1;
+        min-height: 275px;
+        border: 1.5px solid #cbd5e1;
+        background: linear-gradient(180deg, #ffffff 60%, #f1f5f9 100%);
+        box-shadow: 0 6px 20px rgba(100, 116, 139, 0.1);
     }
 
     .podium-card.third {
-        height: 180px;
-        border-color: #b45309;
+        order: 3;
+        min-height: 260px;
+        border: 1.5px solid #fed7aa;
+        background: linear-gradient(180deg, #ffffff 60%, #fff7ed 100%);
+        box-shadow: 0 6px 20px rgba(217, 119, 6, 0.1);
     }
 
-    .podium-rank {
+    /* Podium Header Rank Badges */
+    .podium-rank-badge {
         position: absolute;
-        top: -16px;
-        width: 32px;
-        height: 32px;
+        top: -15px;
+        padding: 5px 14px;
+        border-radius: 9999px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 900;
+        font-size: 0.82rem;
+        letter-spacing: 0.6px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+        border: 2px solid #ffffff;
+        text-transform: uppercase;
+        color: #ffffff;
+    }
+
+    .podium-rank-badge.gold {
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+        box-shadow: 0 4px 16px rgba(245, 158, 11, 0.45);
+    }
+
+    .podium-rank-badge.silver {
+        background: linear-gradient(135deg, #94a3b8 0%, #64748b 50%, #475467 100%);
+        box-shadow: 0 4px 12px rgba(100, 116, 139, 0.35);
+    }
+
+    .podium-rank-badge.bronze {
+        background: linear-gradient(135deg, #f59e0b 0%, #b45309 50%, #78350f 100%);
+        box-shadow: 0 4px 12px rgba(180, 83, 9, 0.35);
+    }
+
+    /* Circular Avatar with Glowing Ring and Solid Vibrant Metallic Backgrounds */
+    .podium-card .podium-avatar,
+    .podium-avatar {
+        width: 76px;
+        height: 76px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 800;
-        font-size: 1rem;
-        box-shadow: var(--shadow-sm);
+        margin: 8px 0 12px 0;
+        position: relative;
+        overflow: hidden;
+        flex-shrink: 0;
+        border: 3.5px solid #ffffff;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
     }
 
-    .podium-card.first .podium-rank { background: #fbbf24; color: #000; }
-    .podium-card.second .podium-rank { background: #94a3b8; color: #fff; }
-    .podium-card.third .podium-rank { background: #b45309; color: #fff; }
+    .podium-card.first .podium-avatar {
+        width: 86px;
+        height: 86px;
+        border: 3.5px solid #f59e0b !important;
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25), 0 8px 24px rgba(245, 158, 11, 0.35);
+    }
 
-    .podium-avatar {
-        width: 56px;
-        height: 56px;
-        border-radius: 12px;
+    .podium-card.second .podium-avatar {
+        border: 3.5px solid #94a3b8 !important;
+        background: linear-gradient(135deg, #64748b 0%, #475467 100%) !important;
+        box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.25), 0 6px 18px rgba(100, 116, 139, 0.25);
+    }
+
+    .podium-card.third .podium-avatar {
+        border: 3.5px solid #d97706 !important;
+        background: linear-gradient(135deg, #b45309 0%, #78350f 100%) !important;
+        box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.25), 0 6px 18px rgba(180, 83, 9, 0.25);
+    }
+
+    .podium-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .podium-initials {
+        width: 100%;
+        height: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: white;
-        margin: 10px 0;
+        font-size: 1.55rem;
+        font-weight: 900;
+        color: #ffffff !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
     }
 
-    .leaderboard-table-wrap {
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
+    .podium-card.first .podium-initials {
+        font-size: 1.8rem;
+    }
+
+
+    .podium-player-name {
+        font-weight: 800;
+        color: var(--sports-text-main, #0f172a);
+        font-size: 1.05rem;
+        line-height: 1.25;
+        margin: 0;
+        cursor: pointer;
+        transition: color 0.18s ease;
+        max-width: 100%;
+        white-space: nowrap;
         overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .podium-player-name:hover {
+        color: var(--primary-orange, #ff5722);
+    }
+
+    .podium-dupr-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 1.15rem;
+        font-weight: 900;
+        color: var(--primary-orange, #ff5722);
+        margin-top: 6px;
+    }
+
+    .podium-card.first .podium-dupr-tag {
+        font-size: 1.35rem;
+        color: #d97706;
+    }
+
+    .podium-meta-pills {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .podium-meta-pill {
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: #334155;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        padding: 4px 10px;
+        border-radius: 8px;
+    }
+
+    .podium-card.first .podium-meta-pill {
+        background: #fef3c7;
+        border-color: #fde68a;
+        color: #92400e;
+        font-weight: 800;
+    }
+
+    /* ── Controls & Filter Bar ── */
+    .leaderboard-toolbar-card {
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        border-radius: 18px;
+        padding: 16px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        box-shadow: 0 1px 3px rgba(16, 24, 40, 0.04);
+    }
+
+    .leaderboard-toolbar-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+
+    .leaderboard-search-form {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+        min-width: 280px;
+        margin: 0;
+    }
+
+    .leaderboard-search-wrap {
+        position: relative;
+        flex: 1;
+    }
+
+    .leaderboard-search-wrap i.search-prefix {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--sports-text-muted, #94a3b8);
+        font-size: 1.05rem;
+        pointer-events: none;
+    }
+
+    .leaderboard-search-input {
+        width: 100%;
+        padding: 10px 14px 10px 40px;
+        background: var(--input-bg, #f8fafc);
+        border: 1.5px solid var(--sports-border, #d0d5dd);
+        border-radius: 12px;
+        font-size: 0.88rem;
+        color: var(--sports-text-main, #0f172a);
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .leaderboard-search-input:focus {
+        border-color: var(--primary-orange, #ff5722);
+        box-shadow: 0 0 0 3px rgba(225, 86, 35, 0.1);
+    }
+
+    /* Proficiency Filter Tabs */
+    .prof-filter-tabs {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .prof-tab-btn {
+        padding: 7px 13px;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        background: var(--input-bg, #f1f5f9);
+        border: 1px solid var(--sports-border, #e2e8f0);
+        color: var(--sports-text-muted, #475467);
+        text-decoration: none;
+        transition: all 0.18s ease;
+        white-space: nowrap;
+    }
+
+    .prof-tab-btn:hover {
+        border-color: var(--primary-orange, #ff5722);
+        color: var(--primary-orange, #ff5722);
+    }
+
+    .prof-tab-btn.active {
+        background: var(--primary-orange, #ff5722);
+        color: #ffffff;
+        border-color: var(--primary-orange, #ff5722);
+        box-shadow: 0 2px 8px rgba(225, 86, 35, 0.25);
+    }
+
+    /* Sort Select */
+    .sort-control-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .sort-label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--sports-text-muted, #475467);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .sort-select-input {
+        padding: 9px 34px 9px 12px;
+        background: var(--input-bg, #f8fafc) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 12px center;
+        border: 1.5px solid var(--sports-border, #d0d5dd);
+        border-radius: 12px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--sports-text-main, #0f172a);
+        cursor: pointer;
+        outline: none;
+        appearance: none;
+        transition: border-color 0.2s ease;
+    }
+
+    .sort-select-input:focus {
+        border-color: var(--primary-orange, #ff5722);
+    }
+
+    /* ── Leaderboard Table Card ── */
+    .leaderboard-table-card {
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 4px 16px rgba(16, 24, 40, 0.04);
+    }
+
+    .table-scroll-container {
+        width: 100%;
+        overflow-x: auto;
     }
 
     .leaderboard-table {
@@ -101,186 +585,811 @@
         text-align: left;
     }
 
-    .leaderboard-table th, .leaderboard-table td {
-        padding: 14px 20px;
-        border-bottom: 1px solid var(--border-color);
-    }
-
     .leaderboard-table th {
-        background: var(--input-bg);
-        color: var(--text-secondary);
-        font-size: 0.8rem;
+        background: var(--input-bg, #f8fafc);
+        color: var(--sports-text-muted, #64748b);
+        font-size: 0.75rem;
         text-transform: uppercase;
-        font-weight: 700;
+        letter-spacing: 0.6px;
+        font-weight: 800;
+        padding: 14px 20px;
+        border-bottom: 1.5px solid var(--sports-border, #eaecf0);
+        white-space: nowrap;
     }
 
-    .leaderboard-table tr:last-child td {
+    .leaderboard-table td {
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--sports-border, #eaecf0);
+        font-size: 0.88rem;
+        color: var(--sports-text-main, #0f172a);
+        vertical-align: middle;
+    }
+
+    .leaderboard-table tbody tr {
+        transition: background-color 0.16s ease;
+    }
+
+    .leaderboard-table tbody tr:hover td {
+        background: rgba(225, 86, 35, 0.03);
+    }
+
+    .leaderboard-table tbody tr:last-child td {
         border-bottom: none;
     }
 
-    .leaderboard-table tr:hover td {
-        background: var(--input-bg);
+    /* Highlight Active User Row */
+    .leaderboard-table tr.user-row {
+        background: rgba(99, 102, 241, 0.06);
     }
 
-    .rank-num {
-        font-weight: 700;
-        font-size: 1rem;
-        color: var(--text-primary);
+    .leaderboard-table tr.user-row td {
+        border-top: 1.5px solid rgba(99, 102, 241, 0.3);
+        border-bottom: 1.5px solid rgba(99, 102, 241, 0.3);
     }
 
-    .player-cell {
+    .leaderboard-table tr.user-row td:first-child {
+        border-left: 4px solid #6366f1;
+    }
+
+    /* ── CUSTOM MINTED RANK MEDALLION COINS (REPLACES EMOJIS) ── */
+    .rank-cell-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .custom-rank-coin {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        cursor: default;
+        transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease;
+        user-select: none;
+        flex-shrink: 0;
+    }
+
+    .custom-rank-coin:hover {
+        transform: scale(1.16);
+    }
+
+    .custom-rank-coin .coin-icon {
+        font-size: 0.78rem;
+        line-height: 1;
+        margin-top: -2px;
+        margin-bottom: 1px;
+    }
+
+    .custom-rank-coin .coin-number {
+        font-size: 0.78rem;
+        font-weight: 900;
+        line-height: 1;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    /* 1st Place — Championship Gold Coin */
+    .custom-rank-coin.gold {
+        background: radial-gradient(circle at 35% 25%, #ffffff 0%, #fef08a 25%, #f59e0b 70%, #d97706 100%);
+        border: 2px solid #b45309;
+        box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25), 0 3px 10px rgba(217, 119, 6, 0.35);
+    }
+    .custom-rank-coin.gold .coin-icon,
+    .custom-rank-coin.gold .coin-number {
+        color: #78350f;
+        text-shadow: 0 1px 1px rgba(254, 240, 138, 0.7);
+    }
+
+    /* 2nd Place — Platinum Silver Coin */
+    .custom-rank-coin.silver {
+        background: radial-gradient(circle at 35% 25%, #ffffff 0%, #f1f5f9 25%, #cbd5e1 70%, #94a3b8 100%);
+        border: 2px solid #64748b;
+        box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.25), 0 3px 10px rgba(100, 116, 139, 0.25);
+    }
+    .custom-rank-coin.silver .coin-icon,
+    .custom-rank-coin.silver .coin-number {
+        color: #1e293b;
+        text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
+    }
+
+    /* 3rd Place — Metallic Bronze Coin */
+    .custom-rank-coin.bronze {
+        background: radial-gradient(circle at 35% 25%, #fff7ed 0%, #fed7aa 25%, #ea580c 70%, #9a3412 100%);
+        border: 2px solid #7c2d12;
+        box-shadow: 0 0 0 2px rgba(234, 88, 12, 0.25), 0 3px 10px rgba(154, 52, 18, 0.25);
+    }
+    .custom-rank-coin.bronze .coin-icon,
+    .custom-rank-coin.bronze .coin-number {
+        color: #431407;
+        text-shadow: 0 1px 1px rgba(254, 215, 170, 0.7);
+    }
+
+    /* Standard Numeric Pill for Rank 4+ */
+    .rank-standard-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 28px;
+        height: 28px;
+        padding: 0 6px;
+        border-radius: 8px;
+        background: var(--input-bg, #f1f5f9);
+        border: 1px solid var(--sports-border, #e2e8f0);
+        color: var(--sports-text-muted, #64748b);
+        font-weight: 800;
+        font-size: 0.84rem;
+    }
+
+    /* Player Profile Cell */
+    .player-cell-wrap {
         display: flex;
         align-items: center;
         gap: 12px;
     }
 
-    .player-avatar-small {
-        width: 32px;
-        height: 32px;
-        border-radius: 6px;
-        background: var(--btn-navy);
-        color: #fff;
+    .player-avatar-badge {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-orange, #ff5722), #ea580c);
+        color: #ffffff;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 0.8rem;
-        font-weight: 700;
+        font-size: 0.82rem;
+        font-weight: 800;
+        flex-shrink: 0;
+        overflow: hidden;
+        text-transform: uppercase;
     }
 
-    .btn-challenge {
-        padding: 6px 12px;
-        border-radius: 6px;
-        background: transparent;
-        color: var(--primary-orange);
-        border: 1px solid var(--primary-orange);
-        font-size: 0.8rem;
-        font-weight: 600;
+    .player-avatar-badge img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .player-name-text {
+        font-weight: 700;
+        color: var(--sports-text-main, #0f172a);
+        text-decoration: none;
         cursor: pointer;
+        transition: color 0.18s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .player-name-text:hover {
+        color: var(--primary-orange, #ff5722);
+    }
+
+    .you-pill-tag {
+        font-size: 0.65rem;
+        font-weight: 900;
+        background: #6366f1;
+        color: #ffffff;
+        padding: 2px 7px;
+        border-radius: 9999px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Rating Pills */
+    .dupr-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-weight: 900;
+        font-size: 0.88rem;
+    }
+
+    .dupr-pill.pro {
+        background: rgba(245, 158, 11, 0.12);
+        color: #d97706;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .dupr-pill.advanced {
+        background: rgba(225, 86, 35, 0.12);
+        color: var(--primary-orange, #ff5722);
+        border: 1px solid rgba(225, 86, 35, 0.25);
+    }
+
+    .dupr-pill.intermediate {
+        background: rgba(59, 130, 246, 0.12);
+        color: #2563eb;
+        border: 1px solid rgba(59, 130, 246, 0.25);
+    }
+
+    .dupr-pill.beginner {
+        background: rgba(16, 185, 129, 0.12);
+        color: #059669;
+        border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    /* Proficiency Skill Badges */
+    .skill-badge {
         display: inline-flex;
         align-items: center;
         gap: 4px;
-        text-decoration: none;
-        transition: var(--transition);
+        padding: 4px 10px;
+        border-radius: 9999px;
+        font-size: 0.74rem;
+        font-weight: 800;
+        text-transform: capitalize;
     }
 
-    .btn-challenge:hover {
-        background: var(--primary-orange);
-        color: white;
+    .skill-badge.pro { background: rgba(245, 158, 11, 0.12); color: #d97706; }
+    .skill-badge.advanced { background: rgba(225, 86, 35, 0.12); color: #ea580c; }
+    .skill-badge.intermediate { background: rgba(99, 102, 241, 0.12); color: #6366f1; }
+    .skill-badge.beginner { background: rgba(16, 185, 129, 0.12); color: #059669; }
+
+    /* Record & Win Rate */
+    .record-cell-group {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .record-numbers {
+        font-weight: 700;
+        font-size: 0.84rem;
+    }
+
+    .winrate-pill {
+        font-size: 0.72rem;
+        color: var(--sports-text-muted, #64748b);
+        font-weight: 600;
+    }
+
+    /* Action Buttons */
+    .btn-table-msg {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--sports-text-main, #0f172a);
+        background: var(--sports-card-bg, #ffffff);
+        border: 1.5px solid var(--sports-border, #d0d5dd);
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-table-msg:hover {
+        border-color: var(--primary-orange, #ff5722);
+        color: var(--primary-orange, #ff5722);
+        background: #fff7ed;
+        transform: translateY(-1px);
+    }
+
+    /* ── Dark Mode Overrides ── */
+    html.dark-mode .leaderboard-hero-banner,
+    html.dark-mode .podium-card,
+    html.dark-mode .leaderboard-toolbar-card,
+    html.dark-mode .leaderboard-table-card {
+        background: #19202e;
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    html.dark-mode .podium-card.first {
+        border-color: #f59e0b;
+        background: linear-gradient(to top, rgba(245, 158, 11, 0.12) 0%, #19202e 60%);
+    }
+
+    html.dark-mode .podium-card.second {
+        border-color: #64748b;
+        background: linear-gradient(to top, rgba(100, 116, 139, 0.12) 0%, #19202e 60%);
+    }
+
+    html.dark-mode .podium-card.third {
+        border-color: #b45309;
+        background: linear-gradient(to top, rgba(180, 83, 9, 0.12) 0%, #19202e 60%);
+    }
+
+    html.dark-mode .leaderboard-hero-title,
+    html.dark-mode .podium-player-name,
+    html.dark-mode .user-standing-title,
+    html.dark-mode .player-name-text,
+    html.dark-mode .leaderboard-table td,
+    html.dark-mode .rank-number-text {
+        color: #f8fafc;
+    }
+
+    html.dark-mode .leaderboard-hero-desc,
+    html.dark-mode .leaderboard-table th,
+    html.dark-mode .sort-label {
+        color: #94a3b8;
+    }
+
+    html.dark-mode .leaderboard-table th,
+    html.dark-mode .leaderboard-table td {
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    html.dark-mode .leaderboard-table tr:hover td {
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    html.dark-mode .leaderboard-search-input,
+    html.dark-mode .sort-select-input {
+        background: #0f131a;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #f1f5f9;
+    }
+
+    html.dark-mode .prof-tab-btn {
+        background: #141923;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #94a3b8;
+    }
+
+    html.dark-mode .standing-chip,
+    html.dark-mode .btn-matchmaker-shortcut,
+    html.dark-mode .btn-table-msg {
+        background: #141923;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #f1f5f9;
+    }
+
+    html.dark-mode .btn-matchmaker-shortcut:hover,
+    html.dark-mode .btn-table-msg:hover {
+        background: #1c2332;
+        border-color: var(--primary-orange, #ff5722);
+    }
+
+    html.dark-mode .podium-avatar {
+        border-color: #19202e;
+    }
+
+    html.dark-mode .podium-meta-pill {
+        background: #121620;
+        border-color: rgba(255, 255, 255, 0.08);
+        color: #94a3b8;
+    }
+
+    html.dark-mode .podium-card.first .podium-meta-pill {
+        background: rgba(245, 158, 11, 0.15);
+        border-color: rgba(245, 158, 11, 0.3);
+        color: #fcd34d;
+    }
+
+    html.dark-mode .podium-rank-badge {
+        border-color: #19202e;
+    }
+
+    html.dark-mode .user-standing-card {
+        background: #19202e;
+        border-color: rgba(225, 86, 35, 0.3);
+    }
+
+    html.dark-mode .leaderboard-table tr.user-row {
+        background: rgba(99, 102, 241, 0.12);
+    }
+
+    html.dark-mode .custom-rank-coin.gold {
+        box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3), 0 3px 12px rgba(245, 158, 11, 0.4);
+    }
+
+    html.dark-mode .custom-rank-coin.silver {
+        box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.3), 0 3px 12px rgba(100, 116, 139, 0.3);
+    }
+
+    html.dark-mode .custom-rank-coin.bronze {
+        box-shadow: 0 0 0 2px rgba(234, 88, 12, 0.3), 0 3px 12px rgba(180, 83, 9, 0.3);
+    }
+
+    html.dark-mode .rank-standard-pill {
+        background: #141923;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #94a3b8;
+    }
+
+    @media (max-width: 860px) {
+        .podium-container {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .podium-card {
+            max-width: 100%;
+        }
+
+        .podium-card.first {
+            order: 1;
+            min-height: auto;
+        }
+
+        .podium-card.second {
+            order: 2;
+            min-height: auto;
+        }
+
+        .podium-card.third {
+            order: 3;
+            min-height: auto;
+        }
+
+        .leaderboard-toolbar-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .sort-control-group {
+            justify-content: space-between;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="leaderboard-layout">
-    <div style="text-align: center;">
-        <h1 class="page-title" style="margin-bottom: 6px;">Global Rankings</h1>
-        <p style="color: var(--text-secondary); font-size: 0.9rem;">Rankings are sorted by DUPR, then Elo ratings.</p>
-    </div>
+<div class="leaderboard-page-wrapper">
 
-    <!-- Podium Displays -->
-    {% if rankings|length >= 3 %}
-    <div class="podium-container">
-        <!-- 2nd Place -->
-        <div class="podium-card second">
-            <span class="podium-rank">2</span>
-            <div class="podium-avatar" style="background: #94a3b8; overflow: hidden;">{% if rankings[1].avatar_url %}<img src="{{ rankings[1].avatar_url }}" style="width:100%;height:100%;object-fit:cover;">{% else %}{{ rankings[1].initials }}{% endif %}</div>
-            <div class="clickable-name" style="font-weight: 700; color: var(--text-primary); margin-top: 6px; font-size: 0.95rem;" onclick="openPlayerDrawer('{{ rankings[1].id }}')">{{ rankings[1].name }}</div>
-            <div style="color: var(--primary-orange); font-weight: 800; font-size: 1.1rem; margin-top: 4px;">{{ "%.2f"|format(rankings[1].dupr|float) }}</div>
-            <div style="font-size: 0.75rem; color: var(--text-muted);">{{ rankings[1].elo }} Elo</div>
-        </div>
-        
-        <!-- 1st Place -->
-        <div class="podium-card first">
-            <span class="podium-rank">1</span>
-            <div class="podium-avatar" style="background: #fbbf24; color: #000; overflow: hidden;">{% if rankings[0].avatar_url %}<img src="{{ rankings[0].avatar_url }}" style="width:100%;height:100%;object-fit:cover;">{% else %}{{ rankings[0].initials }}{% endif %}</div>
-            <div class="clickable-name" style="font-weight: 700; color: var(--text-primary); margin-top: 10px; font-size: 1.05rem;" onclick="openPlayerDrawer('{{ rankings[0].id }}')">{{ rankings[0].name }}</div>
-            <div style="color: var(--primary-orange); font-weight: 800; font-size: 1.3rem; margin-top: 4px;">{{ "%.2f"|format(rankings[0].dupr|float) }}</div>
-            <div style="font-size: 0.8rem; color: var(--text-muted);">{{ rankings[0].elo }} Elo</div>
+    <!-- ── 1. HERO COMMAND BANNER ── -->
+    <header class="leaderboard-hero-banner animate-entry">
+        <div class="leaderboard-hero-info">
+            <span class="leaderboard-hero-tag">
+                <i class="ph ph-trophy"></i> Official Ranked Ladder
+            </span>
+            <h1 class="leaderboard-hero-title">Global Player Leaderboards</h1>
+            <p class="leaderboard-hero-desc">
+                Competitive ladder sorted by dynamic DUPR ratings and Elo scores. Compete in tournament matches and sanctioned open play to raise your ranking!
+            </p>
         </div>
 
-        <!-- 3rd Place -->
-        <div class="podium-card third">
-            <span class="podium-rank">3</span>
-            <div class="podium-avatar" style="background: #b45309; overflow: hidden;">{% if rankings[2].avatar_url %}<img src="{{ rankings[2].avatar_url }}" style="width:100%;height:100%;object-fit:cover;">{% else %}{{ rankings[2].initials }}{% endif %}</div>
-            <div class="clickable-name" style="font-weight: 700; color: var(--text-primary); margin-top: 6px; font-size: 0.9rem;" onclick="openPlayerDrawer('{{ rankings[2].id }}')">{{ rankings[2].name }}</div>
-            <div style="color: var(--primary-orange); font-weight: 800; font-size: 1.05rem; margin-top: 4px;">{{ "%.2f"|format(rankings[2].dupr|float) }}</div>
-            <div style="font-size: 0.75rem; color: var(--text-muted);">{{ rankings[2].elo }} Elo</div>
+        <div class="leaderboard-hero-actions">
+            <a href="{{ url_for('player.matchmaker') }}" class="btn-matchmaker-shortcut" title="Find nearby rated players for matchplay">
+                <i class="ph ph-lightning"></i> Open Play Matchmaker
+            </a>
         </div>
-    </div>
+    </header>
+
+    <!-- ── 2. PERSONAL STANDING HERO CARD ── -->
+    {% if user_rank_info %}
+    <section class="user-standing-card" aria-label="Your Personal Leaderboard Standing">
+        <div class="user-standing-left">
+            <div class="user-standing-avatar">
+                {% if user_rank_info.avatar_url %}
+                <img src="{{ user_rank_info.avatar_url }}" alt="{{ user_rank_info.name }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <span style="display: none;">{{ user_rank_info.initials }}</span>
+                {% else %}
+                {{ user_rank_info.initials }}
+                {% endif %}
+            </div>
+            <div>
+                <h2 class="user-standing-title">
+                    Your Standing: <strong>Rank #{{ user_rank_info.rank }}</strong> of {{ rankings|length }} Players
+                </h2>
+                <span style="font-size: 0.8rem; color: var(--sports-text-muted);">{{ user_rank_info.name }} &bull; Certified Profile</span>
+            </div>
+        </div>
+
+        <div class="user-standing-chips">
+            <div class="standing-chip">
+                <span>DUPR:</span>
+                <strong>{{ "%.2f"|format(user_rank_info.dupr|float) }}</strong>
+            </div>
+            <div class="standing-chip">
+                <span>ELO:</span>
+                <strong>{{ user_rank_info.elo }}</strong>
+            </div>
+            <div class="standing-chip">
+                <span>Record:</span>
+                <span>{{ user_rank_info.wins }}W &ndash; {{ user_rank_info.losses }}L ({{ user_rank_info.win_rate }}%)</span>
+            </div>
+            <div class="standing-chip">
+                <span>Skill:</span>
+                <span style="text-transform: capitalize;">{{ user_rank_info.proficiency }}</span>
+            </div>
+            <button type="button" class="btn-jump-rank" onclick="jumpToMyRank()" title="Scroll directly to your row in the table">
+                <i class="ph ph-crosshair"></i> View My Row
+            </button>
+        </div>
+    </section>
     {% endif %}
 
-    <!-- Directory Search Filters -->
-    <form method="GET" class="filter-bar" style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 16px; background: var(--card-bg); border: 1px solid var(--border-color); padding: 16px; border-radius: 12px;">
-        <div class="form-group" style="margin: 0;">
-            <input type="text" name="search" value="{{ search_query }}" placeholder="Search players by name..."
-                   style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary);">
-        </div>
-        <div class="form-group" style="margin: 0;">
-            <select name="proficiency" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary);" onchange="this.form.submit()">
-                <option value="">All Proficiencies</option>
-                <option value="beginner" {% if selected_prof == 'beginner' %}selected{% endif %}>Beginner</option>
-                <option value="intermediate" {% if selected_prof == 'intermediate' %}selected{% endif %}>Intermediate</option>
-                <option value="advanced" {% if selected_prof == 'advanced' %}selected{% endif %}>Advanced</option>
-                <option value="pro" {% if selected_prof == 'pro' %}selected{% endif %}>Pro</option>
-            </select>
-        </div>
-        <button type="submit" class="action-box navy" style="width: 100%;">Search Directory</button>
-    </form>
+    <!-- ── 3. ATHLETIC STEPPED PODIUM (TOP 3) ── -->
+    {% if rankings|length >= 3 %}
+    <section class="podium-container" aria-label="Top 3 Global Players">
 
-    <!-- Rankings Table -->
-    <div class="leaderboard-table-wrap">
-        <table class="leaderboard-table">
-            <thead>
-                <tr>
-                    <th style="width: 60px; text-align: center;">Rank</th>
-                    <th>Player</th>
-                    <th>DUPR Rating</th>
-                    <th>Elo Rating</th>
-                    <th>Proficiency</th>
-                    <th>Record (W-L)</th>
-                    <th style="text-align: right;">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for player in rankings %}
-                <tr>
-                    <td style="text-align: center;" class="rank-num">{{ player.rank }}</td>
-                    <td>
-                        <div class="player-cell">
-                            <div class="player-avatar-small" style="overflow: hidden;">{% if player.avatar_url %}<img src="{{ player.avatar_url }}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">{% else %}{{ player.initials }}{% endif %}</div>
-                            <span class="clickable-name" style="font-weight: 600;" onclick="openPlayerDrawer('{{ player.id }}')">{{ player.name }}</span>
-                        </div>
-                    </td>
-                    <td style="font-weight: 700; color: var(--primary-orange);">{{ "%.2f"|format(player.dupr|float) }}</td>
-                    <td style="color: var(--text-secondary); font-weight: 600;">{{ player.elo }}</td>
-                    <td>
-                        {% set skill = (player.proficiency or 'beginner') | lower %}
-                        <span class="status-pill {{ skill }}">
-                            {{ (player.proficiency or 'Beginner') | title }}
-                        </span>
-                    </td>
-                    <td style="font-size: 0.85rem; color: var(--text-secondary);">
-                        {{ player.wins }}W - {{ player.losses }}L ({{ player.win_rate }}% Win Rate)
-                    </td>
-                    <td style="text-align: right;">
-                        {% if current_user.id != player.id %}
-                        <a href="{{ url_for('player.leaderboard_challenge', target_id=player.id) }}" class="btn-challenge">
-                            <i class="ph ph-chat-circle"></i> Message
-                        </a>
-                        {% else %}
-                        <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; padding-right: 12px;">Me</span>
-                        {% endif %}
-                    </td>
-                </tr>
+        <!-- 2nd Place (Silver) -->
+        <div class="podium-card second">
+            <div class="podium-rank-badge silver" title="2nd Place (Silver Medalist)">
+                <i class="ph-fill ph-medal"></i>
+                <span>2nd</span>
+            </div>
+            <div class="podium-avatar">
+                {% if rankings[1].avatar_url %}
+                <img src="{{ rankings[1].avatar_url }}" alt="{{ rankings[1].name }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <span class="podium-initials" style="display: none;">{{ rankings[1].initials or rankings[1].name[:2]|upper }}</span>
                 {% else %}
-                <tr>
-                    <td colspan="7" style="text-align: center; padding: 32px; color: var(--text-muted);">
-                        No players match search queries.
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                <span class="podium-initials" style="display: flex;">{{ rankings[1].initials or rankings[1].name[:2]|upper }}</span>
+                {% endif %}
+            </div>
+            <h3 class="podium-player-name" onclick="openPlayerDrawer('{{ rankings[1].id }}')" title="View {{ rankings[1].name }} stats">
+                {{ rankings[1].name }}
+            </h3>
+            <div class="podium-dupr-tag">
+                {{ "%.2f"|format(rankings[1].dupr|float) }}
+                <span style="font-size: 0.72rem; font-weight: 700; color: var(--sports-text-muted);">DUPR</span>
+            </div>
+            <div class="podium-meta-pills">
+                <span class="podium-meta-pill">{{ rankings[1].elo }} Elo</span>
+                <span class="podium-meta-pill">{{ rankings[1].proficiency|title }}</span>
+                <span class="podium-meta-pill">{{ rankings[1].wins }}W &ndash; {{ rankings[1].losses }}L</span>
+            </div>
+        </div>
+
+        <!-- 1st Place (Gold Crown) -->
+        <div class="podium-card first">
+            <div class="podium-rank-badge gold" title="1st Place (Champion)">
+                <i class="ph-fill ph-crown"></i>
+                <span>1st</span>
+            </div>
+            <div class="podium-avatar">
+                {% if rankings[0].avatar_url %}
+                <img src="{{ rankings[0].avatar_url }}" alt="{{ rankings[0].name }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <span class="podium-initials" style="display: none;">{{ rankings[0].initials or rankings[0].name[:2]|upper }}</span>
+                {% else %}
+                <span class="podium-initials" style="display: flex;">{{ rankings[0].initials or rankings[0].name[:2]|upper }}</span>
+                {% endif %}
+            </div>
+            <h3 class="podium-player-name" onclick="openPlayerDrawer('{{ rankings[0].id }}')" title="View {{ rankings[0].name }} stats">
+                {{ rankings[0].name }}
+            </h3>
+            <div class="podium-dupr-tag">
+                <i class="ph-fill ph-crown" style="font-size: 1.15rem; color: #f59e0b;"></i>
+                {{ "%.2f"|format(rankings[0].dupr|float) }}
+                <span style="font-size: 0.72rem; font-weight: 700; color: var(--sports-text-muted);">DUPR</span>
+            </div>
+            <div class="podium-meta-pills">
+                <span class="podium-meta-pill">{{ rankings[0].elo }} Elo</span>
+                <span class="podium-meta-pill">{{ rankings[0].proficiency|title }}</span>
+                <span class="podium-meta-pill">{{ rankings[0].wins }}W &ndash; {{ rankings[0].losses }}L</span>
+            </div>
+        </div>
+
+        <!-- 3rd Place (Bronze) -->
+        <div class="podium-card third">
+            <div class="podium-rank-badge bronze" title="3rd Place (Bronze Medalist)">
+                <i class="ph-fill ph-medal"></i>
+                <span>3rd</span>
+            </div>
+            <div class="podium-avatar">
+                {% if rankings[2].avatar_url %}
+                <img src="{{ rankings[2].avatar_url }}" alt="{{ rankings[2].name }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <span class="podium-initials" style="display: none;">{{ rankings[2].initials or rankings[2].name[:2]|upper }}</span>
+                {% else %}
+                <span class="podium-initials" style="display: flex;">{{ rankings[2].initials or rankings[2].name[:2]|upper }}</span>
+                {% endif %}
+            </div>
+            <h3 class="podium-player-name" onclick="openPlayerDrawer('{{ rankings[2].id }}')" title="View {{ rankings[2].name }} stats">
+                {{ rankings[2].name }}
+            </h3>
+            <div class="podium-dupr-tag">
+                {{ "%.2f"|format(rankings[2].dupr|float) }}
+                <span style="font-size: 0.72rem; font-weight: 700; color: var(--sports-text-muted);">DUPR</span>
+            </div>
+            <div class="podium-meta-pills">
+                <span class="podium-meta-pill">{{ rankings[2].elo }} Elo</span>
+                <span class="podium-meta-pill">{{ rankings[2].proficiency|title }}</span>
+                <span class="podium-meta-pill">{{ rankings[2].wins }}W &ndash; {{ rankings[2].losses }}L</span>
+            </div>
+        </div>
+
+    </section>
+    {% endif %}
+
+    <!-- ── 4. SEARCH, PROFICIENCY TABS & SORT TOOLBAR ── -->
+    <section class="leaderboard-toolbar-card" aria-label="Leaderboard Filters and Search">
+        <form method="GET" action="{{ url_for('player.leaderboard') }}" id="leaderboardFilterForm" class="leaderboard-toolbar-row">
+            <!-- Search Box -->
+            <div class="leaderboard-search-form">
+                <div class="leaderboard-search-wrap">
+                    <i class="ph ph-magnifying-glass search-prefix"></i>
+                    <input type="text" name="search" id="leaderboardSearchInput" class="leaderboard-search-input" value="{{ search_query }}" placeholder="Search player name or initials..." autocomplete="off">
+                </div>
+            </div>
+
+            <!-- Hidden input for proficiency so tab links can submit -->
+            <input type="hidden" name="proficiency" id="selectedProficiencyInput" value="{{ selected_prof }}">
+
+            <!-- Proficiency Tabs -->
+            <div class="prof-filter-tabs" role="tablist">
+                <a href="javascript:void(0)" onclick="setProficiencyFilter('')" class="prof-tab-btn {% if not selected_prof %}active{% endif %}">
+                    All Tiers
+                </a>
+                <a href="javascript:void(0)" onclick="setProficiencyFilter('pro')" class="prof-tab-btn {% if selected_prof == 'pro' %}active{% endif %}">
+                    Pro
+                </a>
+                <a href="javascript:void(0)" onclick="setProficiencyFilter('advanced')" class="prof-tab-btn {% if selected_prof == 'advanced' %}active{% endif %}">
+                    Advanced
+                </a>
+                <a href="javascript:void(0)" onclick="setProficiencyFilter('intermediate')" class="prof-tab-btn {% if selected_prof == 'intermediate' %}active{% endif %}">
+                    Intermediate
+                </a>
+                <a href="javascript:void(0)" onclick="setProficiencyFilter('beginner')" class="prof-tab-btn {% if selected_prof == 'beginner' %}active{% endif %}">
+                    Beginner
+                </a>
+            </div>
+
+            <!-- Sort Selector -->
+            <div class="sort-control-group">
+                <label for="leaderboardSortSelect" class="sort-label">
+                    <i class="ph ph-arrows-down-up"></i> Sort:
+                </label>
+                <select name="sort" id="leaderboardSortSelect" class="sort-select-input" onchange="document.getElementById('leaderboardFilterForm').submit()">
+                    <option value="dupr" {% if sort_by == 'dupr' %}selected{% endif %}>DUPR Rating</option>
+                    <option value="elo" {% if sort_by == 'elo' %}selected{% endif %}>Elo Rating</option>
+                    <option value="wins" {% if sort_by == 'wins' %}selected{% endif %}>Most Wins</option>
+                    <option value="win_rate" {% if sort_by == 'win_rate' %}selected{% endif %}>Win Rate (%)</option>
+                </select>
+            </div>
+        </form>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; color: var(--sports-text-muted); padding-top: 4px; border-top: 1px solid var(--sports-border, #eaecf0);">
+            <span>Showing <strong style="color: var(--sports-text-main);">{{ rankings|length }}</strong> rated players</span>
+            {% if search_query or selected_prof %}
+            <a href="{{ url_for('player.leaderboard') }}" style="color: var(--primary-orange); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                <i class="ph ph-arrow-counter-clockwise"></i> Reset Filters
+            </a>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- ── 5. LEADERBOARD RANKINGS TABLE ── -->
+    <section class="leaderboard-table-card" aria-label="Official Rankings Table">
+        <div class="table-scroll-container">
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th style="width: 75px; text-align: center;">Rank</th>
+                        <th>Player</th>
+                        <th>DUPR Rating</th>
+                        <th>Elo Score</th>
+                        <th>Tier</th>
+                        <th>Match Record</th>
+                        <th style="text-align: right; width: 130px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for player in rankings %}
+                    {% set is_me = (player.id == player_id) %}
+                    <tr id="{% if is_me %}user-rank-row{% endif %}" class="{% if is_me %}user-row{% endif %}">
+                        <!-- Rank Column (Custom Minted Tournament Medallion Coins) -->
+                        <td style="text-align: center;">
+                            <div class="rank-cell-content">
+                                {% if player.rank == 1 %}
+                                <div class="custom-rank-coin gold" title="Rank 1 — Gold Champion">
+                                    <i class="ph-fill ph-crown coin-icon"></i>
+                                    <span class="coin-number">1</span>
+                                </div>
+                                {% elif player.rank == 2 %}
+                                <div class="custom-rank-coin silver" title="Rank 2 — Silver Runner-Up">
+                                    <i class="ph-fill ph-medal coin-icon"></i>
+                                    <span class="coin-number">2</span>
+                                </div>
+                                {% elif player.rank == 3 %}
+                                <div class="custom-rank-coin bronze" title="Rank 3 — Bronze Medalist">
+                                    <i class="ph-fill ph-medal coin-icon"></i>
+                                    <span class="coin-number">3</span>
+                                </div>
+                                {% else %}
+                                <span class="rank-standard-pill">{{ player.rank }}</span>
+                                {% endif %}
+                            </div>
+                        </td>
+
+                        <!-- Player Profile -->
+                        <td>
+                            <div class="player-cell-wrap">
+                                <div class="player-avatar-badge">
+                                    {% if player.avatar_url %}
+                                    <img src="{{ player.avatar_url }}" alt="{{ player.name }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    <span style="display: none;">{{ player.initials }}</span>
+                                    {% else %}
+                                    {{ player.initials }}
+                                    {% endif %}
+                                </div>
+                                <div style="display: flex; flex-direction: column;">
+                                    <span class="player-name-text" onclick="openPlayerDrawer('{{ player.id }}')" title="Open player drawer">
+                                        {{ player.name }}
+                                        {% if is_me %}
+                                        <span class="you-pill-tag">YOU</span>
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- DUPR Rating -->
+                        <td>
+                            {% set dupr_val = player.dupr|float %}
+                            <span class="dupr-pill {% if dupr_val >= 5.0 %}pro{% elif dupr_val >= 4.0 %}advanced{% elif dupr_val >= 3.5 %}intermediate{% else %}beginner{% endif %}">
+                                <i class="ph ph-certificate"></i> {{ "%.2f"|format(dupr_val) }}
+                            </span>
+                        </td>
+
+                        <!-- Elo Rating -->
+                        <td>
+                            <strong style="color: var(--sports-text-main); font-size: 0.95rem;">{{ player.elo }}</strong>
+                        </td>
+
+                        <!-- Proficiency -->
+                        <td>
+                            {% set prof = (player.proficiency or 'beginner')|lower %}
+                            <span class="skill-badge {{ prof }}">
+                                {{ (player.proficiency or 'Beginner')|title }}
+                            </span>
+                        </td>
+
+                        <!-- Record (W-L) -->
+                        <td>
+                            <div class="record-cell-group">
+                                <span class="record-numbers">
+                                    {{ player.wins }}W &ndash; {{ player.losses }}L
+                                </span>
+                                <span class="winrate-pill">
+                                    {{ player.win_rate }}% Win Rate
+                                </span>
+                            </div>
+                        </td>
+
+                        <!-- Action -->
+                        <td style="text-align: right;">
+                            {% if not is_me %}
+                            <a href="{{ url_for('player.leaderboard_challenge', target_id=player.id) }}" class="btn-table-msg" title="Send direct challenge or message">
+                                <i class="ph ph-chat-circle-dots"></i> Message
+                            </a>
+                            {% else %}
+                            <span style="font-size: 0.78rem; font-weight: 800; color: #6366f1; background: rgba(99, 102, 241, 0.12); padding: 4px 10px; border-radius: 9999px;">
+                                Your Rank
+                            </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 48px 20px; color: var(--sports-text-muted);">
+                            <i class="ph ph-magnifying-glass" style="font-size: 2.2rem; display: block; margin-bottom: 8px; opacity: 0.4;"></i>
+                            <div style="font-size: 1.1rem; font-weight: 800; color: var(--sports-text-main);">No players found</div>
+                            <p style="font-size: 0.88rem; margin: 4px 0 0 0;">No ranked players matched your search or tier filter.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
 </div>
+
+<!-- ── CLIENT INTERACTION SCRIPT ── -->
+<script>
+    function setProficiencyFilter(tier) {
+        document.getElementById('selectedProficiencyInput').value = tier;
+        document.getElementById('leaderboardFilterForm').submit();
+    }
+
+    function jumpToMyRank() {
+        const row = document.getElementById('user-rank-row');
+        if (row) {
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            row.style.transition = 'background-color 0.4s ease';
+            const originalBg = row.style.backgroundColor;
+            row.style.backgroundColor = 'rgba(255, 87, 34, 0.2)';
+            setTimeout(() => {
+                row.style.backgroundColor = originalBg;
+            }, 1800);
+        }
+    }
+</script>
 {% endblock %}

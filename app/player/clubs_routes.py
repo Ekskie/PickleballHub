@@ -14,7 +14,7 @@ def clubs():
     try:
         # Fetch all active clubs
         resp = db.table('clubs').select(
-            'id, name, description, logo_url, location, membership_type, membership_fee, profiles!admin_id(first_name, last_name)'
+            'id, name, description, logo_url, location, membership_type, membership_fee, admin_id, profiles!admin_id(first_name, last_name)'
         ).eq('status', 'active').order('created_at', desc=True).execute()
         clubs_list = resp.data or []
         
@@ -36,10 +36,40 @@ def clubs():
                 c['member_count'] = member_counts.get(c['id'], 0)
                 c['my_status'] = my_status_map.get(c['id'])
 
+            # Batch fetch banner URLs from platform_settings
+            keys = [f"club_banner_{c['id']}" for c in clubs_list]
+            try:
+                from app.db import get_admin_db
+                admin_db = get_admin_db() or db
+                b_res = admin_db.table('platform_settings').select('key, value').in_('key', keys).execute()
+                b_map = {item['key'].replace('club_banner_', ''): item['value'] for item in (b_res.data or []) if item.get('value')}
+                for c in clubs_list:
+                    if not c.get('banner_url') and c['id'] in b_map:
+                        c['banner_url'] = b_map[c['id']]
+            except Exception:
+                pass
+
+        # Calculate summary metrics for filters and header
+        joined_count = sum(1 for c in clubs_list if c.get('my_status') in ['active', 'pending'])
+        active_joined_count = sum(1 for c in clubs_list if c.get('my_status') == 'active')
+        free_count = sum(1 for c in clubs_list if c.get('membership_type') == 'free')
+        paid_count = sum(1 for c in clubs_list if c.get('membership_type') == 'paid')
+
     except Exception as e:
         flash('An error occurred. Please try again.', 'error')
+        joined_count = 0
+        active_joined_count = 0
+        free_count = 0
+        paid_count = 0
         
-    return render_template('player/clubs.html', clubs=clubs_list)
+    return render_template(
+        'player/clubs.html',
+        clubs=clubs_list,
+        joined_count=joined_count,
+        active_joined_count=active_joined_count,
+        free_count=free_count,
+        paid_count=paid_count
+    )
 
 
 @player_bp.route('/clubs/<club_id>')
@@ -63,6 +93,17 @@ def club_detail(club_id):
         if not club:
             flash("Club not found.", "error")
             return redirect(url_for('player.clubs'))
+
+        # Fetch banner URL for club
+        if club and not club.get('banner_url'):
+            try:
+                from app.db import get_admin_db
+                admin_db = get_admin_db() or db
+                b_res = admin_db.table('platform_settings').select('value').eq('key', f"club_banner_{club['id']}").execute()
+                if b_res.data and b_res.data[0].get('value'):
+                    club['banner_url'] = b_res.data[0]['value']
+            except Exception:
+                pass
             
         # 2. Fetch fellow members (active memberships)
         members_resp = db.table('club_memberships').select(
@@ -89,8 +130,30 @@ def club_detail(club_id):
         # 4. Fetch club events (events where organizer_id = club's admin_id)
         events_resp = db.table('events').select(
             'id, title, event_date, type, location_label, status'
-        ).eq('organizer_id', club['admin_id']).in_('status', ['registration_open', 'upcoming']).order('event_date').limit(4).execute()
+        ).eq('organizer_id', club['admin_id']).in_('status', ['registration_open', 'upcoming']).order('event_date').limit(6).execute()
         events_list = events_resp.data or []
+
+        # 5. Compute club member analytics (Average DUPR & Club Leaderboard)
+        dupr_values = []
+        for m in members:
+            p = m.get('profiles') or {}
+            d = p.get('dupr')
+            if d is not None:
+                try:
+                    dupr_values.append(float(d))
+                except (ValueError, TypeError):
+                    pass
+        avg_dupr = round(sum(dupr_values) / len(dupr_values), 2) if dupr_values else None
+
+        # Sort members by DUPR and Elo for internal club leaderboard
+        top_members = sorted(
+            members,
+            key=lambda x: (
+                float((x.get('profiles') or {}).get('dupr') or 0),
+                int((x.get('profiles') or {}).get('elo') or 0)
+            ),
+            reverse=True
+        )
         
     except Exception as e:
         flash('An error occurred. Please try again.', 'error')
@@ -100,6 +163,8 @@ def club_detail(club_id):
         'player/club_detail.html',
         club=club,
         members=members,
+        top_members=top_members,
+        avg_dupr=avg_dupr,
         my_membership=my_membership,
         events=events_list
     )

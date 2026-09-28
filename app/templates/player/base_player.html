@@ -1,28 +1,94 @@
 {% extends "base.html" %}
 
 {% block sidebar_menu %}
-<li class="{% if request.endpoint == 'player.dashboard' %}active{% endif %}"><a
-                href="{{ url_for('player.dashboard') }}"><i class="ph ph-squares-four"></i> Dashboard</a></li>
-<li class="{% if request.endpoint in ['player.reservation', 'player.my_reservations'] %}active{% endif %}"><a
-                href="{{ url_for('player.reservation') }}"><i class="ph ph-calendar-plus"></i> Court Reservation</a>
+<li class="{% if request.endpoint == 'player.dashboard' %}active{% endif %}">
+    <a href="{{ url_for('player.dashboard') }}">
+        <i class="ph ph-squares-four"></i>
+        <span>Dashboard</span>
+    </a>
 </li>
-<!-- <li class="{% if request.endpoint == 'player.my_reservations' %}active{% endif %}"><a
-        href="{{ url_for('player.my_reservations') }}"><i class="ph ph-calendar-check"></i> My Reservations</a></li> -->
-<li class="{% if request.endpoint in ['player.matchmaker', 'player.matchmaker_detail'] %}active{% endif %}"><a
-                href="{{ url_for('player.matchmaker') }}"><i class="ph ph-handshake"></i> Open Play Matchmaker</a></li>
-<li class="{% if request.endpoint in ['player.clubs', 'player.my_clubs', 'player.club_payment'] %}active{% endif %}"><a
-                href="{{ url_for('player.clubs') }}"><i class="ph ph-shield"></i> Clubs</a></li>
-<li class="{% if request.endpoint == 'player.queue' %}active{% endif %}"><a href="{{ url_for('player.queue') }}"><i
-                        class="ph ph-list-numbers"></i> Queue Monitoring</a></li>
-<li class="{% if request.endpoint == 'player.events' %}active{% endif %}"><a href="{{ url_for('player.events') }}"><i
-                        class="ph ph-trophy"></i> Events & Tournaments</a></li>
-<li class="{% if request.endpoint == 'player.leaderboard' %}active{% endif %}"><a
-                href="{{ url_for('player.leaderboard') }}"><i class="ph ph-medal"></i> Leaderboards</a></li>
-<li class="{% if request.endpoint == 'player.community' %}active{% endif %}"><a
-                href="{{ url_for('player.community') }}"><i class="ph ph-users"></i> Community</a></li>
-<li class="{% if request.endpoint == 'player.tutorials' %}active{% endif %}"><a
-                href="{{ url_for('player.tutorials') }}"><i class="ph ph-video"></i> Tutorials</a></li>
-<li class="{% if request.endpoint == 'player.messages' %}active{% endif %}"><a
-                href="{{ url_for('player.messages') }}"><i class="ph ph-chat-circle-dots"></i> Messages</a></li>
+
+<!-- Play & Courts Dropdown -->
+{% set is_play_active = request.endpoint in ['player.reservation', 'player.my_reservations', 'player.queue', 'player.matchmaker', 'player.matchmaker_detail'] %}
+<li class="sidebar-dropdown-group {% if is_play_active %}open active-group{% endif %}" data-group="player-play">
+    <button type="button" class="sidebar-dropdown-btn" onclick="toggleSidebarDropdown(this)">
+        <span class="dropdown-btn-label">
+            <i class="ph ph-tennis-ball group-icon"></i>
+            <span>Play & Courts</span>
+        </span>
+        <i class="ph ph-caret-down dropdown-arrow"></i>
+    </button>
+    <ul class="sidebar-subnav">
+        <li class="{% if request.endpoint in ['player.reservation', 'player.my_reservations'] %}active{% endif %}">
+            <a href="{{ url_for('player.reservation') }}"><i class="ph ph-calendar-plus"></i> <span>Court Reservation</span></a>
+        </li>
+        <li class="{% if request.endpoint == 'player.queue' %}active{% endif %}">
+            <a href="{{ url_for('player.queue') }}"><i class="ph ph-list-numbers"></i> <span>Queue Monitoring</span></a>
+        </li>
+        <li class="{% if request.endpoint in ['player.matchmaker', 'player.matchmaker_detail'] %}active{% endif %}">
+            <a href="{{ url_for('player.matchmaker') }}"><i class="ph ph-handshake"></i> <span>Open Play Matchmaker</span></a>
+        </li>
+    </ul>
+</li>
+
+<!-- Clubs & Compete Dropdown -->
+{% set is_compete_active = request.endpoint in ['player.clubs', 'player.my_clubs', 'player.club_detail', 'player.club_payment', 'player.events', 'player.leaderboard'] %}
+<li class="sidebar-dropdown-group {% if is_compete_active %}open active-group{% endif %}" data-group="player-compete">
+    <button type="button" class="sidebar-dropdown-btn" onclick="toggleSidebarDropdown(this)">
+        <span class="dropdown-btn-label">
+            <i class="ph ph-trophy group-icon"></i>
+            <span>Clubs & Compete</span>
+        </span>
+        <i class="ph ph-caret-down dropdown-arrow"></i>
+    </button>
+    <ul class="sidebar-subnav">
+        <li class="{% if request.endpoint in ['player.clubs', 'player.my_clubs', 'player.club_detail', 'player.club_payment'] %}active{% endif %}">
+            <a href="{{ url_for('player.clubs') }}"><i class="ph ph-shield"></i> <span>Clubs</span></a>
+        </li>
+        <li class="{% if request.endpoint == 'player.events' %}active{% endif %}">
+            <a href="{{ url_for('player.events') }}"><i class="ph ph-medal"></i> <span>Events & Tournaments</span></a>
+        </li>
+        <li class="{% if request.endpoint == 'player.leaderboard' %}active{% endif %}">
+            <a href="{{ url_for('player.leaderboard') }}"><i class="ph ph-chart-bar"></i> <span>Leaderboards</span></a>
+        </li>
+    </ul>
+</li>
+
+<!-- Community & Learning Dropdown -->
+{% set is_social_active = request.endpoint in ['player.community', 'player.messages', 'player.tutorials'] %}
+<li class="sidebar-dropdown-group {% if is_social_active %}open active-group{% endif %}" data-group="player-social">
+    <button type="button" class="sidebar-dropdown-btn" onclick="toggleSidebarDropdown(this)">
+        <span class="dropdown-btn-label">
+            <i class="ph ph-users-three group-icon"></i>
+            <span>Community & Learning</span>
+        </span>
+        <i class="ph ph-caret-down dropdown-arrow"></i>
+    </button>
+    <ul class="sidebar-subnav">
+        <li class="{% if request.endpoint == 'player.community' %}active{% endif %}">
+            <a href="{{ url_for('player.community') }}"><i class="ph ph-chats-circle"></i> <span>Community</span></a>
+        </li>
+        <li class="{% if request.endpoint == 'player.messages' %}active{% endif %}">
+            <a href="{{ url_for('player.messages') }}"><i class="ph ph-chat-circle-dots"></i> <span>Messages</span></a>
+        </li>
+        <li class="{% if request.endpoint == 'player.tutorials' %}active{% endif %}">
+            <a href="{{ url_for('player.tutorials') }}"><i class="ph ph-video"></i> <span>Tutorials</span></a>
+        </li>
+    </ul>
+</li>
+
+<!-- Membership & Pro Pass -->
+<li class="{% if request.endpoint and request.endpoint.startswith('billing.') %}active{% endif %}">
+    <a href="{{ url_for('billing.subscription_page') }}">
+        <i class="ph ph-crown-simple" style="color:#8b5cf6;"></i>
+        <span>Membership &amp; Pro Pass</span>
+        {% if current_user.is_pro %}
+        <span class="nav-tier-tag pro" style="background:#10b981; color:#fff; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:10px; margin-left:auto;">PRO</span>
+        {% else %}
+        <span class="nav-tier-tag upgrade" style="background:rgba(139,92,246,0.15); color:#8b5cf6; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:10px; margin-left:auto;">UPGRADE</span>
+        {% endif %}
+    </a>
+</li>
+
 <script src="{{ url_for('static', filename='js/player_common.js') }}" defer></script>
 {% endblock %}
