@@ -1826,3 +1826,11 @@ def checkin_reservation():
         return jsonify({'success': True, 'message': 'Check-in successful! Player added to live waitlist.'})
     except Exception as e:
         return jsonify({'success': False, 'message': f'Check-in failed: {e}'}), 500
+
+
+# ── Tutorials ───────────────────────────────────────────────────────────────────
+@facilitystaff_bp.route('/tutorials')
+@require_role('facilitystaff')
+def tutorials():
+    return render_template('facilitystaff/tutorials.html')
+

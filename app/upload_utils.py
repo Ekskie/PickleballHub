@@ -20,9 +20,11 @@ import uuid
 
 ALLOWED_IMAGE_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif', 'webp'}
 ALLOWED_DOC_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'}
+ALLOWED_VIDEO_EXTENSIONS = {'mp4', 'webm', 'mov', 'm4v', 'mkv', 'ogg'}
 
-MAX_IMAGE_SIZE = 5 * 1024 * 1024     # 5 MB
-MAX_DOC_SIZE = 10 * 1024 * 1024      # 10 MB
+MAX_IMAGE_SIZE = 5 * 1024 * 1024       # 5 MB
+MAX_DOC_SIZE = 10 * 1024 * 1024        # 10 MB
+MAX_VIDEO_SIZE = 50 * 1024 * 1024       # 50 MB (Supabase Storage max limit)
 
 # Maps extensions to their expected MIME type prefixes
 _MIME_MAP = {
@@ -32,6 +34,12 @@ _MIME_MAP = {
     'gif':  'image/',
     'webp': 'image/',
     'pdf':  'application/pdf',
+    'mp4':  'video/',
+    'webm': 'video/',
+    'mov':  'video/',
+    'm4v':  'video/',
+    'mkv':  'video/',
+    'ogg':  'video/',
 }
 
 
@@ -59,7 +67,7 @@ def validate_upload(file_obj, allowed_exts=None, max_size=None):
     # 1. Extract and validate extension
     filename = file_obj.filename
     if '.' not in filename:
-        return None, "File must have an extension (e.g., .jpg, .png)."
+        return None, "File must have an extension (e.g., .mp4, .jpg)."
 
     ext = filename.rsplit('.', 1)[-1].lower().strip()
     if ext not in allowed_exts:
@@ -69,7 +77,7 @@ def validate_upload(file_obj, allowed_exts=None, max_size=None):
     # 2. Validate MIME type matches extension
     content_type = (file_obj.content_type or '').lower()
     expected_mime = _MIME_MAP.get(ext)
-    if expected_mime:
+    if expected_mime and content_type and content_type != 'application/octet-stream':
         if not content_type.startswith(expected_mime):
             return None, f"File content type '{content_type}' does not match extension '.{ext}'."
 
@@ -93,12 +101,12 @@ def generate_safe_filename(prefix, owner_id, ext):
     Generate a safe, unique filename that never uses client-provided names.
 
     Args:
-        prefix: e.g., 'avatar', 'facility', 'court', 'kyc', 'receipt'
+        prefix: e.g., 'avatar', 'facility', 'court', 'kyc', 'receipt', 'tutorial'
         owner_id: User or entity ID for namespacing
-        ext: Validated file extension (e.g., 'jpg')
+        ext: Validated file extension (e.g., 'mp4', 'jpg')
 
     Returns:
-        Safe filename string like 'avatar_abc123_a1b2c3d4.jpg'
+        Safe filename string like 'tutorial_abc123_a1b2c3d4.mp4'
     """
     short_id = str(owner_id)[-12:] if owner_id else 'unknown'
     unique = uuid.uuid4().hex[:8]
@@ -108,13 +116,13 @@ def generate_safe_filename(prefix, owner_id, ext):
 def validate_and_upload(db, file_obj, bucket, prefix, owner_id,
                         allowed_exts=None, max_size=None):
     """
-    Validate and upload a file to Supabase Storage in one call.
+    Validate and upload a file to Supabase Storage in one call, with resilient local fallback.
 
     Args:
         db: Supabase client instance
         file_obj: Flask request.files[...] object
-        bucket: Storage bucket name (e.g., 'profile-images')
-        prefix: Filename prefix (e.g., 'avatar')
+        bucket: Storage bucket name (e.g., 'tutorial-videos', 'profile-images')
+        prefix: Filename prefix (e.g., 'tutorial', 'avatar')
         owner_id: User/entity ID
         allowed_exts: Set of allowed extensions
         max_size: Max file size in bytes
@@ -129,13 +137,29 @@ def validate_and_upload(db, file_obj, bucket, prefix, owner_id,
     filename = generate_safe_filename(prefix, owner_id, ext)
     file_bytes = file_obj.read()
 
+    # Try Supabase Storage first if db client is provided
+    if db:
+        try:
+            db.storage.from_(bucket).upload(
+                file=file_bytes,
+                path=filename,
+                file_options={"content-type": file_obj.content_type or f"video/{ext}"}
+            )
+            public_url = db.storage.from_(bucket).get_public_url(filename)
+            return public_url, None
+        except Exception:
+            pass
+
+    # Resilient local storage fallback
     try:
-        db.storage.from_(bucket).upload(
-            file=file_bytes,
-            path=filename,
-            file_options={"content-type": file_obj.content_type}
-        )
-        public_url = db.storage.from_(bucket).get_public_url(filename)
-        return public_url, None
+        import os
+        from flask import current_app
+        clean_bucket = bucket.replace('-', '_')
+        local_dir = os.path.join(current_app.root_path, 'static', 'uploads', clean_bucket)
+        os.makedirs(local_dir, exist_ok=True)
+        local_path = os.path.join(local_dir, filename)
+        with open(local_path, 'wb') as f:
+            f.write(file_bytes)
+        return f"/static/uploads/{clean_bucket}/{filename}", None
     except Exception as e:
-        return None, f"Upload failed. Please try again."
+        return None, f"Upload failed: {e}"

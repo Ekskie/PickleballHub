@@ -1,4 +1,4 @@
-{% extends "adminstaff/base_adminstaff.html" %}
+{% extends "facilitystaff/base_facilitystaff.html" %}
 {% from "tutorials_view.html" import render_tutorials with context %}
 
 {% block title %}Tutorials & Clinics{% endblock %}
@@ -8,5 +8,5 @@
 {% endblock %}
 
 {% block content %}
-{{ render_tutorials(can_manage=True, role_prefix='adminstaff') }}
+{{ render_tutorials(can_manage=True, role_prefix='facilitystaff') }}
 {% endblock %}

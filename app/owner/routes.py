@@ -359,3 +359,11 @@ def community():
 @require_role('owner')
 def support():
     return render_template('owner/support.html')
+
+
+# ── Tutorials ────────────────────────────────────────────────────────────────────
+@owner_bp.route('/tutorials')
+@require_role('owner')
+def tutorials():
+    return render_template('owner/tutorials.html')
+

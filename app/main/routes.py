@@ -60,19 +60,24 @@ def index():
 
             # 3. Fetch tutorials (limit to 3)
             t_resp = client.table('tutorials').select(
-                'id, title, description, youtube_url, level'
+                'id, title, description, youtube_url, video_url, video_type, thumbnail_url, level'
             ).limit(3).execute()
             if t_resp.data:
                 for t in t_resp.data:
-                    url = t.get('youtube_url', '')
+                    url = t.get('youtube_url') or t.get('video_url') or ''
                     vid = _extract_yt_id(url)
+                    is_upload = (t.get('video_type') == 'upload') or (not vid and bool(t.get('video_url')))
+                    thumb = t.get('thumbnail_url') or (f'https://img.youtube.com/vi/{vid}/hqdefault.jpg' if vid else '/static/images/hero-action.png')
+                    embed = (t.get('video_url') or url) if is_upload else (f'https://www.youtube.com/embed/{vid}?rel=0' if vid else '')
                     tutorials.append({
                         'title': t['title'],
                         'description': t.get('description') or '',
                         'level': t.get('level', 'Beginner'),
                         'youtube_url': url,
-                        'embed_url': f'https://www.youtube.com/embed/{vid}?rel=0' if vid else '',
-                        'thumb_url': f'https://img.youtube.com/vi/{vid}/hqdefault.jpg' if vid else '',
+                        'video_url': t.get('video_url') or url,
+                        'video_type': 'upload' if is_upload else 'youtube',
+                        'embed_url': embed,
+                        'thumb_url': thumb,
                     })
     except Exception as e:
         print(f'[landing index] DB error: {e}')
@@ -92,7 +97,7 @@ def clinics():
         client = get_db()
         if client:
             resp = client.table('tutorials').select(
-                'id, title, description, youtube_url, level'
+                'id, title, description, youtube_url, video_url, video_type, thumbnail_url, level'
             ).execute()
 
             if resp.data:
@@ -100,15 +105,20 @@ def clinics():
                 sample = pool if len(pool) <= 2 else random.sample(pool, 2)
 
                 for t in sample:
-                    url  = t.get('youtube_url', '')
-                    vid  = _extract_yt_id(url)
+                    url = t.get('youtube_url') or t.get('video_url') or ''
+                    vid = _extract_yt_id(url)
+                    is_upload = (t.get('video_type') == 'upload') or (not vid and bool(t.get('video_url')))
+                    thumb = t.get('thumbnail_url') or (f'https://img.youtube.com/vi/{vid}/hqdefault.jpg' if vid else '/static/images/hero-action.png')
+                    embed = (t.get('video_url') or url) if is_upload else (f'https://www.youtube.com/embed/{vid}?autoplay=1&rel=0' if vid else '')
                     tutorials.append({
                         'title':       t['title'],
                         'description': t.get('description') or '',
                         'level':       t.get('level', 'Beginner'),
                         'youtube_url': url,
-                        'embed_url':   f'https://www.youtube.com/embed/{vid}?autoplay=1&rel=0' if vid else '',
-                        'thumb_url':   f'https://img.youtube.com/vi/{vid}/hqdefault.jpg' if vid else '',
+                        'video_url':   t.get('video_url') or url,
+                        'video_type':  'upload' if is_upload else 'youtube',
+                        'embed_url':   embed,
+                        'thumb_url':   thumb,
                     })
     except Exception as e:
         print(f'[clinics landing] DB error: {e}')
@@ -499,3 +509,232 @@ def privacy_policy():
 @main_bp.route('/about-us')
 def about_us():
     return render_template('landings/about_us.html')
+
+
+# ════════════════════════════════════════════════════════════════════════════════
+# TUTORIALS REST API (Cross-role video upload, listing, saving, and deletion)
+# ════════════════════════════════════════════════════════════════════════════════
+
+ALLOWED_TUTORIAL_ROLES = {'superadmin', 'adminstaff', 'clubadmin', 'owner', 'facilitystaff'}
+
+
+@main_bp.route('/api/tutorials/list', methods=['GET'])
+def api_tutorials_list():
+    """Fetch all published tutorials with uploader profile details."""
+    try:
+        from app.db import get_admin_db
+        db = get_admin_db()
+        resp = db.table('tutorials').select(
+            'id, title, description, youtube_url, video_url, video_type, thumbnail_url, duration, level, uploaded_by, created_at, '
+            'profiles(first_name, last_name, role, avatar_url)'
+        ).order('created_at', desc=True).execute()
+
+        tutorials = resp.data or []
+        return jsonify({'success': True, 'tutorials': tutorials})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@main_bp.route('/api/tutorials/upload', methods=['POST'])
+def api_tutorials_upload():
+    """
+    Handle video and optional thumbnail uploads for tutorial creation.
+    Accessible to authorized roles: superadmin, adminstaff, clubadmin, owner, facilitystaff.
+    """
+    user_id = session.get('user_id')
+    user_role = (session.get('role') or '').strip().lower()
+
+    if not user_id:
+        return jsonify({'success': False, 'error': 'Authentication required.'}), 401
+
+    if user_role not in ALLOWED_TUTORIAL_ROLES:
+        return jsonify({'success': False, 'error': f'Role "{user_role}" is not authorized to upload tutorials.'}), 403
+
+    video_file = request.files.get('video')
+    if not video_file or not video_file.filename:
+        return jsonify({'success': False, 'error': 'No video file provided.'}), 400
+
+    from app.upload_utils import (
+        validate_and_upload,
+        ALLOWED_VIDEO_EXTENSIONS,
+        MAX_VIDEO_SIZE,
+        ALLOWED_IMAGE_EXTENSIONS,
+        MAX_IMAGE_SIZE
+    )
+    from app.db import get_admin_db
+    db = get_admin_db()
+
+    video_url, video_err = validate_and_upload(
+        db,
+        video_file,
+        bucket='tutorial-videos',
+        prefix='tut_vid',
+        owner_id=user_id,
+        allowed_exts=ALLOWED_VIDEO_EXTENSIONS,
+        max_size=MAX_VIDEO_SIZE
+    )
+
+    if video_err:
+        return jsonify({'success': False, 'error': f'Video upload error: {video_err}'}), 400
+
+    # Optional custom thumbnail image
+    thumb_url = None
+    thumb_file = request.files.get('thumbnail')
+    if thumb_file and thumb_file.filename:
+        t_url, t_err = validate_and_upload(
+            db,
+            thumb_file,
+            bucket='community-images',
+            prefix='tut_thumb',
+            owner_id=user_id,
+            allowed_exts=ALLOWED_IMAGE_EXTENSIONS,
+            max_size=MAX_IMAGE_SIZE
+        )
+        if not t_err:
+            thumb_url = t_url
+
+    return jsonify({
+        'success': True,
+        'video_url': video_url,
+        'thumbnail_url': thumb_url,
+        'video_type': 'upload',
+        'file_name': video_file.filename
+    })
+
+
+@main_bp.route('/api/tutorials/save', methods=['POST'])
+def api_tutorials_save():
+    """
+    Create or update a tutorial record.
+    Supports both YouTube URL and direct video file uploads.
+    """
+    user_id = session.get('user_id')
+    user_role = (session.get('role') or '').strip().lower()
+
+    if not user_id:
+        return jsonify({'success': False, 'error': 'Authentication required.'}), 401
+
+    if user_role not in ALLOWED_TUTORIAL_ROLES:
+        return jsonify({'success': False, 'error': f'Role "{user_role}" is not authorized to publish tutorials.'}), 403
+
+    data = request.get_json(silent=True) or request.form.to_dict()
+    if not data:
+        return jsonify({'success': False, 'error': 'Invalid request body.'}), 400
+
+    t_id = (data.get('id') or '').strip()
+    title = (data.get('title') or '').strip()
+    desc = (data.get('description') or '').strip()
+    level = (data.get('level') or 'Beginner').strip()
+    video_type = (data.get('video_type') or 'youtube').strip().lower()
+    video_url = (data.get('video_url') or '').strip()
+    youtube_url = (data.get('youtube_url') or '').strip()
+    thumbnail_url = (data.get('thumbnail_url') or '').strip()
+    duration = (data.get('duration') or '').strip()
+
+    if not title:
+        return jsonify({'success': False, 'error': 'Tutorial title is required.'}), 400
+
+    if video_type == 'upload':
+        if not video_url:
+            return jsonify({'success': False, 'error': 'Uploaded video URL is required.'}), 400
+        # For backward compatibility with schemas where youtube_url is NOT NULL
+        if not youtube_url:
+            youtube_url = video_url
+    else:
+        video_type = 'youtube'
+        if not youtube_url:
+            return jsonify({'success': False, 'error': 'YouTube URL is required.'}), 400
+        if not video_url:
+            video_url = youtube_url
+
+    from app.db import get_admin_db, log_audit_action
+    db = get_admin_db()
+
+    payload = {
+        'title': title,
+        'description': desc,
+        'level': level if level in ['Beginner', 'Intermediate', 'Advanced'] else 'Beginner',
+        'video_type': video_type,
+        'video_url': video_url,
+        'youtube_url': youtube_url,
+        'thumbnail_url': thumbnail_url or None,
+        'duration': duration or None,
+    }
+
+    try:
+        if t_id:
+            # Editing an existing tutorial
+            existing = db.table('tutorials').select('id, uploaded_by').eq('id', t_id).single().execute()
+            if not existing.data:
+                return jsonify({'success': False, 'error': 'Tutorial not found.'}), 404
+
+            # Permission check: superadmin and adminstaff can edit anything; others only their own
+            is_global_admin = user_role in ['superadmin', 'adminstaff']
+            is_owner = existing.data.get('uploaded_by') == user_id
+            if not (is_global_admin or is_owner):
+                return jsonify({'success': False, 'error': 'You do not have permission to edit this tutorial.'}), 403
+
+            resp = db.table('tutorials').update(payload).eq('id', t_id).execute()
+            updated_item = resp.data[0] if resp.data else payload
+
+            log_audit_action(
+                action='UPDATE_TUTORIAL',
+                target='tutorials',
+                details={'id': t_id, 'title': title, 'level': level, 'video_type': video_type}
+            )
+            return jsonify({'success': True, 'message': 'Tutorial updated successfully.', 'tutorial': updated_item})
+        else:
+            # Creating a new tutorial
+            payload['uploaded_by'] = user_id
+            resp = db.table('tutorials').insert(payload).execute()
+            new_item = resp.data[0] if resp.data else payload
+
+            log_audit_action(
+                action='CREATE_TUTORIAL',
+                target='tutorials',
+                details={'id': new_item.get('id'), 'title': title, 'level': level, 'video_type': video_type}
+            )
+            return jsonify({'success': True, 'message': 'Tutorial created successfully.', 'tutorial': new_item})
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Database operation failed: {e}'}), 500
+
+
+@main_bp.route('/api/tutorials/delete/<id>', methods=['POST', 'DELETE'])
+def api_tutorials_delete(id):
+    """
+    Delete a tutorial.
+    Permitted for superadmin, adminstaff, or the tutorial's uploader.
+    """
+    user_id = session.get('user_id')
+    user_role = (session.get('role') or '').strip().lower()
+
+    if not user_id:
+        return jsonify({'success': False, 'error': 'Authentication required.'}), 401
+
+    if user_role not in ALLOWED_TUTORIAL_ROLES:
+        return jsonify({'success': False, 'error': 'Unauthorized.'}), 403
+
+    from app.db import get_admin_db, log_audit_action
+    db = get_admin_db()
+
+    try:
+        existing = db.table('tutorials').select('id, uploaded_by, title').eq('id', id).single().execute()
+        if not existing.data:
+            return jsonify({'success': False, 'error': 'Tutorial not found.'}), 404
+
+        is_global_admin = user_role in ['superadmin', 'adminstaff']
+        is_owner = existing.data.get('uploaded_by') == user_id
+        if not (is_global_admin or is_owner):
+            return jsonify({'success': False, 'error': 'You do not have permission to delete this tutorial.'}), 403
+
+        db.table('tutorials').delete().eq('id', id).execute()
+
+        log_audit_action(
+            action='DELETE_TUTORIAL',
+            target='tutorials',
+            details={'id': id, 'title': existing.data.get('title')}
+        )
+        return jsonify({'success': True, 'message': 'Tutorial deleted successfully.'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Deletion failed: {e}'}), 500
+

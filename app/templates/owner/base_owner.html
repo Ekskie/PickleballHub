@@ -55,7 +55,7 @@
 </li>
 
 <!-- Communication Dropdown -->
-{% set is_comm_active = request.endpoint in ['owner.community', 'owner.messages'] %}
+{% set is_comm_active = request.endpoint in ['owner.community', 'owner.messages', 'owner.tutorials'] %}
 <li class="sidebar-dropdown-group {% if is_comm_active %}open active-group{% endif %}" data-group="owner-comm">
     <button type="button" class="sidebar-dropdown-btn" onclick="toggleSidebarDropdown(this)">
         <span class="dropdown-btn-label">
@@ -70,6 +70,9 @@
         </li>
         <li class="{% if request.endpoint == 'owner.messages' %}active{% endif %}">
             <a href="{{ url_for('owner.messages') }}"><i class="ph ph-chat-circle-dots"></i> <span>Messages</span></a>
+        </li>
+        <li class="{% if request.endpoint == 'owner.tutorials' %}active{% endif %}">
+            <a href="{{ url_for('owner.tutorials') }}"><i class="ph ph-video"></i> <span>Tutorials</span></a>
         </li>
     </ul>
 </li>

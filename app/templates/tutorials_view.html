@@ -1,130 +1,435 @@
-{# tutorials_view.html — shared Jinja2 macro used by player/admin tutorials pages #}
+{# tutorials_view.html — shared Jinja2 macro used by all role tutorial pages #}
 
-{% macro render_tutorials(can_manage=False, role_prefix='player') %}
-<div class="dashboard-header">
-    <h1 class="page-title"><i class="ph ph-video" style="color:var(--primary-orange);"></i> Tutorials & Clinics</h1>
-    {% if can_manage %}
-    <button class="btn-primary-action" id="addTutorialBtn">
-        <i class="ph ph-plus"></i> Add Tutorial
-    </button>
-    {% endif %}
-</div>
+{% macro render_tutorials(can_manage=False, role_prefix='player', current_user=None) %}
+{% set u_id = current_user.id if (current_user is defined and current_user and current_user.is_logged_in) else '' %}
+{% set u_role = current_user.role_raw if (current_user is defined and current_user and current_user.role_raw) else role_prefix %}
+<div class="tutorials-container" 
+     id="tutorialsContainer" 
+     data-can-manage="{{ 'true' if can_manage else 'false' }}" 
+     data-role-prefix="{{ role_prefix }}"
+     data-user-id="{{ u_id }}"
+     data-user-role="{{ u_role }}">
 
-<!-- Controls row -->
-<div class="tutorials-controls">
-    <div class="tutorials-search-wrap">
-        <i class="ph ph-magnifying-glass"></i>
-        <input type="text" id="tutorialsSearch" placeholder="Search tutorials..." class="tutorials-search-input">
-    </div>
-    <select id="levelFilter" class="tutorials-level-select">
-        <option value="all">All Levels</option>
-        <option value="Beginner">Beginner</option>
-        <option value="Intermediate">Intermediate</option>
-        <option value="Advanced">Advanced</option>
-    </select>
-    <span class="tutorials-count-label" id="tutorialsCount">Loading...</span>
-</div>
-
-<!-- Tutorials grid -->
-<div class="tutorials-grid" id="tutorialsGrid">
-    <!-- Dynamically populated by tutorials.js -->
-</div>
-
-<!-- ── Watch Modal ──────────────────────────────────────────────── -->
-<div class="modal-overlay" id="watchModal">
-    <div class="watch-modal-box">
-        <div class="watch-modal-header">
-            <h3 id="watchTitle">Tutorial</h3>
-            <button class="modal-close-btn" id="closeWatch"><i class="ph ph-x"></i></button>
+    <!-- ── 1. Modern Academy Hero Banner ──────────────────────────────────────── -->
+    <div class="tutorials-hero-banner">
+        <div class="tutorials-hero-content">
+            <div class="tutorials-hero-tag">
+                <i class="ph ph-video-camera"></i>
+                <span>PickleballHub Academy & Clinics</span>
+            </div>
+            <h1 class="tutorials-hero-title">Tutorials & Drills</h1>
+            <p class="tutorials-hero-desc">
+                Elevate your pickleball mastery with high-definition drills, third-shot drop breakdowns, dink tactics, and match strategies from certified coaches and community pros.
+            </p>
+            
+            <!-- Quick Stats Row (Non-clickable informative badges) -->
+            <div class="tutorials-stats-row">
+                <div class="tut-stat-chip total">
+                    <span class="stat-num" id="statTotalCount">0</span>
+                    <span class="stat-label">Total Guides</span>
+                </div>
+                <div class="tut-stat-chip beginner">
+                    <i class="ph ph-leaf"></i>
+                    <span class="stat-num" id="statBeginnerCount">0</span>
+                    <span class="stat-label">Beginner</span>
+                </div>
+                <div class="tut-stat-chip intermediate">
+                    <i class="ph ph-flame"></i>
+                    <span class="stat-num" id="statIntermediateCount">0</span>
+                    <span class="stat-label">Intermediate</span>
+                </div>
+                <div class="tut-stat-chip advanced">
+                    <i class="ph ph-lightning"></i>
+                    <span class="stat-num" id="statAdvancedCount">0</span>
+                    <span class="stat-label">Advanced</span>
+                </div>
+                <div class="tut-stat-chip upload">
+                    <i class="ph ph-film-slate"></i>
+                    <span class="stat-num" id="statUploadCount">0</span>
+                    <span class="stat-label">Hub Uploads</span>
+                </div>
+            </div>
         </div>
-        <div class="watch-frame-wrap">
+
+        {% if can_manage %}
+        <div class="tutorials-hero-action">
+            <button class="btn-tut-primary" id="addTutorialBtn" type="button">
+                <i class="ph ph-plus-circle"></i>
+                <span>Add Tutorial</span>
+            </button>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ── 2. Filter & Search Controls Bar ────────────────────────────────────── -->
+    <div class="tutorials-controls-bar">
+        <!-- Search input -->
+        <div class="tutorials-search-box">
+            <i class="ph ph-magnifying-glass search-icon"></i>
+            <input type="text" id="tutorialsSearch" placeholder="Search tutorials by title, drills, or skill level..." class="tutorials-search-input" autocomplete="off">
+            <button type="button" class="search-clear-btn" id="searchClearBtn" style="display:none;" title="Clear search">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+
+        <!-- Filter Pill Tabs: Skill Level -->
+        <div class="tutorials-filter-group">
+            <span class="filter-group-label">Level:</span>
+            <div class="filter-pills" id="levelFilterPills">
+                <button type="button" class="tut-filter-pill active" data-level="all">All Levels</button>
+                <button type="button" class="tut-filter-pill" data-level="Beginner"><i class="ph ph-leaf"></i> Beginner</button>
+                <button type="button" class="tut-filter-pill" data-level="Intermediate"><i class="ph ph-flame"></i> Intermediate</button>
+                <button type="button" class="tut-filter-pill" data-level="Advanced"><i class="ph ph-lightning"></i> Advanced</button>
+            </div>
+        </div>
+
+        <!-- Filter Pill Tabs: Source Type -->
+        <div class="tutorials-filter-group">
+            <span class="filter-group-label">Type:</span>
+            <div class="filter-pills" id="sourceFilterPills">
+                <button type="button" class="tut-filter-pill active" data-type="all">All Types</button>
+                <button type="button" class="tut-filter-pill" data-type="upload"><i class="ph ph-film-slate"></i> Hub Uploads</button>
+                <button type="button" class="tut-filter-pill" data-type="youtube"><i class="ph ph-youtube-logo"></i> YouTube</button>
+            </div>
+        </div>
+
+        <!-- Sorting dropdown & Results Count -->
+        <div class="tutorials-sort-wrap">
+            <select id="sortFilter" class="tutorials-select-sort">
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="alpha">Title (A - Z)</option>
+            </select>
+            <span class="tutorials-count-badge" id="tutorialsCount">Loading...</span>
+        </div>
+    </div>
+
+    <!-- ── 3. Tutorials Grid ─────────────────────────────────────────────────── -->
+    <div class="tutorials-grid" id="tutorialsGrid">
+        <!-- Populated dynamically by tutorials.js -->
+        <div class="tutorials-loading">
+            <div class="tut-spinner"></div>
+            <p>Loading clinic tutorials...</p>
+        </div>
+    </div>
+
+</div>
+
+<!-- ── 4. Universal Video Watch Modal ───────────────────────────────────────── -->
+<div class="tut-modal-backdrop" id="watchModal" role="dialog" aria-modal="true" aria-labelledby="watchTitle">
+    <div class="tut-watch-modal-box">
+        <div class="tut-watch-header">
+            <div class="tut-watch-header-info">
+                <div class="tut-watch-badges" id="watchBadges">
+                    <!-- Populated dynamically -->
+                </div>
+                <h3 id="watchTitle">Tutorial Title</h3>
+            </div>
+            <div class="tut-watch-header-actions">
+                <a href="#" id="watchExternalBtn" target="_blank" rel="noopener" class="tut-watch-btn-ext" style="display:none;" title="Open on YouTube">
+                    <i class="ph ph-arrow-square-out"></i>
+                </a>
+                <button class="tut-modal-close-btn" id="closeWatch" type="button" title="Close player">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Responsive Video Container -->
+        <div class="tut-watch-media-wrapper">
+            <!-- YouTube Iframe player -->
             <iframe
                 id="watchFrame"
                 src=""
                 frameborder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowfullscreen>
+                allowfullscreen
+                style="display:none;">
             </iframe>
+
+            <!-- HTML5 Direct Video player (for uploaded videos) -->
+            <video
+                id="watchVideoPlayer"
+                controls
+                playsinline
+                preload="metadata"
+                style="display:none;">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+
+        <!-- Video Metadata & Uploader Panel -->
+        <div class="tut-watch-details">
+            <div class="tut-watch-meta-row">
+                <div class="tut-watch-uploader" id="watchUploader">
+                    <!-- Avatar and author name -->
+                </div>
+                <button type="button" class="tut-watch-share-btn" id="watchShareBtn" title="Copy video link">
+                    <i class="ph ph-share-network"></i>
+                    <span>Share</span>
+                </button>
+            </div>
+            <div class="tut-watch-desc" id="watchDesc">
+                <!-- Description -->
+            </div>
         </div>
     </div>
 </div>
 
 {% if can_manage %}
-<!-- ── Add Tutorial Modal (admin only) ─────────────────────────── -->
-<div class="modal-overlay" id="addTutorialModal">
-    <div class="modal-box">
-        <div class="modal-header">
-            <h3><i class="ph ph-youtube-logo"></i> Add Tutorial</h3>
-            <button class="modal-close-btn" id="closeTutorialModal"><i class="ph ph-x"></i></button>
+<!-- ── 5. Add Tutorial Modal (Supports both YouTube & File Upload) ─────────── -->
+<div class="tut-modal-backdrop" id="addTutorialModal" role="dialog" aria-modal="true">
+    <div class="tut-edit-modal-box">
+        <div class="tut-modal-header">
+            <div class="tut-modal-title-wrap">
+                <i class="ph ph-video-camera tut-header-icon"></i>
+                <div>
+                    <h3>Publish New Tutorial</h3>
+                    <p>Share court strategies, drill videos, or clinic recordings</p>
+                </div>
+            </div>
+            <button class="tut-modal-close-btn" id="closeTutorialModal" type="button" title="Close"><i class="ph ph-x"></i></button>
         </div>
-        <form id="addTutorialForm">
-            <div class="form-group">
-                <label>Title <span style="color:#ef4444">*</span></label>
-                <input type="text" id="tTitle" class="form-input-field" placeholder="e.g. Mastering the Third Shot Drop" required>
+
+        <form id="addTutorialForm" novalidate>
+            <!-- Source Type Switcher (Segmented Control) -->
+            <div class="tut-source-switcher">
+                <button type="button" class="source-tab active" data-source="youtube" id="tabAddYoutube">
+                    <i class="ph ph-youtube-logo"></i>
+                    <span>YouTube Link</span>
+                </button>
+                <button type="button" class="source-tab" data-source="upload" id="tabAddUpload">
+                    <i class="ph ph-film-slate"></i>
+                    <span>Upload Video File</span>
+                </button>
             </div>
-            <div class="form-group">
-                <label>Description</label>
-                <textarea id="tDesc" class="form-input-field" rows="2" placeholder="Brief description of what the tutorial covers..."></textarea>
+
+            <!-- YouTube URL Group -->
+            <div class="form-group tut-source-group" id="groupAddYoutube">
+                <label for="tUrl">YouTube Video URL <span class="required-star">*</span></label>
+                <div class="tut-input-icon-wrap">
+                    <i class="ph ph-link"></i>
+                    <input type="url" id="tUrl" class="tut-input-field" placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..." required>
+                </div>
+                <span class="tut-input-hint">Paste any standard YouTube video URL or YouTube Shorts link.</span>
+
+                <!-- Live YouTube Thumbnail Preview -->
+                <div class="tut-live-preview-box" id="ytLivePreview" style="display:none;">
+                    <img id="ytPreviewImg" src="" alt="Video thumbnail preview">
+                    <div class="tut-preview-badge"><i class="ph ph-check-circle"></i> Valid YouTube Video Detected</div>
+                </div>
             </div>
-            <div class="form-group">
-                <label>YouTube URL <span style="color:#ef4444">*</span></label>
-                <input type="url" id="tUrl" class="form-input-field" placeholder="https://www.youtube.com/watch?v=..." required>
+
+            <!-- Video File Upload Group -->
+            <div class="form-group tut-source-group" id="groupAddUpload" style="display:none;">
+                <label>Tutorial Video File <span class="required-star">*</span></label>
+                <div class="tut-dropzone" id="videoDropZone">
+                    <i class="ph ph-cloud-arrow-up dropzone-icon"></i>
+                    <h4>Click or drag & drop video file here</h4>
+                    <p>Supports MP4, WebM, MOV, or MKV (Up to 50 MB)</p>
+                    <input type="file" id="tVideoFile" accept="video/mp4,video/webm,video/quicktime,video/x-matroska,video/*" class="dropzone-file-input">
+                </div>
+
+                <!-- Selected Video File Card -->
+                <div class="tut-selected-file-card" id="selectedFileCard" style="display:none;">
+                    <div class="selected-file-icon"><i class="ph ph-file-video"></i></div>
+                    <div class="selected-file-info">
+                        <span class="selected-file-name" id="selectedFileName">filename.mp4</span>
+                        <span class="selected-file-size" id="selectedFileSize">0 MB</span>
+                    </div>
+                    <button type="button" class="btn-remove-selected-file" id="removeVideoFileBtn" title="Remove video">
+                        <i class="ph ph-trash"></i>
+                    </button>
+                </div>
+
+                <!-- Video Preview Box -->
+                <div class="tut-video-preview-wrapper" id="videoPreviewWrap" style="display:none;">
+                    <video id="videoUploadPreview" controls playsinline style="max-height: 220px; width: 100%; border-radius: 10px;"></video>
+                </div>
+
+                <!-- Optional Custom Thumbnail Upload -->
+                <div style="margin-top: 14px;">
+                    <label style="font-size: 0.8rem; font-weight:600; color:var(--text-secondary); margin-bottom:6px; display:block;">
+                        Custom Thumbnail Poster (Optional)
+                    </label>
+                    <input type="file" id="tThumbFile" accept="image/jpeg,image/png,image/webp" class="tut-input-field" style="padding: 6px 10px;">
+                    <span class="tut-input-hint">JPG, PNG, or WebP. If omitted, a clean default thumbnail is generated.</span>
+                </div>
+
+                <!-- Upload Progress Bar (shown during submit) -->
+                <div class="tut-progress-wrap" id="uploadProgressWrap" style="display:none;">
+                    <div class="tut-progress-header">
+                        <span id="uploadProgressLabel">Uploading video file...</span>
+                        <span id="uploadProgressPercent">0%</span>
+                    </div>
+                    <div class="tut-progress-track">
+                        <div class="tut-progress-bar" id="uploadProgressBar" style="width: 0%;"></div>
+                    </div>
+                </div>
             </div>
+
+            <!-- Common Fields: Title, Skill Level, Description -->
             <div class="form-group">
-                <label>Skill Level</label>
-                <select id="tLevel" class="form-input-field">
-                    <option value="Beginner">Beginner</option>
-                    <option value="Intermediate" selected>Intermediate</option>
-                    <option value="Advanced">Advanced</option>
-                </select>
+                <label for="tTitle">Tutorial Title <span class="required-star">*</span></label>
+                <input type="text" id="tTitle" class="tut-input-field" placeholder="e.g. Mastering the Third Shot Drop & Soft Kitchen Game" required maxlength="120">
             </div>
-            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
-                <button type="button" class="btn-cancel" id="closeTutorialModalAlt" onclick="document.getElementById('addTutorialModal').classList.remove('open')">Cancel</button>
-                <button type="submit" class="btn-submit" id="submitTutorialBtn">
-                    <i class="ph ph-plus"></i> Add Tutorial
+
+            <div class="form-row">
+                <div class="form-group" style="flex:1;">
+                    <label for="tLevel">Target Skill Level <span class="required-star">*</span></label>
+                    <select id="tLevel" class="tut-input-field">
+                        <option value="Beginner">Beginner (Foundations & Basics)</option>
+                        <option value="Intermediate" selected>Intermediate (Control & Placement)</option>
+                        <option value="Advanced">Advanced (Tactics, Stacking, High-level)</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label for="tDuration">Estimated Duration (Optional)</label>
+                    <input type="text" id="tDuration" class="tut-input-field" placeholder="e.g. 8:30 or 12 mins">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="tDesc">Description & Key Practice Points</label>
+                <textarea id="tDesc" class="tut-input-field" rows="3" placeholder="Provide a summary of techniques covered, court positioning notes, and suggested drills..."></textarea>
+            </div>
+
+            <div class="tut-modal-footer">
+                <button type="button" class="btn-tut-cancel" id="closeTutorialModalAlt">Cancel</button>
+                <button type="submit" class="btn-tut-submit" id="submitTutorialBtn">
+                    <i class="ph ph-plus"></i>
+                    <span>Publish Tutorial</span>
                 </button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- ── Edit Tutorial Modal (admin only) ─────────────────────────── -->
-<div class="modal-overlay" id="editTutorialModal">
-    <div class="modal-box">
-        <div class="modal-header">
-            <h3><i class="ph ph-note-pencil"></i> Edit Tutorial</h3>
-            <button type="button" class="modal-close-btn" id="closeEditTutorialModal" onclick="document.getElementById('editTutorialModal').classList.remove('open')"><i class="ph ph-x"></i></button>
+<!-- ── 6. Edit Tutorial Modal (Supports editing uploaded & YouTube tutorials) ─ -->
+<div class="tut-modal-backdrop" id="editTutorialModal" role="dialog" aria-modal="true">
+    <div class="tut-edit-modal-box">
+        <div class="tut-modal-header">
+            <div class="tut-modal-title-wrap">
+                <i class="ph ph-note-pencil tut-header-icon"></i>
+                <div>
+                    <h3>Edit Tutorial</h3>
+                    <p>Update title, skill level, or tutorial media</p>
+                </div>
+            </div>
+            <button class="tut-modal-close-btn" id="closeEditTutorialModal" type="button" title="Close"><i class="ph ph-x"></i></button>
         </div>
-        <form id="editTutorialForm">
+
+        <form id="editTutorialForm" novalidate>
             <input type="hidden" id="editTId">
-            <div class="form-group">
-                <label>Title <span style="color:#ef4444">*</span></label>
-                <input type="text" id="editTTitle" class="form-input-field" placeholder="e.g. Mastering the Third Shot Drop" required>
+            <input type="hidden" id="editTCurrentType" value="youtube">
+            <input type="hidden" id="editTExistingVideoUrl" value="">
+            <input type="hidden" id="editTExistingThumbUrl" value="">
+
+            <!-- Source Type Switcher -->
+            <div class="tut-source-switcher">
+                <button type="button" class="source-tab active" data-source="youtube" id="tabEditYoutube">
+                    <i class="ph ph-youtube-logo"></i>
+                    <span>YouTube Link</span>
+                </button>
+                <button type="button" class="source-tab" data-source="upload" id="tabEditUpload">
+                    <i class="ph ph-film-slate"></i>
+                    <span>Upload New Video</span>
+                </button>
             </div>
-            <div class="form-group">
-                <label>Description</label>
-                <textarea id="editTDesc" class="form-input-field" rows="2" placeholder="Brief description of what the tutorial covers..."></textarea>
+
+            <!-- Edit YouTube Group -->
+            <div class="form-group tut-source-group" id="groupEditYoutube">
+                <label for="editTUrl">YouTube Video URL</label>
+                <div class="tut-input-icon-wrap">
+                    <i class="ph ph-link"></i>
+                    <input type="url" id="editTUrl" class="tut-input-field" placeholder="https://www.youtube.com/watch?v=...">
+                </div>
+                <div class="tut-live-preview-box" id="editYtLivePreview" style="display:none;">
+                    <img id="editYtPreviewImg" src="" alt="Thumbnail preview">
+                </div>
             </div>
-            <div class="form-group">
-                <label>YouTube URL <span style="color:#ef4444">*</span></label>
-                <input type="url" id="editTUrl" class="form-input-field" placeholder="https://www.youtube.com/watch?v=..." required>
+
+            <!-- Edit Video File Group -->
+            <div class="form-group tut-source-group" id="groupEditUpload" style="display:none;">
+                <label>Replace Video File</label>
+                <div class="tut-dropzone" id="editVideoDropZone">
+                    <i class="ph ph-cloud-arrow-up dropzone-icon"></i>
+                    <h4>Click or drag & drop new video file to replace</h4>
+                    <p>Leave empty to keep existing uploaded video</p>
+                    <input type="file" id="editTVideoFile" accept="video/mp4,video/webm,video/quicktime,video/x-matroska,video/*" class="dropzone-file-input">
+                </div>
+
+                <div class="tut-selected-file-card" id="editSelectedFileCard" style="display:none;">
+                    <div class="selected-file-icon"><i class="ph ph-file-video"></i></div>
+                    <div class="selected-file-info">
+                        <span class="selected-file-name" id="editSelectedFileName">new_video.mp4</span>
+                        <span class="selected-file-size" id="editSelectedFileSize">0 MB</span>
+                    </div>
+                    <button type="button" class="btn-remove-selected-file" id="editRemoveVideoFileBtn" title="Remove">
+                        <i class="ph ph-trash"></i>
+                    </button>
+                </div>
+
+                <!-- Existing Video Indicator -->
+                <div id="editExistingVideoNotice" class="tut-existing-notice" style="display:none;">
+                    <i class="ph ph-check-circle"></i>
+                    <span>Using current video file. Select a file above to replace it.</span>
+                </div>
+
+                <div style="margin-top: 14px;">
+                    <label style="font-size: 0.8rem; font-weight:600; color:var(--text-secondary); margin-bottom:6px; display:block;">
+                        Update Thumbnail Poster (Optional)
+                    </label>
+                    <input type="file" id="editTThumbFile" accept="image/jpeg,image/png,image/webp" class="tut-input-field" style="padding: 6px 10px;">
+                </div>
+
+                <div class="tut-progress-wrap" id="editUploadProgressWrap" style="display:none;">
+                    <div class="tut-progress-header">
+                        <span id="editUploadProgressLabel">Uploading replacement video...</span>
+                        <span id="editUploadProgressPercent">0%</span>
+                    </div>
+                    <div class="tut-progress-track">
+                        <div class="tut-progress-bar" id="editUploadProgressBar" style="width: 0%;"></div>
+                    </div>
+                </div>
             </div>
+
+            <!-- Common Fields -->
             <div class="form-group">
-                <label>Skill Level</label>
-                <select id="editTLevel" class="form-input-field">
-                    <option value="Beginner">Beginner</option>
-                    <option value="Intermediate">Intermediate</option>
-                    <option value="Advanced">Advanced</option>
-                </select>
+                <label for="editTTitle">Tutorial Title <span class="required-star">*</span></label>
+                <input type="text" id="editTTitle" class="tut-input-field" required maxlength="120">
             </div>
-            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
-                <button type="button" class="btn-cancel" id="closeEditTutorialModalAlt" onclick="document.getElementById('editTutorialModal').classList.remove('open')">Cancel</button>
-                <button type="submit" class="btn-submit" id="submitEditTutorialBtn">
-                    <i class="ph ph-check"></i> Save Changes
+
+            <div class="form-row">
+                <div class="form-group" style="flex:1;">
+                    <label for="editTLevel">Target Skill Level</label>
+                    <select id="editTLevel" class="tut-input-field">
+                        <option value="Beginner">Beginner</option>
+                        <option value="Intermediate">Intermediate</option>
+                        <option value="Advanced">Advanced</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label for="editTDuration">Duration</label>
+                    <input type="text" id="editTDuration" class="tut-input-field" placeholder="e.g. 10:45">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="editTDesc">Description</label>
+                <textarea id="editTDesc" class="tut-input-field" rows="3"></textarea>
+            </div>
+
+            <div class="tut-modal-footer">
+                <button type="button" class="btn-tut-cancel" id="closeEditTutorialModalAlt">Cancel</button>
+                <button type="submit" class="btn-tut-submit" id="submitEditTutorialBtn">
+                    <i class="ph ph-check"></i>
+                    <span>Save Changes</span>
                 </button>
             </div>
         </form>
     </div>
 </div>
 {% endif %}
+
 {% endmacro %}
