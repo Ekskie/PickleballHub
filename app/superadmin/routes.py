@@ -471,3 +471,363 @@ def audit_logs():
     return render_template('superadmin/logs.html', logs=logs_list)
 
 
+# ════════════════════════════════════════════════════════════════════════════════
+# LANDING PAGE CMS & ARTICLES MANAGEMENT
+# ════════════════════════════════════════════════════════════════════════════════
+
+@superadmin_bp.route('/landing-page', methods=['GET', 'POST'])
+@require_role('superadmin')
+def landing_page():
+    """
+    Comprehensive Landing Page CMS.
+    Allows editing Hero banner, lead stories, bulletins, testimonials,
+    FAQs, section headers, value proposition, and footer stats.
+    """
+    from app.landing_helper import (
+        get_landing_content, get_articles_db,
+        save_multiple_landing_settings, save_landing_setting,
+        clear_landing_cache
+    )
+    from app.upload_utils import validate_and_upload
+
+    db = get_db()
+    admin_db = get_admin_db() or db
+
+    if request.method == 'POST':
+        action_type = request.form.get('action_type', 'all')
+        settings_to_save = {}
+
+        try:
+            # 1. Masthead & Hero Slider
+            if action_type in ('hero', 'all'):
+                settings_to_save['masthead_location'] = request.form.get('masthead_location', 'LAGUNA, PHILIPPINES').strip()
+                
+                hero_slides = []
+                slide_count = int(request.form.get('hero_slides_count', 3))
+                for i in range(slide_count):
+                    title = request.form.get(f'hero_title_{i}', '').strip()
+                    subtitle = request.form.get(f'hero_subtitle_{i}', '').strip()
+                    img_url = request.form.get(f'hero_image_{i}', '').strip()
+                    
+                    # Handle file upload if provided
+                    slide_file = request.files.get(f'hero_file_{i}')
+                    if slide_file and slide_file.filename:
+                        uploaded_url, err = validate_and_upload(
+                            admin_db, slide_file, bucket='platform-assets',
+                            prefix=f'hero_slide_{i+1}', owner_id=session.get('user_id')
+                        )
+                        if uploaded_url:
+                            img_url = uploaded_url
+
+                    if title or img_url:
+                        hero_slides.append({
+                            'id': i + 1,
+                            'title': title,
+                            'subtitle': subtitle,
+                            'image_url': img_url,
+                            'alt': title or 'Hero Slide'
+                        })
+                if hero_slides:
+                    settings_to_save['hero_slides'] = hero_slides
+
+            # 2. Lead Stories Carousel
+            if action_type in ('lead_stories', 'all'):
+                lead_stories = []
+                lead_count = int(request.form.get('lead_count', 3))
+                for i in range(lead_count):
+                    cat = request.form.get(f'lead_category_{i}', '').strip()
+                    title = request.form.get(f'lead_title_{i}', '').strip()
+                    desc = request.form.get(f'lead_desc_{i}', '').strip()
+                    link = request.form.get(f'lead_link_{i}', '').strip()
+                    link_text = request.form.get(f'lead_link_text_{i}', 'Read More').strip()
+                    img_url = request.form.get(f'lead_image_{i}', '').strip()
+
+                    lead_file = request.files.get(f'lead_file_{i}')
+                    if lead_file and lead_file.filename:
+                        uploaded_url, err = validate_and_upload(
+                            admin_db, lead_file, bucket='platform-assets',
+                            prefix=f'lead_story_{i+1}', owner_id=session.get('user_id')
+                        )
+                        if uploaded_url:
+                            img_url = uploaded_url
+
+                    if title or desc:
+                        lead_stories.append({
+                            'id': i + 1,
+                            'category': cat,
+                            'title': title,
+                            'description': desc,
+                            'link': link,
+                            'link_text': link_text,
+                            'image_url': img_url
+                        })
+                if lead_stories:
+                    settings_to_save['lead_stories'] = lead_stories
+
+            # 3. Sidebar Bulletins
+            if action_type in ('bulletins', 'all'):
+                bulletins = []
+                bulletin_count = int(request.form.get('bulletin_count', 3))
+                for i in range(bulletin_count):
+                    b_time = request.form.get(f'bulletin_time_{i}', 'Just In').strip()
+                    b_title = request.form.get(f'bulletin_title_{i}', '').strip()
+                    b_desc = request.form.get(f'bulletin_desc_{i}', '').strip()
+                    b_link = request.form.get(f'bulletin_link_{i}', '').strip()
+                    if b_title:
+                        bulletins.append({
+                            'id': i + 1,
+                            'time': b_time,
+                            'title': b_title,
+                            'description': b_desc,
+                            'link': b_link
+                        })
+                if bulletins:
+                    settings_to_save['bulletins'] = bulletins
+
+            # 4. Value Proposition Banner
+            if action_type in ('value_prop', 'all'):
+                settings_to_save['value_prop_kicker'] = request.form.get('value_prop_kicker', '').strip()
+                settings_to_save['value_prop_headline'] = request.form.get('value_prop_headline', '').strip()
+                settings_to_save['value_prop_text'] = request.form.get('value_prop_text', '').strip()
+                settings_to_save['value_prop_cta_text'] = request.form.get('value_prop_cta_text', 'Sign Up for Free').strip()
+                settings_to_save['value_prop_cta_link'] = request.form.get('value_prop_cta_link', '/auth/signup').strip()
+
+            # 5. Section Headers (Sections A, B, C)
+            if action_type in ('section_headers', 'all'):
+                settings_to_save['section_a_divider_1'] = request.form.get('section_a_divider_1', 'Section A').strip()
+                settings_to_save['section_a_divider_2'] = request.form.get('section_a_divider_2', 'Court Reports').strip()
+                settings_to_save['section_a_divider_3'] = request.form.get('section_a_divider_3', 'Metro Laguna Edition').strip()
+                settings_to_save['section_a_title'] = request.form.get('section_a_title', 'Verified Facilities Available').strip()
+                settings_to_save['section_a_subtitle'] = request.form.get('section_a_subtitle', '').strip()
+
+                settings_to_save['section_b_divider_1'] = request.form.get('section_b_divider_1', 'Section B').strip()
+                settings_to_save['section_b_divider_2'] = request.form.get('section_b_divider_2', 'Tournament Bulletins').strip()
+                settings_to_save['section_b_divider_3'] = request.form.get('section_b_divider_3', 'Local Competitions').strip()
+                settings_to_save['section_b_title'] = request.form.get('section_b_title', 'Laguna League Tournaments').strip()
+                settings_to_save['section_b_subtitle'] = request.form.get('section_b_subtitle', '').strip()
+
+                settings_to_save['section_c_divider_1'] = request.form.get('section_c_divider_1', 'Section C').strip()
+                settings_to_save['section_c_divider_2'] = request.form.get('section_c_divider_2', 'Tutorials').strip()
+                settings_to_save['section_c_divider_3'] = request.form.get('section_c_divider_3', 'Training & Clinics').strip()
+                settings_to_save['section_c_title'] = request.form.get('section_c_title', 'Clinics & Tutorials').strip()
+                settings_to_save['section_c_subtitle'] = request.form.get('section_c_subtitle', '').strip()
+
+            # 6. Testimonials (Section E)
+            if action_type in ('testimonials', 'all'):
+                testimonials = []
+                test_count = int(request.form.get('test_count', 0))
+                for i in range(test_count):
+                    t_author = request.form.get(f'test_author_{i}', '').strip()
+                    t_role = request.form.get(f'test_role_{i}', '').strip()
+                    t_quote = request.form.get(f'test_quote_{i}', '').strip()
+                    t_rating = int(request.form.get(f'test_rating_{i}', 5))
+                    if t_author and t_quote:
+                        testimonials.append({
+                            'id': i + 1,
+                            'author': t_author,
+                            'role': t_role,
+                            'quote': t_quote,
+                            'rating': min(max(t_rating, 1), 5)
+                        })
+                if testimonials or action_type == 'testimonials':
+                    settings_to_save['testimonials'] = testimonials
+
+            # 7. FAQs (Section F)
+            if action_type in ('faqs', 'all'):
+                faqs = []
+                faq_count = int(request.form.get('faq_count', 0))
+                for i in range(faq_count):
+                    f_q = request.form.get(f'faq_q_{i}', '').strip()
+                    f_a = request.form.get(f'faq_a_{i}', '').strip()
+                    if f_q and f_a:
+                        faqs.append({
+                            'id': i + 1,
+                            'question': f_q,
+                            'answer': f_a
+                        })
+                if faqs or action_type == 'faqs':
+                    settings_to_save['faqs'] = faqs
+
+            # 8. Footer Stats & Final CTA
+            if action_type in ('footer', 'all'):
+                stats = [
+                    {'num': request.form.get('stat_1_num', '500+').strip(), 'label': request.form.get('stat_1_label', 'Active Players').strip()},
+                    {'num': request.form.get('stat_2_num', '12').strip(), 'label': request.form.get('stat_2_label', 'Connected Towns').strip()},
+                    {'num': request.form.get('stat_3_num', '10k+').strip(), 'label': request.form.get('stat_3_label', 'Matches Played').strip()},
+                    {'num': request.form.get('stat_4_num', '100%').strip(), 'label': request.form.get('stat_4_label', 'Automated Booking').strip()},
+                ]
+                settings_to_save['stats'] = stats
+                settings_to_save['footer_cta_kicker'] = request.form.get('footer_cta_kicker', '').strip()
+                settings_to_save['footer_cta_headline'] = request.form.get('footer_cta_headline', '').strip()
+                settings_to_save['footer_cta_text'] = request.form.get('footer_cta_text', '').strip()
+                settings_to_save['footer_cta_btn_text'] = request.form.get('footer_cta_btn_text', 'Sign Up for Free').strip()
+                settings_to_save['footer_cta_btn_link'] = request.form.get('footer_cta_btn_link', '/auth/signup').strip()
+
+            if settings_to_save:
+                save_multiple_landing_settings(settings_to_save)
+                log_audit_action('update_landing_page', 'landing_page', {'action_type': action_type})
+                flash('Landing page content saved successfully!', 'success')
+            else:
+                flash('No settings were modified.', 'info')
+
+        except Exception as e:
+            flash(f'Error saving landing page settings: {e}', 'error')
+
+        target_tab = request.form.get('active_tab', '')
+        redirect_url = url_for('superadmin.landing_page')
+        if target_tab:
+            redirect_url += f'#{target_tab}'
+        return redirect(redirect_url)
+
+    # GET — load fresh content
+    landing_content = get_landing_content(force_refresh=True)
+    articles = get_articles_db(force_refresh=True)
+
+    return render_template(
+        'superadmin/landing_page.html',
+        landing_content=landing_content,
+        articles=articles
+    )
+
+
+@superadmin_bp.route('/landing-page/articles/new', methods=['GET', 'POST'])
+@require_role('superadmin')
+def new_article():
+    """Create a new journalist / bulletin article."""
+    from app.landing_helper import save_article
+    from app.upload_utils import validate_and_upload
+
+    db = get_db()
+    admin_db = get_admin_db() or db
+
+    if request.method == 'POST':
+        title = request.form.get('title', '').strip()
+        category = request.form.get('category', 'Bulletin').strip()
+        author = request.form.get('author', 'Dev Team Bulletin').strip()
+        date_str = request.form.get('date', '').strip() or datetime.now(PH_TZ).strftime('%A, %B %d, %Y')
+        read_time = request.form.get('read_time', '3 min read').strip()
+        image_url = request.form.get('image_url', '').strip()
+        content = request.form.get('content', '').strip()
+
+        # Handle image upload
+        img_file = request.files.get('image_file')
+        if img_file and img_file.filename:
+            uploaded_url, err = validate_and_upload(
+                admin_db, img_file, bucket='platform-assets',
+                prefix='article_banner', owner_id=session.get('user_id')
+            )
+            if uploaded_url:
+                image_url = uploaded_url
+
+        if not title:
+            flash('Article title is required.', 'error')
+            return redirect(url_for('superadmin.new_article'))
+
+        art_data = {
+            'title': title,
+            'category': category,
+            'author': author,
+            'date': date_str,
+            'read_time': read_time,
+            'image_url': image_url or '/static/images/court-hero.jpg',
+            'image_filename': 'court-hero.jpg',
+            'content': content
+        }
+
+        try:
+            art_id = save_article(art_data)
+            log_audit_action('create_article', str(art_id), {'title': title})
+            flash(f'Article "{title}" published successfully!', 'success')
+            return redirect(url_for('superadmin.landing_page') + '#tab-articles')
+        except Exception as e:
+            flash(f'Failed to publish article: {e}', 'error')
+            return redirect(url_for('superadmin.new_article'))
+
+    return render_template('superadmin/article_edit.html', article=None, mode='create')
+
+
+@superadmin_bp.route('/landing-page/articles/<article_id>/edit', methods=['GET', 'POST'])
+@require_role('superadmin')
+def edit_article(article_id):
+    """Edit an existing article."""
+    from app.landing_helper import get_article_by_id, save_article
+    from app.upload_utils import validate_and_upload
+
+    db = get_db()
+    admin_db = get_admin_db() or db
+
+    article = get_article_by_id(article_id)
+    if not article:
+        flash('Article not found.', 'error')
+        return redirect(url_for('superadmin.landing_page') + '#tab-articles')
+
+    if request.method == 'POST':
+        title = request.form.get('title', '').strip()
+        category = request.form.get('category', '').strip()
+        author = request.form.get('author', '').strip()
+        date_str = request.form.get('date', '').strip()
+        read_time = request.form.get('read_time', '').strip()
+        image_url = request.form.get('image_url', '').strip()
+        content = request.form.get('content', '').strip()
+
+        img_file = request.files.get('image_file')
+        if img_file and img_file.filename:
+            uploaded_url, err = validate_and_upload(
+                admin_db, img_file, bucket='platform-assets',
+                prefix=f'article_{article_id}', owner_id=session.get('user_id')
+            )
+            if uploaded_url:
+                image_url = uploaded_url
+
+        article['title'] = title or article['title']
+        article['category'] = category or article['category']
+        article['author'] = author or article['author']
+        article['date'] = date_str or article['date']
+        article['read_time'] = read_time or article['read_time']
+        if image_url:
+            article['image_url'] = image_url
+        article['content'] = content
+
+        try:
+            save_article(article)
+            log_audit_action('update_article', str(article_id), {'title': article['title']})
+            flash(f'Article "{article["title"]}" updated successfully!', 'success')
+            return redirect(url_for('superadmin.landing_page') + '#tab-articles')
+        except Exception as e:
+            flash(f'Failed to update article: {e}', 'error')
+
+    return render_template('superadmin/article_edit.html', article=article, mode='edit')
+
+
+@superadmin_bp.route('/landing-page/articles/<article_id>/delete', methods=['POST'])
+@require_role('superadmin')
+def delete_article_route(article_id):
+    """Delete an article."""
+    from app.landing_helper import delete_article
+    try:
+        delete_article(article_id)
+        log_audit_action('delete_article', str(article_id), {})
+        flash(f'Article #{article_id} deleted successfully.', 'success')
+    except Exception as e:
+        flash(f'Failed to delete article: {e}', 'error')
+    return redirect(url_for('superadmin.landing_page') + '#tab-articles')
+
+
+@superadmin_bp.route('/landing-page/reset-defaults', methods=['POST'])
+@require_role('superadmin')
+def reset_landing_defaults():
+    """Reset all landing page content to original system defaults."""
+    db = get_db()
+    try:
+        # Delete all landing_ keys from platform_settings
+        db.table('platform_settings').delete().like('key', 'landing_%').execute()
+        from app.landing_helper import clear_landing_cache
+        clear_landing_cache()
+        log_audit_action('reset_landing_defaults', 'landing_page', {})
+        flash('Landing page has been reset to system defaults.', 'success')
+    except Exception as e:
+        flash(f'Failed to reset defaults: {e}', 'error')
+    return redirect(url_for('superadmin.landing_page'))
+
+
+

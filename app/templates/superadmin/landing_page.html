@@ -1,0 +1,1749 @@
+{% extends "superadmin/base_superadmin.html" %}
+{% block title %}Landing Page Management{% endblock %}
+
+{% block superadmin_extra_head %}
+<style>
+    /* ==========================================================================
+       LANDING PAGE CMS - MODERN PREMIUM THEME SYSTEM
+       ========================================================================== */
+    .cms-container {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding-bottom: 60px;
+    }
+
+    /* ── BUTTON SYSTEM (FOLLOWS PLATFORM THEME STRICTLY) ── */
+    .theme-btn-save {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 10px !important;
+        padding: 11px 24px !important;
+        font-size: 0.94rem !important;
+        font-weight: 700 !important;
+        font-family: inherit !important;
+        letter-spacing: 0.3px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        cursor: pointer !important;
+        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35) !important;
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        text-decoration: none !important;
+        user-select: none !important;
+    }
+
+    .theme-btn-save:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45) !important;
+    }
+
+    .theme-btn-save:active {
+        transform: translateY(0) !important;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25) !important;
+    }
+
+    .theme-btn-primary {
+        background: linear-gradient(135deg, #ff5722 0%, #f4511e 100%) !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 10px !important;
+        padding: 10px 22px !important;
+        font-size: 0.9rem !important;
+        font-weight: 700 !important;
+        font-family: inherit !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        cursor: pointer !important;
+        box-shadow: 0 4px 14px rgba(255, 87, 34, 0.35) !important;
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        text-decoration: none !important;
+        user-select: none !important;
+    }
+
+    .theme-btn-primary:hover {
+        background: linear-gradient(135deg, #f4511e 0%, #e64a19 100%) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(255, 87, 34, 0.45) !important;
+        color: #ffffff !important;
+    }
+
+    .theme-btn-secondary {
+        background: rgba(255, 87, 34, 0.1) !important;
+        color: var(--primary-orange) !important;
+        border: 1px solid rgba(255, 87, 34, 0.3) !important;
+        border-radius: 10px !important;
+        padding: 9px 18px !important;
+        font-size: 0.88rem !important;
+        font-weight: 700 !important;
+        font-family: inherit !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        text-decoration: none !important;
+    }
+
+    .theme-btn-secondary:hover {
+        background: rgba(255, 87, 34, 0.18) !important;
+        border-color: var(--primary-orange) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    .theme-btn-outline {
+        background: var(--card-bg-elevated) !important;
+        color: var(--text-primary) !important;
+        border: 1.5px solid var(--border-color) !important;
+        border-radius: 10px !important;
+        padding: 10px 18px !important;
+        font-size: 0.9rem !important;
+        font-weight: 600 !important;
+        font-family: inherit !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        cursor: pointer !important;
+        transition: all 0.22s ease !important;
+        text-decoration: none !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03) !important;
+    }
+
+    .theme-btn-outline:hover {
+        border-color: var(--primary-orange) !important;
+        color: var(--primary-orange) !important;
+        background: rgba(255, 87, 34, 0.04) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(255, 87, 34, 0.15) !important;
+    }
+
+    .theme-btn-danger {
+        background: rgba(239, 68, 68, 0.1) !important;
+        color: #ef4444 !important;
+        border: 1px solid rgba(239, 68, 68, 0.3) !important;
+        border-radius: 9px !important;
+        padding: 9px 18px !important;
+        font-size: 0.86rem !important;
+        font-weight: 600 !important;
+        font-family: inherit !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        text-decoration: none !important;
+    }
+
+    .theme-btn-danger:hover {
+        background: rgba(239, 68, 68, 0.2) !important;
+        border-color: #ef4444 !important;
+        transform: translateY(-1px) !important;
+    }
+
+    /* Status Pill */
+    .cloud-status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(16, 185, 129, 0.12);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        border-radius: 9999px;
+        padding: 6px 14px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+    }
+
+    .pulse-dot {
+        width: 8px;
+        height: 8px;
+        background: #10b981;
+        border-radius: 50%;
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        animation: pulseGreen 2s infinite;
+    }
+
+    @keyframes pulseGreen {
+        0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+        70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    /* ── MODERN 8-SECTION NAVIGATION GRID HUB (NEVER CLIPPED!) ── */
+    .cms-nav-hub {
+        background: var(--card-bg-elevated);
+        border: 1px solid var(--border-color);
+        border-radius: 18px;
+        padding: 16px;
+        margin-bottom: 28px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    }
+
+    .cms-nav-hub-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--border-color-soft);
+    }
+
+    .cms-nav-hub-label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .cms-nav-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+    }
+
+    @media (max-width: 992px) {
+        .cms-nav-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 580px) {
+        .cms-nav-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .cms-nav-card {
+        background: rgba(0, 0, 0, 0.02);
+        border: 1.5px solid var(--border-color-soft);
+        border-radius: 12px;
+        padding: 12px 14px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        text-align: left;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    html.dark-mode .cms-nav-card {
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .cms-nav-card:hover {
+        background: rgba(255, 87, 34, 0.05);
+        border-color: rgba(255, 87, 34, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .cms-nav-card.active {
+        background: linear-gradient(135deg, #ff5722 0%, #f4511e 100%) !important;
+        border-color: transparent !important;
+        box-shadow: 0 6px 18px rgba(255, 87, 34, 0.35) !important;
+        transform: translateY(-2px);
+    }
+
+    .nav-card-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: rgba(255, 87, 34, 0.12);
+        color: var(--primary-orange);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+        transition: all 0.2s ease;
+    }
+
+    .cms-nav-card.active .nav-card-icon {
+        background: rgba(255, 255, 255, 0.22);
+        color: #ffffff;
+    }
+
+    .nav-card-body {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .nav-card-title {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1.25;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+
+    .cms-nav-card.active .nav-card-title {
+        color: #ffffff;
+    }
+
+    .nav-card-subtitle {
+        font-size: 0.74rem;
+        color: var(--text-secondary);
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        margin-top: 2px;
+    }
+
+    .cms-nav-card.active .nav-card-subtitle {
+        color: rgba(255, 255, 255, 0.88);
+    }
+
+    /* ── CMS TAB PANES ── */
+    .cms-pane {
+        display: none;
+        animation: fadeInPane 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .cms-pane.active {
+        display: block;
+    }
+
+    @keyframes fadeInPane {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── SECTION HEADER BAR ── */
+    .section-banner-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        padding: 22px 28px;
+        background: var(--card-bg-elevated);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    }
+
+    .section-header-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .section-header-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: rgba(255, 87, 34, 0.12);
+        color: var(--primary-orange);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .section-title {
+        margin: 0 0 4px 0;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .section-subtitle {
+        margin: 0;
+        font-size: 0.86rem;
+        color: var(--text-secondary);
+    }
+
+    /* ── ITEM CARDS & FORMS ── */
+    .item-card {
+        background: var(--card-bg-elevated);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 22px;
+        position: relative;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .item-card:hover {
+        border-color: rgba(255, 87, 34, 0.35);
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+    }
+
+    .item-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 18px;
+        padding-bottom: 12px;
+        border-bottom: 1px dashed var(--border-color);
+    }
+
+    .item-badge {
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--primary-orange);
+        background: rgba(255, 87, 34, 0.12);
+        padding: 4px 10px;
+        border-radius: 6px;
+    }
+
+    .field-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 18px;
+        margin-bottom: 18px;
+    }
+
+    .field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .field-label {
+        font-size: 0.86rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .field-hint {
+        font-size: 0.76rem;
+        color: var(--text-secondary);
+        font-weight: 400;
+    }
+
+    .cms-input {
+        background: var(--input-bg, #ffffff) !important;
+        border: 1.5px solid var(--border-color) !important;
+        border-radius: 10px !important;
+        padding: 12px 16px !important;
+        color: var(--text-primary) !important;
+        font-size: 0.92rem !important;
+        font-weight: 500 !important;
+        font-family: inherit !important;
+        outline: none !important;
+        transition: all 0.2s ease !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+    }
+
+    html.dark-mode .cms-input {
+        background: rgba(22, 25, 33, 0.8) !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+        color: #f8fafc !important;
+    }
+
+    .cms-input:focus {
+        border-color: var(--primary-orange) !important;
+        box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.18) !important;
+        background: #ffffff !important;
+    }
+
+    html.dark-mode .cms-input:focus {
+        background: rgba(22, 25, 33, 0.95) !important;
+    }
+
+    textarea.cms-input {
+        min-height: 85px;
+        resize: vertical;
+        line-height: 1.5;
+    }
+
+    /* ── MEDIA UPLOADER UX ── */
+    .cms-media-uploader {
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        gap: 18px;
+        background: rgba(0, 0, 0, 0.02);
+        border: 1.5px solid var(--border-color);
+        border-radius: 14px;
+        padding: 16px;
+        margin-top: 8px;
+    }
+
+    @media (max-width: 680px) {
+        .cms-media-uploader {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .media-preview-wrapper {
+        position: relative;
+        width: 100%;
+        height: 130px;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        background: #0d0f15;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .media-preview-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.25s ease;
+    }
+
+    .media-preview-wrapper:hover .media-preview-img {
+        transform: scale(1.04);
+    }
+
+    .preview-badge-status {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        z-index: 2;
+    }
+
+    .badge-online {
+        background: rgba(16, 185, 129, 0.95);
+        color: #fff;
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 4px 8px;
+        border-radius: 5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .badge-remote {
+        background: rgba(59, 130, 246, 0.95);
+        color: #fff;
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 4px 8px;
+        border-radius: 5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .badge-local {
+        background: rgba(107, 114, 128, 0.95);
+        color: #fff;
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 4px 8px;
+        border-radius: 5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .badge-selected {
+        background: rgba(255, 87, 34, 0.95);
+        color: #fff;
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 4px 8px;
+        border-radius: 5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .media-upload-controls {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 12px;
+    }
+
+    .file-dropzone {
+        border: 2px dashed rgba(255, 87, 34, 0.4);
+        border-radius: 12px;
+        padding: 16px 20px;
+        text-align: center;
+        cursor: pointer;
+        background: rgba(255, 87, 34, 0.03);
+        transition: all 0.2s ease;
+    }
+
+    .file-dropzone:hover {
+        border-color: var(--primary-orange);
+        background: rgba(255, 87, 34, 0.08);
+        transform: translateY(-1px);
+    }
+
+    .dropzone-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .dropzone-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        text-align: left;
+    }
+
+    .dropzone-icon {
+        font-size: 1.8rem;
+        color: var(--primary-orange);
+    }
+
+    .dropzone-primary {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        display: block;
+    }
+
+    .dropzone-secondary {
+        font-size: 0.76rem;
+        color: var(--text-secondary);
+        display: block;
+    }
+
+    .btn-dropzone-pick {
+        background: #ffffff !important;
+        border: 1.5px solid var(--border-color) !important;
+        color: var(--text-primary) !important;
+        padding: 7px 15px !important;
+        border-radius: 8px !important;
+        font-size: 0.82rem !important;
+        font-weight: 600 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05) !important;
+        pointer-events: none !important;
+    }
+
+    html.dark-mode .btn-dropzone-pick {
+        background: rgba(255, 255, 255, 0.08) !important;
+        color: #f8fafc !important;
+    }
+
+    .selected-file-indicator {
+        margin-top: 8px;
+        font-size: 0.8rem;
+        color: var(--primary-orange);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255, 87, 34, 0.08);
+        padding: 6px 12px;
+        border-radius: 6px;
+    }
+
+    .url-input-toggle summary {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        cursor: pointer;
+        font-weight: 600;
+        user-select: none;
+    }
+
+    .url-input-toggle summary:hover {
+        color: var(--primary-orange);
+    }
+
+    /* ── FORM FOOTER ACTION BAR (CLEAN & NON-OVERLAPPING) ── */
+    .form-bottom-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        padding: 20px 28px;
+        background: var(--card-bg-elevated);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        margin-top: 26px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    }
+
+    .sync-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+
+    .sync-info i {
+        color: #10b981;
+        font-size: 1.15rem;
+    }
+
+    .footer-action-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cms-container">
+    <!-- Top Header -->
+    <div class="dashboard-header" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 18px;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px; flex-wrap: wrap;">
+                <h1 class="page-title" style="margin: 0; font-size: 1.65rem;">Landing Page Management</h1>
+                <span class="cloud-status-pill">
+                    <span class="pulse-dot"></span>
+                    <i class="ph ph-cloud-check"></i> Supabase Cloud Storage Connected
+                </span>
+            </div>
+            <p style="margin: 0; color: var(--text-secondary); font-size: 0.92rem;">
+                Customize public landing banners, articles, headlines, testimonials, and FAQs. Changes persist online to Supabase in real-time.
+            </p>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <a href="/" target="_blank" class="theme-btn-outline">
+                <i class="ph ph-arrow-square-out"></i>
+                <span>View Public Site</span>
+            </a>
+            <a href="{{ url_for('superadmin.new_article') }}" class="theme-btn-primary">
+                <i class="ph ph-plus-circle"></i>
+                <span>New Article</span>
+            </a>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}" style="padding:14px 20px; border-radius:12px; margin-bottom:24px;
+            background:{% if category == 'success' %}rgba(16,185,129,0.12){% else %}rgba(239,68,68,0.12){% endif %};
+            color:{% if category == 'success' %}#10b981{% else %}#ef4444{% endif %};
+            border:1.5px solid {% if category == 'success' %}rgba(16,185,129,0.25){% else %}rgba(239,68,68,0.25){% endif %};
+            display:flex; align-items:center; justify-content:space-between; gap:12px; font-weight:600;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <i class="ph {% if category == 'success' %}ph-check-circle{% else %}ph-warning-circle{% endif %}" style="font-size: 1.35rem;"></i>
+            <span>{{ message }}</span>
+        </div>
+        <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; color:inherit; cursor:pointer; font-size:1.1rem;">
+            <i class="ph ph-x"></i>
+        </button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <!-- ── 8-SECTION NAVIGATION GRID HUB ── -->
+    <div class="cms-nav-hub">
+        <div class="cms-nav-hub-header">
+            <span class="cms-nav-hub-label">
+                <i class="ph ph-squares-four"></i> Select Landing Section to Edit
+            </span>
+            <span style="font-size: 0.8rem; color: var(--text-secondary);">8 Live Editable Modules</span>
+        </div>
+        <div class="cms-nav-grid">
+            <button type="button" class="cms-nav-card active" onclick="showCmsTab('hero')" id="tab-nav-hero">
+                <div class="nav-card-icon"><i class="ph ph-images"></i></div>
+                <div class="nav-card-body">
+                    <span class="nav-card-title">1. Hero Slides</span>
+                    <span class="nav-card-subtitle">Header banners &amp; tagline</span>
+                </div>
+            </button>
+            <button type="button" class="cms-nav-card" onclick="showCmsTab('lead')" id="tab-nav-lead">
+                <div class="nav-card-icon"><i class="ph ph-newspaper"></i></div>
+                <div class="nav-card-body">
+                    <span class="nav-card-title">2. Lead Stories</span>
+                    <span class="nav-card-subtitle">Editorial 2/3 carousel</span>
+                </div>
+            </button>
+            <button type="button" class="cms-nav-card" onclick="showCmsTab('bulletins')" id="tab-nav-bulletins">
+                <div class="nav-card-icon"><i class="ph ph-lightning"></i></div>
+                <div class="nav-card-body">
+                    <span class="nav-card-title">3. Sidebar News</span>
+                    <span class="nav-card-subtitle">Live bulletin ticker</span>
+                </div>
+            </button>
+            <button type="button" class="cms-nav-card" onclick="showCmsTab('articles')" id="tab-nav-articles">
+                <div class="nav-card-icon"><i class="ph ph-article"></i></div>
+                <div class="nav-card-body">
+                    <span class="nav-card-title">4. Articles CMS</span>
+                    <span class="nav-card-subtitle">Published press releases</span>
+                </div>
+            </button>
+            <button type="button" class="cms-nav-card" onclick="showCmsTab('sections')" id="tab-nav-sections">
+                <div class="nav-card-icon"><i class="ph ph-cards"></i></div>
+                <div class="nav-card-body">
+                    <span class="nav-card-title">5. Value Prop</span>
+                    <span class="nav-card-subtitle">Sections A, B, C dividers</span>
+                </div>
+            </button>
+            <button type="button" class="cms-nav-card" onclick="showCmsTab('testimonials')" id="tab-nav-testimonials">
+                <div class="nav-card-icon"><i class="ph ph-star"></i></div>
+                <div class="nav-card-body">
+                    <span class="nav-card-title">6. Testimonials</span>
+                    <span class="nav-card-subtitle">Reader reviews &amp; ratings</span>
+                </div>
+            </button>
+            <button type="button" class="cms-nav-card" onclick="showCmsTab('faqs')" id="tab-nav-faqs">
+                <div class="nav-card-icon"><i class="ph ph-question"></i></div>
+                <div class="nav-card-body">
+                    <span class="nav-card-title">7. Help FAQs</span>
+                    <span class="nav-card-subtitle">Frequently asked Q&amp;A</span>
+                </div>
+            </button>
+            <button type="button" class="cms-nav-card" onclick="showCmsTab('footer')" id="tab-nav-footer">
+                <div class="nav-card-icon"><i class="ph ph-chart-bar"></i></div>
+                <div class="nav-card-body">
+                    <span class="nav-card-title">8. Footer &amp; CTA</span>
+                    <span class="nav-card-subtitle">Circulation stats &amp; banner</span>
+                </div>
+            </button>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════════ -->
+    <!-- TAB 1: HERO SLIDESHOW & MASTHEAD -->
+    <!-- ══════════════════════════════════════════════════════════════════════════ -->
+    <div id="pane-hero" class="cms-pane active">
+        <form method="POST" action="{{ url_for('superadmin.landing_page') }}" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="action_type" value="hero">
+            <input type="hidden" name="active_tab" value="hero">
+            <input type="hidden" name="hero_slides_count" value="{{ landing_content.hero_slides|length }}">
+
+            <div class="section-banner-header">
+                <div class="section-header-left">
+                    <div class="section-header-icon"><i class="ph ph-images"></i></div>
+                    <div>
+                        <h2 class="section-title">Hero Slideshow &amp; Masthead</h2>
+                        <p class="section-subtitle">Top location badge and full-width carousel slides displayed on the homepage header.</p>
+                    </div>
+                </div>
+                <button type="submit" class="theme-btn-save">
+                    <i class="ph ph-floppy-disk"></i> Save Hero Slides
+                </button>
+            </div>
+
+            <div class="item-card">
+                <div class="item-card-header">
+                    <span class="item-badge">Top Tagline</span>
+                    <span style="font-size: 0.8rem; color: var(--text-secondary);">Header Location Badge</span>
+                </div>
+                <div class="field-group" style="max-width: 480px;">
+                    <label class="field-label">Masthead Location Badge</label>
+                    <input type="text" name="masthead_location" value="{{ landing_content.masthead_location or 'LAGUNA, PHILIPPINES' }}" class="cms-input" required>
+                    <span class="field-hint">Rendered directly above the hero banner (e.g., LAGUNA, PHILIPPINES).</span>
+                </div>
+            </div>
+
+            {% for slide in landing_content.hero_slides %}
+            <div class="item-card">
+                <div class="item-card-header">
+                    <span class="item-badge">Slide #{{ loop.index }}</span>
+                    <span style="font-size: 0.8rem; color: var(--text-secondary);">Header Carousel Slide</span>
+                </div>
+                <div class="field-row">
+                    <div class="field-group">
+                        <label class="field-label">Slide Headline Title</label>
+                        <input type="text" name="hero_title_{{ loop.index0 }}" value="{{ slide.title }}" class="cms-input" required>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Slide Subtitle / Description</label>
+                        <input type="text" name="hero_subtitle_{{ loop.index0 }}" value="{{ slide.subtitle }}" class="cms-input" required>
+                    </div>
+                </div>
+
+                <!-- Media Upload UX -->
+                <div class="field-group">
+                    <label class="field-label">Slide Banner Image</label>
+                    {% set preview_url = slide.image_url if (slide.image_url.startswith('http') or slide.image_url.startswith('/')) else url_for('static', filename='images/' + slide.image_url) %}
+                    <div class="cms-media-uploader">
+                        <div class="media-preview-wrapper">
+                            <div class="preview-badge-status" id="hero_badge_{{ loop.index0 }}">
+                                {% if slide.image_url and 'supabase.co' in slide.image_url %}
+                                    <span class="badge-online"><i class="ph ph-cloud-check"></i> Supabase Cloud</span>
+                                {% elif slide.image_url and slide.image_url.startswith('http') %}
+                                    <span class="badge-remote"><i class="ph ph-globe"></i> Online CDN</span>
+                                {% else %}
+                                    <span class="badge-local"><i class="ph ph-hard-drive"></i> Local / Default</span>
+                                {% endif %}
+                            </div>
+                            <img src="{{ preview_url }}" id="hero_thumb_{{ loop.index0 }}" class="media-preview-img" alt="Slide Preview">
+                        </div>
+                        <div class="media-upload-controls">
+                            <div class="file-dropzone" onclick="document.getElementById('hero_file_input_{{ loop.index0 }}').click()">
+                                <input type="file" name="hero_file_{{ loop.index0 }}" id="hero_file_input_{{ loop.index0 }}" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none;" onchange="handleImageSelection(this, 'hero_thumb_{{ loop.index0 }}', 'hero_badge_{{ loop.index0 }}', 'hero_file_name_{{ loop.index0 }}')">
+                                <div class="dropzone-content">
+                                    <div class="dropzone-left">
+                                        <i class="ph ph-cloud-arrow-up dropzone-icon"></i>
+                                        <div>
+                                            <span class="dropzone-primary">Click to upload image to Supabase Cloud</span>
+                                            <span class="dropzone-secondary">PNG, JPG, WebP up to 5MB • Live Online Storage</span>
+                                        </div>
+                                    </div>
+                                    <span class="btn-dropzone-pick"><i class="ph ph-folder-open"></i> Browse</span>
+                                </div>
+                                <div class="selected-file-indicator" id="hero_file_name_{{ loop.index0 }}" style="display: none;"></div>
+                            </div>
+                            <div class="url-input-toggle">
+                                <details>
+                                    <summary><i class="ph ph-link"></i> Or specify image URL manually</summary>
+                                    <div style="margin-top: 8px;">
+                                        <input type="text" name="hero_image_{{ loop.index0 }}" id="hero_img_input_{{ loop.index0 }}" value="{{ slide.image_url }}" class="cms-input" placeholder="https://... or /static/images/..." oninput="updateUrlPreview(this.value, 'hero_thumb_{{ loop.index0 }}', 'hero_badge_{{ loop.index0 }}')">
+                                    </div>
+                                </details>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <div class="form-bottom-actions">
+                <div class="sync-info">
+                    <i class="ph ph-cloud-check"></i>
+                    <span>Uploaded images sync online to Supabase Storage bucket <code>platform-assets</code>.</span>
+                </div>
+                <div class="footer-action-group">
+                    <button type="button" class="theme-btn-outline" onclick="showCmsTab('lead')">
+                        Next: Lead Stories <i class="ph ph-arrow-right"></i>
+                    </button>
+                    <button type="submit" class="theme-btn-save">
+                        <i class="ph ph-floppy-disk"></i> Save Hero Slides
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════════ -->
+    <!-- TAB 2: LEAD STORIES (EDITORIAL CAROUSEL) -->
+    <!-- ══════════════════════════════════════════════════════════════════════════ -->
+    <div id="pane-lead" class="cms-pane">
+        <form method="POST" action="{{ url_for('superadmin.landing_page') }}" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="action_type" value="lead_stories">
+            <input type="hidden" name="active_tab" value="lead">
+            <input type="hidden" name="lead_count" value="{{ landing_content.lead_stories|length }}">
+
+            <div class="section-banner-header">
+                <div class="section-header-left">
+                    <div class="section-header-icon"><i class="ph ph-newspaper"></i></div>
+                    <div>
+                        <h2 class="section-title">Editorial Lead Stories Carousel</h2>
+                        <p class="section-subtitle">The 2/3 column lead story slider highlighting key features: Court Reservations, Tournaments, and Academies.</p>
+                    </div>
+                </div>
+                <button type="submit" class="theme-btn-save">
+                    <i class="ph ph-floppy-disk"></i> Save Lead Stories
+                </button>
+            </div>
+
+            {% for story in landing_content.lead_stories %}
+            <div class="item-card">
+                <div class="item-card-header">
+                    <span class="item-badge">Story #{{ loop.index }}: {{ story.category }}</span>
+                    <span style="font-size: 0.8rem; color: var(--text-secondary);">Lead Story Card</span>
+                </div>
+                <div class="field-row">
+                    <div class="field-group">
+                        <label class="field-label">Category Badge</label>
+                        <input type="text" name="lead_category_{{ loop.index0 }}" value="{{ story.category }}" class="cms-input" placeholder="e.g. Reserve Court">
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Story Headline Title</label>
+                        <input type="text" name="lead_title_{{ loop.index0 }}" value="{{ story.title }}" class="cms-input" required>
+                    </div>
+                </div>
+                <div class="field-group" style="margin-bottom: 16px;">
+                    <label class="field-label">Story Summary Excerpt</label>
+                    <textarea name="lead_desc_{{ loop.index0 }}" class="cms-input" rows="3">{{ story.description }}</textarea>
+                </div>
+                <div class="field-row">
+                    <div class="field-group">
+                        <label class="field-label">Action Button Text</label>
+                        <input type="text" name="lead_link_text_{{ loop.index0 }}" value="{{ story.link_text }}" class="cms-input" placeholder="Book a Court">
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Action Button URL Destination</label>
+                        <input type="text" name="lead_link_{{ loop.index0 }}" value="{{ story.link }}" class="cms-input" placeholder="/courts">
+                    </div>
+                </div>
+
+                <!-- Media Upload UX -->
+                <div class="field-group">
+                    <label class="field-label">Story Featured Image</label>
+                    {% set l_img = story.image_url if (story.image_url.startswith('http') or story.image_url.startswith('/')) else url_for('static', filename='images/' + story.image_url) %}
+                    <div class="cms-media-uploader">
+                        <div class="media-preview-wrapper">
+                            <div class="preview-badge-status" id="lead_badge_{{ loop.index0 }}">
+                                {% if story.image_url and 'supabase.co' in story.image_url %}
+                                    <span class="badge-online"><i class="ph ph-cloud-check"></i> Supabase Cloud</span>
+                                {% elif story.image_url and story.image_url.startswith('http') %}
+                                    <span class="badge-remote"><i class="ph ph-globe"></i> Online CDN</span>
+                                {% else %}
+                                    <span class="badge-local"><i class="ph ph-hard-drive"></i> Local / Default</span>
+                                {% endif %}
+                            </div>
+                            <img src="{{ l_img }}" id="lead_thumb_{{ loop.index0 }}" class="media-preview-img" alt="Story preview">
+                        </div>
+                        <div class="media-upload-controls">
+                            <div class="file-dropzone" onclick="document.getElementById('lead_file_input_{{ loop.index0 }}').click()">
+                                <input type="file" name="lead_file_{{ loop.index0 }}" id="lead_file_input_{{ loop.index0 }}" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none;" onchange="handleImageSelection(this, 'lead_thumb_{{ loop.index0 }}', 'lead_badge_{{ loop.index0 }}', 'lead_file_name_{{ loop.index0 }}')">
+                                <div class="dropzone-content">
+                                    <div class="dropzone-left">
+                                        <i class="ph ph-cloud-arrow-up dropzone-icon"></i>
+                                        <div>
+                                            <span class="dropzone-primary">Click to upload image to Supabase Cloud</span>
+                                            <span class="dropzone-secondary">PNG, JPG, WebP up to 5MB • Live Online Storage</span>
+                                        </div>
+                                    </div>
+                                    <span class="btn-dropzone-pick"><i class="ph ph-folder-open"></i> Browse</span>
+                                </div>
+                                <div class="selected-file-indicator" id="lead_file_name_{{ loop.index0 }}" style="display: none;"></div>
+                            </div>
+                            <div class="url-input-toggle">
+                                <details>
+                                    <summary><i class="ph ph-link"></i> Or specify image URL manually</summary>
+                                    <div style="margin-top: 8px;">
+                                        <input type="text" name="lead_image_{{ loop.index0 }}" id="lead_img_input_{{ loop.index0 }}" value="{{ story.image_url }}" class="cms-input" placeholder="https://... or /static/images/..." oninput="updateUrlPreview(this.value, 'lead_thumb_{{ loop.index0 }}', 'lead_badge_{{ loop.index0 }}')">
+                                    </div>
+                                </details>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <div class="form-bottom-actions">
+                <div class="sync-info">
+                    <i class="ph ph-cloud-check"></i>
+                    <span>Changes persist to Supabase database &amp; online storage.</span>
+                </div>
+                <div class="footer-action-group">
+                    <button type="button" class="theme-btn-outline" onclick="showCmsTab('bulletins')">
+                        Next: Sidebar News <i class="ph ph-arrow-right"></i>
+                    </button>
+                    <button type="submit" class="theme-btn-save">
+                        <i class="ph ph-floppy-disk"></i> Save Lead Stories
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════════ -->
+    <!-- TAB 3: SIDEBAR BULLETINS -->
+    <!-- ══════════════════════════════════════════════════════════════════════════ -->
+    <div id="pane-bulletins" class="cms-pane">
+        <form method="POST" action="{{ url_for('superadmin.landing_page') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="action_type" value="bulletins">
+            <input type="hidden" name="active_tab" value="bulletins">
+            <input type="hidden" name="bulletin_count" value="{{ landing_content.bulletins|length }}">
+
+            <div class="section-banner-header">
+                <div class="section-header-left">
+                    <div class="section-header-icon"><i class="ph ph-lightning"></i></div>
+                    <div>
+                        <h2 class="section-title">Sidebar "Latest Bulletins"</h2>
+                        <p class="section-subtitle">Breaking news updates beside the lead stories. Links can connect to articles (e.g. <code>/article/4</code>) or internal pages.</p>
+                    </div>
+                </div>
+                <button type="submit" class="theme-btn-save">
+                    <i class="ph ph-floppy-disk"></i> Save Bulletins
+                </button>
+            </div>
+
+            {% for b in landing_content.bulletins %}
+            <div class="item-card">
+                <div class="item-card-header">
+                    <span class="item-badge">Bulletin #{{ loop.index }}</span>
+                    <a href="{{ b.link }}" target="_blank" class="theme-btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;">
+                        <span>Test Link</span> <i class="ph ph-arrow-square-out"></i>
+                    </a>
+                </div>
+                <div class="field-row">
+                    <div class="field-group" style="max-width: 220px;">
+                        <label class="field-label">Time / Tag Badge</label>
+                        <input type="text" name="bulletin_time_{{ loop.index0 }}" value="{{ b.time }}" class="cms-input" placeholder="Just In / Booking Alert">
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Target Link Destination</label>
+                        <input type="text" name="bulletin_link_{{ loop.index0 }}" value="{{ b.link }}" class="cms-input" placeholder="/article/4">
+                    </div>
+                </div>
+                <div class="field-group" style="margin-bottom: 16px;">
+                    <label class="field-label">Bulletin Headline Title</label>
+                    <input type="text" name="bulletin_title_{{ loop.index0 }}" value="{{ b.title }}" class="cms-input" required>
+                </div>
+                <div class="field-group">
+                    <label class="field-label">Short Description / Subtext</label>
+                    <textarea name="bulletin_desc_{{ loop.index0 }}" class="cms-input" rows="2">{{ b.description }}</textarea>
+                </div>
+            </div>
+            {% endfor %}
+
+            <div class="form-bottom-actions">
+                <div class="sync-info">
+                    <i class="ph ph-cloud-check"></i>
+                    <span>Sidebar bulletins update across all desktop and mobile views.</span>
+                </div>
+                <div class="footer-action-group">
+                    <button type="button" class="theme-btn-outline" onclick="showCmsTab('articles')">
+                        Next: Articles CMS <i class="ph ph-arrow-right"></i>
+                    </button>
+                    <button type="submit" class="theme-btn-save">
+                        <i class="ph ph-floppy-disk"></i> Save Bulletins
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════════ -->
+    <!-- TAB 4: JOURNALIST ARTICLES CMS -->
+    <!-- ══════════════════════════════════════════════════════════════════════════ -->
+    <div id="pane-articles" class="cms-pane">
+        <div class="section-banner-header">
+            <div class="section-header-left">
+                <div class="section-header-icon"><i class="ph ph-article"></i></div>
+                <div>
+                    <h2 class="section-title">Journalist Articles &amp; Editorial Bulletins</h2>
+                    <p class="section-subtitle">Manage full public newspaper articles accessible at <code>/article/&lt;id&gt;</code>.</p>
+                </div>
+            </div>
+            <a href="{{ url_for('superadmin.new_article') }}" class="theme-btn-primary">
+                <i class="ph ph-plus-circle"></i> Create New Article
+            </a>
+        </div>
+
+        <div class="item-card" style="padding: 0; overflow: hidden;">
+            <div class="table-container" style="margin: 0;">
+                <table class="data-grid" style="margin: 0;">
+                    <thead>
+                        <tr>
+                            <th style="width: 70px;">ID</th>
+                            <th>Article Headline</th>
+                            <th>Category</th>
+                            <th>Author &amp; Byline</th>
+                            <th>Published Date</th>
+                            <th style="text-align: right; width: 160px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for art_id, art in articles.items() %}
+                        <tr>
+                            <td><strong style="color: var(--primary-orange); font-size: 0.95rem;">#{{ art.id }}</strong></td>
+                            <td>
+                                <strong style="color: var(--text-primary); font-size: 0.92rem; display: block; margin-bottom: 2px;">{{ art.title }}</strong>
+                                <span style="font-size: 0.78rem; color: var(--text-secondary); display: inline-flex; align-items: center; gap: 4px;">
+                                    <i class="ph ph-clock"></i> {{ art.read_time }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="item-badge">{{ art.category or 'General' }}</span>
+                            </td>
+                            <td>{{ art.author }}</td>
+                            <td>{{ art.date }}</td>
+                            <td style="text-align: right;">
+                                <div style="display: inline-flex; gap: 8px; align-items: center;">
+                                    <a href="/article/{{ art.id }}" target="_blank" class="theme-btn-outline" style="padding: 6px 10px; font-size: 0.8rem;" title="View Article Page">
+                                        <i class="ph ph-arrow-square-out"></i>
+                                    </a>
+                                    <a href="{{ url_for('superadmin.edit_article', article_id=art.id) }}" class="theme-btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;" title="Edit Article">
+                                        <i class="ph ph-note-pencil"></i> Edit
+                                    </a>
+                                    <form method="POST" action="{{ url_for('superadmin.delete_article_route', article_id=art.id) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete article #{{ art.id }}?');">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="theme-btn-danger" style="padding: 6px 10px; font-size: 0.8rem;" title="Delete Article">
+                                            <i class="ph ph-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════════ -->
+    <!-- TAB 5: VALUE PROP & SECTION HEADINGS -->
+    <!-- ══════════════════════════════════════════════════════════════════════════ -->
+    <div id="pane-sections" class="cms-pane">
+        <form method="POST" action="{{ url_for('superadmin.landing_page') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="action_type" value="all">
+            <input type="hidden" name="active_tab" value="sections">
+
+            <div class="section-banner-header">
+                <div class="section-header-left">
+                    <div class="section-header-icon"><i class="ph ph-cards"></i></div>
+                    <div>
+                        <h2 class="section-title">Value Proposition &amp; Section Headers</h2>
+                        <p class="section-subtitle">Customize the introductory callout banner and Section A (Courts), Section B (Tournaments), and Section C (Academies).</p>
+                    </div>
+                </div>
+                <button type="submit" class="theme-btn-save">
+                    <i class="ph ph-floppy-disk"></i> Save Sections
+                </button>
+            </div>
+
+            <!-- Value Proposition Banner -->
+            <div class="item-card">
+                <div class="item-card-header">
+                    <span class="item-badge">Why PickleballHub Banner</span>
+                    <span style="font-size: 0.8rem; color: var(--text-secondary);">Editorial Value Proposition</span>
+                </div>
+                <div class="field-row">
+                    <div class="field-group">
+                        <label class="field-label">Banner Kicker / Top Label</label>
+                        <input type="text" name="value_prop_kicker" value="{{ landing_content.value_prop_kicker }}" class="cms-input">
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Main Headline</label>
+                        <input type="text" name="value_prop_headline" value="{{ landing_content.value_prop_headline }}" class="cms-input" required>
+                    </div>
+                </div>
+                <div class="field-group" style="margin-bottom: 16px;">
+                    <label class="field-label">Body Text (HTML supported for bold tags)</label>
+                    <textarea name="value_prop_text" class="cms-input" rows="3">{{ landing_content.value_prop_text }}</textarea>
+                </div>
+                <div class="field-row">
+                    <div class="field-group">
+                        <label class="field-label">CTA Button Label</label>
+                        <input type="text" name="value_prop_cta_text" value="{{ landing_content.value_prop_cta_text }}" class="cms-input">
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">CTA Destination URL</label>
+                        <input type="text" name="value_prop_cta_link" value="{{ landing_content.value_prop_cta_link }}" class="cms-input">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section A -->
+            <div class="item-card">
+                <div class="item-card-header">
+                    <span class="item-badge">Section A: Court Facilities</span>
+                    <span style="font-size: 0.8rem; color: var(--text-secondary);">Court Directory Header</span>
+                </div>
+                <div class="field-row">
+                    <div class="field-group">
+                        <label class="field-label">Divider Labels</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" name="section_a_divider_1" value="{{ landing_content.section_a_divider_1 }}" class="cms-input" style="width: 30%;">
+                            <input type="text" name="section_a_divider_2" value="{{ landing_content.section_a_divider_2 }}" class="cms-input" style="width: 40%;">
+                            <input type="text" name="section_a_divider_3" value="{{ landing_content.section_a_divider_3 }}" class="cms-input" style="width: 30%;">
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Section Title</label>
+                        <input type="text" name="section_a_title" value="{{ landing_content.section_a_title }}" class="cms-input">
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label class="field-label">Section Subtitle</label>
+                    <input type="text" name="section_a_subtitle" value="{{ landing_content.section_a_subtitle }}" class="cms-input">
+                </div>
+            </div>
+
+            <!-- Section B -->
+            <div class="item-card">
+                <div class="item-card-header">
+                    <span class="item-badge">Section B: Tournament Bulletins</span>
+                    <span style="font-size: 0.8rem; color: var(--text-secondary);">Tournaments Header</span>
+                </div>
+                <div class="field-row">
+                    <div class="field-group">
+                        <label class="field-label">Divider Labels</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" name="section_b_divider_1" value="{{ landing_content.section_b_divider_1 }}" class="cms-input" style="width: 30%;">
+                            <input type="text" name="section_b_divider_2" value="{{ landing_content.section_b_divider_2 }}" class="cms-input" style="width: 40%;">
+                            <input type="text" name="section_b_divider_3" value="{{ landing_content.section_b_divider_3 }}" class="cms-input" style="width: 30%;">
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Section Title</label>
+                        <input type="text" name="section_b_title" value="{{ landing_content.section_b_title }}" class="cms-input">
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label class="field-label">Section Subtitle</label>
+                    <input type="text" name="section_b_subtitle" value="{{ landing_content.section_b_subtitle }}" class="cms-input">
+                </div>
+            </div>
+
+            <!-- Section C -->
+            <div class="item-card">
+                <div class="item-card-header">
+                    <span class="item-badge">Section C: Clinics &amp; Tutorials</span>
+                    <span style="font-size: 0.8rem; color: var(--text-secondary);">Academy Header</span>
+                </div>
+                <div class="field-row">
+                    <div class="field-group">
+                        <label class="field-label">Divider Labels</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" name="section_c_divider_1" value="{{ landing_content.section_c_divider_1 }}" class="cms-input" style="width: 30%;">
+                            <input type="text" name="section_c_divider_2" value="{{ landing_content.section_c_divider_2 }}" class="cms-input" style="width: 40%;">
+                            <input type="text" name="section_c_divider_3" value="{{ landing_content.section_c_divider_3 }}" class="cms-input" style="width: 30%;">
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Section Title</label>
+                        <input type="text" name="section_c_title" value="{{ landing_content.section_c_title }}" class="cms-input">
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label class="field-label">Section Subtitle</label>
+                    <input type="text" name="section_c_subtitle" value="{{ landing_content.section_c_subtitle }}" class="cms-input">
+                </div>
+            </div>
+
+            <div class="form-bottom-actions">
+                <div class="sync-info">
+                    <i class="ph ph-cloud-check"></i>
+                    <span>All dividers and headers reflect immediately on the live landing page.</span>
+                </div>
+                <div class="footer-action-group">
+                    <button type="button" class="theme-btn-outline" onclick="showCmsTab('testimonials')">
+                        Next: Testimonials <i class="ph ph-arrow-right"></i>
+                    </button>
+                    <button type="submit" class="theme-btn-save">
+                        <i class="ph ph-floppy-disk"></i> Save Sections
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════════ -->
+    <!-- TAB 6: READER TESTIMONIALS (SECTION E) -->
+    <!-- ══════════════════════════════════════════════════════════════════════════ -->
+    <div id="pane-testimonials" class="cms-pane">
+        <form method="POST" action="{{ url_for('superadmin.landing_page') }}" id="testimonials-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="action_type" value="testimonials">
+            <input type="hidden" name="active_tab" value="testimonials">
+            <input type="hidden" name="test_count" id="test_count_input" value="{{ landing_content.testimonials|length }}">
+
+            <div class="section-banner-header">
+                <div class="section-header-left">
+                    <div class="section-header-icon"><i class="ph ph-star"></i></div>
+                    <div>
+                        <h2 class="section-title">Section E: Reader Testimonials</h2>
+                        <p class="section-subtitle">Reviews &amp; quotes from real players, owners, and coaches shown in Section E.</p>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button type="button" class="theme-btn-secondary" onclick="addTestimonialRow()">
+                        <i class="ph ph-plus-circle"></i> Add Testimonial
+                    </button>
+                    <button type="submit" class="theme-btn-save">
+                        <i class="ph ph-floppy-disk"></i> Save Testimonials
+                    </button>
+                </div>
+            </div>
+
+            <div id="testimonials-container">
+                {% for test in landing_content.testimonials %}
+                <div class="item-card test-item-row" id="test_row_{{ loop.index0 }}">
+                    <div class="item-card-header">
+                        <span class="item-badge">Reviewer #{{ loop.index }}</span>
+                        <button type="button" class="theme-btn-danger" onclick="removeTestimonialRow({{ loop.index0 }})" style="padding: 4px 10px; font-size: 0.8rem;">
+                            <i class="ph ph-trash"></i> Remove
+                        </button>
+                    </div>
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label class="field-label">Author Name</label>
+                            <input type="text" name="test_author_{{ loop.index0 }}" value="{{ test.author }}" class="cms-input" required placeholder="e.g. Mark T.">
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Role / Credential</label>
+                            <input type="text" name="test_role_{{ loop.index0 }}" value="{{ test.role }}" class="cms-input" placeholder="e.g. Player (3.5 DUPR Rating)">
+                        </div>
+                        <div class="field-group" style="max-width: 140px;">
+                            <label class="field-label">Star Rating (1-5)</label>
+                            <input type="number" min="1" max="5" name="test_rating_{{ loop.index0 }}" value="{{ test.rating|default(5) }}" class="cms-input">
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Quote / Review</label>
+                        <textarea name="test_quote_{{ loop.index0 }}" class="cms-input" rows="2" required>{{ test.quote }}</textarea>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="form-bottom-actions">
+                <div class="sync-info">
+                    <i class="ph ph-cloud-check"></i>
+                    <span>Review cards are dynamically rendered with star ratings on the homepage.</span>
+                </div>
+                <div class="footer-action-group">
+                    <button type="button" class="theme-btn-outline" onclick="showCmsTab('faqs')">
+                        Next: Help FAQs <i class="ph ph-arrow-right"></i>
+                    </button>
+                    <button type="submit" class="theme-btn-save">
+                        <i class="ph ph-floppy-disk"></i> Save Testimonials
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════════ -->
+    <!-- TAB 7: FAQ HELP DESK (SECTION F) -->
+    <!-- ══════════════════════════════════════════════════════════════════════════ -->
+    <div id="pane-faqs" class="cms-pane">
+        <form method="POST" action="{{ url_for('superadmin.landing_page') }}" id="faqs-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="action_type" value="faqs">
+            <input type="hidden" name="active_tab" value="faqs">
+            <input type="hidden" name="faq_count" id="faq_count_input" value="{{ landing_content.faqs|length }}">
+
+            <div class="section-banner-header">
+                <div class="section-header-left">
+                    <div class="section-header-icon"><i class="ph ph-question"></i></div>
+                    <div>
+                        <h2 class="section-title">Section F: Help Desk Frequently Asked Questions</h2>
+                        <p class="section-subtitle">Common questions about court reservations, player matchmaking, and weather policies.</p>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button type="button" class="theme-btn-secondary" onclick="addFaqRow()">
+                        <i class="ph ph-plus-circle"></i> Add Question
+                    </button>
+                    <button type="submit" class="theme-btn-save">
+                        <i class="ph ph-floppy-disk"></i> Save FAQs
+                    </button>
+                </div>
+            </div>
+
+            <div id="faqs-container">
+                {% for f in landing_content.faqs %}
+                <div class="item-card faq-item-row" id="faq_row_{{ loop.index0 }}">
+                    <div class="item-card-header">
+                        <span class="item-badge">Question #{{ loop.index }}</span>
+                        <button type="button" class="theme-btn-danger" onclick="removeFaqRow({{ loop.index0 }})" style="padding: 4px 10px; font-size: 0.8rem;">
+                            <i class="ph ph-trash"></i> Remove
+                        </button>
+                    </div>
+                    <div class="field-group" style="margin-bottom: 12px;">
+                        <label class="field-label">Question</label>
+                        <input type="text" name="faq_q_{{ loop.index0 }}" value="{{ f.question }}" class="cms-input" required placeholder="e.g. How do I make a reservation?">
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Answer Explanation</label>
+                        <textarea name="faq_a_{{ loop.index0 }}" class="cms-input" rows="3" required>{{ f.answer }}</textarea>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="form-bottom-actions">
+                <div class="sync-info">
+                    <i class="ph ph-cloud-check"></i>
+                    <span>FAQs render cleanly in Section F with responsive question-card layouts.</span>
+                </div>
+                <div class="footer-action-group">
+                    <button type="button" class="theme-btn-outline" onclick="showCmsTab('footer')">
+                        Next: Footer &amp; CTA <i class="ph ph-arrow-right"></i>
+                    </button>
+                    <button type="submit" class="theme-btn-save">
+                        <i class="ph ph-floppy-disk"></i> Save FAQs
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════════ -->
+    <!-- TAB 8: STATS & FOOTER CONVERSION CTA -->
+    <!-- ══════════════════════════════════════════════════════════════════════════ -->
+    <div id="pane-footer" class="cms-pane">
+        <form method="POST" action="{{ url_for('superadmin.landing_page') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="action_type" value="footer">
+            <input type="hidden" name="active_tab" value="footer">
+
+            <div class="section-banner-header">
+                <div class="section-header-left">
+                    <div class="section-header-icon"><i class="ph ph-chart-bar"></i></div>
+                    <div>
+                        <h2 class="section-title">Footer Stats &amp; Final Call-to-Action</h2>
+                        <p class="section-subtitle">Live circulation counter metrics and the high-conversion signup banner at the footer.</p>
+                    </div>
+                </div>
+                <button type="submit" class="theme-btn-save">
+                    <i class="ph ph-floppy-disk"></i> Save Footer Elements
+                </button>
+            </div>
+
+            <!-- 4 Stats Counters -->
+            <div class="item-card">
+                <div class="item-card-header">
+                    <span class="item-badge">Circulation Metrics</span>
+                    <span style="font-size: 0.8rem; color: var(--text-secondary);">4 Live Stats Counters</span>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+                    {% for st in landing_content.stats %}
+                    <div style="background: rgba(0,0,0,0.02); border: 1.5px solid var(--border-color); border-radius: 12px; padding: 16px;">
+                        <span class="item-badge" style="margin-bottom: 8px; display: inline-block;">Counter #{{ loop.index }}</span>
+                        <div class="field-group" style="margin-bottom: 8px;">
+                            <label class="field-label">Metric Value</label>
+                            <input type="text" name="stat_{{ loop.index }}_num" value="{{ st.num }}" class="cms-input" required>
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Label Description</label>
+                            <input type="text" name="stat_{{ loop.index }}_label" value="{{ st.label }}" class="cms-input" required>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Final CTA Banner -->
+            <div class="item-card">
+                <div class="item-card-header">
+                    <span class="item-badge">Bottom Banner</span>
+                    <span style="font-size: 0.8rem; color: var(--text-secondary);">Final Conversion CTA</span>
+                </div>
+                <div class="field-row">
+                    <div class="field-group">
+                        <label class="field-label">Kicker / Overline</label>
+                        <input type="text" name="footer_cta_kicker" value="{{ landing_content.footer_cta_kicker }}" class="cms-input">
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Main Headline</label>
+                        <input type="text" name="footer_cta_headline" value="{{ landing_content.footer_cta_headline }}" class="cms-input" required>
+                    </div>
+                </div>
+                <div class="field-group" style="margin-bottom: 16px;">
+                    <label class="field-label">Body Text</label>
+                    <textarea name="footer_cta_text" class="cms-input" rows="3">{{ landing_content.footer_cta_text }}</textarea>
+                </div>
+                <div class="field-row">
+                    <div class="field-group">
+                        <label class="field-label">Action Button Text</label>
+                        <input type="text" name="footer_cta_btn_text" value="{{ landing_content.footer_cta_btn_text }}" class="cms-input">
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Action Button Destination</label>
+                        <input type="text" name="footer_cta_btn_link" value="{{ landing_content.footer_cta_btn_link }}" class="cms-input">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-bottom-actions">
+                <div class="sync-info">
+                    <i class="ph ph-cloud-check"></i>
+                    <span>Footer stats and signup CTA update across all pages immediately.</span>
+                </div>
+                <div class="footer-action-group">
+                    <button type="button" class="theme-btn-outline" onclick="showCmsTab('hero')">
+                        Back to Top: Hero Slides <i class="ph ph-arrow-up"></i>
+                    </button>
+                    <button type="submit" class="theme-btn-save">
+                        <i class="ph ph-floppy-disk"></i> Save Footer Elements
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Reset Defaults Footer Trigger -->
+    <div style="margin-top: 40px; padding: 24px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; background: var(--card-bg-elevated); border-radius: 16px;">
+        <div>
+            <h4 style="margin: 0 0 4px 0; color: var(--text-primary); font-size: 1rem; font-weight: 700;">Reset Landing Content</h4>
+            <p style="margin: 0; color: var(--text-secondary); font-size: 0.84rem;">Need to start over? Restore the original default banners, articles, and texts anytime.</p>
+        </div>
+        <form method="POST" action="{{ url_for('superadmin.reset_landing_defaults') }}" onsubmit="return confirm('WARNING: This will reset all customized landing texts and banners back to original defaults. Are you sure?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="theme-btn-danger">
+                <i class="ph ph-arrow-counter-clockwise"></i> Reset All Landing Defaults
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Tab switching logic
+    function showCmsTab(tabId) {
+        document.querySelectorAll('.cms-pane').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.cms-nav-card').forEach(el => el.classList.remove('active'));
+
+        const targetPane = document.getElementById('pane-' + tabId);
+        if (targetPane) {
+            targetPane.classList.add('active');
+            // Scroll smoothly to target section
+            targetPane.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // Update active navigation card
+        const activeNavBtn = document.getElementById('tab-nav-' + tabId);
+        if (activeNavBtn) {
+            activeNavBtn.classList.add('active');
+        }
+
+        // Update URL hash smoothly
+        history.replaceState(null, null, '#' + tabId);
+    }
+
+    // Auto switch tab from URL hash on load
+    window.addEventListener('DOMContentLoaded', () => {
+        const hash = window.location.hash.replace('#', '').replace('tab-', '');
+        if (hash && document.getElementById('pane-' + hash)) {
+            showCmsTab(hash);
+        }
+    });
+
+    // Handle Image Selection with instant preview & status badge
+    function handleImageSelection(fileInput, thumbId, badgeId, indicatorId) {
+        if (fileInput.files && fileInput.files[0]) {
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const img = document.getElementById(thumbId);
+                if (img) img.src = e.target.result;
+                
+                const badge = document.getElementById(badgeId);
+                if (badge) {
+                    badge.innerHTML = `<span class="badge-selected"><i class="ph ph-cloud-arrow-up"></i> Ready to Upload</span>`;
+                }
+
+                const indicator = document.getElementById(indicatorId);
+                if (indicator) {
+                    indicator.style.display = 'flex';
+                    indicator.innerHTML = `<i class="ph ph-file-image"></i> Selected: <strong>${file.name}</strong> (${(file.size / 1024).toFixed(1)} KB) • Uploads on Save`;
+                }
+            };
+            
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Update image preview from manually typed URL
+    function updateUrlPreview(url, thumbId, badgeId) {
+        if (!url) return;
+        const img = document.getElementById(thumbId);
+        if (img) img.src = url;
+
+        const badge = document.getElementById(badgeId);
+        if (badge) {
+            if (url.includes('supabase.co')) {
+                badge.innerHTML = `<span class="badge-online"><i class="ph ph-cloud-check"></i> Supabase Cloud</span>`;
+            } else if (url.startsWith('http')) {
+                badge.innerHTML = `<span class="badge-remote"><i class="ph ph-globe"></i> Online CDN</span>`;
+            } else {
+                badge.innerHTML = `<span class="badge-local"><i class="ph ph-hard-drive"></i> Local / Default</span>`;
+            }
+        }
+    }
+
+    // Dynamic Testimonials
+    function addTestimonialRow() {
+        const container = document.getElementById('testimonials-container');
+        const countInput = document.getElementById('test_count_input');
+        const idx = parseInt(countInput.value) || 0;
+
+        const row = document.createElement('div');
+        row.className = 'item-card test-item-row';
+        row.id = 'test_row_' + idx;
+        row.innerHTML = `
+            <div class="item-card-header">
+                <span class="item-badge">Reviewer #${idx + 1} (New)</span>
+                <button type="button" class="theme-btn-danger" onclick="removeTestimonialRow(${idx})" style="padding: 4px 10px; font-size: 0.8rem;">
+                    <i class="ph ph-trash"></i> Remove
+                </button>
+            </div>
+            <div class="field-row">
+                <div class="field-group">
+                    <label class="field-label">Author Name</label>
+                    <input type="text" name="test_author_${idx}" class="cms-input" required placeholder="e.g. Maria S.">
+                </div>
+                <div class="field-group">
+                    <label class="field-label">Role / Credential</label>
+                    <input type="text" name="test_role_${idx}" class="cms-input" placeholder="e.g. Tournament Finalist">
+                </div>
+                <div class="field-group" style="max-width: 140px;">
+                    <label class="field-label">Star Rating (1-5)</label>
+                    <input type="number" min="1" max="5" name="test_rating_${idx}" value="5" class="cms-input">
+                </div>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Quote / Review</label>
+                <textarea name="test_quote_${idx}" class="cms-input" rows="2" required placeholder="Write review quotation..."></textarea>
+            </div>
+        `;
+        container.appendChild(row);
+        countInput.value = idx + 1;
+    }
+
+    function removeTestimonialRow(idx) {
+        const row = document.getElementById('test_row_' + idx);
+        if (row) row.remove();
+    }
+
+    // Dynamic FAQs
+    function addFaqRow() {
+        const container = document.getElementById('faqs-container');
+        const countInput = document.getElementById('faq_count_input');
+        const idx = parseInt(countInput.value) || 0;
+
+        const row = document.createElement('div');
+        row.className = 'item-card faq-item-row';
+        row.id = 'faq_row_' + idx;
+        row.innerHTML = `
+            <div class="item-card-header">
+                <span class="item-badge">Question #${idx + 1} (New)</span>
+                <button type="button" class="theme-btn-danger" onclick="removeFaqRow(${idx})" style="padding: 4px 10px; font-size: 0.8rem;">
+                    <i class="ph ph-trash"></i> Remove
+                </button>
+            </div>
+            <div class="field-group" style="margin-bottom: 12px;">
+                <label class="field-label">Question</label>
+                <input type="text" name="faq_q_${idx}" class="cms-input" required placeholder="e.g. Can I cancel my reservation?">
+            </div>
+            <div class="field-group">
+                <label class="field-label">Answer Explanation</label>
+                <textarea name="faq_a_${idx}" class="cms-input" rows="3" required placeholder="Provide clear help answer..."></textarea>
+            </div>
+        `;
+        container.appendChild(row);
+        countInput.value = idx + 1;
+    }
+
+    function removeFaqRow(idx) {
+        const row = document.getElementById('faq_row_' + idx);
+        if (row) row.remove();
+    }
+</script>
+{% endblock %}

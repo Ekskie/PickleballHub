@@ -8,31 +8,287 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Base styles and Error page styles -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/error.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+
+    <script>
+        // Init Dark Mode from localStorage on load to prevent flickering
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark-mode');
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+
+        function toggleStandaloneTheme() {
+            const html = document.documentElement;
+            const isDark = html.classList.contains('dark-mode');
+            const icon = document.getElementById('themeToggleIcon');
+            if (isDark) {
+                html.classList.remove('dark-mode');
+                html.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+                if (icon) icon.className = 'ph ph-sun';
+            } else {
+                html.classList.add('dark-mode');
+                html.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+                if (icon) icon.className = 'ph ph-moon';
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --primary-orange: #ff5722;
+            --primary-orange-hover: #f4511e;
+            --primary-orange-light: rgba(255, 87, 34, 0.12);
+            --bg-color: #0b0e14;
+            --card-bg: rgba(18, 22, 31, 0.85);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --input-bg: rgba(15, 23, 42, 0.6);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --header-bg: rgba(11, 14, 20, 0.85);
+        }
+
+        html:not(.dark-mode) {
+            --bg-color: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --card-border: rgba(0, 0, 0, 0.08);
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --input-bg: rgba(241, 245, 249, 0.8);
+            --border-color: rgba(0, 0, 0, 0.08);
+            --header-bg: rgba(255, 255, 255, 0.88);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Ambient court background glow */
+        .ambient-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(255, 87, 34, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.12) 0%, transparent 45%),
+                radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── STANDALONE TOP NAVIGATION ── */
+        .error-navbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--header-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .error-nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1.25rem;
+            letter-spacing: -0.3px;
+        }
+
+        .error-nav-brand img {
+            width: 36px;
+            height: 36px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .error-nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .error-nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 8px 14px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .error-nav-link:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .error-nav-btn {
+            padding: 8px 18px;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .error-nav-btn.outline {
+            border: 1.5px solid var(--border-color);
+            color: var(--text-primary);
+            background: transparent;
+        }
+
+        .error-nav-btn.outline:hover {
+            border-color: var(--primary-orange);
+            color: var(--primary-orange);
+            transform: translateY(-1px);
+        }
+
+        .error-nav-btn.primary {
+            background: linear-gradient(135deg, #ff5722 0%, #f4511e 100%);
+            color: #ffffff;
+            border: none;
+            box-shadow: 0 4px 12px rgba(255, 87, 34, 0.35);
+        }
+
+        .error-nav-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(255, 87, 34, 0.45);
+        }
+
+        .error-theme-toggle {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .error-theme-toggle:hover {
+            color: var(--primary-orange);
+            border-color: var(--primary-orange);
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 640px) {
+            .error-navbar {
+                padding: 10px 16px;
+            }
+            .error-nav-link {
+                display: none;
+            }
+            .error-nav-btn {
+                padding: 7px 14px;
+                font-size: 0.82rem;
+            }
+        }
+
+        /* Main Error Page Container */
+        .error-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px 60px;
+            position: relative;
+            z-index: 10;
+            width: 100%;
+        }
+    </style>
+
+    <!-- Error page styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/error.css') }}">
     {% block extra_head %}{% endblock %}
 </head>
 
 <body>
 
-    <!-- Animated glassmorphic background -->
-    <div class="background-wrap">
-        <div class="overlay"></div>
-    </div>
+    <!-- Ambient Glowing Background -->
+    <div class="ambient-background"></div>
 
-    <!-- Navigation Header -->
-    {% include 'landings/navigation.html' %}
+    <!-- Clean Standalone Header (No Giant Slider!) -->
+    <header class="error-navbar">
+        <a href="/" class="error-nav-brand">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="PickleballHub Logo">
+            <span>PickleballHub</span>
+        </a>
 
-    <!-- Main Content -->
-    <div class="error-container">
+        <div class="error-nav-menu">
+            <a href="/" class="error-nav-link"><i class="ph ph-house"></i> Home</a>
+            <a href="{{ url_for('main.courts_listing') }}" class="error-nav-link"><i class="ph ph-map-pin"></i> Courts</a>
+            <a href="{{ url_for('auth.login') }}" class="error-nav-btn outline">Log In</a>
+            <a href="{{ url_for('auth.signup') }}" class="error-nav-btn primary">Sign Up</a>
+            <button type="button" class="error-theme-toggle" onclick="toggleStandaloneTheme()" title="Toggle Theme" aria-label="Toggle Dark/Light Mode">
+                <i class="ph ph-moon" id="themeToggleIcon"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Error Card Content -->
+    <main class="error-container">
         {% block content %}{% endblock %}
-    </div>
+    </main>
 
+    <script>
+        // Update theme toggle icon on load
+        (function() {
+            const isDark = document.documentElement.classList.contains('dark-mode');
+            const icon = document.getElementById('themeToggleIcon');
+            if (icon) {
+                icon.className = isDark ? 'ph ph-moon' : 'ph ph-sun';
+            }
+        })();
+    </script>
 </body>
 
 </html>

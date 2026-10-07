@@ -139,16 +139,40 @@ def validate_and_upload(db, file_obj, bucket, prefix, owner_id,
 
     # Try Supabase Storage first if db client is provided
     if db:
+        import logging
+        logger = logging.getLogger('app.upload_utils')
+        
+        # Accurately resolve MIME content-type using _MIME_MAP
+        resolved_mime = _MIME_MAP.get(ext, 'application/octet-stream')
+        ct = file_obj.content_type if (file_obj.content_type and file_obj.content_type != 'application/octet-stream') else resolved_mime
+        
         try:
             db.storage.from_(bucket).upload(
                 file=file_bytes,
                 path=filename,
-                file_options={"content-type": file_obj.content_type or f"video/{ext}"}
+                file_options={"content-type": ct}
             )
             public_url = db.storage.from_(bucket).get_public_url(filename)
+            logger.info(f"Successfully uploaded {filename} to Supabase bucket '{bucket}': {public_url}")
             return public_url, None
-        except Exception:
-            pass
+        except Exception as upload_err:
+            err_msg = str(upload_err).lower()
+            logger.warning(f"Supabase storage upload failed for bucket '{bucket}': {upload_err}. Attempting recovery...")
+            # Auto-create bucket if missing
+            if 'not found' in err_msg or 'bucket' in err_msg:
+                try:
+                    db.storage.create_bucket(bucket, options={'public': True})
+                    db.storage.from_(bucket).upload(
+                        file=file_bytes,
+                        path=filename,
+                        file_options={"content-type": ct}
+                    )
+                    public_url = db.storage.from_(bucket).get_public_url(filename)
+                    logger.info(f"Bucket '{bucket}' auto-created. Uploaded {filename}: {public_url}")
+                    return public_url, None
+                except Exception as retry_err:
+                    logger.error(f"Retry after creating bucket failed: {retry_err}")
+
 
     # Resilient local storage fallback
     try:

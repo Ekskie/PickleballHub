@@ -268,7 +268,7 @@
 </li>
 
 <!-- Communication & Content Dropdown -->
-{% set is_comm_active = request.endpoint in ['superadmin.community', 'superadmin.messages', 'superadmin.tutorials'] %}
+{% set is_comm_active = request.endpoint in ['superadmin.community', 'superadmin.messages', 'superadmin.tutorials', 'superadmin.landing_page', 'superadmin.new_article', 'superadmin.edit_article'] %}
 <li class="sidebar-dropdown-group {% if is_comm_active %}open active-group{% endif %}" data-group="super-comm">
     <button type="button" class="sidebar-dropdown-btn" onclick="toggleSidebarDropdown(this)">
         <span class="dropdown-btn-label">
@@ -278,6 +278,9 @@
         <i class="ph ph-caret-down dropdown-arrow"></i>
     </button>
     <ul class="sidebar-subnav">
+        <li class="{% if request.endpoint in ['superadmin.landing_page', 'superadmin.new_article', 'superadmin.edit_article'] %}active{% endif %}">
+            <a href="{{ url_for('superadmin.landing_page') }}"><i class="ph ph-browsers"></i> <span>Landing Page</span></a>
+        </li>
         <li class="{% if request.endpoint == 'superadmin.community' %}active{% endif %}">
             <a href="{{ url_for('superadmin.community') }}"><i class="ph ph-users-three"></i> <span>Community</span></a>
         </li>

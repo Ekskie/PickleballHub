@@ -322,10 +322,13 @@ def create_app():
 
     @app.context_processor
     def inject_platform_settings():
-        """Inject platform settings (SEO, tracking, name, email) into all templates."""
+        """Inject platform settings (SEO, tracking, name, email) and landing page content into all templates."""
         from app.settings_helper import load_platform_settings
-        settings = load_platform_settings()
-        return dict(platform_settings=settings)
+        from app.landing_helper import get_landing_content
+        return dict(
+            platform_settings=load_platform_settings(),
+            landing_content=get_landing_content()
+        )
 
 
     # ── Template Filters ──────────────────────────────────────────────────────

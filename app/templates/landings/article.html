@@ -49,7 +49,11 @@
 
         <!-- Article Banner Image (Uses full page width) -->
         <div class="article-banner-wrapper">
-            <img src="{{ url_for('static', filename='images/' + article.image_filename) }}" alt="{{ article.title }}">
+            {% set img_src = article.image_url or (url_for('static', filename='images/' + article.image_filename) if article.image_filename else url_for('static', filename='images/court-hero.jpg')) %}
+            {% if not (img_src.startswith('http') or img_src.startswith('/')) %}
+                {% set img_src = url_for('static', filename='images/' + img_src) %}
+            {% endif %}
+            <img src="{{ img_src }}" alt="{{ article.title }}">
         </div>
 
         <!-- Article Main Content Layout -->
@@ -71,18 +75,27 @@
                 <div class="related-stories-box">
                     <h4 class="font-serif">Featured Bulletins</h4>
                     <ul class="related-list">
-                        <li>
-                            <span class="related-time">Reserve</span>
-                            <a href="/article/1">Court Directory Spike</a>
-                        </li>
-                        <li>
-                            <span class="related-time">Cup</span>
-                            <a href="/article/2">Automated Bracket Engines</a>
-                        </li>
-                        <li>
-                            <span class="related-time">Academy</span>
-                            <a href="/article/3">Spin Mechanics Masterclass</a>
-                        </li>
+                        {% if related_articles %}
+                            {% for rel in related_articles %}
+                            <li>
+                                <span class="related-time">{{ rel.category or 'Bulletin' }}</span>
+                                <a href="/article/{{ rel.id }}">{{ rel.title }}</a>
+                            </li>
+                            {% endfor %}
+                        {% else %}
+                            <li>
+                                <span class="related-time">Reserve</span>
+                                <a href="/article/1">Court Directory Spike</a>
+                            </li>
+                            <li>
+                                <span class="related-time">Cup</span>
+                                <a href="/article/2">Automated Bracket Engines</a>
+                            </li>
+                            <li>
+                                <span class="related-time">Academy</span>
+                                <a href="/article/3">Spin Mechanics Masterclass</a>
+                            </li>
+                        {% endif %}
                     </ul>
                 </div>
             </aside>

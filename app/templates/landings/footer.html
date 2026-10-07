@@ -1,31 +1,41 @@
 {% if not hide_editorial_nav and not hide_footer_cta %}
 <!-- Unified Stats Footer -->
 <footer class="stats-footer">
-    <div class="stat-item" style="text-align: center;">
-        <h3>500+</h3>
-        <p>Active Players</p>
-    </div>
-    <div class="stat-item" style="text-align: center;">
-        <h3>12</h3>
-        <p>Connected Towns</p>
-    </div>
-    <div class="stat-item" style="text-align: center;">
-        <h3>10k+</h3>
-        <p>Matches Played</p>
-    </div>
-    <div class="stat-item" style="text-align: center;">
-        <h3>100%</h3>
-        <p>Automated Booking</p>
-    </div>
+    {% set stat_items = landing_content.stats if (landing_content and landing_content.stats) else [] %}
+    {% if stat_items %}
+        {% for st in stat_items %}
+        <div class="stat-item" style="text-align: center;">
+            <h3>{{ st.num }}</h3>
+            <p>{{ st.label }}</p>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="stat-item" style="text-align: center;">
+            <h3>500+</h3>
+            <p>Active Players</p>
+        </div>
+        <div class="stat-item" style="text-align: center;">
+            <h3>12</h3>
+            <p>Connected Towns</p>
+        </div>
+        <div class="stat-item" style="text-align: center;">
+            <h3>10k+</h3>
+            <p>Matches Played</p>
+        </div>
+        <div class="stat-item" style="text-align: center;">
+            <h3>100%</h3>
+            <p>Automated Booking</p>
+        </div>
+    {% endif %}
 </footer>
 
 <!-- Final Conversion CTA -->
 <section class="final-cta-section">
     <div class="final-cta-inner">
-        <span class="final-cta-kicker">Special Correspondent · Open Invitation</span>
-        <h2 class="final-cta-headline">Ready to take the court?</h2>
-        <p class="final-cta-text">Join <strong>500+ players</strong> across <strong>12 towns</strong> in Laguna today. Book courts, enter tournaments, and track your DUPR rating—all in one platform.</p>
-        <a href="{{ url_for('auth.signup') }}" class="final-cta-btn">Sign Up for Free <i class="ph ph-arrow-right"></i></a>
+        <span class="final-cta-kicker">{{ landing_content.footer_cta_kicker or 'Special Correspondent · Open Invitation' }}</span>
+        <h2 class="final-cta-headline">{{ landing_content.footer_cta_headline or 'Ready to take the court?' }}</h2>
+        <p class="final-cta-text">{{ landing_content.footer_cta_text | safe }}</p>
+        <a href="{{ landing_content.footer_cta_btn_link or url_for('auth.signup') }}" class="final-cta-btn">{{ landing_content.footer_cta_btn_text or 'Sign Up for Free' }} <i class="ph ph-arrow-right"></i></a>
     </div>
 </section>
 {% endif %}
