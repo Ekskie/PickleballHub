@@ -272,14 +272,33 @@ def api_reservation_slots():
     date     = request.args.get('date')
     if not court_id or not date:
         return jsonify([])
-    db = get_db()
+    admin_db = get_admin_db()
     try:
-        resp = db.table('court_reservations').select(
+        resp = admin_db.table('court_reservations').select(
             'start_time, end_time'
         ).eq('court_id', court_id).eq('date', date).in_(
             'status', ['confirmed', 'pending_payment']
         ).execute()
-        return jsonify(resp.data or [])
+        slots = resp.data or []
+
+        # Include event slots for this court
+        try:
+            ec_resp = admin_db.table('event_courts').select(
+                'court_id, events!inner(id, title, event_date, start_time, end_time, status)'
+            ).eq('court_id', court_id).execute()
+            for ec in (ec_resp.data or []):
+                ev = ec.get('events') or {}
+                if ev.get('event_date') == date and ev.get('status') in ['upcoming', 'registration_open', 'full', 'pending_approval', 'pending_payment']:
+                    slots.append({
+                        'start_time': ev.get('start_time'),
+                        'end_time': ev.get('end_time'),
+                        'type': 'event',
+                        'title': ev.get('title') or 'Club Event'
+                    })
+        except Exception as ee:
+            print(f"[api_reservation_slots] event lookup error: {ee}")
+
+        return jsonify(slots)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -292,10 +311,10 @@ def api_facility_occupancy():
     date        = request.args.get('date')
     if not facility_id or not date:
         return jsonify({'courts': [], 'reservations': []})
-    db = get_db()
+    admin_db = get_admin_db()
     try:
         # Fetch active courts
-        courts_resp = db.table('courts').select(
+        courts_resp = admin_db.table('courts').select(
             'id, name, type, hourly_rate, status, image_url'
         ).eq('facility_id', facility_id).eq('status', 'active').order('name').execute()
         courts = courts_resp.data or []
@@ -304,16 +323,46 @@ def api_facility_occupancy():
         if not court_ids:
             return jsonify({'courts': [], 'reservations': []})
             
-        # Fetch confirmed or pending bookings
-        res_resp = db.table('court_reservations').select(
+        # Fetch confirmed or pending player bookings
+        res_resp = admin_db.table('court_reservations').select(
             'court_id, start_time, end_time'
         ).in_('court_id', court_ids).eq('date', date).in_(
             'status', ['confirmed', 'pending_payment']
         ).execute()
         
+        all_reservations = []
+        for r in (res_resp.data or []):
+            all_reservations.append({
+                'court_id': r['court_id'],
+                'start_time': (r.get('start_time') or '')[:5],
+                'end_time': (r.get('end_time') or '')[:5],
+                'type': 'reservation',
+                'title': 'Player Reservation'
+            })
+
+        # Fetch active or pending event court bookings on this date
+        try:
+            ec_resp = admin_db.table('event_courts').select(
+                'court_id, event_id, events!inner(id, title, event_date, start_time, end_time, status)'
+            ).in_('court_id', court_ids).execute()
+            
+            for ec in (ec_resp.data or []):
+                ev = ec.get('events') or {}
+                if ev.get('event_date') == date and ev.get('status') in ['upcoming', 'registration_open', 'full', 'pending_approval', 'pending_payment']:
+                    all_reservations.append({
+                        'court_id': ec['court_id'],
+                        'start_time': (ev.get('start_time') or '')[:5],
+                        'end_time': (ev.get('end_time') or '')[:5],
+                        'type': 'event',
+                        'title': ev.get('title') or 'Club Event',
+                        'status': ev.get('status')
+                    })
+        except Exception as ee:
+            print(f"[api_facility_occupancy] event lookup error: {ee}")
+        
         return jsonify({
             'courts': courts,
-            'reservations': res_resp.data or []
+            'reservations': all_reservations
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -384,6 +433,28 @@ def api_facility_month_availability():
             if d:
                 hrs = float(r.get('total_hours') or 1)
                 bookings_by_date[d] = bookings_by_date.get(d, 0) + hrs
+
+        # Query all event court bookings in this month
+        try:
+            ec_resp = admin_db.table('event_courts').select(
+                'court_id, events!inner(id, event_date, start_time, end_time, status)'
+            ).in_('court_id', court_ids).execute()
+
+            for ec in (ec_resp.data or []):
+                ev = ec.get('events') or {}
+                ed = ev.get('event_date')
+                if ed and start_date <= ed <= end_date and ev.get('status') in ['upcoming', 'registration_open', 'full', 'pending_approval', 'pending_payment']:
+                    try:
+                        st = ev.get('start_time') or '08:00'
+                        et = ev.get('end_time') or '10:00'
+                        sh = int(str(st)[:2]) + int(str(st)[3:5])/60.0
+                        eh = int(str(et)[:2]) + int(str(et)[3:5])/60.0
+                        hrs = max(1.0, eh - sh)
+                    except Exception:
+                        hrs = 2.0
+                    bookings_by_date[ed] = bookings_by_date.get(ed, 0) + hrs
+        except Exception as e_ev:
+            print(f"[month_availability] event fetch error: {e_ev}")
 
         days = {}
         for d in range(1, num_days + 1):
@@ -465,17 +536,12 @@ def book_reservation():
         except Exception as lim_e:
             pass
 
-        # Check for overlapping reservation on this court
-        overlap_resp = db.table('court_reservations').select('id')\
-            .eq('court_id', court_id)\
-            .eq('date', date)\
-            .in_('status', ['confirmed', 'pending_payment'])\
-            .lt('start_time', end_time)\
-            .gt('end_time', start_time)\
-            .execute()
-            
-        if overlap_resp.data:
-            flash('This court is already reserved during the selected time slot. Please choose another time or court.', 'error')
+        # Check for overlapping reservation or event on this court
+        from app.booking_utils import check_court_conflict
+        has_conf, conf_detail = check_court_conflict(get_admin_db(), court_id, date, start_time, end_time)
+        if has_conf:
+            c_label = conf_detail.get('label') or conf_detail.get('title') or 'Scheduled booking'
+            flash(f"This court is already reserved during the selected time slot ({c_label} {conf_detail['start_time']} - {conf_detail['end_time']}). Please choose another court or time.", 'error')
             return redirect(url_for('player.reservation'))
 
         # Check if player already has another overlapping reservation (prevent double-booking)
@@ -683,6 +749,23 @@ def confirm_payment(reservation_id):
             'receipt_url': receipt_url,
         }).eq('id', reservation_id).eq('player_id', player_id).eq(
             'status', 'pending_payment').execute()
+
+        # Notify facility staff and owner
+        try:
+            r_info = db.table('court_reservations').select('facility_id, date, start_time, end_time, courts(name)').eq('id', reservation_id).single().execute()
+            if r_info.data and r_info.data.get('facility_id'):
+                from app.booking_utils import notify_facility_staff_and_owner
+                cname = (r_info.data.get('courts') or {}).get('name') or 'Court'
+                notify_facility_staff_and_owner(
+                    db=db,
+                    facility_id=r_info.data['facility_id'],
+                    title="New Court Reservation Payment",
+                    message=f"Player submitted payment proof for {cname} on {r_info.data['date']} ({r_info.data['start_time'][:5]} - {r_info.data['end_time'][:5]}) with GCash Ref: {gcash_ref}. Awaiting ledger approval.",
+                    link=url_for('facilitystaff.payment_ledger'),
+                    notif_type='info'
+                )
+        except Exception:
+            pass
 
         flash('Payment reference submitted successfully! Your booking is pending verification by the facility owner.', 'success')
     except Exception as e:

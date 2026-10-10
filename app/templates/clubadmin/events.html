@@ -1,96 +1,769 @@
 {% extends "clubadmin/base_clubadmin.html" %}
-{% block title %}Events{% endblock %}
+{% block title %}Club Events & Tournaments{% endblock %}
 
 {% block extra_head %}
 <style>
-.events-toolbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
-.filter-pills { display:flex; gap:8px; flex-wrap:wrap; }
-.filter-pill { padding:6px 16px; border-radius:20px; font-size:0.78rem; font-weight:600; cursor:pointer; border:1px solid var(--border-color); background:var(--card-bg); color:var(--text-secondary); transition:all 0.2s; }
-.filter-pill.active { background:var(--primary-orange); color:white; border-color:var(--primary-orange); }
-.filter-pill:hover:not(.active) { border-color:var(--text-muted); color:var(--text-primary); }
-.events-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:18px; }
-.event-card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:12px; padding:20px; box-shadow:var(--shadow-card); display:flex; flex-direction:column; gap:12px; transition:box-shadow 0.2s,transform 0.2s; }
-.event-card:hover { box-shadow:var(--shadow-hover); transform:translateY(-2px); }
-.event-card-top { display:flex; justify-content:space-between; align-items:flex-start; }
-.event-type-badge { font-size:0.65rem; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; padding:3px 8px; border-radius:4px; }
-.badge-tournament { color:var(--primary-orange); background:var(--primary-orange-light); }
-.badge-social     { color:#0369a1; background:#e0f2fe; }
-.badge-training   { color:#7c3aed; background:#ede9fe; }
-.badge-league     { color:#b45309; background:#fef3c7; }
-html.dark-mode .badge-social   { background:rgba(3,105,161,0.15); }
-html.dark-mode .badge-training { background:rgba(124,58,237,0.15); }
-html.dark-mode .badge-league   { background:rgba(180,83,9,0.15); }
-.event-title { font-size:1rem; font-weight:700; color:var(--text-primary); line-height:1.3; }
-.event-meta { display:flex; flex-direction:column; gap:5px; }
-.event-meta-row { display:flex; align-items:center; gap:7px; font-size:0.8rem; color:var(--text-secondary); }
-.event-meta-row i { font-size:0.95rem; color:var(--text-muted); }
-.event-footer { display:flex; justify-content:space-between; align-items:center; padding-top:8px; border-top:1px solid var(--border-color); flex-wrap:wrap; gap:6px; }
-.event-reg-count { font-size:0.8rem; color:var(--text-muted); font-weight:500; }
-.status-select { padding:4px 8px; border-radius:6px; border:1px solid var(--border-color); background:var(--input-bg); color:var(--text-primary); font-size:0.75rem; cursor:pointer; }
-.empty-state { grid-column:1/-1; display:flex; flex-direction:column; align-items:center; padding:60px 20px; gap:14px; text-align:center; }
-.empty-state i { font-size:3.5rem; color:var(--text-muted); }
-.empty-state h3 { font-size:1.1rem; color:var(--text-primary); }
-.empty-state p { font-size:0.85rem; color:var(--text-muted); max-width:320px; }
-.btn-sm { padding:7px 14px; border-radius:8px; font-size:0.8rem; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; display:inline-flex; align-items:center; gap:5px; text-decoration:none; }
-.btn-sm-primary { background:var(--primary-orange); color:white; }
-.btn-sm-primary:hover { background:var(--primary-orange-hover); }
-.btn-sm-outline { background:transparent; border:1px solid var(--border-color); color:var(--text-secondary); }
-.btn-sm-outline:hover { border-color:var(--text-muted); color:var(--text-primary); }
+/* ── Hero & KPI Header ── */
+.events-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.hero-title-group h1 {
+    font-size: 1.55rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.hero-title-group p {
+    font-size: 0.86rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+    font-weight: 500;
+}
+.btn-create-event {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    background: linear-gradient(135deg, var(--primary-orange) 0%, #ea580c 100%);
+    color: #fff !important;
+    font-weight: 700;
+    font-size: 0.88rem;
+    border-radius: 12px;
+    text-decoration: none;
+    box-shadow: 0 4px 14px rgba(249, 115, 22, 0.35);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    border: none;
+}
+.btn-create-event:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(249, 115, 22, 0.45);
+    color: #fff;
+}
+.btn-create-event i { font-size: 1.15rem; }
+
+/* ── KPI Metrics Grid ── */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.kpi-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: var(--shadow-card);
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+.kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+}
+.kpi-icon-wrap {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    flex-shrink: 0;
+}
+.kpi-icon-total   { background: rgba(249, 115, 22, 0.12); color: var(--primary-orange); }
+.kpi-icon-active  { background: rgba(34, 197, 94, 0.12); color: #16a34a; }
+.kpi-icon-pending { background: rgba(245, 158, 11, 0.12); color: #d97706; }
+.kpi-icon-players { background: rgba(124, 58, 237, 0.12); color: #7c3aed; }
+.kpi-info { display: flex; flex-direction: column; }
+.kpi-value { font-size: 1.45rem; font-weight: 800; color: var(--text-primary); line-height: 1.1; }
+.kpi-label { font-size: 0.74rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px; }
+
+/* ── Toolbar & Filter Controls ── */
+.events-toolbar {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 12px 16px;
+    margin-bottom: 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    box-shadow: var(--shadow-card);
+}
+.filter-search-box {
+    position: relative;
+    flex: 1;
+    min-width: 240px;
+    max-width: 360px;
+}
+.filter-search-box i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1rem;
+    color: var(--text-muted);
+}
+.filter-search-input {
+    width: 100%;
+    padding: 8px 12px 8px 36px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 0.82rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    outline: none;
+}
+.filter-search-input:focus {
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+}
+.filter-pills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.filter-pill {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.filter-pill:hover:not(.active) {
+    border-color: var(--text-muted);
+    color: var(--text-primary);
+    background: var(--card-bg);
+}
+.filter-pill.active {
+    background: var(--primary-orange);
+    color: #fff;
+    border-color: var(--primary-orange);
+    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.25);
+}
+.pill-count {
+    background: rgba(0, 0, 0, 0.12);
+    color: inherit;
+    font-size: 0.68rem;
+    border-radius: 10px;
+    padding: 1px 6px;
+    font-weight: 800;
+}
+.filter-pill.active .pill-count {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* ── Events Grid & Cards ── */
+.events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+    gap: 20px;
+}
+.event-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 22px;
+    box-shadow: var(--shadow-card);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+}
+.event-card:hover {
+    box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(249, 115, 22, 0.08);
+    transform: translateY(-3px);
+    border-color: rgba(249, 115, 22, 0.3);
+}
+
+/* Top Badge Row */
+.event-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+.type-tag-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.event-type-badge {
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.badge-tournament { color: #ea580c; background: rgba(249, 115, 22, 0.12); }
+.badge-social     { color: #0284c7; background: rgba(14, 165, 233, 0.12); }
+.badge-training   { color: #7c3aed; background: rgba(139, 92, 246, 0.12); }
+.badge-league     { color: #b45309; background: rgba(245, 158, 11, 0.12); }
+
+.format-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    padding: 2px 7px;
+    border-radius: 6px;
+    text-transform: uppercase;
+}
+
+/* Status Chips */
+.badge-status-chip {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+.badge-status-chip.pending-approval {
+    background: rgba(245, 158, 11, 0.12);
+    color: #d97706;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    animation: pulseAmber 2.2s infinite ease-in-out;
+}
+.badge-status-chip.pending-payment {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.28);
+}
+.badge-status-chip.rejected {
+    background: rgba(239, 68, 68, 0.12);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.28);
+}
+.badge-status-chip.registration-open {
+    background: rgba(34, 197, 94, 0.12);
+    color: #16a34a;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+.badge-status-chip.upcoming {
+    background: rgba(59, 130, 246, 0.12);
+    color: #2563eb;
+    border: 1px solid rgba(59, 130, 246, 0.25);
+}
+.badge-status-chip.full {
+    background: rgba(107, 114, 128, 0.12);
+    color: #4b5563;
+    border: 1px solid rgba(107, 114, 128, 0.25);
+}
+.badge-status-chip.completed {
+    background: rgba(107, 114, 128, 0.1);
+    color: #6b7280;
+    border: 1px solid var(--border-color);
+}
+
+.pulse-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #16a34a;
+    display: inline-block;
+    box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7);
+    animation: statusPulse 1.8s infinite;
+}
+
+@keyframes statusPulse {
+    0% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.6); }
+    70% { box-shadow: 0 0 0 6px rgba(22, 163, 74, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+}
+
+@keyframes pulseAmber {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.65; }
+}
+
+/* Title & Meta */
+.event-title {
+    font-size: 1.08rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.35;
+    letter-spacing: -0.2px;
+}
+.event-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+.event-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+}
+.event-meta-row i {
+    font-size: 0.98rem;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+.court-chips-wrap {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+}
+.court-chip {
+    font-size: 0.72rem;
+    font-weight: 600;
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    padding: 2px 7px;
+    border-radius: 6px;
+    color: var(--text-secondary);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Capacity Progress Bar */
+.capacity-box {
+    margin-top: 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.capacity-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+.capacity-bar-track {
+    width: 100%;
+    height: 6px;
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    overflow: hidden;
+}
+.capacity-bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.4s ease;
+}
+.capacity-bar-fill.fill-green { background: linear-gradient(90deg, #22c55e, #16a34a); }
+.capacity-bar-fill.fill-orange { background: linear-gradient(90deg, #f97316, #ea580c); }
+.capacity-bar-fill.fill-purple { background: linear-gradient(90deg, #a855f7, #9333ea); }
+
+/* Alert Boxes */
+.approval-alert {
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.28);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 0.78rem;
+    color: #b45309;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    line-height: 1.4;
+}
+.approval-alert i { font-size: 1.05rem; flex-shrink: 0; margin-top: 1px; color: #d97706; }
+
+.rejection-alert {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.28);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 0.78rem;
+    color: #dc2626;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    line-height: 1.4;
+}
+.rejection-alert i { font-size: 1.05rem; flex-shrink: 0; margin-top: 1px; }
+
+/* Card Footer Actions */
+.event-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-color);
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: auto;
+}
+.status-select-wrap {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+}
+.status-select {
+    padding: 6px 26px 6px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    appearance: none;
+    outline: none;
+    transition: all 0.2s;
+}
+.status-select:focus {
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.15);
+}
+.status-select-wrap i {
+    position: absolute;
+    right: 8px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+.action-btn-group {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.btn-card-action {
+    padding: 6px 11px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: none;
+}
+.btn-card-action.btn-outline {
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+}
+.btn-card-action.btn-outline:hover {
+    border-color: var(--text-muted);
+    color: var(--text-primary);
+    background: var(--card-bg);
+    transform: translateY(-1px);
+}
+.btn-card-action.btn-primary {
+    background: var(--primary-orange);
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(249, 115, 22, 0.25);
+}
+.btn-card-action.btn-primary:hover {
+    background: var(--primary-orange-hover);
+    transform: translateY(-1px);
+}
+.btn-card-action.btn-accent {
+    background: rgba(124, 58, 237, 0.12);
+    border: 1px solid rgba(124, 58, 237, 0.25);
+    color: #7c3aed;
+}
+.btn-card-action.btn-accent:hover {
+    background: rgba(124, 58, 237, 0.2);
+    transform: translateY(-1px);
+}
+
+/* Empty State */
+.empty-state {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 64px 20px;
+    background: var(--card-bg);
+    border: 1.5px dashed var(--card-border);
+    border-radius: 20px;
+    text-align: center;
+    gap: 14px;
+}
+.empty-state-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
+    background: rgba(249, 115, 22, 0.1);
+    color: var(--primary-orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.4rem;
+}
+.empty-state h3 { font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; }
+.empty-state p { font-size: 0.86rem; color: var(--text-muted); max-width: 380px; margin: 0; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-header">
-    <div>
-        <h1 class="page-title">Events on My Courts</h1>
-        <p style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">All events booked at your facilities</p>
+<!-- Hero Header -->
+<div class="events-hero">
+    <div class="hero-title-group">
+        <h1><i class="ph ph-trophy" style="color:var(--primary-orange)"></i> Club Events & Tournaments</h1>
+        <p>Manage tournaments, court reservations, player registrations, and schedules.</p>
     </div>
-    <a href="{{ url_for('clubadmin.create_event') }}" class="btn-sm btn-sm-primary" style="padding:10px 18px;font-size:0.9rem;">
+    <a href="{{ url_for('clubadmin.create_event') }}" class="btn-create-event">
         <i class="ph ph-plus-circle"></i> Create Event
     </a>
 </div>
 
-<div class="events-toolbar">
-    <div class="filter-pills">
-        <button class="filter-pill active" onclick="filterEvents('all',this)">All</button>
-        <button class="filter-pill" onclick="filterEvents('tournament',this)">Tournament</button>
-        <button class="filter-pill" onclick="filterEvents('social',this)">Social</button>
-        <button class="filter-pill" onclick="filterEvents('training',this)">Training</button>
-        <button class="filter-pill" onclick="filterEvents('league',this)">League</button>
+<!-- KPI Summary Cards -->
+<div class="kpi-grid">
+    <div class="kpi-card">
+        <div class="kpi-icon-wrap kpi-icon-total"><i class="ph ph-calendar-star"></i></div>
+        <div class="kpi-info">
+            <span class="kpi-value">{{ kpis.total_events if kpis else (events|length) }}</span>
+            <span class="kpi-label">Total Events</span>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon-wrap kpi-icon-active"><i class="ph ph-check-circle"></i></div>
+        <div class="kpi-info">
+            <span class="kpi-value">{{ kpis.active_count if kpis else 0 }}</span>
+            <span class="kpi-label">Registration Open</span>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon-wrap kpi-icon-pending"><i class="ph ph-clock-countdown"></i></div>
+        <div class="kpi-info">
+            <span class="kpi-value">{{ kpis.pending_count if kpis else 0 }}</span>
+            <span class="kpi-label">Pending Approval</span>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon-wrap kpi-icon-players"><i class="ph ph-users-three"></i></div>
+        <div class="kpi-info">
+            <span class="kpi-value">{{ kpis.total_players if kpis else 0 }}</span>
+            <span class="kpi-label">Registered Players</span>
+        </div>
     </div>
 </div>
 
-<div class="events-grid" id="ownerEventsGrid">
+<!-- Search & Filter Toolbar -->
+<div class="events-toolbar">
+    <div class="filter-search-box">
+        <i class="ph ph-magnifying-glass"></i>
+        <input type="text" id="eventSearchInput" class="filter-search-input" placeholder="Search event, venue, or court..." onkeyup="handleSearch()">
+    </div>
+    <div class="filter-pills" id="filterPillsContainer">
+        <button class="filter-pill active" data-filter="all" onclick="filterEvents('all', this)">
+            All <span class="pill-count" id="count-all">{{ events|length }}</span>
+        </button>
+        <button class="filter-pill" data-filter="pending_approval" onclick="filterEvents('pending_approval', this)">
+            <i class="ph ph-clock"></i> Pending Approval <span class="pill-count" id="count-pending_approval">0</span>
+        </button>
+        <button class="filter-pill" data-filter="registration_open" onclick="filterEvents('registration_open', this)">
+            <i class="ph ph-check-circle"></i> Open for Reg <span class="pill-count" id="count-registration_open">0</span>
+        </button>
+        <button class="filter-pill" data-filter="tournament" onclick="filterEvents('tournament', this)">
+            <i class="ph ph-trophy"></i> Tournaments <span class="pill-count" id="count-tournament">0</span>
+        </button>
+        <button class="filter-pill" data-filter="social" onclick="filterEvents('social', this)">
+            <i class="ph ph-beer-bottle"></i> Social <span class="pill-count" id="count-social">0</span>
+        </button>
+        <button class="filter-pill" data-filter="training" onclick="filterEvents('training', this)">
+            <i class="ph ph-barbell"></i> Training <span class="pill-count" id="count-training">0</span>
+        </button>
+    </div>
+</div>
+
+<!-- Events Grid -->
+<div class="events-grid" id="eventsGrid">
     {% if events %}
         {% for ev in events %}
-        <div class="event-card" data-type="{{ ev.type }}">
+        {% set registered = ev.registered_count or 0 %}
+        {% set max_cap = ev.max_players or 16 %}
+        {% set pct = (registered / max_cap * 100)|round|int %}
+        {% set sc = ev.status %}
+
+        <div class="event-card" 
+             data-type="{{ ev.type }}" 
+             data-status="{{ ev.status }}"
+             data-title="{{ ev.title|lower }}"
+             data-venue="{{ (ev.facilities.name if ev.facilities else '')|lower }}"
+             data-location="{{ (ev.location_label or '')|lower }}">
+            
+            <!-- Card Top: Tags & Status -->
             <div class="event-card-top">
-                <span class="event-type-badge badge-{{ ev.type }}">{{ ev.type|capitalize }}</span>
-                {% set sc = ev.status %}
-                <span class="status-pill {% if sc == 'registration_open' %}success{% elif sc == 'in_progress' %}warning{% elif sc in ['cancelled','full'] %}danger{% endif %}" style="font-size:0.65rem;">
-                    {{ sc|replace('_',' ')|capitalize }}
-                </span>
+                <div class="type-tag-group">
+                    <span class="event-type-badge badge-{{ ev.type }}">
+                        {% if ev.type == 'tournament' %}<i class="ph ph-trophy"></i>
+                        {% elif ev.type == 'social' %}<i class="ph ph-beer-bottle"></i>
+                        {% elif ev.type == 'training' %}<i class="ph ph-barbell"></i>
+                        {% else %}<i class="ph ph-calendar"></i>{% endif %}
+                        {{ ev.type|capitalize }}
+                    </span>
+                    {% if ev.format %}
+                        <span class="format-badge">{{ ev.format|replace('_', ' ')|capitalize }}</span>
+                    {% endif %}
+                </div>
+
+                {% if sc == 'pending_approval' %}
+                    <span class="badge-status-chip pending-approval"><i class="ph ph-hourglass-high"></i> Pending Approval</span>
+                {% elif sc == 'pending_payment' %}
+                    <span class="badge-status-chip pending-payment"><i class="ph ph-credit-card"></i> Pay Facility</span>
+                {% elif sc == 'rejected' %}
+                    <span class="badge-status-chip rejected"><i class="ph ph-x-circle"></i> Declined</span>
+                {% elif sc == 'registration_open' %}
+                    <span class="badge-status-chip registration-open"><span class="pulse-dot"></span> Registration Open</span>
+                {% elif sc == 'upcoming' %}
+                    <span class="badge-status-chip upcoming"><i class="ph ph-calendar-check"></i> Upcoming</span>
+                {% elif sc == 'full' %}
+                    <span class="badge-status-chip full"><i class="ph ph-users-three"></i> Full</span>
+                {% else %}
+                    <span class="badge-status-chip completed"><i class="ph ph-check-fat"></i> {{ sc|replace('_',' ')|title }}</span>
+                {% endif %}
             </div>
+
+            <!-- Title -->
             <div class="event-title">{{ ev.title }}</div>
+
+            <!-- Meta details -->
             <div class="event-meta">
-                <div class="event-meta-row"><i class="ph ph-calendar-blank"></i> {{ ev.event_date }}</div>
-                <div class="event-meta-row"><i class="ph ph-clock"></i> {{ ev.start_time[:5] }} – {{ ev.end_time[:5] }}</div>
-                <div class="event-meta-row"><i class="ph ph-buildings"></i> {{ ev.facilities.name if ev.facilities else '—' }}</div>
-                {% if ev.location_label %}<div class="event-meta-row"><i class="ph ph-intersect"></i> {{ ev.location_label }}</div>{% endif %}
+                <div class="event-meta-row">
+                    <i class="ph ph-calendar-blank"></i>
+                    <span><strong>{{ ev.event_date }}</strong></span>
+                </div>
+                <div class="event-meta-row">
+                    <i class="ph ph-clock"></i>
+                    <span>{{ ev.start_time[:5] }} – {{ ev.end_time[:5] }} {% if ev.duration_hours %}<small style="color:var(--text-muted)">({{ ev.duration_hours }} hrs)</small>{% endif %}</span>
+                </div>
+                <div class="event-meta-row">
+                    <i class="ph ph-buildings"></i>
+                    <span>{{ ev.facilities.name if ev.facilities else 'Venue not assigned' }}</span>
+                </div>
+                {% if ev.location_label %}
+                <div class="event-meta-row">
+                    <i class="ph ph-map-pin"></i>
+                    <span>{{ ev.location_label }}</span>
+                </div>
+                {% endif %}
+
+                <!-- Booked Courts Chips -->
+                {% if ev.courts %}
+                <div class="court-chips-wrap">
+                    {% for c in ev.courts %}
+                    <span class="court-chip">
+                        <i class="ph ph-tennis-ball" style="color:var(--primary-orange);"></i> {{ c.name }}
+                    </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
             </div>
+
+            <!-- Player Capacity Bar -->
+            <div class="capacity-box">
+                <div class="capacity-label-row">
+                    <span><i class="ph ph-users" style="color:var(--primary-orange);"></i> {{ registered }} / {{ max_cap }} Players</span>
+                    <span>{{ pct }}% full</span>
+                </div>
+                <div class="capacity-bar-track">
+                    <div class="capacity-bar-fill {% if pct >= 100 %}fill-purple{% elif pct >= 75 %}fill-orange{% else %}fill-green{% endif %}" 
+                         style="width: {{ pct if pct <= 100 else 100 }}%;"></div>
+                </div>
+            </div>
+
+            <!-- Alerts: Pending Approval / Rejected -->
+            {% if ev.status == 'pending_approval' %}
+                <div class="approval-alert">
+                    <i class="ph ph-hourglass-high"></i>
+                    <div>
+                        <strong>Awaiting venue verification.</strong>
+                        {% if ev.gcash_ref %}
+                        <div style="margin-top:2px; font-size:0.75rem;">GCash Ref: <code>{{ ev.gcash_ref }}</code></div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% elif ev.status == 'rejected' %}
+                <div class="rejection-alert">
+                    <i class="ph ph-warning-circle"></i>
+                    <div>
+                        <strong>Declined by facility:</strong> {{ ev.rejection_reason or 'No specific reason provided.' }}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Footer Actions -->
             <div class="event-footer">
-                <span class="event-reg-count"><i class="ph ph-users"></i> {{ ev.registered_count }} / {{ ev.max_players }}</span>
-                <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-                    {% if ev.organizer_id == session.get('user_id') %}
-                    <form method="POST" action="{{ url_for('clubadmin.change_event_status', event_id=ev.id) }}" style="margin:0;">
-                        <select name="status" class="status-select" onchange="this.form.submit()" title="Change status">
-                            {% for s in ['upcoming','registration_open','in_progress','completed','cancelled'] %}
+                <!-- Status changer for active organizer -->
+                {% if ev.organizer_id == session.get('user_id') and ev.status in ['registration_open', 'upcoming', 'in_progress', 'completed', 'cancelled'] %}
+                <form method="POST" action="{{ url_for('clubadmin.change_event_status', event_id=ev.id) }}" style="margin:0;">
+                    <div class="status-select-wrap">
+                        <select name="status" class="status-select" onchange="this.form.submit()" title="Change event status">
+                            {% for s in ['registration_open','upcoming','in_progress','completed','cancelled'] %}
                             <option value="{{ s }}" {% if ev.status == s %}selected{% endif %}>{{ s|replace('_',' ')|title }}</option>
                             {% endfor %}
                         </select>
-                    </form>
+                        <i class="ph ph-caret-down"></i>
+                    </div>
+                </form>
+                {% else %}
+                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">
+                    Status: <span style="color:var(--text-primary); text-transform:capitalize;">{{ ev.status|replace('_',' ') }}</span>
+                </div>
+                {% endif %}
+
+                <!-- Action buttons -->
+                <div class="action-btn-group">
+                    {% if ev.status == 'pending_payment' %}
+                        <a href="{{ url_for('clubadmin.facility_payment', event_id=ev.id) }}" class="btn-card-action btn-primary">
+                            <i class="ph ph-credit-card"></i> Pay Court Fee
+                        </a>
+                    {% elif ev.status == 'rejected' %}
+                        <a href="{{ url_for('clubadmin.edit_event', event_id=ev.id) }}" class="btn-card-action btn-outline">
+                            <i class="ph ph-pencil-simple"></i> Resubmit
+                        </a>
                     {% endif %}
-                    <a href="{{ url_for('clubadmin.event_participants', event_id=ev.id) }}" class="btn-sm btn-sm-outline" style="padding:4px 10px;font-size:0.75rem;">
+
+                    {% if ev.type == 'tournament' and ev.status in ['registration_open', 'upcoming', 'in_progress', 'completed'] %}
+                        <a href="{{ url_for('clubadmin.tournament_manage', event_id=ev.id) }}" class="btn-card-action btn-accent" title="Manage Tournament Brackets & Matches">
+                            <i class="ph ph-tree-structure"></i> Bracket
+                        </a>
+                    {% endif %}
+
+                    <a href="{{ url_for('clubadmin.event_participants', event_id=ev.id) }}" class="btn-card-action btn-outline" title="View Registered Players">
                         <i class="ph ph-users"></i> Participants
                     </a>
                 </div>
@@ -99,20 +772,114 @@ html.dark-mode .badge-league   { background:rgba(180,83,9,0.15); }
         {% endfor %}
     {% else %}
         <div class="empty-state">
-            <i class="ph ph-trophy"></i>
-            <h3>No Events Yet</h3>
-            <p>Create your first event to start accepting player registrations.</p>
+            <div class="empty-state-icon"><i class="ph ph-trophy"></i></div>
+            <h3>No Club Events Scheduled</h3>
+            <p>Organize club tournaments, open play sessions, and training clinics with court booking integration.</p>
+            <a href="{{ url_for('clubadmin.create_event') }}" class="btn-create-event" style="margin-top:8px;">
+                <i class="ph ph-plus-circle"></i> Create Your First Event
+            </a>
         </div>
     {% endif %}
+
+    <!-- Hidden Empty Filter Search State -->
+    <div id="noResultsState" class="empty-state" style="display:none;">
+        <div class="empty-state-icon" style="background:rgba(107,114,128,0.1); color:var(--text-muted);"><i class="ph ph-magnifying-glass"></i></div>
+        <h3>No matching events found</h3>
+        <p>Try adjusting your search keywords or filter category.</p>
+        <button class="btn-card-action btn-outline" onclick="resetFilters()" style="margin-top:8px; padding:8px 16px;">
+            <i class="ph ph-arrow-counter-clockwise"></i> Reset Filters
+        </button>
+    </div>
 </div>
 
 <script>
-function filterEvents(type, btn) {
-    document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    document.querySelectorAll('.event-card').forEach(card => {
-        card.style.display = (type === 'all' || card.dataset.type === type) ? '' : 'none';
+let currentCriteria = 'all';
+
+function updatePillCounts() {
+    const cards = document.querySelectorAll('.event-card');
+    let counts = {
+        all: cards.length,
+        pending_approval: 0,
+        registration_open: 0,
+        tournament: 0,
+        social: 0,
+        training: 0
+    };
+
+    cards.forEach(card => {
+        const s = card.dataset.status;
+        const t = card.dataset.type;
+        if (s === 'pending_approval') counts.pending_approval++;
+        if (s === 'registration_open') counts.registration_open++;
+        if (t === 'tournament') counts.tournament++;
+        if (t === 'social') counts.social++;
+        if (t === 'training') counts.training++;
     });
+
+    for (const [key, val] of Object.entries(counts)) {
+        const el = document.getElementById(`count-${key}`);
+        if (el) el.textContent = val;
+    }
 }
+
+function filterEvents(criteria, btn) {
+    currentCriteria = criteria;
+    document.querySelectorAll('.filter-pills .filter-pill').forEach(p => p.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    applyFilters();
+}
+
+function handleSearch() {
+    applyFilters();
+}
+
+function applyFilters() {
+    const query = (document.getElementById('eventSearchInput')?.value || '').trim().toLowerCase();
+    const cards = document.querySelectorAll('.event-card');
+    const noResults = document.getElementById('noResultsState');
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+        const type = card.dataset.type;
+        const status = card.dataset.status;
+        const title = card.dataset.title || '';
+        const venue = card.dataset.venue || '';
+        const location = card.dataset.location || '';
+
+        let matchesFilter = false;
+        if (currentCriteria === 'all') {
+            matchesFilter = true;
+        } else if (currentCriteria === 'pending_approval' || currentCriteria === 'registration_open') {
+            matchesFilter = (status === currentCriteria);
+        } else {
+            matchesFilter = (type === currentCriteria);
+        }
+
+        let matchesSearch = true;
+        if (query) {
+            matchesSearch = title.includes(query) || venue.includes(query) || location.includes(query);
+        }
+
+        if (matchesFilter && matchesSearch) {
+            card.style.display = '';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    if (noResults) {
+        noResults.style.display = (visibleCount === 0 && cards.length > 0) ? 'flex' : 'none';
+    }
+}
+
+function resetFilters() {
+    const searchInput = document.getElementById('eventSearchInput');
+    if (searchInput) searchInput.value = '';
+    const allPill = document.querySelector('.filter-pill[data-filter="all"]');
+    filterEvents('all', allPill);
+}
+
+document.addEventListener('DOMContentLoaded', updatePillCounts);
 </script>
 {% endblock %}

@@ -21,12 +21,12 @@ def events():
 
         if fac_ids:
             ev_resp = db.table('events').select(
-                'id, title, type, event_date, start_time, end_time, max_players, status, location_label, organizer_id, '
-                'facilities(name), profiles!organizer_id(first_name, last_name)'
+                'id, title, type, format, event_date, start_time, end_time, max_players, status, location_label, organizer_id, '
+                'gcash_ref, rejection_reason, facility_id, facilities(name), profiles!organizer_id(first_name, last_name, email, phone)'
             ).in_('facility_id', fac_ids).order('event_date', desc=False).execute()
             events_list = ev_resp.data or []
 
-            # Attach registration count (optimized batch query)
+            # Attach registration count & booked courts (optimized batch queries)
             if events_list:
                 ev_ids = [ev['id'] for ev in events_list]
                 reg_resp = db.table('event_registrations').select('event_id').in_('event_id', ev_ids).eq('status', 'registered').execute()
@@ -35,13 +35,141 @@ def events():
                 from collections import Counter
                 reg_counts = Counter(r['event_id'] for r in reg_data)
                 
+                court_resp = db.table('event_courts').select('event_id, court_id, courts(name, hourly_rate)').in_('event_id', ev_ids).execute()
+                courts_by_ev = {}
+                for c in (court_resp.data or []):
+                    eid = c['event_id']
+                    if eid not in courts_by_ev:
+                        courts_by_ev[eid] = []
+                    if c.get('courts'):
+                        courts_by_ev[eid].append(c['courts'])
+
                 for ev in events_list:
                     ev['registered_count'] = reg_counts[ev['id']]
+                    ev['courts'] = courts_by_ev.get(ev['id'], [])
+                    try:
+                        sh = float(ev['start_time'][:2]) + float(ev['start_time'][3:5])/60.0
+                        eh = float(ev['end_time'][:2]) + float(ev['end_time'][3:5])/60.0
+                        hrs = max(0.5, eh - sh) if eh > sh else 1.0
+                    except Exception:
+                        hrs = 1.0
+                    tot_rate = sum(float(c.get('hourly_rate') or 0) for c in ev['courts'])
+                    ev['total_court_fee'] = tot_rate * hrs
+                    ev['duration_hours'] = round(hrs, 1)
+
     except Exception as e:
         current_app.logger.error(f"Error loading events for owner {owner_id}: {e}")
         flash('An error occurred. Please try again.', 'error')
 
-    return render_template('owner/events.html', events=events_list)
+    pending_count = sum(1 for e in events_list if e.get('status') == 'pending_approval')
+    total_events = len(events_list)
+    active_count = sum(1 for e in events_list if e.get('status') in ['registration_open', 'upcoming'])
+    total_players = sum(e.get('registered_count', 0) for e in events_list)
+    kpis = {
+        'total_events': total_events,
+        'active_count': active_count,
+        'pending_count': pending_count,
+        'total_players': total_players
+    }
+    return render_template('owner/events.html', events=events_list, pending_count=pending_count, kpis=kpis)
+
+
+# ── Owner Event Approval & Rejection ──────────────────────────────────────────
+@owner_bp.route('/events/<event_id>/approve', methods=['POST'])
+@require_role('owner')
+def approve_event(event_id):
+    owner_id = session.get('user_id')
+    db = get_admin_db()
+    try:
+        fac_resp = db.table('facilities').select('id, name').eq('owner_id', owner_id).execute()
+        fac_ids = [f['id'] for f in (fac_resp.data or [])]
+        if not fac_ids:
+            flash("Unauthorized.", "error")
+            return redirect(url_for('owner.events'))
+
+        ev_resp = db.table('events').select('*, facilities(name)').eq('id', event_id).in_('facility_id', fac_ids).single().execute()
+        event = ev_resp.data
+        if not event:
+            flash("Event not found or unauthorized.", "error")
+            return redirect(url_for('owner.events'))
+
+        # Verify court conflicts one more time before approval
+        from app.booking_utils import check_court_conflict
+        court_resp = db.table('event_courts').select('court_id, courts(name)').eq('event_id', event_id).execute()
+        for c in (court_resp.data or []):
+            cid = c['court_id']
+            has_conf, conf_detail = check_court_conflict(db, cid, event['event_date'], event['start_time'], event['end_time'], exclude_event_id=event_id)
+            if has_conf:
+                c_label = conf_detail.get('label') or conf_detail.get('title') or 'Scheduled booking'
+                flash(f"Cannot approve: Court '{c.get('courts', {}).get('name', 'Court')}' conflicts with {c_label} ({conf_detail['start_time']}-{conf_detail['end_time']}).", "error")
+                return redirect(url_for('owner.events'))
+
+        # Update event status to registration_open
+        now_iso = datetime.now(PH_TZ).isoformat()
+        db.table('events').update({
+            'status': 'registration_open',
+            'approved_by': owner_id,
+            'approved_at': now_iso
+        }).eq('id', event_id).execute()
+
+        # Send notification to organizer
+        facility_name = event.get('facilities', {}).get('name') or "Facility"
+        db.table('notifications').insert({
+            'user_id': event['organizer_id'],
+            'title': f"Event Approved: {event['title']}",
+            'message': f"Your event '{event['title']}' has been approved by {facility_name}! Player registrations are now open.",
+            'type': 'success',
+            'link': url_for('clubadmin.events')
+        }).execute()
+
+        flash(f'Event "{event["title"]}" approved! Courts are confirmed and registrations are now open.', 'success')
+    except Exception as e:
+        current_app.logger.error(f"Error approving event {event_id}: {e}")
+        flash('An error occurred while approving event.', 'error')
+
+    return redirect(url_for('owner.events'))
+
+
+@owner_bp.route('/events/<event_id>/reject', methods=['POST'])
+@require_role('owner')
+def reject_event(event_id):
+    owner_id = session.get('user_id')
+    db = get_admin_db()
+    reason = request.form.get('rejection_reason', '').strip() or 'Facility unavailable during requested time'
+    try:
+        fac_resp = db.table('facilities').select('id, name').eq('owner_id', owner_id).execute()
+        fac_ids = [f['id'] for f in (fac_resp.data or [])]
+        if not fac_ids:
+            flash("Unauthorized.", "error")
+            return redirect(url_for('owner.events'))
+
+        ev_resp = db.table('events').select('*, facilities(name)').eq('id', event_id).in_('facility_id', fac_ids).single().execute()
+        event = ev_resp.data
+        if not event:
+            flash("Event not found or unauthorized.", "error")
+            return redirect(url_for('owner.events'))
+
+        db.table('events').update({
+            'status': 'rejected',
+            'rejection_reason': reason
+        }).eq('id', event_id).execute()
+
+        # Send notification to organizer
+        facility_name = event.get('facilities', {}).get('name') or "Facility"
+        db.table('notifications').insert({
+            'user_id': event['organizer_id'],
+            'title': f"Event Booking Declined: {event['title']}",
+            'message': f"Your event court booking for '{event['title']}' was declined by {facility_name}. Reason: {reason}",
+            'type': 'error',
+            'link': url_for('clubadmin.events')
+        }).execute()
+
+        flash(f'Event "{event["title"]}" booking request was declined.', 'info')
+    except Exception as e:
+        current_app.logger.error(f"Error rejecting event {event_id}: {e}")
+        flash('An error occurred while declining event.', 'error')
+
+    return redirect(url_for('owner.events'))
 
 
 @owner_bp.route('/events/<event_id>/participants')
@@ -80,7 +208,7 @@ def event_participants(event_id):
 @require_role('owner')
 def event_check_in(event_id, reg_id):
     owner_id = session.get('user_id')
-    db = get_db()
+    db = get_admin_db()
     
     status = request.form.get('status', 'pending')
     if status not in ['pending', 'checked_in', 'no_show']:
@@ -594,15 +722,29 @@ def delete_event(event_id):
     return redirect(url_for('owner.events'))
 
 
-# ── API: Courts by Facility (for JS fetch in create_event) ────────────────────
+# ── API: Courts by Facility & Timeline (for JS fetch in create_event) ─────────
 @owner_bp.route('/api/courts_by_facility/<facility_id>')
 @require_role('owner')
 def api_courts_by_facility(facility_id):
     owner_id = session.get('user_id')
     db = get_db()
+    date = request.args.get('date')
+    start_time = request.args.get('start_time')
+    end_time = request.args.get('end_time')
+    exclude_event_id = request.args.get('exclude_event_id')
     try:
-        resp = db.table('courts').select('id, name, type, hourly_rate').eq('facility_id', facility_id).eq('owner_id', owner_id).eq('status', 'active').execute()
-        return jsonify(resp.data or [])
+        if date:
+            from app.booking_utils import get_facility_court_timeline
+            data = get_facility_court_timeline(
+                db, facility_id, date, 
+                start_time=start_time, 
+                end_time=end_time, 
+                exclude_event_id=exclude_event_id
+            )
+            return jsonify(data)
+        else:
+            resp = db.table('courts').select('id, name, type, hourly_rate').eq('facility_id', facility_id).eq('owner_id', owner_id).eq('status', 'active').execute()
+            return jsonify(resp.data or [])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

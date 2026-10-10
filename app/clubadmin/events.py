@@ -14,11 +14,11 @@ def events():
     events_list = []
     try:
         ev_resp = db.table('events').select(
-            'id, title, type, event_date, start_time, end_time, max_players, status, location_label, organizer_id, facilities(name)'
+            'id, title, type, format, event_date, start_time, end_time, max_players, entry_fee, prize_pool, status, location_label, organizer_id, gcash_ref, rejection_reason, facility_id, facilities(name)'
         ).eq('organizer_id', clubadmin_id).order('event_date', desc=False).execute()
         events_list = ev_resp.data or []
         
-        # Optimized N+1 registration counts
+        # Optimized N+1 registration counts & court details
         if events_list:
             ev_ids = [ev['id'] for ev in events_list]
             reg_resp = db.table('event_registrations').select('event_id').in_('event_id', ev_ids).eq('status', 'registered').execute()
@@ -26,16 +26,47 @@ def events():
             
             from collections import Counter
             reg_counts = Counter(r['event_id'] for r in reg_data)
+
+            # Fetch courts booked for each event
+            court_resp = db.table('event_courts').select('event_id, court_id, courts(name, type, hourly_rate)').in_('event_id', ev_ids).execute()
+            courts_by_ev = {}
+            for c in (court_resp.data or []):
+                eid = c['event_id']
+                if eid not in courts_by_ev:
+                    courts_by_ev[eid] = []
+                if c.get('courts'):
+                    courts_by_ev[eid].append(c['courts'])
             
             for ev in events_list:
                 ev['registered_count'] = reg_counts[ev['id']]
+                ev['courts'] = courts_by_ev.get(ev['id'], [])
+                # Calculate duration in hours
+                try:
+                    sh = float(ev['start_time'][:2]) + float(ev['start_time'][3:5])/60.0
+                    eh = float(ev['end_time'][:2]) + float(ev['end_time'][3:5])/60.0
+                    hrs = max(0.5, eh - sh) if eh > sh else 1.0
+                except Exception:
+                    hrs = 1.0
+                ev['duration_hours'] = round(hrs, 1)
             
     except Exception as e:
         from flask import current_app
         current_app.logger.error(f"Error loading events for clubadmin {clubadmin_id}: {e}")
         flash('An error occurred. Please try again.', 'error')
+
+    # Compute KPI statistics
+    total_events = len(events_list)
+    active_count = sum(1 for e in events_list if e.get('status') in ['registration_open', 'upcoming'])
+    pending_count = sum(1 for e in events_list if e.get('status') == 'pending_approval')
+    total_players = sum(e.get('registered_count', 0) for e in events_list)
+    kpis = {
+        'total_events': total_events,
+        'active_count': active_count,
+        'pending_count': pending_count,
+        'total_players': total_players
+    }
         
-    return render_template('clubadmin/events.html', events=events_list)
+    return render_template('clubadmin/events.html', events=events_list, kpis=kpis)
 
 @clubadmin_bp.route('/events/<event_id>/participants')
 @require_role('clubadmin')
@@ -139,6 +170,15 @@ def create_event():
         flash('Please fill all required fields.', 'error')
         return redirect(url_for('clubadmin.create_event'))
 
+    # Check court conflicts before inserting
+    if facility_id and court_ids:
+        from app.booking_utils import check_court_conflict
+        for cid in court_ids:
+            has_conf, conf_detail = check_court_conflict(db, cid, event_date, start_time, end_time)
+            if has_conf:
+                flash(f"Court conflict detected: {conf_detail['label']} is scheduled from {conf_detail['start_time']} to {conf_detail['end_time']}. Please select different courts or times.", 'error')
+                return redirect(url_for('clubadmin.create_event'))
+
     # Handle Image Upload
     image_file = request.files.get('image')
     image_url = None
@@ -157,7 +197,7 @@ def create_event():
             current_app.logger.error(f"Image upload error: {e}")
             flash(f'Warning: Image could not be uploaded.', 'error')
 
-    # Calculate status: if facility is chosen, assume pending payment to facility
+    # Calculate status: if facility is chosen, start with pending_payment to facility
     event_status = 'pending_payment' if facility_id else 'registration_open'
 
     try:
@@ -189,7 +229,7 @@ def create_event():
                 db.table('event_courts').insert(court_rows).execute()
                 
             if facility_id:
-                flash(f'Event "{title}" saved. Please complete facility payment to publish.', 'success')
+                flash(f'Event "{title}" saved. Please submit facility payment to request approval.', 'info')
                 return redirect(url_for('clubadmin.facility_payment', event_id=event_id))
             else:
                 flash(f'Event "{title}" published successfully!', 'success')
@@ -208,29 +248,88 @@ def facility_payment(event_id):
     clubadmin_id = session.get('user_id')
     db = get_db()
     try:
-        ev_resp = db.table('events').select('*, facilities(name)').eq('id', event_id).eq('organizer_id', clubadmin_id).single().execute()
+        ev_resp = db.table('events').select('*, facilities(id, name, location, owner_id)').eq('id', event_id).eq('organizer_id', clubadmin_id).single().execute()
         event = ev_resp.data
         if not event:
             flash('Event not found.', 'error')
             return redirect(url_for('clubadmin.events'))
             
         if request.method == 'GET':
-            # Calculate mock price
-            court_resp = db.table('event_courts').select('court_id, courts(hourly_rate)').eq('event_id', event_id).execute()
-            courts = court_resp.data or []
-            total_rate = sum([c['courts']['hourly_rate'] for c in courts if c.get('courts')])
+            # Calculate price and get court details
+            court_resp = db.table('event_courts').select('court_id, courts(name, hourly_rate)').eq('event_id', event_id).execute()
+            courts_data = [c['courts'] for c in (court_resp.data or []) if c.get('courts')]
+            total_rate = sum([float(c.get('hourly_rate') or 0) for c in courts_data])
             
-            # Very basic hour diff (assuming HH:MM formatted within same day)
+            # Hour diff
             sh = float(event['start_time'][:2]) + float(event['start_time'][3:5])/60.0
             eh = float(event['end_time'][:2]) + float(event['end_time'][3:5])/60.0
-            hours = eh - sh if eh > sh else 1
+            hours = max(0.5, eh - sh) if eh > sh else 1.0
             total_price = total_rate * hours
             
-            return render_template('clubadmin/facility_payment.html', event=event, total_price=total_price, courts_count=len(courts), hours=round(hours,1))
+            # Facility owner profile for payment phone info if available
+            facility_owner = None
+            if event.get('facilities') and event['facilities'].get('owner_id'):
+                try:
+                    fo_resp = db.table('profiles').select('first_name, last_name, phone').eq('id', event['facilities']['owner_id']).single().execute()
+                    facility_owner = fo_resp.data
+                except Exception:
+                    pass
+
+            return render_template(
+                'clubadmin/facility_payment.html', 
+                event=event, 
+                total_price=total_price, 
+                courts=courts_data,
+                courts_count=len(courts_data), 
+                hours=round(hours, 1),
+                facility_owner=facility_owner
+            )
             
-        # POST: Payment complete
-        db.table('events').update({'status': 'registration_open'}).eq('id', event_id).execute()
-        flash('Facility payment confirmed. Event published!', 'success')
+        # POST: Process GCash Reference Number submission
+        import re
+        gcash_ref = request.form.get('gcash_ref', '').strip()
+        if not gcash_ref:
+            flash('Please enter your 13-digit GCash reference number.', 'error')
+            return redirect(url_for('clubadmin.facility_payment', event_id=event_id))
+            
+        if not re.match(r'^\d{13}$', gcash_ref):
+            flash('Invalid GCash reference number format. Must be exactly 13 digits.', 'error')
+            return redirect(url_for('clubadmin.facility_payment', event_id=event_id))
+
+        # Check duplicate reference number
+        dup_ev = db.table('events').select('id').eq('gcash_ref', gcash_ref).neq('id', event_id).execute()
+        dup_res = db.table('court_reservations').select('id').eq('gcash_ref', gcash_ref).execute()
+        if dup_ev.data or dup_res.data:
+            flash('This GCash reference number has already been submitted for another booking.', 'error')
+            return redirect(url_for('clubadmin.facility_payment', event_id=event_id))
+
+        # Re-check for any last-minute court conflicts
+        from app.booking_utils import check_court_conflict, notify_facility_staff_and_owner
+        court_resp = db.table('event_courts').select('court_id, courts(name)').eq('event_id', event_id).execute()
+        for c in (court_resp.data or []):
+            cid = c['court_id']
+            has_conf, conf_detail = check_court_conflict(db, cid, event['event_date'], event['start_time'], event['end_time'], exclude_event_id=event_id)
+            if has_conf:
+                flash(f"Cannot submit booking: Court '{c.get('courts', {}).get('name', 'Court')}' now conflicts with {conf_detail['label']} ({conf_detail['start_time']}-{conf_detail['end_time']}).", 'error')
+                return redirect(url_for('clubadmin.edit_event', event_id=event_id))
+
+        # Update event status to pending_approval with GCash reference
+        db.table('events').update({
+            'status': 'pending_approval',
+            'gcash_ref': gcash_ref
+        }).eq('id', event_id).execute()
+
+        # Notify Facility Owner and assigned Staff
+        notify_facility_staff_and_owner(
+            db=db,
+            facility_id=event['facility_id'],
+            title=f"New Event Booking Request: {event['title']}",
+            message=f"Event booking for '{event['title']}' on {event['event_date']} ({event['start_time'][:5]}-{event['end_time'][:5]}) submitted with GCash Ref: {gcash_ref}. Awaiting your approval.",
+            link=url_for('owner.events'),
+            notif_type='info'
+        )
+
+        flash(f'Payment submitted! Your event booking is now pending approval from the facility owner/staff.', 'success')
         return redirect(url_for('clubadmin.events'))
         
     except Exception as e:
@@ -278,6 +377,15 @@ def edit_event(event_id):
         if not all([title, event_date, start_time, end_time]):
             flash('Please fill all required fields.', 'error')
             return redirect(url_for('clubadmin.edit_event', event_id=event_id))
+
+        court_ids = request.form.getlist('court_ids')
+        if facility_id and court_ids:
+            from app.booking_utils import check_court_conflict
+            for cid in court_ids:
+                has_conf, conf_detail = check_court_conflict(db, cid, event_date, start_time, end_time, exclude_event_id=event_id)
+                if has_conf:
+                    flash(f"Court conflict: {conf_detail['label']} ({conf_detail['start_time']}-{conf_detail['end_time']}) overlaps your selected time.", 'error')
+                    return redirect(url_for('clubadmin.edit_event', event_id=event_id))
             
         update_data = {
             'title': title,

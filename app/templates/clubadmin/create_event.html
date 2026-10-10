@@ -3,41 +3,72 @@
 
 {% block extra_head %}
 <style>
-.create-event-wrapper { max-width: 780px; margin: 0 auto; }
+.create-event-wrapper { max-width: 860px; margin: 0 auto; }
 .steps-bar { display:flex; align-items:center; gap:0; margin-bottom:32px; }
 .step-item { display:flex; align-items:center; gap:8px; flex:1; }
 .step-circle { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:700; flex-shrink:0; background:var(--input-bg); border:2px solid var(--border-color); color:var(--text-muted); transition:all 0.3s; }
-.step-circle.active { background:var(--primary-orange); border-color:var(--primary-orange); color:white; }
+.step-circle.active { background:var(--primary-orange); border-color:var(--primary-orange); color:white; box-shadow:0 0 12px rgba(249,115,22,0.35); }
 .step-circle.done { background:rgba(74,222,128,0.15); border-color:#4ade80; color:#4ade80; }
 .step-label { font-size:0.78rem; font-weight:600; color:var(--text-muted); transition:color 0.3s; }
-.step-item.active .step-label { color:var(--text-primary); }
+.step-item.active .step-label { color:var(--text-primary); font-weight:700; }
 .step-connector { flex:1; height:2px; background:var(--border-color); margin:0 8px; }
 .step-connector.done { background:#4ade80; }
 .form-section { display:none; }
 .form-section.active { display:block; animation:fadeIn 0.25s ease; }
-@keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-.section-title { font-size:1rem; font-weight:700; color:var(--text-primary); margin-bottom:20px; display:flex; align-items:center; gap:8px; }
-.section-title i { color:var(--primary-orange); font-size:1.2rem; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.section-title { font-size:1.05rem; font-weight:700; color:var(--text-primary); margin-bottom:20px; display:flex; align-items:center; gap:10px; }
+.section-title i { color:var(--primary-orange); font-size:1.3rem; }
 .form-group { margin-bottom:18px; }
-.form-group label { display:block; font-size:0.8rem; font-weight:600; color:var(--text-secondary); margin-bottom:7px; }
+.form-group label { display:block; font-size:0.82rem; font-weight:600; color:var(--text-secondary); margin-bottom:7px; }
 .form-group label span.required { color:#ef4444; margin-left:2px; }
 .form-group input,.form-group select,.form-group textarea {
-    width:100%; padding:10px 14px; background:var(--input-bg); border:1px solid var(--border-color);
-    border-radius:8px; color:var(--text-primary); font-size:0.9rem; font-family:inherit;
-    box-sizing:border-box; transition:border-color 0.2s;
+    width:100%; padding:11px 14px; background:var(--input-bg); border:1px solid var(--border-color);
+    border-radius:10px; color:var(--text-primary); font-size:0.9rem; font-family:inherit;
+    box-sizing:border-box; transition:all 0.2s;
 }
-.form-group input:focus,.form-group select:focus,.form-group textarea:focus { outline:none; border-color:var(--primary-orange); }
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus { outline:none; border-color:var(--primary-orange); box-shadow:0 0 0 3px rgba(249,115,22,0.15); }
 .form-group textarea { resize:vertical; min-height:90px; }
-.form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-.form-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
-.courts-select-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px; margin-top:6px; }
-.court-checkbox-card { display:flex; align-items:center; gap:10px; padding:12px 14px; background:var(--input-bg); border:1.5px solid var(--border-color); border-radius:10px; cursor:pointer; transition:all 0.2s; }
-.court-checkbox-card:hover { border-color:var(--primary-orange); }
-.court-checkbox-card input[type=checkbox] { accent-color:var(--primary-orange); width:16px; height:16px; }
-.court-checkbox-card.selected { border-color:var(--primary-orange); background:var(--primary-orange-light); }
-.court-card-info { display:flex; flex-direction:column; gap:2px; }
-.court-card-name { font-size:0.85rem; font-weight:600; color:var(--text-primary); }
-.court-card-sub { font-size:0.72rem; color:var(--text-muted); }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.form-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+
+/* Timeline & Court Grid */
+.courts-select-grid { display:flex; flex-direction:column; gap:14px; margin-top:10px; }
+.court-card {
+    background:var(--input-bg); border:1.5px solid var(--border-color); border-radius:12px;
+    padding:16px; transition:all 0.2s; position:relative; display:flex; flex-direction:column; gap:12px;
+}
+.court-card:hover { border-color:var(--primary-orange); }
+.court-card.selected { border-color:var(--primary-orange); background:rgba(249,115,22,0.04); box-shadow:0 0 0 1px var(--primary-orange); }
+.court-card.disabled { opacity:0.65; background:rgba(239,68,68,0.03); border-color:rgba(239,68,68,0.3); }
+.court-card-header { display:flex; justify-content:space-between; align-items:center; }
+.court-left-info { display:flex; align-items:center; gap:12px; }
+.court-left-info input[type=checkbox] { width:18px; height:18px; accent-color:var(--primary-orange); cursor:pointer; }
+.court-title-grp { display:flex; flex-direction:column; gap:2px; }
+.court-name { font-size:0.92rem; font-weight:700; color:var(--text-primary); }
+.court-sub { font-size:0.75rem; color:var(--text-muted); }
+.court-badge { font-size:0.72rem; font-weight:700; padding:4px 9px; border-radius:20px; display:inline-flex; align-items:center; gap:5px; }
+.badge-available { background:rgba(74,222,128,0.15); color:#22c55e; border:1px solid rgba(74,222,128,0.3); }
+.badge-conflict { background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3); }
+
+/* Visual Timeline Strip */
+.timeline-container { background:rgba(0,0,0,0.03); border:1px solid var(--border-color); border-radius:8px; padding:10px 12px; }
+.timeline-labels { display:flex; justify-content:space-between; font-size:0.68rem; color:var(--text-muted); font-family:monospace; margin-bottom:5px; }
+.timeline-bar { display:flex; height:20px; border-radius:5px; overflow:hidden; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); }
+.timeline-slot { flex:1; height:100%; position:relative; border-right:1px solid rgba(255,255,255,0.06); transition:background 0.2s; }
+.timeline-slot:last-child { border-right:none; }
+.timeline-slot.free { background:rgba(34,197,94,0.08); }
+.timeline-slot.target-event { background:rgba(249,115,22,0.35); border-top:2px solid var(--primary-orange); border-bottom:2px solid var(--primary-orange); }
+.timeline-slot.occupied-res { background:#f59e0b; cursor:help; }
+.timeline-slot.occupied-ev { background:#8b5cf6; cursor:help; }
+.timeline-legend { display:flex; gap:16px; font-size:0.72rem; color:var(--text-muted); margin-top:8px; flex-wrap:wrap; }
+.legend-item { display:flex; align-items:center; gap:5px; }
+.legend-box { width:12px; height:12px; border-radius:3px; }
+
+/* Cost preview banner */
+.court-calc-summary { background:rgba(249,115,22,0.08); border:1px dashed var(--primary-orange); border-radius:10px; padding:12px 18px; display:flex; justify-content:space-between; align-items:center; margin-top:14px; }
+.court-calc-summary .calc-text { font-size:0.85rem; color:var(--text-primary); font-weight:600; }
+.court-calc-summary .calc-amount { font-size:1.1rem; color:var(--primary-orange); font-weight:800; }
+
 .step-nav { display:flex; justify-content:space-between; align-items:center; margin-top:28px; padding-top:20px; border-top:1px solid var(--border-color); }
 .btn-nav { padding:10px 22px; border-radius:8px; font-size:0.87rem; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; display:flex; align-items:center; gap:6px; }
 .btn-nav-secondary { background:transparent; border:1px solid var(--border-color); color:var(--text-secondary); }
@@ -51,7 +82,7 @@
 .review-row { display:flex; justify-content:space-between; align-items:center; font-size:0.87rem; margin-bottom:6px; }
 .review-row .label { color:var(--text-muted); }
 .review-row .value { font-weight:600; color:var(--text-primary); }
-.loading-courts { padding:16px; text-align:center; color:var(--text-muted); font-size:0.85rem; }
+.loading-courts { padding:24px; text-align:center; color:var(--text-muted); font-size:0.85rem; border:1px dashed var(--border-color); border-radius:10px; }
 </style>
 {% endblock %}
 
@@ -59,7 +90,7 @@
 <div class="dashboard-header">
     <div>
         <h1 class="page-title">Create New Event</h1>
-        <p style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">Fill in the details to publish a new event for players to join</p>
+        <p style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">Fill in the details to book courts and publish an event for your club</p>
     </div>
     <a href="{{ url_for('clubadmin.events') }}" style="display:inline-flex;align-items:center;gap:6px;font-size:0.85rem;color:var(--text-muted);text-decoration:none;">
         <i class="ph ph-arrow-left"></i> Back to Events
@@ -76,7 +107,7 @@
         <div class="step-connector" id="stepConn1"></div>
         <div class="step-item" id="stepItem2">
             <div class="step-circle" id="stepCircle2">2</div>
-            <span class="step-label">Venue & Courts</span>
+            <span class="step-label">Venue & Timeline</span>
         </div>
         <div class="step-connector" id="stepConn2"></div>
         <div class="step-item" id="stepItem3">
@@ -98,7 +129,7 @@
                 <div class="section-title"><i class="ph ph-trophy"></i> Event Information</div>
                 <div class="form-group">
                     <label>Event Title <span class="required">*</span></label>
-                    <input type="text" name="title" id="fieldTitle" placeholder="e.g. Weekend Doubles Championship" required>
+                    <input type="text" name="title" id="fieldTitle" placeholder="e.g. Weekend Singles & Doubles Championship" required>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
@@ -112,17 +143,17 @@
                     </div>
                     <div class="form-group">
                         <label>Event Date <span class="required">*</span></label>
-                        <input type="date" name="event_date" id="fieldDate" required>
+                        <input type="date" name="event_date" id="fieldDate" required onchange="onDateTimeChanged()">
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label>Start Time <span class="required">*</span></label>
-                        <input type="time" name="start_time" id="fieldStartTime" required>
+                        <input type="time" name="start_time" id="fieldStartTime" required onchange="onDateTimeChanged()">
                     </div>
                     <div class="form-group">
                         <label>End Time <span class="required">*</span></label>
-                        <input type="time" name="end_time" id="fieldEndTime" required>
+                        <input type="time" name="end_time" id="fieldEndTime" required onchange="onDateTimeChanged()">
                     </div>
                 </div>
                 <div class="form-row">
@@ -141,19 +172,20 @@
                 </div>
                 <div class="form-group">
                     <label>Description</label>
-                    <textarea name="description" id="fieldDesc" placeholder="Describe the event, rules, format, what to bring..."></textarea>
+                    <textarea name="description" id="fieldDesc" placeholder="Describe the event, rules, schedule, prizes, format, and what players should bring..."></textarea>
                 </div>
                 <div class="step-nav">
                     <span></span>
-                    <button type="button" class="btn-nav btn-nav-primary" onclick="goStep(2)">Next: Venue <i class="ph ph-arrow-right"></i></button>
+                    <button type="button" class="btn-nav btn-nav-primary" onclick="validateAndGoStep(2)">Next: Venue & Courts <i class="ph ph-arrow-right"></i></button>
                 </div>
             </div>
 
-            <!-- STEP 2: Venue & Courts -->
+            <!-- STEP 2: Venue & Courts Timeline -->
             <div class="form-section" id="step2">
-                <div class="section-title"><i class="ph ph-buildings"></i> Venue & Courts</div>
+                <div class="section-title"><i class="ph ph-buildings"></i> Venue & Court Availability Timeline</div>
+                
                 <div class="form-group">
-                    <label>Facility <span class="required">*</span></label>
+                    <label>Select Facility <span class="required">*</span></label>
                     <select name="facility_id" id="fieldFacility" onchange="loadCourts(this.value)" required>
                         <option value="">Select a facility...</option>
                         {% for f in facilities %}
@@ -161,25 +193,41 @@
                         {% endfor %}
                     </select>
                 </div>
+
                 <div class="form-group">
-                    <label>Courts to Book <small style="color:var(--text-muted);">(select one or more)</small></label>
+                    <label>Courts & Availability Schedule <small style="color:var(--text-muted);">(Real-time schedule check prevents double booking)</small></label>
+                    
+                    <div class="timeline-legend" id="timelineLegend" style="display:none; margin-bottom:12px;">
+                        <div class="legend-item"><div class="legend-box" style="background:rgba(34,197,94,0.3); border:1px solid #22c55e;"></div> Free Slot</div>
+                        <div class="legend-item"><div class="legend-box" style="background:#f59e0b;"></div> Player Reservation</div>
+                        <div class="legend-item"><div class="legend-box" style="background:#8b5cf6;"></div> Event Booking</div>
+                        <div class="legend-item"><div class="legend-box" style="background:rgba(249,115,22,0.6); border:1px solid var(--primary-orange);"></div> Your Event Slot</div>
+                    </div>
+
                     <div class="courts-select-grid" id="courtsGrid">
-                        <div class="loading-courts"><i class="ph ph-buildings"></i> Select a facility first</div>
+                        <div class="loading-courts"><i class="ph ph-buildings"></i> Please select a facility to view court timelines and availability</div>
+                    </div>
+
+                    <div class="court-calc-summary" id="courtCalcSummary" style="display:none;">
+                        <div class="calc-text" id="calcText">0 Courts selected</div>
+                        <div class="calc-amount" id="calcAmount">₱0.00</div>
                     </div>
                 </div>
-                <div class="form-group">
+
+                <div class="form-group" style="margin-top:20px;">
                     <label>Location Label <small style="color:var(--text-muted);">(shown to players on the event card)</small></label>
-                    <input type="text" name="location_label" id="fieldLocationLabel" placeholder="e.g. Court 1 & 2, Main Arena">
+                    <input type="text" name="location_label" id="fieldLocationLabel" placeholder="e.g. Courts 1 & 2, Center Court Arena">
                 </div>
+
                 <div class="step-nav">
                     <button type="button" class="btn-nav btn-nav-secondary" onclick="goStep(1)"><i class="ph ph-arrow-left"></i> Back</button>
-                    <button type="button" class="btn-nav btn-nav-primary" onclick="goStep(3)">Next: Capacity <i class="ph ph-arrow-right"></i></button>
+                    <button type="button" class="btn-nav btn-nav-primary" onclick="validateStep2AndGo(3)">Next: Capacity & Fees <i class="ph ph-arrow-right"></i></button>
                 </div>
             </div>
 
             <!-- STEP 3: Capacity & Fees -->
             <div class="form-section" id="step3">
-                <div class="section-title"><i class="ph ph-users"></i> Capacity & Fees</div>
+                <div class="section-title"><i class="ph ph-users"></i> Capacity & Player Fees</div>
                 <div class="form-row">
                     <div class="form-group">
                         <label>Max Players <span class="required">*</span></label>
@@ -187,11 +235,11 @@
                     </div>
                     <div class="form-group">
                         <label>Registration Type</label>
-                        <div style="display: flex; gap: 16px; margin-top: 8px;">
-                            <label style="display: flex; align-items: center; gap: 4px; font-weight: normal; color: var(--text-primary); cursor: pointer;">
+                        <div style="display: flex; gap: 20px; margin-top: 10px;">
+                            <label style="display: flex; align-items: center; gap: 6px; font-weight: normal; color: var(--text-primary); cursor: pointer;">
                                 <input type="radio" name="registration_type" value="paid" checked onchange="document.getElementById('fee_wrapper').style.display='block';"> Paid
                             </label>
-                            <label style="display: flex; align-items: center; gap: 4px; font-weight: normal; color: var(--text-primary); cursor: pointer;">
+                            <label style="display: flex; align-items: center; gap: 6px; font-weight: normal; color: var(--text-primary); cursor: pointer;">
                                 <input type="radio" name="registration_type" value="free" onchange="document.getElementById('fee_wrapper').style.display='none';"> Free
                             </label>
                         </div>
@@ -199,7 +247,7 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group" id="fee_wrapper">
-                        <label>Entry Fee (₱) <span class="required">*</span></label>
+                        <label>Player Entry Fee (₱) <span class="required">*</span></label>
                         <input type="number" name="entry_fee" id="fieldEntryFee" min="0" step="0.01" value="0">
                     </div>
                     <div class="form-group">
@@ -209,13 +257,13 @@
                 </div>
                 <div class="step-nav">
                     <button type="button" class="btn-nav btn-nav-secondary" onclick="goStep(2)"><i class="ph ph-arrow-left"></i> Back</button>
-                    <button type="button" class="btn-nav btn-nav-primary" onclick="goStep(4)">Review <i class="ph ph-arrow-right"></i></button>
+                    <button type="button" class="btn-nav btn-nav-primary" onclick="goStep(4)">Review & Finalize <i class="ph ph-arrow-right"></i></button>
                 </div>
             </div>
 
             <!-- STEP 4: Review & Publish -->
             <div class="form-section" id="step4">
-                <div class="section-title"><i class="ph ph-check-circle"></i> Review & Publish</div>
+                <div class="section-title"><i class="ph ph-check-circle"></i> Review & Submit Booking</div>
                 <div class="review-card">
                     <h4>Event Details</h4>
                     <div class="review-row"><span class="label">Title</span><span class="value" id="rvTitle">—</span></div>
@@ -224,18 +272,29 @@
                     <div class="review-row"><span class="label">Time</span><span class="value" id="rvTime">—</span></div>
                 </div>
                 <div class="review-card">
-                    <h4>Venue</h4>
+                    <h4>Venue & Court Rental</h4>
                     <div class="review-row"><span class="label">Facility</span><span class="value" id="rvFacility">—</span></div>
+                    <div class="review-row"><span class="label">Courts Booked</span><span class="value" id="rvCourts">—</span></div>
+                    <div class="review-row"><span class="label">Est. Court Rental</span><span class="value" id="rvRentalFee" style="color:var(--primary-orange);">₱0.00</span></div>
                     <div class="review-row"><span class="label">Location Label</span><span class="value" id="rvLocation">—</span></div>
                 </div>
                 <div class="review-card">
-                    <h4>Registration</h4>
+                    <h4>Registration & Capacity</h4>
                     <div class="review-row"><span class="label">Max Players</span><span class="value" id="rvMax">—</span></div>
-                    <div class="review-row"><span class="label">Entry Fee</span><span class="value" id="rvFee">—</span></div>
+                    <div class="review-row"><span class="label">Player Entry Fee</span><span class="value" id="rvFee">—</span></div>
+                    <div class="review-row"><span class="label">Prize Pool</span><span class="value" id="rvPrize">—</span></div>
                 </div>
+
+                <div style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.3); border-radius:10px; padding:14px; margin-bottom:20px; display:flex; gap:12px; align-items:center;">
+                    <i class="ph ph-info" style="font-size:1.4rem; color:#f59e0b;"></i>
+                    <div style="font-size:0.83rem; color:var(--text-secondary); line-height:1.4;">
+                        Upon clicking <strong>Proceed to Payment</strong>, you will submit your court rental GCash payment reference. The facility owner or assigned staff will be notified to review and approve your booking before it is officially published.
+                    </div>
+                </div>
+
                 <div class="step-nav">
                     <button type="button" class="btn-nav btn-nav-secondary" onclick="goStep(3)"><i class="ph ph-arrow-left"></i> Back</button>
-                    <button type="submit" class="btn-nav btn-nav-success"><i class="ph ph-rocket-launch"></i> Publish Event</button>
+                    <button type="submit" class="btn-nav btn-nav-success"><i class="ph ph-check-circle"></i> Proceed to Facility Payment</button>
                 </div>
             </div>
 
@@ -245,10 +304,43 @@
 
 <script>
 let currentStep = 1;
+let loadedCourtsData = [];
+
+function validateAndGoStep(target) {
+    if (target === 2) {
+        const title = document.getElementById('fieldTitle').value.trim();
+        const date  = document.getElementById('fieldDate').value;
+        const start = document.getElementById('fieldStartTime').value;
+        const end   = document.getElementById('fieldEndTime').value;
+        if (!title || !date || !start || !end) {
+            alert('Please fill out the Event Title, Date, Start Time, and End Time first.');
+            return;
+        }
+        if (start >= end) {
+            alert('Start time must be earlier than End time.');
+            return;
+        }
+    }
+    goStep(target);
+    if (target === 2 && document.getElementById('fieldFacility').value) {
+        loadCourts(document.getElementById('fieldFacility').value);
+    }
+}
+
+function validateStep2AndGo(target) {
+    const fac = document.getElementById('fieldFacility').value;
+    if (fac) {
+        const checked = document.querySelectorAll('input[name="court_ids"]:checked');
+        if (checked.length === 0) {
+            alert('Please select at least one court for this event.');
+            return;
+        }
+    }
+    goStep(target);
+}
 
 function goStep(n) {
     document.getElementById(`step${currentStep}`).classList.remove('active');
-    // Mark previous steps as done
     for (let i = 1; i < n; i++) {
         document.getElementById(`stepCircle${i}`).classList.remove('active');
         document.getElementById(`stepCircle${i}`).classList.add('done');
@@ -263,42 +355,102 @@ function goStep(n) {
     if (n === 4) populateReview();
 }
 
+function onDateTimeChanged() {
+    const fac = document.getElementById('fieldFacility').value;
+    if (fac) {
+        loadCourts(fac);
+    }
+}
+
 function populateReview() {
     const facilitySelect = document.getElementById('fieldFacility');
     document.getElementById('rvTitle').textContent = document.getElementById('fieldTitle').value || '—';
-    document.getElementById('rvType').textContent   = document.getElementById('fieldType').value || '—';
+    document.getElementById('rvType').textContent   = document.getElementById('fieldType').options[document.getElementById('fieldType').selectedIndex].text || '—';
     document.getElementById('rvDate').textContent   = document.getElementById('fieldDate').value || '—';
     document.getElementById('rvTime').textContent   = `${document.getElementById('fieldStartTime').value} – ${document.getElementById('fieldEndTime').value}`;
-    document.getElementById('rvFacility').textContent  = facilitySelect.options[facilitySelect.selectedIndex]?.text || '—';
+    document.getElementById('rvFacility').textContent  = facilitySelect.options[facilitySelect.selectedIndex]?.text || 'No facility selected';
     document.getElementById('rvLocation').textContent  = document.getElementById('fieldLocationLabel').value || '—';
     document.getElementById('rvMax').textContent  = document.getElementById('fieldMaxPlayers').value;
+    
     const fee = parseFloat(document.getElementById('fieldEntryFee').value || 0);
-    document.getElementById('rvFee').textContent = fee === 0 ? 'Free' : `$${fee.toFixed(2)}`;
+    document.getElementById('rvFee').textContent = fee === 0 ? 'Free' : `₱${fee.toFixed(2)}`;
+
+    const prize = parseFloat(document.getElementById('fieldPrizePool').value || 0);
+    document.getElementById('rvPrize').textContent = prize === 0 ? 'None' : `₱${prize.toFixed(2)}`;
+
+    // Selected courts
+    const checked = Array.from(document.querySelectorAll('input[name="court_ids"]:checked'));
+    if (checked.length === 0) {
+        document.getElementById('rvCourts').textContent = 'None';
+        document.getElementById('rvRentalFee').textContent = '₱0.00';
+    } else {
+        const names = checked.map(cb => {
+            const card = cb.closest('.court-card');
+            return card.querySelector('.court-name').textContent;
+        });
+        document.getElementById('rvCourts').textContent = names.join(', ');
+        
+        // Compute hours
+        const s = document.getElementById('fieldStartTime').value;
+        const e = document.getElementById('fieldEndTime').value;
+        let hrs = 1;
+        if (s && e) {
+            const sh = parseFloat(s.slice(0,2)) + parseFloat(s.slice(3,5))/60;
+            const eh = parseFloat(e.slice(0,2)) + parseFloat(e.slice(3,5))/60;
+            hrs = Math.max(0.5, eh - sh);
+        }
+        let total = 0;
+        checked.forEach(cb => {
+            const cObj = loadedCourtsData.find(c => c.id === cb.value);
+            if (cObj) total += (cObj.hourly_rate * hrs);
+        });
+        document.getElementById('rvRentalFee').textContent = `₱${total.toFixed(2)} (${hrs.toFixed(1)} hrs)`;
+    }
 }
 
 async function loadCourts(facilityId) {
     const grid = document.getElementById('courtsGrid');
+    const legend = document.getElementById('timelineLegend');
+    const calcSummary = document.getElementById('courtCalcSummary');
+
     if (!facilityId) {
-        grid.innerHTML = '<div class="loading-courts"><i class="ph ph-buildings"></i> Select a facility first</div>';
+        grid.innerHTML = '<div class="loading-courts"><i class="ph ph-buildings"></i> Select a facility first to see available courts and schedule</div>';
+        legend.style.display = 'none';
+        calcSummary.style.display = 'none';
         return;
     }
-    grid.innerHTML = '<div class="loading-courts"><i class="ph ph-spinner" style="animation:spin 1s linear infinite;display:inline-block;"></i> Loading courts...</div>';
+
+    const date  = document.getElementById('fieldDate').value;
+    const start = document.getElementById('fieldStartTime').value;
+    const end   = document.getElementById('fieldEndTime').value;
+
+    grid.innerHTML = '<div class="loading-courts"><i class="ph ph-spinner" style="animation:spin 1s linear infinite;display:inline-block;"></i> Loading court schedules and checking availability...</div>';
+
     try {
-        const res = await fetch(`/clubadmin/api/courts_by_facility/${facilityId}`);
+        let url = `/clubadmin/api/courts_by_facility/${facilityId}`;
+        const params = new URLSearchParams();
+        if (date) params.append('date', date);
+        if (start) params.append('start_time', start);
+        if (end) params.append('end_time', end);
+        if (params.toString()) url += `?${params.toString()}`;
+
+        const res = await fetch(url);
         const courts = await res.json();
-        if (!courts.length) {
-            grid.innerHTML = '<div class="loading-courts">No active courts in this facility. <a href="/owner/courts">Add courts</a>.</div>';
+        loadedCourtsData = courts;
+
+        if (!courts || !courts.length) {
+            grid.innerHTML = '<div class="loading-courts">No active courts found in this facility.</div>';
+            legend.style.display = 'none';
+            calcSummary.style.display = 'none';
             return;
         }
-        grid.innerHTML = courts.map(c => `
-            <label class="court-checkbox-card" id="courtCard_${c.id}">
-                <input type="checkbox" name="court_ids" value="${c.id}" onchange="toggleCourtCard(this)">
-                <div class="court-card-info">
-                    <span class="court-card-name">${c.name}</span>
-                    <span class="court-card-sub">${c.type} · $${parseFloat(c.hourly_rate).toFixed(2)}/hr</span>
-                </div>
-            </label>
-        `).join('');
+
+        legend.style.display = 'flex';
+        calcSummary.style.display = 'flex';
+
+        grid.innerHTML = courts.map(c => renderCourtCard(c, start, end)).join('');
+        updateCostCalculator();
+
         // Auto-fill location label if empty
         const locField = document.getElementById('fieldLocationLabel');
         if (!locField.value) {
@@ -306,13 +458,116 @@ async function loadCourts(facilityId) {
             const selected = opt[document.getElementById('fieldFacility').selectedIndex];
             locField.value = selected?.dataset?.location || '';
         }
+
     } catch(e) {
-        grid.innerHTML = '<div class="loading-courts" style="color:#ef4444;">Failed to load courts.</div>';
+        grid.innerHTML = '<div class="loading-courts" style="color:#ef4444;"><i class="ph ph-warning-circle"></i> Failed to load courts schedule. Please try again.</div>';
     }
 }
 
-function toggleCourtCard(cb) {
-    cb.closest('.court-checkbox-card').classList.toggle('selected', cb.checked);
+function renderCourtCard(c, start, end) {
+    const isAvail = c.is_available !== false;
+    const badgeHtml = isAvail
+        ? `<span class="court-badge badge-available"><i class="ph ph-check-circle"></i> Available</span>`
+        : `<span class="court-badge badge-conflict"><i class="ph ph-warning-circle"></i> Conflict: ${c.conflict ? ((c.conflict.title || c.conflict.label || 'Occupied') + ' ' + (c.conflict.start_time || '') + '-' + (c.conflict.end_time || '')) : 'Occupied'}</span>`;
+
+    // Render timeline slots 06:00 to 22:00 (16 hour slots)
+    const hours = [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21];
+    const occupied = c.occupied_blocks || [];
+
+    // Parse start and end hours for target event
+    let targetStartHour = -1;
+    let targetEndHour = -1;
+    if (start && end) {
+        targetStartHour = parseInt(start.slice(0, 2), 10);
+        targetEndHour   = parseInt(end.slice(0, 2), 10);
+        if (parseInt(end.slice(3, 5), 10) > 0) targetEndHour += 1;
+    }
+
+    const slotsHtml = hours.map(h => {
+        const hStr = h.toString().padStart(2, '0') + ':00';
+        const nextHStr = (h + 1).toString().padStart(2, '0') + ':00';
+
+        // Check if occupied by existing booking
+        const occ = occupied.find(b => (b.start_time < nextHStr && b.end_time > hStr));
+        const isTarget = (targetStartHour !== -1 && h >= targetStartHour && h < targetEndHour);
+
+        if (occ) {
+            const occClass = occ.type === 'event' ? 'occupied-ev' : 'occupied-res';
+            const occTitle = `${occ.title} (${occ.start_time} - ${occ.end_time})`;
+            return `<div class="timeline-slot ${occClass}" title="${occTitle}"></div>`;
+        } else if (isTarget) {
+            return `<div class="timeline-slot target-event" title="Your Requested Event Slot (${start} - ${end})"></div>`;
+        } else {
+            return `<div class="timeline-slot free" title="Available (${h}:00 - ${h+1}:00)"></div>`;
+        }
+    }).join('');
+
+    return `
+        <div class="court-card ${isAvail ? '' : 'disabled'}" id="courtCard_${c.id}">
+            <div class="court-card-header">
+                <div class="court-left-info">
+                    <input type="checkbox" name="court_ids" value="${c.id}" 
+                           id="cb_${c.id}" 
+                           ${isAvail ? '' : 'disabled'} 
+                           onchange="onCourtChecked(this)">
+                    <div class="court-title-grp">
+                        <span class="court-name">${c.name}</span>
+                        <span class="court-sub">${c.type.toUpperCase()} · ₱${c.hourly_rate.toFixed(2)}/hr</span>
+                    </div>
+                </div>
+                <div>${badgeHtml}</div>
+            </div>
+
+            <div class="timeline-container">
+                <div class="timeline-labels">
+                    <span>6 AM</span>
+                    <span>9 AM</span>
+                    <span>12 PM</span>
+                    <span>3 PM</span>
+                    <span>6 PM</span>
+                    <span>9 PM</span>
+                </div>
+                <div class="timeline-bar">${slotsHtml}</div>
+            </div>
+        </div>
+    `;
+}
+
+function onCourtChecked(cb) {
+    const card = cb.closest('.court-card');
+    card.classList.toggle('selected', cb.checked);
+    updateCostCalculator();
+}
+
+function updateCostCalculator() {
+    const checked = Array.from(document.querySelectorAll('input[name="court_ids"]:checked'));
+    const summary = document.getElementById('courtCalcSummary');
+    const textEl = document.getElementById('calcText');
+    const amtEl = document.getElementById('calcAmount');
+
+    if (checked.length === 0) {
+        textEl.textContent = '0 Courts selected';
+        amtEl.textContent = '₱0.00';
+        return;
+    }
+
+    const s = document.getElementById('fieldStartTime').value;
+    const e = document.getElementById('fieldEndTime').value;
+    let hrs = 1;
+    if (s && e) {
+        const sh = parseFloat(s.slice(0,2)) + parseFloat(s.slice(3,5))/60;
+        const eh = parseFloat(e.slice(0,2)) + parseFloat(e.slice(3,5))/60;
+        hrs = Math.max(0.5, eh - sh);
+    }
+
+    let total = 0;
+    checked.forEach(cb => {
+        const cObj = loadedCourtsData.find(c => c.id === cb.value);
+        if (cObj) total += (cObj.hourly_rate * hrs);
+    });
+
+    textEl.textContent = `${checked.length} Court${checked.length > 1 ? 's' : ''} selected (${hrs.toFixed(1)} hrs)`;
+    amtEl.textContent = `₱${total.toFixed(2)}`;
 }
 
 // Spinning animation

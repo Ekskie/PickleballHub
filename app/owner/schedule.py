@@ -138,6 +138,56 @@ def court_schedule():
                         bookings_by_date[b_date] = []
                     bookings_by_date[b_date].append(serialized)
 
+            # 4b. Fetch active event court bookings and map into schedule
+            try:
+                ev_resp = db.table('events').select(
+                    'id, title, type, event_date, start_time, end_time, status, facility_id, facilities(id, name), '
+                    'event_courts(court_id, courts(id, name, type, hourly_rate))'
+                ).in_('facility_id', fac_ids).in_('status', ['registration_open', 'upcoming', 'full']).execute()
+                
+                for ev in (ev_resp.data or []):
+                    for ec in (ev.get('event_courts') or []):
+                        c_info = ec.get('courts') or {}
+                        raw_start = ev.get('start_time') or ''
+                        raw_end = ev.get('end_time') or ''
+                        serialized_ev = {
+                            'id': ev['id'],
+                            'date': ev.get('event_date') or '',
+                            'start_time': raw_start,
+                            'end_time': raw_end,
+                            'start_time_fmt': _format_time_friendly(raw_start),
+                            'end_time_fmt': _format_time_friendly(raw_end),
+                            'total_hours': 1,
+                            'hourly_rate': c_info.get('hourly_rate') or 0,
+                            'total_amount': 0,
+                            'status': 'confirmed',
+                            'is_event': True,
+                            'event_type': ev.get('type'),
+                            'gcash_ref': None,
+                            'receipt_url': None,
+                            'created_at': '',
+                            'player_name': f"🏆 {ev.get('title', 'Event')}",
+                            'player_initials': 'EV',
+                            'is_guest': False,
+                            'phone': '',
+                            'email': '',
+                            'avatar_url': None,
+                            'party_size': 16,
+                            'court_id': ec.get('court_id'),
+                            'court_name': c_info.get('name') or 'Court',
+                            'court_type': c_info.get('type') or 'indoor',
+                            'facility_id': ev.get('facility_id'),
+                            'facility_name': (ev.get('facilities') or {}).get('name') or ''
+                        }
+                        all_reservations.append(serialized_ev)
+                        b_date = serialized_ev['date']
+                        if b_date:
+                            if b_date not in bookings_by_date:
+                                bookings_by_date[b_date] = []
+                            bookings_by_date[b_date].append(serialized_ev)
+            except Exception as ev_err:
+                pass
+
             # 5. Compute stats
             stats['total_bookings'] = len(all_reservations)
             stats['today_bookings'] = sum(1 for r in all_reservations if r['date'] == today_str)

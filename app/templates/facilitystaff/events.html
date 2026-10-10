@@ -1,5 +1,5 @@
-{% extends "owner/base_owner.html" %}
-{% block title %}Events & Facility Bookings{% endblock %}
+{% extends "facilitystaff/base_facilitystaff.html" %}
+{% block title %}Event & Court Approvals{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -28,27 +28,6 @@
     margin-top: 4px;
     font-weight: 500;
 }
-.btn-create-event {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 22px;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: #fff !important;
-    font-weight: 700;
-    font-size: 0.88rem;
-    border-radius: 12px;
-    text-decoration: none;
-    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    border: none;
-}
-.btn-create-event:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
-    color: #fff;
-}
-.btn-create-event i { font-size: 1.15rem; }
 
 /* ── KPI Metrics Grid ── */
 .kpi-grid {
@@ -82,9 +61,9 @@
     font-size: 1.35rem;
     flex-shrink: 0;
 }
-.kpi-icon-total   { background: rgba(16, 185, 129, 0.12); color: #10b981; }
+.kpi-icon-total   { background: rgba(249, 115, 22, 0.12); color: var(--primary-orange); }
+.kpi-icon-active  { background: rgba(34, 197, 94, 0.12); color: #16a34a; }
 .kpi-icon-pending { background: rgba(245, 158, 11, 0.12); color: #d97706; }
-.kpi-icon-active  { background: rgba(59, 130, 246, 0.12); color: #2563eb; }
 .kpi-icon-players { background: rgba(124, 58, 237, 0.12); color: #7c3aed; }
 .kpi-info { display: flex; flex-direction: column; }
 .kpi-value { font-size: 1.45rem; font-weight: 800; color: var(--text-primary); line-height: 1.1; }
@@ -131,8 +110,8 @@
     outline: none;
 }
 .filter-search-input:focus {
-    border-color: #10b981;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
 }
 .filter-pills {
     display: flex;
@@ -160,10 +139,10 @@
     background: var(--card-bg);
 }
 .filter-pill.active {
-    background: #10b981;
+    background: var(--primary-orange);
     color: #fff;
-    border-color: #10b981;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+    border-color: var(--primary-orange);
+    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.25);
 }
 .pill-count {
     background: rgba(0, 0, 0, 0.12);
@@ -197,7 +176,7 @@
     overflow: hidden;
 }
 .event-card:hover {
-    box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(16, 185, 129, 0.08);
+    box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(249, 115, 22, 0.08);
     transform: translateY(-3px);
 }
 .event-card.card-pending {
@@ -361,14 +340,12 @@
     gap: 5px;
     text-decoration: none;
 }
-.btn-sm-success { background: #10b981; color: white; }
-.btn-sm-success:hover { background: #059669; transform: translateY(-1px); }
+.btn-sm-success { background: #22c55e; color: white; }
+.btn-sm-success:hover { background: #16a34a; transform: translateY(-1px); }
 .btn-sm-danger { background: #ef4444; color: white; }
 .btn-sm-danger:hover { background: #dc2626; transform: translateY(-1px); }
 .btn-sm-outline { background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-secondary); }
 .btn-sm-outline:hover { border-color: var(--text-muted); color: var(--text-primary); }
-.btn-sm-navy { background: #1e293b; color: white; }
-.btn-sm-navy:hover { background: #0f172a; transform: translateY(-1px); }
 
 /* Modal */
 .modal-overlay {
@@ -408,8 +385,8 @@
     width: 72px;
     height: 72px;
     border-radius: 20px;
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
+    background: rgba(249, 115, 22, 0.1);
+    color: var(--primary-orange);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -422,12 +399,9 @@
 <!-- Hero Header -->
 <div class="events-hero">
     <div class="hero-title-group">
-        <h1><i class="ph ph-calendar-check" style="color:#10b981"></i> Events on My Courts</h1>
-        <p>Manage court reservations for club tournaments, community socials, and training clinics.</p>
+        <h1><i class="ph ph-calendar-check" style="color:var(--primary-orange)"></i> Event & Court Approvals</h1>
+        <p>Review event court reservation requests and verify GCash payment proof.</p>
     </div>
-    <a href="{{ url_for('owner.create_event_page') }}" class="btn-create-event">
-        <i class="ph ph-plus-circle"></i> Create Event
-    </a>
 </div>
 
 <!-- KPI Summary Cards -->
@@ -443,14 +417,14 @@
         <div class="kpi-icon-wrap kpi-icon-pending"><i class="ph ph-hourglass-high"></i></div>
         <div class="kpi-info">
             <span class="kpi-value">{{ pending_count if pending_count is not none else 0 }}</span>
-            <span class="kpi-label">Event Approvals</span>
+            <span class="kpi-label">Action Needed</span>
         </div>
     </div>
     <div class="kpi-card">
         <div class="kpi-icon-wrap kpi-icon-active"><i class="ph ph-check-circle"></i></div>
         <div class="kpi-info">
             <span class="kpi-value">{{ kpis.active_count if kpis else 0 }}</span>
-            <span class="kpi-label">Confirmed & Open</span>
+            <span class="kpi-label">Active / Open</span>
         </div>
     </div>
     <div class="kpi-card">
@@ -466,14 +440,14 @@
 <div class="events-toolbar">
     <div class="filter-search-box">
         <i class="ph ph-magnifying-glass"></i>
-        <input type="text" id="ownerSearchInput" class="filter-search-input" placeholder="Search event, organizer, or venue..." onkeyup="handleOwnerSearch()">
+        <input type="text" id="staffSearchInput" class="filter-search-input" placeholder="Search event, organizer, or venue..." onkeyup="handleStaffSearch()">
     </div>
     <div class="filter-pills">
         <button class="filter-pill active" data-filter="all" onclick="filterEvents('all', this)">
             All Events <span class="pill-count" id="count-all">{{ events|length }}</span>
         </button>
         <button class="filter-pill" data-filter="pending_approval" onclick="filterEvents('pending_approval', this)">
-            <i class="ph ph-clock"></i> Event Approvals <span class="pill-count" id="count-pending_approval">{{ pending_count }}</span>
+            <i class="ph ph-clock"></i> Action Needed <span class="pill-count" id="count-pending_approval">{{ pending_count }}</span>
         </button>
         <button class="filter-pill" data-filter="tournament" onclick="filterEvents('tournament', this)">
             <i class="ph ph-trophy"></i> Tournaments <span class="pill-count" id="count-tournament">0</span>
@@ -484,14 +458,11 @@
         <button class="filter-pill" data-filter="training" onclick="filterEvents('training', this)">
             <i class="ph ph-barbell"></i> Training <span class="pill-count" id="count-training">0</span>
         </button>
-        <button class="filter-pill" data-filter="league" onclick="filterEvents('league', this)">
-            <i class="ph ph-medal"></i> Leagues <span class="pill-count" id="count-league">0</span>
-        </button>
     </div>
 </div>
 
 <!-- Events Grid -->
-<div class="events-grid" id="ownerEventsGrid">
+<div class="events-grid" id="staffEventsGrid">
     {% if events %}
         {% for ev in events %}
         <div class="event-card {% if ev.status == 'pending_approval' %}card-pending{% endif %}" 
@@ -507,7 +478,7 @@
                         {% if ev.type == 'tournament' %}<i class="ph ph-trophy"></i>
                         {% elif ev.type == 'social' %}<i class="ph ph-beer-bottle"></i>
                         {% elif ev.type == 'training' %}<i class="ph ph-barbell"></i>
-                        {% else %}<i class="ph ph-medal"></i>{% endif %}
+                        {% else %}<i class="ph ph-calendar"></i>{% endif %}
                         {{ ev.type|capitalize }}
                     </span>
                     {% if ev.format %}
@@ -519,7 +490,7 @@
                 {% if sc == 'pending_approval' %}
                     <span class="badge-status-chip pending-approval"><i class="ph ph-clock"></i> Action Needed: Approval</span>
                 {% elif sc == 'registration_open' %}
-                    <span class="badge-status-chip registration-open"><i class="ph ph-check-circle"></i> Confirmed & Open</span>
+                    <span class="badge-status-chip registration-open"><i class="ph ph-check-circle"></i> Approved & Active</span>
                 {% elif sc == 'upcoming' %}
                     <span class="badge-status-chip upcoming"><i class="ph ph-calendar-check"></i> Upcoming</span>
                 {% elif sc == 'rejected' %}
@@ -574,7 +545,7 @@
             {% if ev.status == 'pending_approval' %}
             <div class="approval-box">
                 <div class="approval-row">
-                    <span class="lbl">Booked Courts</span>
+                    <span class="lbl">Requested Courts</span>
                     <span class="val">
                         {% if ev.courts %}
                             {% for c in ev.courts %}{{ c.name }}{% if not loop.last %}, {% endif %}{% endfor %}
@@ -584,12 +555,12 @@
                     </span>
                 </div>
                 <div class="approval-row">
-                    <span class="lbl">Court Rental Fee</span>
+                    <span class="lbl">Total Court Fee</span>
                     <span class="val" style="color:#22c55e;">₱{{ '%.2f'|format(ev.total_court_fee or 0) }}</span>
                 </div>
                 <div class="approval-row">
                     <span class="lbl">GCash Reference</span>
-                    <span class="val" style="font-family:monospace;letter-spacing:1px;color:var(--primary-orange);">{{ ev.gcash_ref or 'Pending' }}</span>
+                    <span class="val" style="font-family:monospace;letter-spacing:1px;color:var(--primary-orange);">{{ ev.gcash_ref or 'Pending Proof' }}</span>
                 </div>
             </div>
             {% endif %}
@@ -598,7 +569,7 @@
                 {% if ev.status == 'pending_approval' %}
                     <span style="font-size:0.75rem; color:var(--text-muted);"><i class="ph ph-receipt"></i> Verify Payment Proof</span>
                     <div style="display:flex;gap:8px;align-items:center;">
-                        <form method="POST" action="{{ url_for('owner.approve_event', event_id=ev.id) }}" style="margin:0;" onsubmit="return confirm('Approve this court booking for {{ ev.title }}? Courts will be reserved.');">
+                        <form method="POST" action="{{ url_for('facilitystaff.approve_event', event_id=ev.id) }}" style="margin:0;" onsubmit="return confirm('Approve court booking for {{ ev.title }}? Courts will be reserved.');">
                             <button type="submit" class="btn-sm btn-sm-success">
                                 <i class="ph ph-check-circle"></i> Approve
                             </button>
@@ -609,48 +580,29 @@
                     </div>
                 {% else %}
                     <span style="font-size:0.8rem; color:var(--text-muted);"><i class="ph ph-users"></i> {{ ev.registered_count or 0 }} / {{ ev.max_players or 16 }} Registered</span>
-                    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-                        {% if ev.organizer_id == session.get('user_id') %}
-                        <form method="POST" action="{{ url_for('owner.change_event_status', event_id=ev.id) }}" style="margin:0;">
-                            <select name="status" class="status-select" onchange="this.form.submit()" title="Change status">
-                                {% for s in ['registration_open','upcoming','in_progress','completed','cancelled'] %}
-                                <option value="{{ s }}" {% if ev.status == s %}selected{% endif %}>{{ s|replace('_',' ')|title }}</option>
-                                {% endfor %}
-                            </select>
-                        </form>
-                        {% endif %}
-                        <a href="{{ url_for('owner.event_participants', event_id=ev.id) }}" class="btn-sm btn-sm-outline" style="padding:5px 11px;font-size:0.75rem;">
-                            <i class="ph ph-users"></i> Participants
-                        </a>
-                        {% if ev.type == 'tournament' %}
-                        <a href="{{ url_for('owner.tournament_manage', event_id=ev.id) }}" class="btn-sm btn-sm-navy" style="padding:5px 11px;font-size:0.75rem;">
-                            <i class="ph ph-tree-structure"></i> Bracket
-                        </a>
-                        {% endif %}
-                    </div>
+                    <span class="badge-status-chip {% if ev.status == 'registration_open' %}registration-open{% else %}completed{% endif %}">
+                        {{ ev.status|replace('_',' ')|title }}
+                    </span>
                 {% endif %}
             </div>
         </div>
         {% endfor %}
     {% else %}
         <div class="empty-state">
-            <div class="empty-state-icon"><i class="ph ph-trophy"></i></div>
-            <h3>No Events Scheduled</h3>
-            <p>Create your first event to start accepting player registrations at your courts.</p>
-            <a href="{{ url_for('owner.create_event_page') }}" class="btn-create-event" style="margin-top:8px;">
-                <i class="ph ph-plus-circle"></i> Create Event
-            </a>
+            <div class="empty-state-icon"><i class="ph ph-calendar-check"></i></div>
+            <h3>No Event Requests</h3>
+            <p>There are currently no events or booking requests for your assigned facilities.</p>
         </div>
     {% endif %}
 
-    <div id="noOwnerResults" class="empty-state" style="display:none;">
+    <div id="noStaffResults" class="empty-state" style="display:none;">
         <div class="empty-state-icon" style="background:rgba(107,114,128,0.1); color:var(--text-muted);"><i class="ph ph-magnifying-glass"></i></div>
         <h3>No matching events found</h3>
         <p>Try adjusting your search keywords or filter category.</p>
     </div>
 </div>
 
-<!-- Reject Reason Modal -->
+<!-- Staff Reject Reason Modal -->
 <div class="modal-overlay" id="rejectModal">
     <div class="modal-box">
         <h3 style="font-size:1.1rem; color:var(--text-primary); margin-bottom:8px; display:flex; align-items:center; gap:8px;">
@@ -675,17 +627,16 @@
 </div>
 
 <script>
-let currentOwnerCriteria = 'all';
+let currentStaffCriteria = 'all';
 
-function updateOwnerCounts() {
+function updateStaffCounts() {
     const cards = document.querySelectorAll('.event-card');
     let counts = {
         all: cards.length,
         pending_approval: 0,
         tournament: 0,
         social: 0,
-        training: 0,
-        league: 0
+        training: 0
     };
 
     cards.forEach(card => {
@@ -695,7 +646,6 @@ function updateOwnerCounts() {
         if (t === 'tournament') counts.tournament++;
         if (t === 'social') counts.social++;
         if (t === 'training') counts.training++;
-        if (t === 'league') counts.league++;
     });
 
     for (const [key, val] of Object.entries(counts)) {
@@ -705,20 +655,20 @@ function updateOwnerCounts() {
 }
 
 function filterEvents(criteria, btn) {
-    currentOwnerCriteria = criteria;
+    currentStaffCriteria = criteria;
     document.querySelectorAll('.filter-pills .filter-pill').forEach(p => p.classList.remove('active'));
     if (btn) btn.classList.add('active');
-    applyOwnerFilters();
+    applyStaffFilters();
 }
 
-function handleOwnerSearch() {
-    applyOwnerFilters();
+function handleStaffSearch() {
+    applyStaffFilters();
 }
 
-function applyOwnerFilters() {
-    const query = (document.getElementById('ownerSearchInput')?.value || '').trim().toLowerCase();
+function applyStaffFilters() {
+    const query = (document.getElementById('staffSearchInput')?.value || '').trim().toLowerCase();
     const cards = document.querySelectorAll('.event-card');
-    const noResults = document.getElementById('noOwnerResults');
+    const noResults = document.getElementById('noStaffResults');
     let visibleCount = 0;
 
     cards.forEach(card => {
@@ -729,12 +679,12 @@ function applyOwnerFilters() {
         const venue = card.dataset.venue || '';
 
         let matchesFilter = false;
-        if (currentOwnerCriteria === 'all') {
+        if (currentStaffCriteria === 'all') {
             matchesFilter = true;
-        } else if (currentOwnerCriteria === 'pending_approval') {
+        } else if (currentStaffCriteria === 'pending_approval') {
             matchesFilter = (status === 'pending_approval');
         } else {
-            matchesFilter = (type === currentOwnerCriteria);
+            matchesFilter = (type === currentStaffCriteria);
         }
 
         let matchesSearch = true;
@@ -757,7 +707,7 @@ function applyOwnerFilters() {
 
 function openRejectModal(eventId, title) {
     document.getElementById('modalEventTitle').textContent = title;
-    document.getElementById('rejectForm').action = `/owner/events/${eventId}/reject`;
+    document.getElementById('rejectForm').action = `/facilitystaff/events/${eventId}/reject`;
     document.getElementById('rejectModal').style.display = 'flex';
     document.getElementById('rejection_reason').focus();
 }
@@ -766,6 +716,6 @@ function closeRejectModal() {
     document.getElementById('rejectModal').style.display = 'none';
 }
 
-document.addEventListener('DOMContentLoaded', updateOwnerCounts);
+document.addEventListener('DOMContentLoaded', updateStaffCounts);
 </script>
 {% endblock %}

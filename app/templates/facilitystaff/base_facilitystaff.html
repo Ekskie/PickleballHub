@@ -48,6 +48,9 @@
         <li class="{% if request.endpoint == 'facilitystaff.payment_ledger' %}active{% endif %}">
             <a href="{{ url_for('facilitystaff.payment_ledger') }}"><i class="ph ph-receipt"></i> <span>Payment Ledger</span></a>
         </li>
+        <li class="{% if request.endpoint == 'facilitystaff.events' %}active{% endif %}">
+            <a href="{{ url_for('facilitystaff.events') }}"><i class="ph ph-calendar-check"></i> <span>Event Approvals</span></a>
+        </li>
     </ul>
 </li>
 

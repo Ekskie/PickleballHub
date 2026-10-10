@@ -838,7 +838,42 @@ def schedule():
                 r['is_live_now'] = is_live_now
                 
                 reservations.append(r)
-                
+
+            # Fetch active event court bookings for this date and map to schedule
+            try:
+                ev_resp = db.table('event_courts').select(
+                    'court_id, event_id, events!inner(id, title, type, event_date, start_time, end_time, status)'
+                ).in_('court_id', [c['id'] for c in courts]).execute()
+                for ec in (ev_resp.data or []):
+                    ev = ec.get('events') or {}
+                    if ev.get('event_date') == date_str and ev.get('status') in ['registration_open', 'upcoming', 'full']:
+                        s_raw = str(ev.get('start_time') or '08:00:00')[:5]
+                        e_raw = str(ev.get('end_time') or '10:00:00')[:5]
+                        s_hr = int(s_raw[:2])
+                        e_hr = int(e_raw[:2])
+                        if int(e_raw[3:5]) > 0:
+                            e_hr += 1
+                        dur = max(1.0, e_hr - s_hr)
+                        reservations.append({
+                            'id': ev['id'],
+                            'court_id': ec['court_id'],
+                            'status': 'confirmed',
+                            'is_event': True,
+                            'event_type': ev.get('type', 'event'),
+                            'start_str': s_raw,
+                            'end_str': e_raw,
+                            'start_hour': s_hr,
+                            'end_hour': e_hr,
+                            'duration_hours': dur,
+                            'display_name': f"🏆 {ev.get('title', 'Event')}",
+                            'is_walkin': False,
+                            'initials': 'EV',
+                            'phone_display': 'Club Event Booking',
+                            'is_live_now': (is_today and s_raw <= now_time_str <= e_raw)
+                        })
+            except Exception as ev_err:
+                pass
+
             # Build court schedule mapping for each court
             for court in courts:
                 court_res = [r for r in reservations if r.get('court_id') == court['id']]
@@ -1061,17 +1096,12 @@ def walkin():
             start_time = now.strftime('%H:%M:%S')
             end_time = (now + timedelta(hours=duration)).strftime('%H:%M:%S')
 
-            # Check for overlapping reservation
-            overlap_resp = db.table('court_reservations').select('id')\
-                .eq('court_id', court_id)\
-                .eq('date', today_str)\
-                .in_('status', ['confirmed', 'pending_payment'])\
-                .lt('start_time', end_time)\
-                .gt('end_time', start_time)\
-                .execute()
-                
-            if overlap_resp.data:
-                msg = 'This court is already reserved during the selected walk-in slot.'
+            # Check for overlapping reservation or event on this court
+            from app.booking_utils import check_court_conflict
+            has_conf, conf_detail = check_court_conflict(db, court_id, today_str, start_time, end_time)
+            if has_conf:
+                c_lbl = conf_detail.get('label') or conf_detail.get('title') or 'Scheduled booking'
+                msg = f"This court is already reserved during the requested slot ({c_lbl} {conf_detail['start_time']} - {conf_detail['end_time']})."
                 if is_ajax:
                     return jsonify({'success': False, 'message': msg}), 400
                 flash(msg, 'error')
@@ -1833,4 +1863,151 @@ def checkin_reservation():
 @require_role('facilitystaff')
 def tutorials():
     return render_template('facilitystaff/tutorials.html')
+
+
+# ── Event Approvals (Facility Staff) ───────────────────────────────────────────
+@facilitystaff_bp.route('/events')
+@require_role('facilitystaff')
+def events():
+    staff_id = session.get('user_id')
+    db = get_admin_db()
+    events_list = []
+    try:
+        fs_resp = db.table('facility_staff').select('facility_id, facilities(id, name)').eq('staff_id', staff_id).execute()
+        assigned = fs_resp.data or []
+        fac_ids = [f['facility_id'] for f in assigned]
+
+        if fac_ids:
+            ev_resp = db.table('events').select(
+                'id, title, type, format, event_date, start_time, end_time, max_players, status, location_label, organizer_id, '
+                'gcash_ref, rejection_reason, facility_id, facilities(name), profiles!organizer_id(first_name, last_name, email, phone)'
+            ).in_('facility_id', fac_ids).order('event_date', desc=False).execute()
+            events_list = ev_resp.data or []
+
+            if events_list:
+                ev_ids = [ev['id'] for ev in events_list]
+                reg_resp = db.table('event_registrations').select('event_id').in_('event_id', ev_ids).eq('status', 'registered').execute()
+                from collections import Counter
+                reg_counts = Counter(r['event_id'] for r in (reg_resp.data or []))
+
+                court_resp = db.table('event_courts').select('event_id, court_id, courts(name, hourly_rate)').in_('event_id', ev_ids).execute()
+                courts_by_ev = {}
+                for c in (court_resp.data or []):
+                    eid = c['event_id']
+                    if eid not in courts_by_ev:
+                        courts_by_ev[eid] = []
+                    if c.get('courts'):
+                        courts_by_ev[eid].append(c['courts'])
+
+                for ev in events_list:
+                    ev['registered_count'] = reg_counts[ev['id']]
+                    ev['courts'] = courts_by_ev.get(ev['id'], [])
+                    try:
+                        sh = float(ev['start_time'][:2]) + float(ev['start_time'][3:5])/60.0
+                        eh = float(ev['end_time'][:2]) + float(ev['end_time'][3:5])/60.0
+                        hrs = max(0.5, eh - sh) if eh > sh else 1.0
+                    except Exception:
+                        hrs = 1.0
+                    tot_rate = sum(float(c.get('hourly_rate') or 0) for c in ev['courts'])
+                    ev['total_court_fee'] = tot_rate * hrs
+                    ev['duration_hours'] = round(hrs, 1)
+
+    except Exception as e:
+        flash(f'An error occurred loading event approvals: {e}', 'error')
+
+    pending_count = sum(1 for e in events_list if e.get('status') == 'pending_approval')
+    total_events = len(events_list)
+    active_count = sum(1 for e in events_list if e.get('status') in ['registration_open', 'upcoming'])
+    total_players = sum(e.get('registered_count', 0) for e in events_list)
+    kpis = {
+        'total_events': total_events,
+        'active_count': active_count,
+        'pending_count': pending_count,
+        'total_players': total_players
+    }
+    return render_template('facilitystaff/events.html', events=events_list, pending_count=pending_count, kpis=kpis)
+
+
+@facilitystaff_bp.route('/events/<event_id>/approve', methods=['POST'])
+@require_role('facilitystaff')
+def approve_event(event_id):
+    staff_id = session.get('user_id')
+    db = get_admin_db()
+    try:
+        fs_resp = db.table('facility_staff').select('facility_id').eq('staff_id', staff_id).execute()
+        fac_ids = [f['facility_id'] for f in (fs_resp.data or [])]
+
+        ev_resp = db.table('events').select('*, facilities(name)').eq('id', event_id).in_('facility_id', fac_ids).single().execute()
+        event = ev_resp.data
+        if not event:
+            flash("Event not found or unauthorized.", "error")
+            return redirect(url_for('facilitystaff.events'))
+
+        from app.booking_utils import check_court_conflict
+        court_resp = db.table('event_courts').select('court_id, courts(name)').eq('event_id', event_id).execute()
+        for c in (court_resp.data or []):
+            cid = c['court_id']
+            has_conf, conf_detail = check_court_conflict(db, cid, event['event_date'], event['start_time'], event['end_time'], exclude_event_id=event_id)
+            if has_conf:
+                flash(f"Cannot approve: Court '{c.get('courts', {}).get('name', 'Court')}' conflicts with {conf_detail['label']} ({conf_detail['start_time']}-{conf_detail['end_time']}).", "error")
+                return redirect(url_for('facilitystaff.events'))
+
+        now_iso = datetime.now(PH_TZ).isoformat()
+        db.table('events').update({
+            'status': 'registration_open',
+            'approved_by': staff_id,
+            'approved_at': now_iso
+        }).eq('id', event_id).execute()
+
+        facility_name = event.get('facilities', {}).get('name') or "Facility"
+        db.table('notifications').insert({
+            'user_id': event['organizer_id'],
+            'title': f"Event Approved: {event['title']}",
+            'message': f"Your event '{event['title']}' was approved by {facility_name} staff! Player registrations are now open.",
+            'type': 'success',
+            'link': url_for('clubadmin.events')
+        }).execute()
+
+        flash(f'Event "{event["title"]}" approved! Courts are reserved and registrations are open.', 'success')
+    except Exception as e:
+        flash(f'Error approving event: {e}', 'error')
+
+    return redirect(url_for('facilitystaff.events'))
+
+
+@facilitystaff_bp.route('/events/<event_id>/reject', methods=['POST'])
+@require_role('facilitystaff')
+def reject_event(event_id):
+    staff_id = session.get('user_id')
+    db = get_admin_db()
+    reason = request.form.get('rejection_reason', '').strip() or 'Facility unavailable during requested time'
+    try:
+        fs_resp = db.table('facility_staff').select('facility_id').eq('staff_id', staff_id).execute()
+        fac_ids = [f['facility_id'] for f in (fs_resp.data or [])]
+
+        ev_resp = db.table('events').select('*, facilities(name)').eq('id', event_id).in_('facility_id', fac_ids).single().execute()
+        event = ev_resp.data
+        if not event:
+            flash("Event not found or unauthorized.", "error")
+            return redirect(url_for('facilitystaff.events'))
+
+        db.table('events').update({
+            'status': 'rejected',
+            'rejection_reason': reason
+        }).eq('id', event_id).execute()
+
+        facility_name = event.get('facilities', {}).get('name') or "Facility"
+        db.table('notifications').insert({
+            'user_id': event['organizer_id'],
+            'title': f"Event Booking Declined: {event['title']}",
+            'message': f"Your event court booking for '{event['title']}' was declined by {facility_name} staff. Reason: {reason}",
+            'type': 'error',
+            'link': url_for('clubadmin.events')
+        }).execute()
+
+        flash(f'Event "{event["title"]}" booking request was declined.', 'info')
+    except Exception as e:
+        flash(f'Error declining event: {e}', 'error')
+
+    return redirect(url_for('facilitystaff.events'))
 

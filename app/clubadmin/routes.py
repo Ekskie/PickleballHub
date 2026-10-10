@@ -593,13 +593,28 @@ def tutorials():
 def support():
     return render_template('clubadmin/support.html')
 
-# ── API: Courts by Facility (for JS fetch in create_event) ────────────────────
+# ── API: Courts by Facility & Timeline (for JS fetch in create_event) ─────────
 @clubadmin_bp.route('/api/courts_by_facility/<facility_id>')
 @require_role('clubadmin')
 def api_courts_by_facility(facility_id):
     db = get_db()
+    date = request.args.get('date')
+    start_time = request.args.get('start_time')
+    end_time = request.args.get('end_time')
+    exclude_event_id = request.args.get('exclude_event_id')
     try:
-        resp = db.table('courts').select('id, name, type, hourly_rate').eq('facility_id', facility_id).eq('status', 'active').order('name').execute()
-        return jsonify(resp.data or [])
+        if date:
+            from app.booking_utils import get_facility_court_timeline
+            data = get_facility_court_timeline(
+                db, facility_id, date, 
+                start_time=start_time, 
+                end_time=end_time, 
+                exclude_event_id=exclude_event_id
+            )
+            return jsonify(data)
+        else:
+            resp = db.table('courts').select('id, name, type, hourly_rate').eq('facility_id', facility_id).eq('status', 'active').order('name').execute()
+            return jsonify(resp.data or [])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+

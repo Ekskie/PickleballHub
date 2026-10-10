@@ -2468,6 +2468,7 @@
                 <div class="slot-legend" style="margin-bottom: 0;">
                     <div class="leg-item"><div class="leg-dot avail" style="background: #10b981; border: none;"></div> Available</div>
                     <div class="leg-item"><div class="leg-dot bkd" style="background: #ef4444; border: none;"></div> Occupied</div>
+                    <div class="leg-item"><div class="leg-dot ev" style="background: #8b5cf6; border: none;"></div> Booked for Event</div>
                     <div class="leg-item"><div class="leg-dot sel" style="background: var(--primary-orange); border: none;"></div> Selected</div>
                 </div>
             </div>
@@ -2994,14 +2995,19 @@
             const isPast = (state.selectedDate === todayStr && h <= currentHour);
             if (!isPast) allSlotsPast = false;
 
-            // Count available courts
+            // Count available courts & identify event blocks
             let availableCourtsCount = 0;
+            let occupiedByEventsCount = 0;
             state.courtsList.forEach(c => {
-                const isCourtOccupied = state.reservationsList.some(r => {
+                const occupiedBooking = state.reservationsList.find(r => {
                     if (r.court_id !== c.id) return false;
                     return isOverlapping(r.start_time, r.end_time, startStr, endStr);
                 });
-                if (!isCourtOccupied) availableCourtsCount++;
+                if (occupiedBooking) {
+                    if (occupiedBooking.type === 'event') occupiedByEventsCount++;
+                } else {
+                    availableCourtsCount++;
+                }
             });
 
             const isBooked = (availableCourtsCount === 0) || isPast;
@@ -3016,7 +3022,11 @@
             if (isPast) {
                 pillHtml = `<span class="slot-avail-pill past">Past</span>`;
             } else if (availableCourtsCount === 0) {
-                pillHtml = `<span class="slot-avail-pill full">Fully Booked</span>`;
+                if (occupiedByEventsCount === state.courtsList.length && occupiedByEventsCount > 0) {
+                    pillHtml = `<span class="slot-avail-pill event-blocked" style="background: rgba(139, 92, 246, 0.15); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.35); font-weight: 700;"><i class="ph ph-calendar"></i> Booked for Event</span>`;
+                } else {
+                    pillHtml = `<span class="slot-avail-pill full">Fully Booked</span>`;
+                }
             } else {
                 pillHtml = `<span class="slot-avail-pill avail">${availableCourtsCount} court${availableCourtsCount !== 1 ? 's' : ''} free</span>`;
             }
@@ -3100,13 +3110,15 @@
         mapContainer.innerHTML = '';
 
         state.courtsList.forEach(c => {
-            const isOccupied = state.reservationsList.some(r => {
+            const occupiedBooking = state.reservationsList.find(r => {
                 if (r.court_id !== c.id) return false;
                 return isOverlapping(r.start_time, r.end_time, startStr, endStr);
             });
+            const isOccupied = !!occupiedBooking;
+            const isEvent = isOccupied && occupiedBooking.type === 'event';
 
             const card = document.createElement('div');
-            card.className = `visual-court-card ${isOccupied ? 'occupied' : 'available'}`;
+            card.className = `visual-court-card ${isOccupied ? 'occupied' : 'available'} ${isEvent ? 'event-occupied' : ''}`;
             card.dataset.id = c.id;
             card.dataset.name = c.name;
             card.dataset.rate = c.hourly_rate;
@@ -3131,15 +3143,31 @@
                 `;
             }
 
+            let badgeHtml = '';
+            let eventNoticeHtml = '';
+            if (!isOccupied) {
+                badgeHtml = `<span class="visual-court-status-badge available"><i class="ph ph-check-circle"></i> Available</span>`;
+            } else if (isEvent) {
+                const evTitle = (occupiedBooking.title || 'Club Event').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                badgeHtml = `<span class="visual-court-status-badge" style="background: rgba(139, 92, 246, 0.15); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.35); font-weight: 700;"><i class="ph ph-trophy"></i> Booked for Event</span>`;
+                eventNoticeHtml = `
+                    <div style="margin-top: 8px; padding: 6px 10px; background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 8px; font-size: 0.73rem; color: #7c3aed; display: flex; align-items: center; gap: 6px;">
+                        <i class="ph ph-calendar-check" style="font-size: 0.95rem; flex-shrink: 0;"></i>
+                        <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><strong>${evTitle}</strong></span>
+                    </div>
+                `;
+            } else {
+                badgeHtml = `<span class="visual-court-status-badge occupied"><i class="ph ph-lock-key"></i> Occupied</span>`;
+            }
+
             card.innerHTML = `
                 <div class="visual-court-header">
                     <span class="visual-court-name">${c.name}</span>
-                    <span class="visual-court-status-badge ${isOccupied ? 'occupied' : 'available'}">
-                        ${isOccupied ? '<i class="ph ph-lock-key"></i> Occupied' : '<i class="ph ph-check-circle"></i> Available'}
-                    </span>
+                    ${badgeHtml}
                 </div>
                 ${courtGraphicHtml}
-                <div class="visual-court-footer">
+                ${eventNoticeHtml}
+                <div class="visual-court-footer" style="${eventNoticeHtml ? 'margin-top: 8px;' : ''}">
                     <span class="visual-court-type">
                         ${c.type === 'indoor' ? '<i class="ph ph-house"></i>' : '<i class="ph ph-sun"></i>'} ${c.type}
                     </span>
