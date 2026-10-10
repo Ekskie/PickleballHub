@@ -1,14 +1,24 @@
 {# tutorials_view.html — shared Jinja2 macro used by all role tutorial pages #}
 
-{% macro render_tutorials(can_manage=False, role_prefix='player', current_user=None) %}
-{% set u_id = current_user.id if (current_user is defined and current_user and current_user.is_logged_in) else '' %}
-{% set u_role = current_user.role_raw if (current_user is defined and current_user and current_user.role_raw) else role_prefix %}
+{% macro render_tutorials(can_manage=False, role_prefix='player') %}
+{% set logged_user = current_user if (current_user is defined and current_user) else None %}
+{% set u_id = logged_user.id if (logged_user and logged_user.is_logged_in and logged_user.id) else (session.get('user_id') or '') %}
+{% set u_role = (logged_user.role_raw if (logged_user and logged_user.role_raw) else (session.get('role') or role_prefix))|lower %}
+{% set club_info = g.club if (g is defined and g.club is defined and g.club) else None %}
+<script>
+    window.currentUserId = "{{ u_id }}";
+    window.currentUserRole = "{{ u_role }}";
+    window.currentClubId = "{{ club_info.id if club_info else '' }}";
+    window.currentClubName = "{{ club_info.name if club_info else '' }}";
+</script>
 <div class="tutorials-container" 
      id="tutorialsContainer" 
      data-can-manage="{{ 'true' if can_manage else 'false' }}" 
      data-role-prefix="{{ role_prefix }}"
      data-user-id="{{ u_id }}"
-     data-user-role="{{ u_role }}">
+     data-user-role="{{ u_role }}"
+     data-club-id="{{ club_info.id if club_info else '' }}"
+     data-club-name="{{ club_info.name if club_info else '' }}">
 
     <!-- ── 1. Modern Academy Hero Banner ──────────────────────────────────────── -->
     <div class="tutorials-hero-banner">
@@ -47,6 +57,11 @@
                     <i class="ph ph-film-slate"></i>
                     <span class="stat-num" id="statUploadCount">0</span>
                     <span class="stat-label">Hub Uploads</span>
+                </div>
+                <div class="tut-stat-chip club" id="statClubChip" style="display:none;">
+                    <i class="ph ph-lock-key"></i>
+                    <span class="stat-num" id="statClubCount">0</span>
+                    <span class="stat-label">Club Exclusive</span>
                 </div>
             </div>
         </div>
@@ -90,6 +105,16 @@
                 <button type="button" class="tut-filter-pill active" data-type="all">All Types</button>
                 <button type="button" class="tut-filter-pill" data-type="upload"><i class="ph ph-film-slate"></i> Hub Uploads</button>
                 <button type="button" class="tut-filter-pill" data-type="youtube"><i class="ph ph-youtube-logo"></i> YouTube</button>
+            </div>
+        </div>
+
+        <!-- Filter Pill Tabs: Audience Access -->
+        <div class="tutorials-filter-group" id="accessFilterGroup">
+            <span class="filter-group-label">Access:</span>
+            <div class="filter-pills" id="accessFilterPills">
+                <button type="button" class="tut-filter-pill active" data-access="all">All</button>
+                <button type="button" class="tut-filter-pill" data-access="public"><i class="ph ph-globe"></i> Public</button>
+                <button type="button" class="tut-filter-pill" data-access="club_members"><i class="ph ph-lock-key"></i> Club Only</button>
             </div>
         </div>
 
@@ -289,6 +314,33 @@
                 </div>
             </div>
 
+            <!-- Audience & Visibility Switcher (For ClubAdmin: Public vs Club-Exclusive) -->
+            <div class="form-group tut-visibility-group" id="groupAddVisibility" {% if u_role != 'clubadmin' %}style="display:none;"{% endif %}>
+                <label>Audience & Visibility <span class="required-star">*</span></label>
+                <div class="tut-visibility-selector">
+                    <label class="tut-visibility-option active" id="optAddVisPublic">
+                        <input type="radio" name="addVisibility" value="public" checked>
+                        <div class="tut-visibility-option-card">
+                            <div class="tut-vis-header">
+                                <i class="ph ph-globe"></i>
+                                <strong>Public</strong>
+                            </div>
+                            <p>Visible to all players across PickleballHub</p>
+                        </div>
+                    </label>
+                    <label class="tut-visibility-option" id="optAddVisClub">
+                        <input type="radio" name="addVisibility" value="club_members">
+                        <div class="tut-visibility-option-card">
+                            <div class="tut-vis-header">
+                                <i class="ph ph-lock-key"></i>
+                                <strong id="addClubVisTitle">{{ (club_info.name ~ ' Exclusive') if club_info else 'Club Exclusive' }}</strong>
+                            </div>
+                            <p id="addClubVisDesc">{{ ('Only active members who join ' ~ club_info.name ~ ' can watch') if club_info else 'Only active members who join your club can watch' }}</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
             <div class="form-group">
                 <label for="tDesc">Description & Key Practice Points</label>
                 <textarea id="tDesc" class="tut-input-field" rows="3" placeholder="Provide a summary of techniques covered, court positioning notes, and suggested drills..."></textarea>
@@ -412,6 +464,33 @@
                 <div class="form-group" style="flex:1;">
                     <label for="editTDuration">Duration</label>
                     <input type="text" id="editTDuration" class="tut-input-field" placeholder="e.g. 10:45">
+                </div>
+            </div>
+
+            <!-- Audience & Visibility Switcher (For ClubAdmin: Public vs Club-Exclusive) -->
+            <div class="form-group tut-visibility-group" id="groupEditVisibility" {% if u_role != 'clubadmin' %}style="display:none;"{% endif %}>
+                <label>Audience & Visibility</label>
+                <div class="tut-visibility-selector">
+                    <label class="tut-visibility-option active" id="optEditVisPublic">
+                        <input type="radio" name="editVisibility" value="public" checked>
+                        <div class="tut-visibility-option-card">
+                            <div class="tut-vis-header">
+                                <i class="ph ph-globe"></i>
+                                <strong>Public</strong>
+                            </div>
+                            <p>Visible to all players across PickleballHub</p>
+                        </div>
+                    </label>
+                    <label class="tut-visibility-option" id="optEditVisClub">
+                        <input type="radio" name="editVisibility" value="club_members">
+                        <div class="tut-visibility-option-card">
+                            <div class="tut-vis-header">
+                                <i class="ph ph-lock-key"></i>
+                                <strong id="editClubVisTitle">{{ (club_info.name ~ ' Exclusive') if club_info else 'Club Exclusive' }}</strong>
+                            </div>
+                            <p id="editClubVisDesc">{{ ('Only active members who join ' ~ club_info.name ~ ' can watch') if club_info else 'Only active members who join your club can watch' }}</p>
+                        </div>
+                    </label>
                 </div>
             </div>
 

@@ -15,10 +15,30 @@ function initTutorials() {
     const container = document.getElementById('tutorialsContainer');
     if (!container) return;
 
+    // Prevent duplicate event binding when both DOMContentLoaded and supabase-ready fire
+    if (container.dataset.initialized === 'true') {
+        if (typeof window.refreshTutorialsList === 'function') {
+            window.refreshTutorialsList();
+        }
+        return;
+    }
+    container.dataset.initialized = 'true';
+
     const canManage      = container.dataset.canManage === 'true';
-    const currentUserId  = container.dataset.userId || (typeof window.currentUserId !== 'undefined' ? window.currentUserId : '');
-    const currentUserRole= (container.dataset.userRole || '').toLowerCase();
+    const currentUserId  = (container.dataset.userId || (typeof window.currentUserId !== 'undefined' ? window.currentUserId : '') || '').trim();
+    const currentUserRole= ((container.dataset.userRole || (typeof window.currentUserRole !== 'undefined' ? window.currentUserRole : '') || '').trim()).toLowerCase();
+    let currentClubId    = (container.dataset.clubId || (typeof window.currentClubId !== 'undefined' ? window.currentClubId : '') || '').trim();
+    let currentClubName  = (container.dataset.clubName || (typeof window.currentClubName !== 'undefined' ? window.currentClubName : '') || '').trim();
     const isGlobalAdmin  = ['superadmin', 'adminstaff'].includes(currentUserRole);
+
+    const ROLE_HIERARCHY = {
+        'superadmin': 100,
+        'adminstaff': 80,
+        'owner': 60,
+        'clubadmin': 40,
+        'facilitystaff': 20,
+        'player': 10
+    };
 
     /* ── DOM Elements ─────────────────────────────────────────────────── */
     const grid            = document.getElementById('tutorialsGrid');
@@ -26,6 +46,7 @@ function initTutorials() {
     const searchClearBtn  = document.getElementById('searchClearBtn');
     const levelPillsWrap  = document.getElementById('levelFilterPills');
     const sourcePillsWrap = document.getElementById('sourceFilterPills');
+    const accessPillsWrap = document.getElementById('accessFilterPills');
     const sortFilter      = document.getElementById('sortFilter');
     const countBadge      = document.getElementById('tutorialsCount');
 
@@ -35,6 +56,8 @@ function initTutorials() {
     const statInterm      = document.getElementById('statIntermediateCount');
     const statAdvanced    = document.getElementById('statAdvancedCount');
     const statUpload      = document.getElementById('statUploadCount');
+    const statClubChip    = document.getElementById('statClubChip');
+    const statClubCount   = document.getElementById('statClubCount');
 
     // Watch Modal Elements
     const watchModal      = document.getElementById('watchModal');
@@ -90,6 +113,13 @@ function initTutorials() {
     const tDurationInput  = document.getElementById('tDuration');
     const tDescInput      = document.getElementById('tDesc');
 
+    // Visibility Selector (Add Modal)
+    const groupAddVisibility = document.getElementById('groupAddVisibility');
+    const optAddVisPublic    = document.getElementById('optAddVisPublic');
+    const optAddVisClub      = document.getElementById('optAddVisClub');
+    const addClubVisTitle    = document.getElementById('addClubVisTitle');
+    const addClubVisDesc     = document.getElementById('addClubVisDesc');
+
     // Edit Modal Elements
     const editModal       = document.getElementById('editTutorialModal');
     const editForm        = document.getElementById('editTutorialForm');
@@ -125,6 +155,13 @@ function initTutorials() {
     const editDurationInput= document.getElementById('editTDuration');
     const editDescInput   = document.getElementById('editTDesc');
 
+    // Visibility Selector (Edit Modal)
+    const groupEditVisibility= document.getElementById('groupEditVisibility');
+    const optEditVisPublic   = document.getElementById('optEditVisPublic');
+    const optEditVisClub     = document.getElementById('optEditVisClub');
+    const editClubVisTitle   = document.getElementById('editClubVisTitle');
+    const editClubVisDesc    = document.getElementById('editClubVisDesc');
+
     // Teleport modals to document.body to break out of .main-wrapper stacking context and render in front of sidebar/topbar
     [watchModal, addModal, editModal].forEach(modalEl => {
         if (modalEl && modalEl.parentElement !== document.body) {
@@ -137,13 +174,16 @@ function initTutorials() {
     let searchQ          = '';
     let filterLevel      = 'all';
     let filterSourceType = 'all';
+    let filterAccess     = 'all';
     let currentSort      = 'newest';
 
     let addSourceType    = 'youtube'; // 'youtube' | 'upload'
+    let addVisibility    = 'public';  // 'public' | 'club_members'
     let selectedVideoFile= null;
     let selectedThumbFile= null;
 
     let editSourceType   = 'youtube';
+    let editVisibility   = 'public';
     let editSelectedVideoFile = null;
     let editSelectedThumbFile = null;
 
@@ -215,17 +255,23 @@ function initTutorials() {
         const interm = allTutorials.filter(t => (t.level || '').toLowerCase() === 'intermediate').length;
         const advanced = allTutorials.filter(t => (t.level || '').toLowerCase() === 'advanced').length;
         const uploads = allTutorials.filter(t => (t.video_type === 'upload') || (!extractYoutubeId(t.youtube_url) && !!t.video_url)).length;
+        const clubExclusive = allTutorials.filter(t => t.visibility === 'club_members').length;
 
         if (statTotal) statTotal.textContent = total;
         if (statBeginner) statBeginner.textContent = beginner;
         if (statInterm) statInterm.textContent = interm;
         if (statAdvanced) statAdvanced.textContent = advanced;
         if (statUpload) statUpload.textContent = uploads;
+        if (statClubCount) statClubCount.textContent = clubExclusive;
+        if (statClubChip) {
+            statClubChip.style.display = (clubExclusive > 0 || currentUserRole === 'clubadmin') ? 'inline-flex' : 'none';
+        }
     }
 
     /* ── Load Tutorials (API + Supabase Fallback) ───────────────────────── */
     async function loadTutorials() {
         if (!grid) return;
+        window.refreshTutorialsList = loadTutorials;
         grid.innerHTML = `
             <div class="tutorials-loading">
                 <div class="tut-spinner"></div>
@@ -241,6 +287,14 @@ function initTutorials() {
                 const json = await res.json();
                 if (json.success && Array.isArray(json.tutorials)) {
                     allTutorials = json.tutorials;
+                    if (json.user_club) {
+                        currentClubId = json.user_club.id || currentClubId;
+                        currentClubName = json.user_club.name || currentClubName;
+                        if (addClubVisTitle) addClubVisTitle.textContent = `${currentClubName} Exclusive`;
+                        if (addClubVisDesc) addClubVisDesc.textContent = `Only active members who join ${currentClubName} can watch`;
+                        if (editClubVisTitle) editClubVisTitle.textContent = `${currentClubName} Exclusive`;
+                        if (editClubVisDesc) editClubVisDesc.textContent = `Only active members who join ${currentClubName} can watch`;
+                    }
                     updateStats();
                     renderGrid();
                     return;
@@ -297,7 +351,11 @@ function initTutorials() {
                 (filterSourceType === 'upload' && isUpload) ||
                 (filterSourceType === 'youtube' && !isUpload);
 
-            return matchSearch && matchLevel && matchType;
+            const matchAccess = filterAccess === 'all' ||
+                (filterAccess === 'public' && (!t.visibility || t.visibility === 'public')) ||
+                (filterAccess === 'club_members' && t.visibility === 'club_members');
+
+            return matchSearch && matchLevel && matchType && matchAccess;
         });
 
         // 2. Sort
@@ -354,11 +412,29 @@ function initTutorials() {
                 ? `${prof.first_name || ''} ${prof.last_name || ''}`.trim()
                 : 'PickleballHub Coach';
             const uploaderRole = prof.role ? prof.role.toUpperCase() : 'COACH';
+            const uploaderRoleKey = (prof.role || 'player').toLowerCase();
             const avatarUrl = prof.avatar_url;
 
-            // Permissions
-            const isAuthor = currentUserId && t.uploaded_by === currentUserId;
-            const canEdit = isGlobalAdmin || (canManage && isAuthor);
+            // Permissions: Uploader can delete & edit. Higher rank in hierarchy can also delete & edit.
+            const isAuthor = Boolean(currentUserId && t.uploaded_by && t.uploaded_by === currentUserId);
+            const userRank = ROLE_HIERARCHY[currentUserRole] || 0;
+            const uploaderRank = ROLE_HIERARCHY[uploaderRoleKey] || 0;
+            const isHigherRank = Boolean(t.uploaded_by && userRank > uploaderRank);
+            const isSystemDefault = !t.uploaded_by;
+
+            const canEdit = canManage && (
+                currentUserRole === 'superadmin' ||
+                isAuthor ||
+                isHigherRank ||
+                (isSystemDefault && isGlobalAdmin)
+            );
+
+            const canDelete = canManage && (
+                currentUserRole === 'superadmin' ||
+                isAuthor ||
+                isHigherRank ||
+                (isSystemDefault && isGlobalAdmin)
+            );
 
             const card = document.createElement('div');
             card.className = 'tutorial-card';
@@ -373,6 +449,13 @@ function initTutorials() {
                         <i class="ph ${isUpload ? 'ph-film-slate' : 'ph-youtube-logo'}"></i>
                         ${isUpload ? 'Hub Original' : 'YouTube'}
                     </span>
+
+                    ${t.visibility === 'club_members' ? `
+                    <!-- Club Exclusive Badge -->
+                    <span class="tut-badge-visibility club-exclusive" title="Exclusive to ${esc(t.club_name || 'Club')} members">
+                        <i class="ph ph-lock-key"></i> ${esc(t.club_name ? t.club_name : 'Club Exclusive')}
+                    </span>
+                    ` : ''}
 
                     <!-- Level Badge -->
                     <span class="tut-badge-level ${levelMeta.cls}">
@@ -427,14 +510,18 @@ function initTutorials() {
                             <i class="ph ph-play"></i> Watch Video
                         </button>
 
-                        ${canEdit ? `
+                        ${(canEdit || canDelete) ? `
                         <div class="tut-card-manage-btns">
+                            ${canEdit ? `
                             <button class="btn-tut-icon edit tut-edit-trigger" data-id="${esc(t.id)}" title="Edit tutorial">
                                 <i class="ph ph-pencil-simple"></i>
                             </button>
+                            ` : ''}
+                            ${canDelete ? `
                             <button class="btn-tut-icon delete tut-delete-trigger" data-id="${esc(t.id)}" title="Delete tutorial">
                                 <i class="ph ph-trash"></i>
                             </button>
+                            ` : ''}
                         </div>
                         ` : ''}
                     </div>
@@ -481,11 +568,17 @@ function initTutorials() {
         watchBadges.innerHTML = `
             <span class="tut-badge-level ${levelMeta.cls}"><i class="ph ${levelMeta.icon}"></i> ${esc(levelMeta.label)}</span>
             <span class="tut-badge-type ${isUpload ? 'upload' : 'youtube'}"><i class="ph ${isUpload ? 'ph-film-slate' : 'ph-youtube-logo'}"></i> ${isUpload ? 'Hub Original' : 'YouTube'}</span>
+            ${t.visibility === 'club_members' ? `
+            <span class="tut-badge-visibility club-exclusive"><i class="ph ph-lock-key"></i> ${esc(t.club_name ? t.club_name + ' Exclusive' : 'Club Exclusive')}</span>
+            ` : ''}
             ${t.duration ? `<span class="tut-badge-duration"><i class="ph ph-clock"></i> ${esc(t.duration)}</span>` : ''}
         `;
 
-        // Description
-        watchDesc.innerHTML = `<p>${esc(t.description || 'No additional instructions provided for this clinic.')}</p>`;
+        // Description & Club Notice
+        const clubBanner = t.visibility === 'club_members'
+            ? `<div class="tut-club-notice-banner"><i class="ph ph-lock-key"></i> <span>This clinic tutorial is exclusive to active members of <strong>${esc(t.club_name || 'this club')}</strong>.</span></div>`
+            : '';
+        watchDesc.innerHTML = `${clubBanner}<p>${esc(t.description || 'No additional instructions provided for this clinic.')}</p>`;
 
         // Uploader
         const prof = t.profiles || {};
@@ -603,6 +696,16 @@ function initTutorials() {
         });
     });
 
+    // Access Filter Pills
+    accessPillsWrap?.querySelectorAll('.tut-filter-pill').forEach(btn => {
+        btn.addEventListener('click', () => {
+            accessPillsWrap.querySelectorAll('.tut-filter-pill').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            filterAccess = btn.dataset.access || 'all';
+            renderGrid();
+        });
+    });
+
     // Sort Dropdown
     sortFilter?.addEventListener('change', (e) => {
         currentSort = e.target.value;
@@ -649,8 +752,31 @@ function initTutorials() {
             }
         }
 
+        // Visibility Selection (Add Modal)
+        function setAddVisibility(vis) {
+            addVisibility = vis;
+            const pubRadio = addModal?.querySelector('input[name="addVisibility"][value="public"]');
+            const clubRadio = addModal?.querySelector('input[name="addVisibility"][value="club_members"]');
+            if (pubRadio) pubRadio.checked = (vis === 'public');
+            if (clubRadio) clubRadio.checked = (vis === 'club_members');
+            optAddVisPublic?.classList.toggle('active', vis === 'public');
+            optAddVisClub?.classList.toggle('active', vis === 'club_members');
+        }
+
+        optAddVisPublic?.addEventListener('click', () => setAddVisibility('public'));
+        optAddVisClub?.addEventListener('click', () => setAddVisibility('club_members'));
+        addModal?.querySelectorAll('input[name="addVisibility"]').forEach(radio => {
+            radio.addEventListener('change', () => setAddVisibility(radio.value));
+        });
+
+        // Ensure visibility section is shown for clubadmin
+        if (currentUserRole === 'clubadmin' && groupAddVisibility) {
+            groupAddVisibility.style.display = 'flex';
+        }
+
         function resetAddModalState() {
             setAddSourceType('youtube');
+            setAddVisibility('public');
             selectedVideoFile = null;
             selectedThumbFile = null;
             if (selectedFileCard) selectedFileCard.style.display = 'none';
@@ -747,8 +873,10 @@ function initTutorials() {
         });
 
         // ── Submit Add Tutorial Form ────────────────────────────────────
+        let isAddSubmitting = false;
         addForm?.addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (isAddSubmitting) return;
 
             const title = tTitleInput.value.trim();
             const level = tLevelInput.value;
@@ -764,62 +892,59 @@ function initTutorials() {
             let thumbnailUrl = '';
             let youtubeUrl = '';
 
+            isAddSubmitting = true;
             submitAddBtn.disabled = true;
 
-            // 1. If Video Upload Mode:
-            if (addSourceType === 'upload') {
-                if (!selectedVideoFile) {
-                    notify('No Video Selected', 'Please choose or drag & drop a video file to upload.', 'error');
-                    submitAddBtn.disabled = false;
-                    return;
-                }
-
-                progressWrap.style.display = 'block';
-                progressBar.style.width = '0%';
-                progressPercent.textContent = '0%';
-                progressLabel.textContent = 'Uploading video file...';
-                submitAddBtn.innerHTML = '<div class="tut-spinner sm"></div> <span>Uploading Video...</span>';
-
-                try {
-                    const uploadResult = await uploadVideoWithProgress(
-                        selectedVideoFile,
-                        selectedThumbFile,
-                        (pct) => {
-                            progressBar.style.width = pct + '%';
-                            progressPercent.textContent = pct + '%';
-                        }
-                    );
-
-                    if (!uploadResult || !uploadResult.success) {
-                        throw new Error(uploadResult.error || 'Video upload failed.');
+            try {
+                // 1. If Video Upload Mode:
+                if (addSourceType === 'upload') {
+                    if (!selectedVideoFile) {
+                        notify('No Video Selected', 'Please choose or drag & drop a video file to upload.', 'error');
+                        return;
                     }
 
-                    videoUrl = uploadResult.video_url;
-                    thumbnailUrl = uploadResult.thumbnail_url || '';
-                    youtubeUrl = videoUrl; // backward-compatibility
-                } catch (upErr) {
-                    notify('Upload Failed', upErr.message || 'Error uploading video.', 'error');
-                    submitAddBtn.disabled = false;
-                    submitAddBtn.innerHTML = '<i class="ph ph-plus"></i> <span>Publish Tutorial</span>';
-                    progressWrap.style.display = 'none';
-                    return;
-                }
-            } else {
-                // 2. YouTube Mode
-                youtubeUrl = tUrlInput.value.trim();
-                const ytId = extractYoutubeId(youtubeUrl);
-                if (!youtubeUrl || !ytId) {
-                    notify('Invalid URL', 'Please enter a valid YouTube video URL.', 'error');
-                    submitAddBtn.disabled = false;
-                    return;
-                }
-                videoUrl = youtubeUrl;
-                thumbnailUrl = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
-                submitAddBtn.innerHTML = '<div class="tut-spinner sm"></div> <span>Publishing...</span>';
-            }
+                    progressWrap.style.display = 'block';
+                    progressBar.style.width = '0%';
+                    progressPercent.textContent = '0%';
+                    progressLabel.textContent = 'Uploading video file...';
+                    submitAddBtn.innerHTML = '<div class="tut-spinner sm"></div> <span>Uploading Video...</span>';
 
-            // 3. Save Record via REST API
-            try {
+                    try {
+                        const uploadResult = await uploadVideoWithProgress(
+                            selectedVideoFile,
+                            selectedThumbFile,
+                            (pct) => {
+                                progressBar.style.width = pct + '%';
+                                progressPercent.textContent = pct + '%';
+                            }
+                        );
+
+                        if (!uploadResult || !uploadResult.success) {
+                            throw new Error(uploadResult.error || 'Video upload failed.');
+                        }
+
+                        videoUrl = uploadResult.video_url;
+                        thumbnailUrl = uploadResult.thumbnail_url || '';
+                        youtubeUrl = videoUrl; // backward-compatibility
+                    } catch (upErr) {
+                        notify('Upload Failed', upErr.message || 'Error uploading video.', 'error');
+                        progressWrap.style.display = 'none';
+                        return;
+                    }
+                } else {
+                    // 2. YouTube Mode
+                    youtubeUrl = tUrlInput.value.trim();
+                    const ytId = extractYoutubeId(youtubeUrl);
+                    if (!youtubeUrl || !ytId) {
+                        notify('Invalid URL', 'Please enter a valid YouTube video URL.', 'error');
+                        return;
+                    }
+                    videoUrl = youtubeUrl;
+                    thumbnailUrl = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+                    submitAddBtn.innerHTML = '<div class="tut-spinner sm"></div> <span>Publishing...</span>';
+                }
+
+                // 3. Save Record via REST API
                 const savePayload = {
                     title,
                     description: desc,
@@ -828,7 +953,8 @@ function initTutorials() {
                     video_type: addSourceType,
                     video_url: videoUrl,
                     youtube_url: youtubeUrl,
-                    thumbnail_url: thumbnailUrl
+                    thumbnail_url: thumbnailUrl,
+                    visibility: (currentUserRole === 'clubadmin') ? addVisibility : 'public'
                 };
 
                 const res = await fetch('/api/tutorials/save', {
@@ -850,8 +976,12 @@ function initTutorials() {
                 loadTutorials();
             } catch (saveErr) {
                 notify('Publish Error', saveErr.message || 'Could not save tutorial record.', 'error');
-                submitAddBtn.disabled = false;
-                submitAddBtn.innerHTML = '<i class="ph ph-plus"></i> <span>Publish Tutorial</span>';
+            } finally {
+                isAddSubmitting = false;
+                if (submitAddBtn) {
+                    submitAddBtn.disabled = false;
+                    submitAddBtn.innerHTML = '<i class="ph ph-plus"></i> <span>Publish Tutorial</span>';
+                }
             }
         });
     }
@@ -893,9 +1023,40 @@ function initTutorials() {
             editExistingNotice.style.display = 'flex';
         }
 
+        // Configure Visibility for Edit Modal
+        const curVis = (tutorial.visibility === 'club_members') ? 'club_members' : 'public';
+        setEditVisibility(curVis);
+        if (tutorial.club_name) {
+            if (editClubVisTitle) editClubVisTitle.textContent = `${tutorial.club_name} Exclusive`;
+            if (editClubVisDesc) editClubVisDesc.textContent = `Only active members who join ${tutorial.club_name} can watch`;
+        } else if (currentClubName) {
+            if (editClubVisTitle) editClubVisTitle.textContent = `${currentClubName} Exclusive`;
+            if (editClubVisDesc) editClubVisDesc.textContent = `Only active members who join ${currentClubName} can watch`;
+        }
+
+        if (currentUserRole === 'clubadmin' && groupEditVisibility) {
+            groupEditVisibility.style.display = 'flex';
+        }
+
         editModal.classList.add('open');
         document.body.style.overflow = 'hidden';
     }
+
+    function setEditVisibility(vis) {
+        editVisibility = vis;
+        const pubRadio = editModal?.querySelector('input[name="editVisibility"][value="public"]');
+        const clubRadio = editModal?.querySelector('input[name="editVisibility"][value="club_members"]');
+        if (pubRadio) pubRadio.checked = (vis === 'public');
+        if (clubRadio) clubRadio.checked = (vis === 'club_members');
+        optEditVisPublic?.classList.toggle('active', vis === 'public');
+        optEditVisClub?.classList.toggle('active', vis === 'club_members');
+    }
+
+    optEditVisPublic?.addEventListener('click', () => setEditVisibility('public'));
+    optEditVisClub?.addEventListener('click', () => setEditVisibility('club_members'));
+    editModal?.querySelectorAll('input[name="editVisibility"]').forEach(radio => {
+        radio.addEventListener('change', () => setEditVisibility(radio.value));
+    });
 
     function closeEditModal() {
         if (!editModal) return;
@@ -975,8 +1136,10 @@ function initTutorials() {
     });
 
     // ── Submit Edit Tutorial Form ───────────────────────────────────────
+    let isEditSubmitting = false;
     editForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (isEditSubmitting) return;
 
         const id = editIdInput.value;
         const title = editTitleInput.value.trim();
@@ -989,61 +1152,60 @@ function initTutorials() {
             return;
         }
 
+        isEditSubmitting = true;
         submitEditBtn.disabled = true;
 
         let videoUrl = editExVidUrl.value;
         let thumbnailUrl = editExThumbUrl.value;
         let youtubeUrl = '';
 
-        if (editSourceType === 'upload') {
-            // If new video file selected, upload it
-            if (editSelectedVideoFile) {
-                editProgressWrap.style.display = 'block';
-                editProgressBar.style.width = '0%';
-                editProgressPercent.textContent = '0%';
-                submitEditBtn.innerHTML = '<div class="tut-spinner sm"></div> <span>Uploading New Video...</span>';
+        try {
+            if (editSourceType === 'upload') {
+                // If new video file selected, upload it
+                if (editSelectedVideoFile) {
+                    editProgressWrap.style.display = 'block';
+                    editProgressBar.style.width = '0%';
+                    editProgressPercent.textContent = '0%';
+                    submitEditBtn.innerHTML = '<div class="tut-spinner sm"></div> <span>Uploading New Video...</span>';
 
-                try {
-                    const uploadResult = await uploadVideoWithProgress(
-                        editSelectedVideoFile,
-                        editSelectedThumbFile,
-                        (pct) => {
-                            editProgressBar.style.width = pct + '%';
-                            editProgressPercent.textContent = pct + '%';
+                    try {
+                        const uploadResult = await uploadVideoWithProgress(
+                            editSelectedVideoFile,
+                            editSelectedThumbFile,
+                            (pct) => {
+                                editProgressBar.style.width = pct + '%';
+                                editProgressPercent.textContent = pct + '%';
+                            }
+                        );
+
+                        if (!uploadResult || !uploadResult.success) {
+                            throw new Error(uploadResult.error || 'Video upload failed.');
                         }
-                    );
 
-                    if (!uploadResult || !uploadResult.success) {
-                        throw new Error(uploadResult.error || 'Video upload failed.');
+                        videoUrl = uploadResult.video_url;
+                        if (uploadResult.thumbnail_url) thumbnailUrl = uploadResult.thumbnail_url;
+                    } catch (upErr) {
+                        notify('Upload Failed', upErr.message || 'Error uploading video.', 'error');
+                        editProgressWrap.style.display = 'none';
+                        return;
                     }
-
-                    videoUrl = uploadResult.video_url;
-                    if (uploadResult.thumbnail_url) thumbnailUrl = uploadResult.thumbnail_url;
-                } catch (upErr) {
-                    notify('Upload Failed', upErr.message || 'Error uploading video.', 'error');
-                    submitEditBtn.disabled = false;
-                    submitEditBtn.innerHTML = '<i class="ph ph-check"></i> <span>Save Changes</span>';
-                    editProgressWrap.style.display = 'none';
+                }
+                youtubeUrl = videoUrl;
+            } else {
+                // YouTube Mode
+                youtubeUrl = editUrlInput.value.trim();
+                const ytId = extractYoutubeId(youtubeUrl);
+                if (!youtubeUrl || !ytId) {
+                    notify('Invalid URL', 'Please enter a valid YouTube video URL.', 'error');
                     return;
                 }
+                videoUrl = youtubeUrl;
+                thumbnailUrl = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
             }
-            youtubeUrl = videoUrl;
-        } else {
-            // YouTube Mode
-            youtubeUrl = editUrlInput.value.trim();
-            const ytId = extractYoutubeId(youtubeUrl);
-            if (!youtubeUrl || !ytId) {
-                notify('Invalid URL', 'Please enter a valid YouTube video URL.', 'error');
-                submitEditBtn.disabled = false;
-                return;
-            }
-            videoUrl = youtubeUrl;
-            thumbnailUrl = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
-        }
 
-        try {
             submitEditBtn.innerHTML = '<div class="tut-spinner sm"></div> <span>Saving...</span>';
 
+            const curTutorial = allTutorials.find(x => x.id === id);
             const payload = {
                 id,
                 title,
@@ -1053,7 +1215,8 @@ function initTutorials() {
                 video_type: editSourceType,
                 video_url: videoUrl,
                 youtube_url: youtubeUrl,
-                thumbnail_url: thumbnailUrl
+                thumbnail_url: thumbnailUrl,
+                visibility: (currentUserRole === 'clubadmin' || isGlobalAdmin) ? editVisibility : (curTutorial?.visibility || 'public')
             };
 
             const res = await fetch('/api/tutorials/save', {
@@ -1075,8 +1238,12 @@ function initTutorials() {
             loadTutorials();
         } catch (saveErr) {
             notify('Update Error', saveErr.message || 'Could not update tutorial.', 'error');
-            submitEditBtn.disabled = false;
-            submitEditBtn.innerHTML = '<i class="ph ph-check"></i> <span>Save Changes</span>';
+        } finally {
+            isEditSubmitting = false;
+            if (submitEditBtn) {
+                submitEditBtn.disabled = false;
+                submitEditBtn.innerHTML = '<i class="ph ph-check"></i> <span>Save Changes</span>';
+            }
         }
     });
 
@@ -1117,8 +1284,105 @@ function initTutorials() {
         }
     }
 
-    /* ── Helper: XHR Video Upload with Progress ────────────────────────── */
-    function uploadVideoWithProgress(videoFile, thumbFile, onProgress) {
+    /* ── Helper: Direct Upload to Supabase Storage via Signed URL ───────── */
+    function directUploadToSignedUrl(signedUrl, file, contentType, onProgress) {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('PUT', signedUrl, true);
+            if (contentType) {
+                xhr.setRequestHeader('Content-Type', contentType);
+            }
+
+            if (onProgress) {
+                xhr.upload.onprogress = (e) => {
+                    if (e.lengthComputable) {
+                        const pct = Math.round((e.loaded / e.total) * 100);
+                        onProgress(pct);
+                    }
+                };
+            }
+
+            xhr.onload = () => {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    resolve();
+                } else {
+                    reject(new Error(`Direct storage upload failed (HTTP ${xhr.status}).`));
+                }
+            };
+
+            xhr.onerror = () => {
+                reject(new Error('Network error uploading video directly to cloud storage.'));
+            };
+
+            xhr.send(file);
+        });
+    }
+
+    /* ── Helper: Video & Thumbnail Upload (Direct Presigned Cloud + Fallback) ── */
+    async function uploadVideoWithProgress(videoFile, thumbFile, onProgress) {
+        // Strategy A: Direct Presigned Cloud Storage Upload (bypasses Vercel 4.5 MB serverless limit)
+        try {
+            const signRes = await fetch('/api/tutorials/sign-upload', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify({
+                    filename: videoFile.name,
+                    content_type: videoFile.type || 'video/mp4',
+                    file_size: videoFile.size,
+                    upload_kind: 'video'
+                })
+            });
+
+            if (signRes.ok) {
+                const signData = await signRes.json();
+                if (signData.success && signData.signed_url) {
+                    await directUploadToSignedUrl(signData.signed_url, videoFile, videoFile.type || 'video/mp4', onProgress);
+
+                    let thumbnailUrl = '';
+                    if (thumbFile) {
+                        try {
+                            const tSignRes = await fetch('/api/tutorials/sign-upload', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': getCsrfToken()
+                                },
+                                body: JSON.stringify({
+                                    filename: thumbFile.name,
+                                    content_type: thumbFile.type || 'image/jpeg',
+                                    file_size: thumbFile.size,
+                                    upload_kind: 'thumbnail'
+                                })
+                            });
+                            if (tSignRes.ok) {
+                                const tSignData = await tSignRes.json();
+                                if (tSignData.success && tSignData.signed_url) {
+                                    await directUploadToSignedUrl(tSignData.signed_url, thumbFile, thumbFile.type || 'image/jpeg');
+                                    thumbnailUrl = tSignData.public_url || '';
+                                }
+                            }
+                        } catch (thumbErr) {
+                            console.warn('[Thumbnail Upload] direct upload error:', thumbErr);
+                        }
+                    }
+
+                    return {
+                        success: true,
+                        video_url: signData.public_url,
+                        thumbnail_url: thumbnailUrl,
+                        video_type: 'upload',
+                        file_name: videoFile.name
+                    };
+                }
+            }
+        } catch (presignErr) {
+            console.warn('[Tutorials Upload] Direct presigned upload failed, falling back to server route:', presignErr);
+        }
+
+        // Strategy B: Server upload fallback with safe response parsing
         return new Promise((resolve, reject) => {
             const formData = new FormData();
             formData.append('video', videoFile);
@@ -1138,6 +1402,10 @@ function initTutorials() {
             };
 
             xhr.onload = () => {
+                if (xhr.status === 413) {
+                    reject(new Error('Video file exceeds serverless payload limit (4.5 MB).'));
+                    return;
+                }
                 try {
                     const response = JSON.parse(xhr.responseText);
                     if (xhr.status >= 200 && xhr.status < 300 && response.success) {
@@ -1146,7 +1414,11 @@ function initTutorials() {
                         reject(new Error(response.error || `Upload failed with status ${xhr.status}`));
                     }
                 } catch (e) {
-                    reject(new Error('Malformed response from server during upload.'));
+                    if (xhr.status === 504) {
+                        reject(new Error('Server timed out during upload. Please try a shorter video.'));
+                    } else {
+                        reject(new Error(`Server error during upload (HTTP ${xhr.status}).`));
+                    }
                 }
             };
 
@@ -1190,5 +1462,9 @@ if (document.readyState === 'loading') {
 } else {
     initTutorials();
 }
-window.addEventListener('supabase-ready', initTutorials, { once: true });
+window.addEventListener('supabase-ready', () => {
+    if (typeof window.refreshTutorialsList === 'function') {
+        window.refreshTutorialsList();
+    }
+});
 

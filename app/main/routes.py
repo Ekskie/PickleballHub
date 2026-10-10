@@ -58,12 +58,22 @@ def index():
             if events_resp.data:
                 events = events_resp.data
 
-            # 3. Fetch tutorials (limit to 3)
-            t_resp = client.table('tutorials').select(
-                'id, title, description, youtube_url, video_url, video_type, thumbnail_url, level'
-            ).limit(3).execute()
+            # 3. Fetch tutorials (limit to 3 public)
+            try:
+                t_resp = client.table('tutorials').select(
+                    'id, title, description, youtube_url, video_url, video_type, thumbnail_url, level, visibility'
+                ).limit(6).execute()
+            except Exception:
+                t_resp = client.table('tutorials').select(
+                    'id, title, description, youtube_url, video_url, video_type, thumbnail_url, level'
+                ).limit(6).execute()
+
             if t_resp.data:
                 for t in t_resp.data:
+                    if t.get('visibility') == 'club_members':
+                        continue
+                    if len(tutorials) >= 3:
+                        break
                     url = t.get('youtube_url') or t.get('video_url') or ''
                     vid = _extract_yt_id(url)
                     is_upload = (t.get('video_type') == 'upload') or (not vid and bool(t.get('video_url')))
@@ -96,12 +106,17 @@ def clinics():
     try:
         client = get_db()
         if client:
-            resp = client.table('tutorials').select(
-                'id, title, description, youtube_url, video_url, video_type, thumbnail_url, level'
-            ).execute()
+            try:
+                resp = client.table('tutorials').select(
+                    'id, title, description, youtube_url, video_url, video_type, thumbnail_url, level, visibility'
+                ).execute()
+            except Exception:
+                resp = client.table('tutorials').select(
+                    'id, title, description, youtube_url, video_url, video_type, thumbnail_url, level'
+                ).execute()
 
             if resp.data:
-                pool   = resp.data
+                pool = [t for t in resp.data if t.get('visibility') != 'club_members']
                 sample = pool if len(pool) <= 2 else random.sample(pool, 2)
 
                 for t in sample:
@@ -406,22 +421,177 @@ def about_us():
 
 ALLOWED_TUTORIAL_ROLES = {'superadmin', 'adminstaff', 'clubadmin', 'owner', 'facilitystaff'}
 
+ROLE_HIERARCHY = {
+    'superadmin': 100,
+    'adminstaff': 80,
+    'owner': 60,
+    'clubadmin': 40,
+    'facilitystaff': 20,
+    'player': 10,
+}
+
 
 @main_bp.route('/api/tutorials/list', methods=['GET'])
 def api_tutorials_list():
-    """Fetch all published tutorials with uploader profile details."""
+    """Fetch all published tutorials with uploader profile details, filtered by visibility and club membership."""
+    user_id = session.get('user_id')
+    user_role = (session.get('role') or '').strip().lower()
+
     try:
         from app.db import get_admin_db
         db = get_admin_db()
-        resp = db.table('tutorials').select(
-            'id, title, description, youtube_url, video_url, video_type, thumbnail_url, duration, level, uploaded_by, created_at, '
-            'profiles(first_name, last_name, role, avatar_url)'
-        ).order('created_at', desc=True).execute()
 
-        tutorials = resp.data or []
-        return jsonify({'success': True, 'tutorials': tutorials})
+        # Find club of user if clubadmin, plus any active club memberships
+        user_club = None
+        active_club_ids = set()
+
+        if user_id:
+            if user_role == 'clubadmin':
+                try:
+                    c_res = db.table('clubs').select('id, name').eq('admin_id', user_id).limit(1).execute()
+                    if c_res.data:
+                        user_club = c_res.data[0]
+                        active_club_ids.add(user_club['id'])
+                except Exception as ce:
+                    current_app.logger.warning(f"[api_tutorials_list] Club lookup warning: {ce}")
+
+            try:
+                m_res = db.table('club_memberships').select('club_id').eq('player_id', user_id).eq('status', 'active').execute()
+                for m in (m_res.data or []):
+                    if m.get('club_id'):
+                        active_club_ids.add(m['club_id'])
+            except Exception as me:
+                current_app.logger.warning(f"[api_tutorials_list] Memberships lookup warning: {me}")
+
+        # Fetch tutorials with visibility, club_id and club details
+        try:
+            resp = db.table('tutorials').select(
+                'id, title, description, youtube_url, video_url, video_type, thumbnail_url, duration, level, uploaded_by, created_at, '
+                'visibility, club_id, '
+                'clubs(id, name), '
+                'profiles(first_name, last_name, role, avatar_url)'
+            ).order('created_at', desc=True).execute()
+            tutorials = resp.data or []
+        except Exception as select_err:
+            err_str = str(select_err).lower()
+            if 'visibility' in err_str or 'club_id' in err_str or '42703' in err_str or 'pgrst204' in err_str or 'clubs' in err_str:
+                resp = db.table('tutorials').select(
+                    'id, title, description, youtube_url, video_url, video_type, thumbnail_url, duration, level, uploaded_by, created_at, '
+                    'profiles(first_name, last_name, role, avatar_url)'
+                ).order('created_at', desc=True).execute()
+                tutorials = resp.data or []
+            else:
+                raise select_err
+
+        is_elevated_role = user_role in ['superadmin', 'adminstaff', 'owner']
+        filtered_tutorials = []
+
+        for t in tutorials:
+            vis = (t.get('visibility') or 'public').strip().lower()
+            tut_club_id = t.get('club_id')
+            uploader_id = t.get('uploaded_by')
+
+            # Attach flattened club_name if present
+            if t.get('clubs') and isinstance(t['clubs'], dict):
+                t['club_name'] = t['clubs'].get('name')
+            elif not t.get('club_name') and user_club and tut_club_id == user_club.get('id'):
+                t['club_name'] = user_club.get('name')
+
+            # Public tutorials visible to everyone
+            if vis == 'public':
+                filtered_tutorials.append(t)
+                continue
+
+            # Club-exclusive tutorials:
+            # 1. Platform managers (superadmin, adminstaff, owner) can see all
+            if is_elevated_role:
+                filtered_tutorials.append(t)
+                continue
+
+            # 2. Author can see their own
+            if user_id and uploader_id and uploader_id == user_id:
+                filtered_tutorials.append(t)
+                continue
+
+            # 3. Active members of that club
+            if tut_club_id and tut_club_id in active_club_ids:
+                filtered_tutorials.append(t)
+                continue
+
+        return jsonify({
+            'success': True,
+            'tutorials': filtered_tutorials,
+            'user_club': user_club
+        })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@main_bp.route('/api/tutorials/sign-upload', methods=['POST'])
+def api_tutorials_sign_upload():
+    """
+    Generate presigned upload URL for direct client-to-Supabase Storage upload.
+    This completely bypasses Vercel's 4.5 MB request body limit and serverless timeouts.
+    """
+    user_id = session.get('user_id')
+    user_role = (session.get('role') or '').strip().lower()
+
+    if not user_id:
+        return jsonify({'success': False, 'error': 'Authentication required.'}), 401
+
+    if user_role not in ALLOWED_TUTORIAL_ROLES:
+        return jsonify({'success': False, 'error': f'Role "{user_role}" is not authorized to upload tutorials.'}), 403
+
+    data = request.get_json(silent=True) or {}
+    filename = (data.get('filename') or '').strip()
+    file_type = (data.get('content_type') or 'video/mp4').strip().lower()
+    file_size = int(data.get('file_size') or 0)
+    upload_kind = (data.get('upload_kind') or 'video').strip().lower()
+
+    from app.upload_utils import (
+        ALLOWED_VIDEO_EXTENSIONS,
+        MAX_VIDEO_SIZE,
+        ALLOWED_IMAGE_EXTENSIONS,
+        MAX_IMAGE_SIZE,
+        generate_safe_filename
+    )
+    from app.db import get_admin_db
+    db = get_admin_db()
+
+    ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else ''
+    if upload_kind == 'thumbnail':
+        bucket = 'community-images'
+        prefix = 'tut_thumb'
+        if ext not in ALLOWED_IMAGE_EXTENSIONS:
+            return jsonify({'success': False, 'error': f'Invalid image format. Allowed: {", ".join(ALLOWED_IMAGE_EXTENSIONS)}'}), 400
+        if file_size > MAX_IMAGE_SIZE:
+            return jsonify({'success': False, 'error': 'Image exceeds maximum 5MB size limit.'}), 400
+    else:
+        bucket = 'tutorial-videos'
+        prefix = 'tut_vid'
+        if ext not in ALLOWED_VIDEO_EXTENSIONS:
+            return jsonify({'success': False, 'error': f'Invalid video format. Allowed: {", ".join(ALLOWED_VIDEO_EXTENSIONS)}'}), 400
+        if file_size > MAX_VIDEO_SIZE:
+            return jsonify({'success': False, 'error': 'Video exceeds maximum 50MB size limit.'}), 400
+
+    safe_path = generate_safe_filename(prefix, user_id, ext)
+    try:
+        sign_res = db.storage.from_(bucket).create_signed_upload_url(safe_path)
+        signed_url = sign_res.get('signed_url') or sign_res.get('signedUrl')
+        token = sign_res.get('token')
+        public_url = db.storage.from_(bucket).get_public_url(safe_path)
+
+        return jsonify({
+            'success': True,
+            'signed_url': signed_url,
+            'token': token,
+            'public_url': public_url,
+            'path': safe_path,
+            'bucket': bucket,
+            'content_type': file_type
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Failed to generate direct upload URL: {e}'}), 500
 
 
 @main_bp.route('/api/tutorials/upload', methods=['POST'])
@@ -496,6 +666,7 @@ def api_tutorials_save():
     """
     Create or update a tutorial record.
     Supports both YouTube URL and direct video file uploads.
+    Includes debouncing against duplicate inserts and role hierarchy verification on edits.
     """
     user_id = session.get('user_id')
     user_role = (session.get('role') or '').strip().lower()
@@ -519,6 +690,9 @@ def api_tutorials_save():
     youtube_url = (data.get('youtube_url') or '').strip()
     thumbnail_url = (data.get('thumbnail_url') or '').strip()
     duration = (data.get('duration') or '').strip()
+    visibility = (data.get('visibility') or 'public').strip().lower()
+    if visibility not in ['public', 'club_members']:
+        visibility = 'public'
 
     if not title:
         return jsonify({'success': False, 'error': 'Tutorial title is required.'}), 400
@@ -539,6 +713,25 @@ def api_tutorials_save():
     from app.db import get_admin_db, log_audit_action
     db = get_admin_db()
 
+    # Determine club_id and visibility permissions
+    club_id = None
+    if user_role == 'clubadmin':
+        try:
+            club_res = db.table('clubs').select('id, name').eq('admin_id', user_id).limit(1).execute()
+            if club_res.data:
+                club_id = club_res.data[0]['id']
+        except Exception as ce:
+            current_app.logger.warning(f"[api_tutorials_save] Club lookup warning: {ce}")
+
+        if visibility == 'club_members' and not club_id:
+            return jsonify({
+                'success': False,
+                'error': 'You must set up and activate your club before publishing club-exclusive tutorials.'
+            }), 400
+    else:
+        # Non-clubadmins default to public
+        visibility = 'public'
+
     payload = {
         'title': title,
         'description': desc,
@@ -548,40 +741,103 @@ def api_tutorials_save():
         'youtube_url': youtube_url,
         'thumbnail_url': thumbnail_url or None,
         'duration': duration or None,
+        'visibility': visibility,
+        'club_id': club_id,
     }
 
     try:
         if t_id:
             # Editing an existing tutorial
-            existing = db.table('tutorials').select('id, uploaded_by').eq('id', t_id).single().execute()
+            try:
+                existing = db.table('tutorials').select('id, uploaded_by, title, club_id, visibility').eq('id', t_id).single().execute()
+            except Exception:
+                existing = db.table('tutorials').select('id, uploaded_by, title').eq('id', t_id).single().execute()
             if not existing.data:
                 return jsonify({'success': False, 'error': 'Tutorial not found.'}), 404
 
-            # Permission check: superadmin and adminstaff can edit anything; others only their own
-            is_global_admin = user_role in ['superadmin', 'adminstaff']
-            is_owner = existing.data.get('uploaded_by') == user_id
-            if not (is_global_admin or is_owner):
+            uploader_id = existing.data.get('uploaded_by')
+            is_author = bool(uploader_id and uploader_id == user_id)
+            user_rank = ROLE_HIERARCHY.get(user_role, 0)
+
+            can_edit = False
+            if user_role == 'superadmin':
+                can_edit = True
+            elif is_author:
+                can_edit = True
+            elif uploader_id:
+                uploader_prof = db.table('profiles').select('role').eq('id', uploader_id).single().execute()
+                uploader_role = ((uploader_prof.data or {}).get('role') or 'player').strip().lower()
+                uploader_rank = ROLE_HIERARCHY.get(uploader_role, 0)
+                if user_rank > uploader_rank:
+                    can_edit = True
+            elif user_role in ['superadmin', 'adminstaff']:
+                can_edit = True
+
+            if not can_edit:
                 return jsonify({'success': False, 'error': 'You do not have permission to edit this tutorial.'}), 403
 
-            resp = db.table('tutorials').update(payload).eq('id', t_id).execute()
+            # If editor is not a clubadmin, preserve existing club_id and visibility if not explicitly modified
+            if user_role != 'clubadmin' and existing.data.get('club_id'):
+                payload['club_id'] = existing.data.get('club_id')
+                if existing.data.get('visibility'):
+                    payload['visibility'] = existing.data.get('visibility')
+
+            try:
+                resp = db.table('tutorials').update(payload).eq('id', t_id).execute()
+            except Exception as upd_err:
+                err_str = str(upd_err).lower()
+                if 'visibility' in err_str or 'club_id' in err_str or '42703' in err_str or 'pgrst204' in err_str:
+                    fallback_payload = {k: v for k, v in payload.items() if k not in ('visibility', 'club_id')}
+                    resp = db.table('tutorials').update(fallback_payload).eq('id', t_id).execute()
+                else:
+                    raise upd_err
+
             updated_item = resp.data[0] if resp.data else payload
 
             log_audit_action(
                 action='UPDATE_TUTORIAL',
                 target='tutorials',
-                details={'id': t_id, 'title': title, 'level': level, 'video_type': video_type}
+                details={'id': t_id, 'title': title, 'level': level, 'video_type': video_type, 'visibility': visibility, 'club_id': club_id}
             )
             return jsonify({'success': True, 'message': 'Tutorial updated successfully.', 'tutorial': updated_item})
         else:
+            # ── Creation Debouncing: prevent duplicate inserts within 15 seconds ──
+            recent_dupes = db.table('tutorials').select('id, title, video_url, created_at').eq('uploaded_by', user_id).eq('title', title).order('created_at', desc=True).limit(1).execute()
+            if recent_dupes.data:
+                latest = recent_dupes.data[0]
+                from datetime import datetime, timezone
+                try:
+                    created_str = latest.get('created_at') or ''
+                    created_dt = datetime.fromisoformat(created_str.replace('Z', '+00:00'))
+                    now_dt = datetime.now(timezone.utc)
+                    if (now_dt - created_dt).total_seconds() < 15 and (latest.get('video_url') == video_url):
+                        return jsonify({
+                            'success': True,
+                            'message': 'Tutorial published successfully.',
+                            'tutorial': latest,
+                            'duplicate_prevented': True
+                        })
+                except Exception:
+                    pass
+
             # Creating a new tutorial
             payload['uploaded_by'] = user_id
-            resp = db.table('tutorials').insert(payload).execute()
+            try:
+                resp = db.table('tutorials').insert(payload).execute()
+            except Exception as ins_err:
+                err_str = str(ins_err).lower()
+                if 'visibility' in err_str or 'club_id' in err_str or '42703' in err_str or 'pgrst204' in err_str:
+                    fallback_payload = {k: v for k, v in payload.items() if k not in ('visibility', 'club_id')}
+                    resp = db.table('tutorials').insert(fallback_payload).execute()
+                else:
+                    raise ins_err
+
             new_item = resp.data[0] if resp.data else payload
 
             log_audit_action(
                 action='CREATE_TUTORIAL',
                 target='tutorials',
-                details={'id': new_item.get('id'), 'title': title, 'level': level, 'video_type': video_type}
+                details={'id': new_item.get('id'), 'title': title, 'level': level, 'video_type': video_type, 'visibility': visibility, 'club_id': club_id}
             )
             return jsonify({'success': True, 'message': 'Tutorial created successfully.', 'tutorial': new_item})
     except Exception as e:
@@ -592,7 +848,11 @@ def api_tutorials_save():
 def api_tutorials_delete(id):
     """
     Delete a tutorial.
-    Permitted for superadmin, adminstaff, or the tutorial's uploader.
+    Permitted for:
+      - The tutorial uploader (regardless of rank)
+      - Any user with a strictly higher role rank than the uploader (e.g. ClubAdmin > FacilityStaff, Owner > ClubAdmin)
+      - Superadmin (global platform master)
+      - Superadmin / AdminStaff for system starter tutorials (uploaded_by IS NULL)
     """
     user_id = session.get('user_id')
     user_role = (session.get('role') or '').strip().lower()
@@ -607,21 +867,48 @@ def api_tutorials_delete(id):
     db = get_admin_db()
 
     try:
-        existing = db.table('tutorials').select('id, uploaded_by, title').eq('id', id).single().execute()
+        existing = db.table('tutorials').select('id, uploaded_by, title, video_url, video_type').eq('id', id).single().execute()
         if not existing.data:
             return jsonify({'success': False, 'error': 'Tutorial not found.'}), 404
 
-        is_global_admin = user_role in ['superadmin', 'adminstaff']
-        is_owner = existing.data.get('uploaded_by') == user_id
-        if not (is_global_admin or is_owner):
+        uploader_id = existing.data.get('uploaded_by')
+        is_author = bool(uploader_id and uploader_id == user_id)
+        user_rank = ROLE_HIERARCHY.get(user_role, 0)
+
+        can_delete = False
+        if user_role == 'superadmin':
+            can_delete = True
+        elif is_author:
+            can_delete = True
+        elif uploader_id:
+            uploader_prof = db.table('profiles').select('role').eq('id', uploader_id).single().execute()
+            uploader_role = ((uploader_prof.data or {}).get('role') or 'player').strip().lower()
+            uploader_rank = ROLE_HIERARCHY.get(uploader_role, 0)
+            if user_rank > uploader_rank:
+                can_delete = True
+        elif user_role in ['superadmin', 'adminstaff']:
+            can_delete = True
+
+        if not can_delete:
             return jsonify({'success': False, 'error': 'You do not have permission to delete this tutorial.'}), 403
+
+        # Clean up storage object if video was uploaded directly
+        vid_url = existing.data.get('video_url') or ''
+        vid_type = existing.data.get('video_type')
+        if vid_type == 'upload' and 'tutorial-videos' in vid_url:
+            try:
+                file_name = vid_url.split('/tutorial-videos/')[-1].split('?')[0]
+                if file_name:
+                    db.storage.from_('tutorial-videos').remove([file_name])
+            except Exception as stor_err:
+                current_app.logger.warning(f"[api_tutorials_delete] Storage cleanup warning: {stor_err}")
 
         db.table('tutorials').delete().eq('id', id).execute()
 
         log_audit_action(
             action='DELETE_TUTORIAL',
             target='tutorials',
-            details={'id': id, 'title': existing.data.get('title')}
+            details={'id': id, 'title': existing.data.get('title'), 'deleted_by_role': user_role}
         )
         return jsonify({'success': True, 'message': 'Tutorial deleted successfully.'})
     except Exception as e:

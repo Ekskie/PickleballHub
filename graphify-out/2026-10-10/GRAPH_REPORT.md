@@ -1,12 +1,12 @@
 # Graph Report - PickleballHub  (2026-10-10)
 
 ## Corpus Check
-- 91 files · ~586,307 words
+- 90 files · ~584,606 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 19 file(s) not represented in the graph (top: .css 9, .jfif 8, (none) 2)
 
 ## Summary
-- 671 nodes · 1778 edges · 70 communities (18 shown, 52 thin omitted)
+- 669 nodes · 1774 edges · 78 communities (26 shown, 52 thin omitted)
 - Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 34 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
@@ -17,7 +17,7 @@
 
 ## Community Hubs (Navigation)
 - superadmin/routes.py
-- matchmaker_routes.py
+- owner/routes.py
 - main/routes.py
 - initMessages
 - clubadmin/routes.py
@@ -25,10 +25,11 @@
 - PayMongo Integration Guide
 - Single-Elimination Bracket Algorithm
 - reservations.py
+- create_app
 - require_role
 - script.js
 - initTutorials
-- create_app
+- billing/routes.py
 - club_memberships Table
 - KYC Verification Workflow
 - vercel.json
@@ -75,8 +76,15 @@
 - background.jpg (App Background)
 - bg.png (Background Image)
 - signup.html Template
+- social_routes.py
 - player/routes.py
-- facilities.py
+- schedule.py
+- db.py
+- CLAUDE.md
+- decorated_function
+- queue_routes.py
+- trigger_booking_autochat
+- validate_and_upload
 - get_db
 - Multi-Role Dashboard Pattern (6 Roles)
 - Role-Based Access Control (RBAC)
@@ -90,8 +98,8 @@
 3. `get_admin_db()` - 123 edges
 4. `initMessages()` - 30 edges
 5. `initCommunity()` - 25 edges
-6. `initTutorials()` - 25 edges
-7. `validate_and_upload()` - 25 edges
+6. `validate_and_upload()` - 25 edges
+7. `initTutorials()` - 23 edges
 8. `log_audit_action()` - 21 edges
 9. `create_app()` - 20 edges
 10. `upload_avatar()` - 15 edges
@@ -114,19 +122,19 @@
 - 4-file cycle: `app/__init__.py -> app/player/__init__.py -> app/player/queue_routes.py -> app/player/routes.py -> app/__init__.py`
 - 4-file cycle: `app/__init__.py -> app/player/__init__.py -> app/player/reservations.py -> app/player/routes.py -> app/__init__.py`
 
-## Communities (70 total, 52 thin omitted)
+## Communities (78 total, 52 thin omitted)
 
 ### Community 0 - "superadmin/routes.py"
-Cohesion: 0.07
-Nodes (60): is_jwt_expired(), log_audit_action(), Thread-safe, request-scoped database helper for Supabase. Provides separation…, Decodes a JWT payload locally to check if it's expired or close to it (5-minute…, Log administrative or critical actions to the database for audit trail. Safe to…, inject_platform_settings(), clear_landing_cache(), delete_article() (+52 more)
+Cohesion: 0.08
+Nodes (51): log_audit_action(), Log administrative or critical actions to the database for audit trail. Safe to…, inject_platform_settings(), clear_landing_cache(), delete_article(), get_article_by_id(), get_articles_db(), get_landing_content() (+43 more)
 
-### Community 1 - "matchmaker_routes.py"
-Cohesion: 0.26
-Nodes (15): format_date_friendly(), format_time_12h(), get_lobby_display_status(), matchmaker(), matchmaker_create(), matchmaker_delete(), matchmaker_detail(), matchmaker_edit() (+7 more)
+### Community 1 - "owner/routes.py"
+Cohesion: 0.27
+Nodes (12): Uploads an avatar file to Supabase storage and returns public URL, or None.…, upload_avatar(), change_password(), community(), dashboard(), mark_notifications_read(), messages(), notifications() (+4 more)
 
 ### Community 2 - "main/routes.py"
-Cohesion: 0.06
-Nodes (50): get_article_by_id(), Fetch a single article by ID., about_us(), api_courts_search(), api_tutorials_delete(), api_tutorials_list(), api_tutorials_save(), api_tutorials_sign_upload() (+42 more)
+Cohesion: 0.10
+Nodes (33): about_us(), api_courts_search(), api_tutorials_delete(), api_tutorials_list(), api_tutorials_save(), api_tutorials_sign_upload(), api_tutorials_upload(), clinics() (+25 more)
 
 ### Community 3 - "initMessages"
 Cohesion: 0.16
@@ -134,7 +142,7 @@ Nodes (28): initMessages(), applyFilter(), closeModal(), dateSep(), esc(), fullT
 
 ### Community 4 - "clubadmin/routes.py"
 Cohesion: 0.07
-Nodes (49): api_live_dashboard_stats(), demo_player(), forgot_password(), get_live_dashboard_stats(), get_lobby_ids(), login(), logout(), limit (+41 more)
+Nodes (48): api_live_dashboard_stats(), demo_player(), forgot_password(), get_live_dashboard_stats(), get_lobby_ids(), login(), logout(), limit (+40 more)
 
 ### Community 5 - "initCommunity"
 Cohesion: 0.16
@@ -145,24 +153,28 @@ Cohesion: 0.40
 Nodes (6): Centralized Collection Multi-Vendor Pattern, PayMongo Checkout Session API, PayMongo Integration Guide, PayMongo Webhook Handler (payment.paid), GCash Reference Payment Pattern, player/payment.html (GCash Payment UI)
 
 ### Community 8 - "reservations.py"
-Cohesion: 0.21
-Nodes (17): api_facility_month_availability(), api_facility_occupancy(), api_my_bookings(), api_reservation_courts(), api_reservation_slots(), book_reservation(), cancel_reservation(), confirm_payment() (+9 more)
+Cohesion: 0.18
+Nodes (19): api_facility_month_availability(), api_facility_occupancy(), api_my_bookings(), api_reservation_courts(), api_reservation_slots(), api_upgrade_pro(), book_reservation(), cancel_reservation() (+11 more)
+
+### Community 9 - "create_app"
+Cohesion: 0.15
+Nodes (4): create_app(), inject_csrf_token(), inject_current_user(), verify_session_integrity()
 
 ### Community 10 - "require_role"
 Cohesion: 0.06
-Nodes (84): change_password(), community(), dashboard(), disputes(), mark_notifications_read(), messages(), notifications(), profile() (+76 more)
+Nodes (89): change_password(), community(), dashboard(), disputes(), mark_notifications_read(), messages(), notifications(), profile() (+81 more)
 
 ### Community 11 - "script.js"
 Cohesion: 0.18
 Nodes (12): getSelectedRole(), nextSignupStep(), nextSlide(), prevSignupStep(), prevSlide(), resetSliderTimer(), selectRoleGrid(), setOwnerFieldsRequired() (+4 more)
 
 ### Community 12 - "initTutorials"
-Cohesion: 0.17
-Nodes (23): initTutorials(), closeAddModal(), deleteTutorial(), directUploadToSignedUrl(), esc(), extractYoutubeId(), formatFileSize(), getCsrfToken() (+15 more)
+Cohesion: 0.18
+Nodes (21): initTutorials(), closeAddModal(), deleteTutorial(), directUploadToSignedUrl(), esc(), extractYoutubeId(), formatFileSize(), getCsrfToken() (+13 more)
 
-### Community 13 - "create_app"
-Cohesion: 0.06
-Nodes (35): checkout_page(), _get_logged_in_user(), route, Main subscription and membership dashboard for logged in users., Legitimate GCash payment checkout page for subscriptions., subscription_page(), check_feature_limit(), get_tier_limits() (+27 more)
+### Community 13 - "billing/routes.py"
+Cohesion: 0.17
+Nodes (17): checkout_page(), _get_logged_in_user(), route, Main subscription and membership dashboard for logged in users., Legitimate GCash payment checkout page for subscriptions., subscription_page(), check_feature_limit(), get_tier_limits() (+9 more)
 
 ### Community 17 - "vercel.json"
 Cohesion: 0.40
@@ -176,17 +188,45 @@ Nodes (9): 1. Account Creation and Keys, 2. The Checkout Workflow (Multi-Vendor)
 Cohesion: 0.12
 Nodes (16): logo.png (PickleballHub Logo), Architecture, Authentication Flow, code:block1 (PickleballHub/), code:bash (# Install dependencies), Commands, Dependencies, Environment Variables (+8 more)
 
-### Community 64 - "player/routes.py"
-Cohesion: 0.29
-Nodes (10): get_processed_queues(), route, queue(), queue_partial(), Fetch queues for today, process wait times, and auto-complete games 15 mins…, compute_player_sports_data(), dashboard(), format_date_friendly() (+2 more)
+### Community 63 - "social_routes.py"
+Cohesion: 0.43
+Nodes (7): community(), delete_notification(), mark_notifications_read(), messages(), notifications(), route, tutorials()
 
-### Community 71 - "facilities.py"
-Cohesion: 0.16
-Nodes (18): add_facility(), clean_description(), delete_facility(), edit_facility(), extract_amenities(), facilities(), kyc_upload(), route (+10 more)
+### Community 64 - "player/routes.py"
+Cohesion: 0.31
+Nodes (10): change_password(), compute_player_sports_data(), dashboard(), delete_account(), format_date_friendly(), format_time_12h(), limit, route (+2 more)
+
+### Community 65 - "schedule.py"
+Cohesion: 0.39
+Nodes (7): api_schedule(), court_schedule(), _format_time_friendly(), route, Convert '14:00:00' or '14:00' to '2:00 PM'., Normalize and format reservation record for template and JSON consumption., _serialize_reservation()
+
+### Community 66 - "db.py"
+Cohesion: 0.18
+Nodes (11): Thread-safe, request-scoped database helper for Supabase. Provides separation…, Role-based access control decorators for protecting routes., datetime, dotenv, flask, flask_limiter, flask_limiter_util, flask_wtf_csrf (+3 more)
+
+### Community 67 - "CLAUDE.md"
+Cohesion: 0.25
+Nodes (6): Architecture, Authentication Flow, Commands, Dependencies, Environment Variables, Project Overview
+
+### Community 68 - "decorated_function"
+Cohesion: 0.33
+Nodes (6): _get_dashboard_for_role(), has_role_permission(), Returns True if user_role is in allowed_roles, or if authorized via logical…, Return the dashboard URL for a given role., decorator(), decorated_function()
+
+### Community 69 - "queue_routes.py"
+Cohesion: 0.53
+Nodes (5): get_processed_queues(), route, queue(), queue_partial(), Fetch queues for today, process wait times, and auto-complete games 15 mins…
+
+### Community 70 - "trigger_booking_autochat"
+Cohesion: 0.50
+Nodes (4): Sends an automated message from sender_id to recipient_id. If a 1-to-1…, Triggers automated chats from the facility owner and assigned staff to the…, send_auto_message(), trigger_booking_autochat()
+
+### Community 71 - "validate_and_upload"
+Cohesion: 0.11
+Nodes (27): add_facility(), clean_description(), delete_facility(), edit_facility(), extract_amenities(), facilities(), kyc_upload(), route (+19 more)
 
 ### Community 82 - "get_db"
-Cohesion: 0.05
-Nodes (75): change_event_status(), create_event(), delete_event(), edit_event(), event_check_in(), event_participants(), events(), facility_payment() (+67 more)
+Cohesion: 0.07
+Nodes (57): change_event_status(), create_event(), delete_event(), edit_event(), event_check_in(), event_participants(), events(), facility_payment() (+49 more)
 
 ## Knowledge Gaps
 - **49 isolated node(s):** `_spinStyle`, `version`, `builds`, `routes`, `headers` (+44 more)
@@ -196,17 +236,17 @@ Nodes (75): change_event_status(), create_event(), delete_event(), edit_event(),
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `require_role()` connect `require_role` to `player/routes.py`, `matchmaker_routes.py`, `main/routes.py`, `superadmin/routes.py`, `clubadmin/routes.py`, `facilities.py`, `reservations.py`, `create_app`, `get_db`?**
+- **Why does `require_role()` connect `require_role` to `player/routes.py`, `owner/routes.py`, `db.py`, `schedule.py`, `clubadmin/routes.py`, `decorated_function`, `queue_routes.py`, `validate_and_upload`, `reservations.py`, `superadmin/routes.py`, `get_db`, `social_routes.py`?**
   _High betweenness centrality (0.141) - this node is a cross-community bridge._
-- **Why does `get_admin_db()` connect `require_role` to `superadmin/routes.py`, `matchmaker_routes.py`, `main/routes.py`, `player/routes.py`, `clubadmin/routes.py`, `facilities.py`, `reservations.py`, `create_app`, `get_db`?**
+- **Why does `get_admin_db()` connect `require_role` to `superadmin/routes.py`, `owner/routes.py`, `db.py`, `main/routes.py`, `clubadmin/routes.py`, `schedule.py`, `player/routes.py`, `validate_and_upload`, `reservations.py`, `create_app`, `billing/routes.py`, `get_db`?**
   _High betweenness centrality (0.133) - this node is a cross-community bridge._
-- **Why does `get_db()` connect `get_db` to `superadmin/routes.py`, `matchmaker_routes.py`, `main/routes.py`, `player/routes.py`, `clubadmin/routes.py`, `facilities.py`, `reservations.py`, `require_role`, `create_app`?**
-  _High betweenness centrality (0.093) - this node is a cross-community bridge._
+- **Why does `get_db()` connect `get_db` to `player/routes.py`, `owner/routes.py`, `db.py`, `schedule.py`, `clubadmin/routes.py`, `decorated_function`, `queue_routes.py`, `validate_and_upload`, `reservations.py`, `superadmin/routes.py`, `require_role`, `social_routes.py`?**
+  _High betweenness centrality (0.094) - this node is a cross-community bridge._
 - **Are the 5 inferred relationships involving `initMessages()` (e.g. with `applyFilter()` and `closeModal()`) actually correct?**
   _`initMessages()` has 5 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `_spinStyle`, `version`, `builds` to the rest of the system?**
   _49 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `superadmin/routes.py` be split into smaller, more focused modules?**
-  _Cohesion score 0.06526806526806526 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.08176100628930817 - nodes in this community are weakly interconnected._
 - **Should `main/routes.py` be split into smaller, more focused modules?**
-  _Cohesion score 0.06386066763425254 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.09982174688057041 - nodes in this community are weakly interconnected._
