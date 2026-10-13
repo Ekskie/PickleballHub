@@ -2089,7 +2089,7 @@
     {% if facilities %}
     <div class="facility-grid">
         {% for f in facilities %}
-        <div class="facility-card" data-id="{{ f.id }}" data-name="{{ f.name }}"
+        <div class="facility-card {% if f.is_featured_pin %}card-featured-pin{% endif %}" data-id="{{ f.id }}" data-name="{{ f.name }}"
             data-open="{{ f.open_time or '08:00' }}" data-close="{{ f.close_time or '21:00' }}"
             data-open-12="{{ f.open_time_12 or '8:00 AM' }}" data-close-12="{{ f.close_time_12 or '9:00 PM' }}"
             data-slot="{{ f.slot_duration_minutes or 60 }}"
@@ -2110,13 +2110,27 @@
                 </div>
                 {% endif %}
 
-                <!-- KYC Badge (Top Left) -->
-                {% if f.kyc_status == 'verified' %}
-                <div class="fac-badge-top-left" title="KYC Verified Facility">
-                    <i class="ph ph-shield-check"></i>
-                    <span>Verified</span>
+                <!-- Badges (Top Left Stack) -->
+                <div class="fac-badges-stack" style="position:absolute;top:10px;left:10px;display:flex;flex-direction:column;gap:5px;z-index:3;">
+                    {% if f.is_featured_pin %}
+                    <div class="fac-badge-top-left badge-featured-pin" title="Elite Enterprise Featured Venue" style="background:linear-gradient(135deg, #7c3aed, #4f46e5);color:#fff;border:1px solid rgba(255,255,255,0.3);box-shadow:0 4px 12px rgba(124,58,237,0.35);font-weight:800;padding:4px 9px;border-radius:20px;font-size:0.72rem;display:inline-flex;align-items:center;gap:4px;">
+                        <i class="ph-fill ph-crown"></i>
+                        <span>Featured Venue</span>
+                    </div>
+                    {% endif %}
+
+                    {% if f.is_verified_partner %}
+                    <div class="fac-badge-top-left badge-partner" title="PickleballHub Verified Partner Venue" style="background:linear-gradient(135deg, #f59e0b, #d97706);color:#fff;border:1px solid rgba(255,255,255,0.3);box-shadow:0 4px 12px rgba(245,158,11,0.3);font-weight:700;padding:4px 9px;border-radius:20px;font-size:0.72rem;display:inline-flex;align-items:center;gap:4px;">
+                        <i class="ph-fill ph-seal-check"></i>
+                        <span>Verified Partner</span>
+                    </div>
+                    {% elif f.kyc_status == 'verified' %}
+                    <div class="fac-badge-top-left" title="KYC Verified Facility">
+                        <i class="ph ph-shield-check"></i>
+                        <span>Verified</span>
+                    </div>
+                    {% endif %}
                 </div>
-                {% endif %}
 
                 <!-- Operating Hours Pill (Top Right) -->
                 <div class="fac-badge-top-right" title="Operating Hours">
@@ -2338,7 +2352,34 @@
 
             <!-- Early Access Window Status Banner -->
             <div class="cal-access-banner" id="calAccessBanner">
-                {% if not current_user.is_pro %}
+                {% if current_user.is_pro %}
+                <div class="cal-access-badge pro">
+                    <div class="cal-access-badge-left">
+                        <span class="cal-tier-tag pro"><i class="ph ph-crown-simple"></i> PRO PASS</span>
+                        <span><strong>14-Day Early Access Active!</strong> Enjoy ₱0 convenience fees on all bookings.</span>
+                    </div>
+                </div>
+                {% elif current_user.is_subscription_pending %}
+                <div class="cal-access-badge pending" style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.35);">
+                    <div class="cal-access-badge-left">
+                        <span class="cal-tier-tag" style="background: #f59e0b; color: #fff;"><i class="ph ph-clock-countdown"></i> PRO PASS PENDING</span>
+                        <span>Your Pro Pass GCash verification is under review. 14-day early access unlocks automatically once approved!</span>
+                    </div>
+                    <a href="{{ url_for('billing.subscription_dashboard') }}" class="btn-cal-upgrade" style="background: #f59e0b; text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem; color: #fff;">
+                        <i class="ph ph-receipt"></i> View Status
+                    </a>
+                </div>
+                {% elif current_user.is_subscription_rejected %}
+                <div class="cal-access-badge rejected" style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.35);">
+                    <div class="cal-access-badge-left">
+                        <span class="cal-tier-tag" style="background: #ef4444; color: #fff;"><i class="ph ph-warning-circle"></i> VERIFICATION REJECTED</span>
+                        <span>Payment verification was rejected. Please review notes and resubmit your GCash receipt to activate Pro.</span>
+                    </div>
+                    <a href="{{ url_for('billing.subscription_dashboard') }}" class="btn-cal-upgrade" style="background: #ef4444; text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem; color: #fff;">
+                        <i class="ph ph-arrow-counter-clockwise"></i> Resubmit Proof
+                    </a>
+                </div>
+                {% else %}
                 <div class="cal-access-badge free">
                     <div class="cal-access-badge-left">
                         <span class="cal-tier-tag free"><i class="ph ph-calendar-blank"></i> FREE WINDOW</span>
@@ -2347,13 +2388,6 @@
                     <button type="button" class="btn-cal-upgrade" onclick="openProEarlyAccessModal()">
                         <i class="ph ph-crown-simple"></i> Upgrade
                     </button>
-                </div>
-                {% else %}
-                <div class="cal-access-badge pro">
-                    <div class="cal-access-badge-left">
-                        <span class="cal-tier-tag pro"><i class="ph ph-crown-simple"></i> PRO PASS</span>
-                        <span><strong>14-Day Early Access Active!</strong> Enjoy ₱0 convenience fees on all bookings.</span>
-                    </div>
                 </div>
                 {% endif %}
             </div>
@@ -2492,6 +2526,17 @@
             <div class="summary-row"><span class="s-label">Time</span><span class="s-val" id="sum-time">—</span></div>
             <div class="summary-row"><span class="s-label">Duration</span><span class="s-val" id="sum-hours">—</span></div>
             <div class="summary-row"><span class="s-label">Rate</span><span class="s-val" id="sum-rate">—</span></div>
+            <div class="summary-row"><span class="s-label">Court Subtotal</span><span class="s-val" id="sum-subtotal">₱0.00</span></div>
+            <div class="summary-row">
+                <span class="s-label">Platform Fee</span>
+                <span class="s-val" id="sum-fee">
+                    {% if current_user.is_pro %}
+                    <span style="color:#10b981;font-weight:700;"><i class="ph ph-crown-simple"></i> ₱0.00 (Pro Perk)</span>
+                    {% else %}
+                    <span style="color:var(--text-muted);">₱0.00 (Free)</span>
+                    {% endif %}
+                </span>
+            </div>
             <div class="summary-total">
                 <span class="t-label">Total</span>
                 <span class="t-val" id="sum-total">₱0.00</span>
@@ -3233,6 +3278,8 @@
             document.getElementById('sum-time').textContent = '—';
             document.getElementById('sum-hours').textContent = '—';
             document.getElementById('sum-rate').textContent = '—';
+            const subEl = document.getElementById('sum-subtotal');
+            if (subEl) subEl.textContent = '₱0.00';
             document.getElementById('sum-total').textContent = '₱0.00';
             document.getElementById('inp-total').value = 0;
             document.getElementById('btn-confirm').disabled = true;
@@ -3244,7 +3291,8 @@
         const endH = state.endTime;
         const totalHrs = state.duration;
         const partySize = state.partySize;
-        const total = totalHrs * state.court.rate; // Fixed: Renting court flat rate per hour, not per player
+        const subtotal = totalHrs * state.court.rate;
+        const total = subtotal; // Convenience fee is waived for Pro and free for standard promo
         const pad = n => String(n).padStart(2, '0');
 
         document.getElementById('sum-court').textContent = state.court.name;
@@ -3252,6 +3300,19 @@
         document.getElementById('sum-time').textContent = `${fmt12(startH)} – ${fmt12(endH)}`;
         document.getElementById('sum-hours').textContent = `${totalHrs} hour${totalHrs !== 1 ? 's' : ''}`;
         document.getElementById('sum-rate').textContent = '₱' + state.court.rate.toFixed(2) + '/hr';
+        
+        const subEl = document.getElementById('sum-subtotal');
+        if (subEl) subEl.textContent = '₱' + subtotal.toFixed(2);
+        
+        const feeEl = document.getElementById('sum-fee');
+        if (feeEl) {
+            if (USER_IS_PRO) {
+                feeEl.innerHTML = '<span style="color:#10b981;font-weight:700;"><i class="ph ph-crown-simple"></i> ₱0.00 (Pro Perk)</span>';
+            } else {
+                feeEl.innerHTML = '<span style="color:var(--text-muted);">₱0.00 (Free)</span>';
+            }
+        }
+        
         document.getElementById('sum-total').textContent = '₱' + total.toFixed(2);
 
         // Fill hidden inputs
@@ -3590,11 +3651,21 @@
         </div>
 
         <div class="early-modal-actions">
-            <a href="{{ url_for('billing.checkout_page', plan='pro', cycle='monthly', return_to=url_for('player.reservation')) }}" class="btn-upgrade-pro-action" style="text-decoration:none;">
-                <i class="ph ph-credit-card"></i> Legit Subscribe with GCash (₱199/mo)
+            {% if current_user.is_subscription_pending %}
+            <a href="{{ url_for('billing.subscription_dashboard') }}" class="btn-upgrade-pro-action" style="text-decoration:none; background:#f59e0b;">
+                <i class="ph ph-clock-countdown"></i> Pro Verification Under Review (Check Status)
             </a>
+            {% elif current_user.is_subscription_rejected %}
+            <a href="{{ url_for('billing.subscription_dashboard') }}" class="btn-upgrade-pro-action" style="text-decoration:none; background:#ef4444;">
+                <i class="ph ph-arrow-counter-clockwise"></i> Resubmit GCash Payment Proof
+            </a>
+            {% else %}
+            <a href="{{ url_for('billing.checkout_page', plan='pro', cycle='monthly', return_to=url_for('player.reservation')) }}" class="btn-upgrade-pro-action" style="text-decoration:none;">
+                <i class="ph ph-credit-card"></i> Upgrade with GCash (₱199/mo)
+            </a>
+            {% endif %}
             <div style="display:flex; gap:8px;">
-                <button type="button" class="btn-pick-valid-date" style="flex:1;" id="btnUpgradeProSubmit" onclick="handleUpgradeToPro()" title="Quick 1-click Pro demo activation">
+                <button type="button" class="btn-pick-valid-date" style="flex:1;" id="btnUpgradeProSubmit" onclick="handleUpgradeToPro()" title="Quick 1-click Pro instant activation">
                     <i class="ph ph-lightning"></i> 1-Click Instant Upgrade
                 </button>
                 <button type="button" class="btn-pick-valid-date" style="flex:1;" onclick="pickNearestAvailableDate()">

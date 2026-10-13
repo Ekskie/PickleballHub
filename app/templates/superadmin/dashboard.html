@@ -60,7 +60,7 @@
     /* Primary Stat Cards */
     .stats-kpi-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(3, 1fr);
         gap: 18px;
         margin-bottom: 24px;
     }
@@ -710,6 +710,44 @@
         <div class="kpi-footer">
             <i class="ph {% if stats.pending_kyc > 0 %}ph-warning-circle{% else %}ph-check-circle{% endif %}" style="color: {% if stats.pending_kyc > 0 %}#ef4444{% else %}#10b981{% endif %};"></i>
             <span>{% if stats.pending_kyc > 0 %}{{ stats.pending_kyc }} facility application awaiting approval{% else %}Facility KYC submissions are up to date{% endif %}</span>
+        </div>
+    </div>
+
+    <!-- Stat 5: Platform Subscriptions Revenue -->
+    <div class="glass-card kpi-card" style="--kpi-glow-color: rgba(16, 185, 129, 0.15);">
+        <div class="kpi-top-row">
+            <div class="kpi-icon-box" style="color: #10b981; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2);">
+                <i class="ph ph-crown"></i>
+            </div>
+            <a href="{{ url_for('superadmin.subscriptions') }}" class="kpi-tag" style="background: rgba(16, 185, 129, 0.1); color: #10b981; text-decoration: none;">Ledger →</a>
+        </div>
+        <div>
+            <h4 class="kpi-title">Subscription Cash</h4>
+            <p class="kpi-val">₱{{ "{:,.2f}".format(stats.subscription_revenue) }}</p>
+        </div>
+        <div class="kpi-footer">
+            <i class="ph ph-users-three" style="color: #10b981;"></i>
+            <span><strong>{{ stats.active_subscribers }}</strong> Active Pro &amp; Elite Subscribers</span>
+        </div>
+    </div>
+
+    <!-- Stat 6: Pending Subscription Proofs -->
+    <div class="glass-card kpi-card" style="--kpi-glow-color: rgba(245, 158, 11, 0.15);">
+        <div class="kpi-top-row">
+            <div class="kpi-icon-box" style="color: #f59e0b; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2);">
+                <i class="ph ph-credit-card"></i>
+            </div>
+            <a href="{{ url_for('superadmin.subscriptions', status='pending_approval') }}" class="kpi-tag" style="background: {% if stats.pending_subscriptions > 0 %}rgba(239, 68, 68, 0.15){% else %}rgba(16, 185, 129, 0.1){% endif %}; color: {% if stats.pending_subscriptions > 0 %}#ef4444{% else %}#10b981{% endif %}; text-decoration: none;">
+                {% if stats.pending_subscriptions > 0 %}Review ({{ stats.pending_subscriptions }}){% else %}Clear{% endif %}
+            </a>
+        </div>
+        <div>
+            <h4 class="kpi-title">Pending Subscriptions</h4>
+            <p class="kpi-val">{{ stats.pending_subscriptions }}</p>
+        </div>
+        <div class="kpi-footer">
+            <i class="ph {% if stats.pending_subscriptions > 0 %}ph-hourglass-high{% else %}ph-check-circle{% endif %}" style="color: {% if stats.pending_subscriptions > 0 %}#ef4444{% else %}#10b981{% endif %};"></i>
+            <span>{% if stats.pending_subscriptions > 0 %}{{ stats.pending_subscriptions }} payments awaiting approval{% else %}All payments processed{% endif %}</span>
         </div>
     </div>
 </div>

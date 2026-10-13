@@ -587,7 +587,7 @@
                 {% for category, message in messages %}
                 <div class="alert alert-{{ category }}">
                     <i
-                        class="ph {% if category == 'error' %}ph-warning-circle{% elif category == 'success' %}ph-check-circle{% else %}ph-info{% endif %}"></i>
+                        class="ph {% if category == 'error' %}ph-warning-circle{% elif category == 'success' %}ph-check-circle{% elif category == 'warning' %}ph-warning-octagon{% else %}ph-info{% endif %}"></i>
                     <span>{{ message }}</span>
                     <button class="alert-close" onclick="this.parentElement.style.display='none';">
                         <i class="ph ph-x"></i>
@@ -597,6 +597,25 @@
             </div>
             {% endif %}
             {% endwith %}
+
+            {% if current_user.subscription_status == 'pending_approval' %}
+            <div class="pending-sub-banner" style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); border-left: 4px solid #f59e0b; border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <i class="ph ph-hourglass-high" style="font-size: 1.5rem; color: #f59e0b; flex-shrink: 0;"></i>
+                    <div>
+                        <strong style="color: var(--text-primary); font-size: 0.95rem; display: block; margin-bottom: 2px;">
+                            Subscription Payment Verification in Progress
+                        </strong>
+                        <span style="color: var(--text-secondary); font-size: 0.84rem;">
+                            Your GCash payment proof for the <strong>{{ (current_user.raw_subscription_tier or 'Pro')|capitalize }}</strong> pass is currently being reviewed by admin staff. You can continue using standard platform features in the meantime.
+                        </span>
+                    </div>
+                </div>
+                <a href="{{ url_for('billing.subscription_page') }}" class="btn-outline" style="padding: 6px 14px; font-size: 0.82rem; border-radius: 6px; border-color: rgba(245, 158, 11, 0.4); color: #f59e0b; text-decoration: none; white-space: nowrap;">
+                    View Status
+                </a>
+            </div>
+            {% endif %}
 
             {% block content %}{% endblock %}
         </main>

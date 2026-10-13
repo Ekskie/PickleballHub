@@ -50,7 +50,42 @@ def courts():
         'facilities_count': len(facilities_list)
     }
 
-    return render_template('owner/courts.html', courts=courts_list, facilities=facilities_list, stats=stats)
+    # Court limit calculation based on owner subscription tier
+    from collections import Counter
+    from app.billing.tiers import get_user_tier, get_tier_limits
+
+    owner_tier = get_user_tier(owner_id, role='owner', db=db)
+    tier_limits = get_tier_limits('owner', owner_tier)
+    court_limit = tier_limits.get('max_courts_per_facility', 2)
+    required_tier = 'pro' if owner_tier == 'free' else 'elite'
+
+    court_counts = Counter(c.get('facility_id') for c in courts_list if c.get('facility_id'))
+    has_facilities = len(facilities_list) > 0
+    available_facilities = []
+    
+    for fac in facilities_list:
+        c_count = court_counts[fac['id']]
+        fac['court_count'] = c_count
+        fac['court_limit'] = court_limit
+        fac['is_at_limit'] = (c_count >= court_limit)
+        if not fac['is_at_limit']:
+            available_facilities.append(fac)
+
+    all_facilities_full = (len(facilities_list) > 0) and (len(available_facilities) == 0)
+    can_add_court = has_facilities and not all_facilities_full
+
+    return render_template(
+        'owner/courts.html',
+        courts=courts_list,
+        facilities=facilities_list,
+        stats=stats,
+        court_limit=court_limit,
+        can_add_court=can_add_court,
+        all_facilities_full=all_facilities_full,
+        has_facilities=has_facilities,
+        owner_tier=owner_tier,
+        required_tier=required_tier
+    )
 
 
 @owner_bp.route('/courts/add', methods=['POST'])

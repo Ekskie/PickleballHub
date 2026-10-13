@@ -1092,8 +1092,15 @@ html {
 
 .subscription-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 28px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    align-items: stretch;
+}
+
+.subscription-grid.two-cols {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 860px;
+    margin: 0 auto;
 }
 
 .sub-card {

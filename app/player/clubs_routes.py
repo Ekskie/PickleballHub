@@ -107,10 +107,10 @@ def club_detail(club_id):
             
         # 2. Fetch fellow members (active memberships)
         members_resp = db.table('club_memberships').select(
-            'id, joined_at, status, profiles!player_id(id, first_name, last_name, dupr, elo, avatar_url)'
+            'id, joined_at, status, profiles!player_id(id, first_name, last_name, dupr, elo, avatar_url, subscription_tier, subscription_status)'
         ).eq('club_id', club_id).eq('status', 'active').order('joined_at', desc=True).execute()
         
-        # Attach initials to members
+        # Attach initials and Pro badge to members
         members = []
         for m in (members_resp.data or []):
             prof = m.get('profiles') or {}
@@ -120,6 +120,9 @@ def club_detail(club_id):
             m['initials'] = initials
             m['name'] = f"{first} {last}".strip()
             m['avatar_url'] = prof.get('avatar_url') or None
+            m_tier = (prof.get('subscription_tier') or 'free').strip().lower()
+            m_sub_status = (prof.get('subscription_status') or 'active').strip().lower()
+            m['is_pro'] = (m_tier in ['pro', 'elite']) and (m_sub_status == 'active')
             members.append(m)
         
         # 3. Fetch current user's membership details
@@ -195,12 +198,22 @@ def join_club(club_id):
     db = get_db()
     
     try:
-        club_resp = db.table('clubs').select('membership_type').eq('id', club_id).single().execute()
+        club_resp = db.table('clubs').select('admin_id, membership_type').eq('id', club_id).single().execute()
         if not club_resp.data:
             flash("Club not found.", "error")
             return redirect(url_for('player.clubs'))
             
-        mem_type = club_resp.data['membership_type']
+        admin_id = club_resp.data.get('admin_id')
+        mem_type = club_resp.data.get('membership_type', 'free')
+
+        # Check organizer's member capacity limit
+        from app.billing.tiers import check_feature_limit
+        mems_cnt = db.table('club_memberships').select('id', count='exact').eq('club_id', club_id).eq('status', 'active').execute()
+        cur_count = mems_cnt.count if mems_cnt and mems_cnt.count is not None else 0
+        lim_chk = check_feature_limit(admin_id, 'clubadmin', 'max_members_per_club', current_count=cur_count, db=db)
+        if not lim_chk['allowed']:
+            flash("This club has reached its maximum capacity of 25 members on the organizer's Free plan.", "warning")
+            return redirect(url_for('player.club_detail', club_id=club_id))
         
         # If paid, redirect to payment page
         if mem_type == 'paid':

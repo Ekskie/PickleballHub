@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 PH_TZ = timezone(timedelta(hours=8))
 from datetime import datetime, timedelta, timezone
 
-from app.db import get_db, get_admin_db
+from app.db import get_db, get_admin_db, log_audit_action
 
 
 
@@ -1635,6 +1635,14 @@ def approve_payment(reservation_id):
         db.table('court_reservations').update({
             'status': 'confirmed'
         }).eq('id', reservation_id).execute()
+
+        log_audit_action('approve_booking_payment', reservation_id, {
+            'actor_role': 'facilitystaff',
+            'staff_id': staff_id,
+            'player_id': res.get('player_id'),
+            'total_amount': res.get('total_amount'),
+            'facility_id': res.get('facility_id')
+        })
         
         # Insert player into court_queues
         db.table('court_queues').insert({
@@ -1707,6 +1715,13 @@ def decline_payment(reservation_id):
         db.table('court_reservations').update({
             'status': 'cancelled'
         }).eq('id', reservation_id).execute()
+
+        log_audit_action('decline_booking_payment', reservation_id, {
+            'actor_role': 'facilitystaff',
+            'staff_id': staff_id,
+            'player_id': res.get('player_id'),
+            'facility_id': res.get('facility_id')
+        })
         
         # Notify the player
         try:

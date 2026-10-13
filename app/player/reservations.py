@@ -41,7 +41,7 @@ def reservation():
         prof_map = {}
         if owner_ids:
             try:
-                prof_resp = admin_db.table('profiles').select('id, first_name, last_name, avatar_url, phone, role').in_('id', owner_ids).execute()
+                prof_resp = admin_db.table('profiles').select('id, first_name, last_name, avatar_url, phone, role, subscription_tier, subscription_status').in_('id', owner_ids).execute()
                 prof_map = {p['id']: p for p in (prof_resp.data or []) if p.get('id')}
             except Exception as pe:
                 print(f"[reservation] error fetching fallback owner profiles: {pe}")
@@ -120,6 +120,18 @@ def reservation():
                 f['owner'] = None
 
             f['staff_members'] = staff_by_fac.get(f['id'], [])
+
+            # Surface owner subscription tier for player discovery badges
+            from app.billing.tiers import get_user_tier
+            o_id = f.get('owner_id')
+            o_prof = prof_map.get(o_id, {})
+            o_tier = get_user_tier(o_prof, role='owner', db=admin_db) if o_prof else 'free'
+            f['owner_tier'] = o_tier
+            f['is_verified_partner'] = (o_tier in ['pro', 'elite'])
+            f['is_featured_pin'] = (o_tier == 'elite')
+
+        # Sort facilities: Featured top pin (Elite) first, then verified partner (Pro), then alphabetical
+        facilities.sort(key=lambda x: (not x.get('is_featured_pin', False), not x.get('is_verified_partner', False), (x.get('name') or '').lower()))
 
     except Exception as e:
         print(f"[reservation] error: {e}")

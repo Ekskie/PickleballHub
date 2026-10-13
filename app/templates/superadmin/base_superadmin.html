@@ -261,6 +261,9 @@
         <li class="{% if request.endpoint == 'superadmin.users' %}active{% endif %}">
             <a href="{{ url_for('superadmin.users') }}"><i class="ph ph-users"></i> <span>User Management</span></a>
         </li>
+        <li class="{% if request.endpoint == 'superadmin.subscriptions' %}active{% endif %}">
+            <a href="{{ url_for('superadmin.subscriptions') }}"><i class="ph ph-credit-card"></i> <span>Subscriptions & Billing</span></a>
+        </li>
         <li class="{% if request.endpoint == 'superadmin.reports' %}active{% endif %}">
             <a href="{{ url_for('superadmin.reports') }}"><i class="ph ph-chart-line-up"></i> <span>System Reports</span></a>
         </li>

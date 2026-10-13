@@ -35,7 +35,7 @@
         <span class="final-cta-kicker">{{ landing_content.footer_cta_kicker or 'Special Correspondent · Open Invitation' }}</span>
         <h2 class="final-cta-headline">{{ landing_content.footer_cta_headline or 'Ready to take the court?' }}</h2>
         <p class="final-cta-text">{{ landing_content.footer_cta_text | safe }}</p>
-        <a href="{{ landing_content.footer_cta_btn_link or url_for('auth.signup') }}" class="final-cta-btn">{{ landing_content.footer_cta_btn_text or 'Sign Up for Free' }} <i class="ph ph-arrow-right"></i></a>
+        <a href="{{ landing_content.footer_cta_btn_link or url_for('main.memberships') }}" class="final-cta-btn">{{ landing_content.footer_cta_btn_text or 'Sign Up for Free' }} <i class="ph ph-arrow-right"></i></a>
     </div>
 </section>
 {% endif %}

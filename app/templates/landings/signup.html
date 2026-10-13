@@ -4,649 +4,1047 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account | {{ platform_settings.platform_name }}</title>
+    <title>Create Account | {{ platform_settings.platform_name or 'PickleballHub' }}</title>
     {% include 'seo_tags.html' %}
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Custom CSS -->
+    <!-- Base CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/landing/landing.css') }}">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+    <!-- Theme Persistence Pre-load -->
+    <script>
+        (function() {
+            const saved = localStorage.getItem('theme');
+            if (saved === 'dark') {
+                document.documentElement.classList.add('dark-mode');
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else if (saved === 'light') {
+                document.documentElement.classList.remove('dark-mode');
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
     <style>
-        .step-title-badge {
-            font-size: 0.76rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            color: var(--primary-orange);
-            margin-bottom: 12px;
+        :root {
+            --signup-bg: var(--bg-color, #f3efe6);
+            --signup-card-bg: var(--card-bg, #ffffff);
+            --signup-card-border: var(--card-border, rgba(0, 0, 0, 0.08));
+            --signup-card-shadow: 0 10px 30px -5px rgba(43, 45, 53, 0.06), 0 20px 40px -10px rgba(43, 45, 53, 0.04);
+            --signup-title: var(--text-primary, #1e293b);
+            --signup-desc: var(--text-secondary, #64748b);
+            --signup-label: #1e293b;
+            --signup-input-bg: #ffffff;
+            --signup-input-border: #cbd5e1;
+            --signup-input-text: #0f172a;
+            --signup-input-placeholder: #94a3b8;
+            --signup-input-icon: #64748b;
+            --signup-ribbon-bg: rgba(230, 74, 25, 0.06);
+            --signup-ribbon-border: rgba(230, 74, 25, 0.22);
+            --signup-upload-bg: #f8fafc;
+            --signup-upload-border: #cbd5e1;
+            --signup-upload-hover-bg: rgba(230, 74, 25, 0.04);
+            --signup-chip-bg: #f1f5f9;
+            --signup-chip-border: #e2e8f0;
+            --signup-chip-text: #334155;
+            --signup-chip-checked-bg: rgba(230, 74, 25, 0.12);
+            --signup-chip-checked-border: var(--primary-orange, #e64a19);
+            --signup-chip-checked-text: #c2410c;
+            --signup-divider: #e2e8f0;
+            --signup-note-bg: rgba(230, 74, 25, 0.06);
+            --signup-note-border: rgba(230, 74, 25, 0.2);
+            --signup-note-text: #9a3412;
+            --signup-badge-bg: rgba(230, 74, 25, 0.1);
+            --signup-badge-border: rgba(230, 74, 25, 0.25);
+            --signup-badge-text: #ea580c;
+        }
+
+        .dark-mode,
+        [data-theme="dark"] {
+            --signup-bg: var(--bg-color, #1c1f26);
+            --signup-card-bg: rgba(24, 28, 36, 0.95);
+            --signup-card-border: rgba(255, 255, 255, 0.1);
+            --signup-card-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            --signup-title: #ffffff;
+            --signup-desc: #94a3b8;
+            --signup-label: #e2e8f0;
+            --signup-input-bg: rgba(15, 18, 25, 0.75);
+            --signup-input-border: rgba(255, 255, 255, 0.15);
+            --signup-input-text: #ffffff;
+            --signup-input-placeholder: #64748b;
+            --signup-input-icon: #94a3b8;
+            --signup-ribbon-bg: rgba(249, 115, 22, 0.1);
+            --signup-ribbon-border: rgba(249, 115, 22, 0.28);
+            --signup-upload-bg: rgba(15, 17, 21, 0.45);
+            --signup-upload-border: rgba(255, 255, 255, 0.18);
+            --signup-upload-hover-bg: rgba(230, 74, 25, 0.1);
+            --signup-chip-bg: rgba(15, 17, 21, 0.5);
+            --signup-chip-border: rgba(255, 255, 255, 0.12);
+            --signup-chip-text: #cbd5e1;
+            --signup-chip-checked-bg: rgba(249, 115, 22, 0.18);
+            --signup-chip-checked-border: var(--primary-orange, #ff5722);
+            --signup-chip-checked-text: #ffedd5;
+            --signup-divider: rgba(255, 255, 255, 0.08);
+            --signup-note-bg: rgba(249, 115, 22, 0.1);
+            --signup-note-border: rgba(249, 115, 22, 0.25);
+            --signup-note-text: #fed7aa;
+            --signup-badge-bg: rgba(249, 115, 22, 0.2);
+            --signup-badge-border: rgba(249, 115, 22, 0.35);
+            --signup-badge-text: #fdba74;
+        }
+
+        .signup-page-container {
+            width: 100%;
+            min-height: calc(100vh - 70px);
+            background: var(--signup-bg);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 24px 80px;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease;
+        }
+
+        .signup-form-card {
+            width: 100%;
+            max-width: 1240px;
+            background: var(--signup-card-bg);
+            border: 1px solid var(--signup-card-border);
+            border-radius: 20px;
+            padding: 48px 56px;
+            box-shadow: var(--signup-card-shadow);
+            box-sizing: border-box;
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .signup-page-container {
+                padding: 20px 14px 60px;
+            }
+            .signup-form-card {
+                padding: 28px 18px;
+                border-radius: 14px;
+            }
+        }
+
+        /* ── Header ── */
+        .signup-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .signup-kicker {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: rgba(230, 74, 25, 0.12);
-            padding: 4px 10px;
-            border-radius: 20px;
-            border: 1px solid rgba(230, 74, 25, 0.25);
-        }
-        .step-indicator.small {
-            width: 28px;
-            height: 28px;
-            font-size: 0.78rem;
-        }
-        .step-header {
-            font-size: 0.95rem;
+            font-size: 0.8rem;
             font-weight: 700;
-            color: #ffffff;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: var(--signup-badge-text);
+            background: var(--signup-badge-bg);
+            border: 1px solid var(--signup-badge-border);
+            padding: 5px 14px;
+            border-radius: 999px;
+            margin-bottom: 12px;
+        }
+
+        .signup-header h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--signup-title);
+            margin: 0 0 8px;
+            line-height: 1.25;
+            transition: color 0.3s ease;
+        }
+
+        .signup-header p {
+            font-size: 0.95rem;
+            color: var(--signup-desc);
+            margin: 0;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            transition: color 0.3s ease;
+        }
+
+        /* ── Plan Summary Ribbon ── */
+        .plan-summary-ribbon {
+            background: var(--signup-ribbon-bg);
+            border: 1px solid var(--signup-ribbon-border);
+            border-radius: 14px;
+            padding: 18px 24px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 2px;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            transition: background 0.3s ease, border-color 0.3s ease;
         }
-        .step-subheader {
-            font-size: 0.76rem;
-            color: #94a3b8;
-            margin-bottom: 12px;
-            line-height: 1.35;
+
+        .plan-ribbon-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
         }
-        .kyc-upload-box {
-            border: 1.5px dashed rgba(255, 255, 255, 0.2);
+
+        .plan-ribbon-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(230, 74, 25, 0.15);
+            color: var(--primary-orange);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+
+        .plan-ribbon-details h4 {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--signup-title);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: color 0.3s ease;
+        }
+
+        .plan-ribbon-details p {
+            margin: 3px 0 0;
+            font-size: 0.85rem;
+            color: var(--signup-desc);
+            transition: color 0.3s ease;
+        }
+
+        .plan-badge-tag {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: rgba(230, 74, 25, 0.15);
+            color: var(--signup-badge-text);
+            border: 1px solid var(--signup-badge-border);
+        }
+
+        .plan-badge-tag.pro {
+            background: rgba(230, 74, 25, 0.2);
+            color: #ea580c;
+        }
+
+        .plan-badge-tag.elite {
+            background: rgba(99, 102, 241, 0.2);
+            color: #6366f1;
+            border-color: rgba(99, 102, 241, 0.35);
+        }
+
+        .plan-ribbon-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .plan-price-display {
+            text-align: right;
+        }
+
+        .plan-price-val {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--signup-title);
+            transition: color 0.3s ease;
+        }
+
+        .plan-price-cycle {
+            font-size: 0.78rem;
+            color: var(--signup-desc);
+            display: block;
+            transition: color 0.3s ease;
+        }
+
+        .btn-change-plan {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.86rem;
+            color: var(--primary-orange);
+            font-weight: 600;
+            padding: 7px 14px;
+            border-radius: 8px;
+            background: rgba(230, 74, 25, 0.08);
+            border: 1px solid rgba(230, 74, 25, 0.25);
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-change-plan:hover {
+            background: rgba(230, 74, 25, 0.16);
+            color: var(--primary-orange-hover);
+        }
+
+        /* ── Form Section Titles ── */
+        .form-section-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--signup-title);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 32px 0 18px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--signup-divider);
+            transition: color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .form-section-title i {
+            color: var(--primary-orange);
+            font-size: 1.25rem;
+        }
+
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid-2,
+            .form-grid-3 {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+        }
+
+        .form-field-group {
+            margin-bottom: 18px;
+        }
+
+        .form-field-group label {
+            display: block;
+            margin-bottom: 7px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--signup-label);
+            transition: color 0.3s ease;
+        }
+
+        .form-field-group label .req {
+            color: var(--primary-orange);
+            margin-left: 2px;
+        }
+
+        .field-input-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .field-input-box i.field-icon {
+            position: absolute;
+            left: 14px;
+            font-size: 1.2rem;
+            color: var(--signup-input-icon);
+            pointer-events: none;
+            transition: color 0.2s ease;
+        }
+
+        .field-input-box input,
+        .field-input-box select,
+        .field-input-box textarea {
+            width: 100%;
+            padding: 12px 14px 12px 44px;
+            background: var(--signup-input-bg);
+            border: 1px solid var(--signup-input-border);
             border-radius: 10px;
-            padding: 12px 14px;
-            background: rgba(15, 17, 21, 0.45);
+            color: var(--signup-input-text);
+            font-size: 0.92rem;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .field-input-box select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2394a3b8' viewBox='0 0 256 256'%3E%3Cpath d='M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 40px;
+        }
+
+        .field-input-box input::placeholder,
+        .field-input-box textarea::placeholder {
+            color: var(--signup-input-placeholder);
+        }
+
+        .field-input-box input:focus,
+        .field-input-box select:focus,
+        .field-input-box textarea:focus {
+            border-color: var(--primary-orange);
+            box-shadow: 0 0 0 3px rgba(230, 74, 25, 0.15);
+        }
+
+        .field-input-box:focus-within i.field-icon {
+            color: var(--primary-orange);
+        }
+
+        .field-input-box .password-toggle-btn {
+            position: absolute;
+            right: 14px;
+            background: none;
+            border: none;
+            color: var(--signup-input-icon);
+            cursor: pointer;
+            font-size: 1.15rem;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s ease;
+        }
+
+        .field-input-box .password-toggle-btn:hover {
+            color: var(--signup-input-text);
+        }
+
+        /* ── KYC Upload Component ── */
+        .kyc-upload-box {
+            border: 1.5px dashed var(--signup-upload-border);
+            border-radius: 12px;
+            padding: 20px 16px;
+            background: var(--signup-upload-bg);
             cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 4px;
+            gap: 6px;
             text-align: center;
             transition: all 0.2s ease;
         }
+
         .kyc-upload-box:hover {
             border-color: var(--primary-orange);
-            background: rgba(230, 74, 25, 0.08);
-            transform: translateY(-1px);
+            background: var(--signup-upload-hover-bg);
         }
+
         .kyc-upload-box.has-file {
             border: 1.5px solid #22c55e;
             background: rgba(34, 197, 94, 0.08);
         }
+
         .kyc-upload-box .upload-icon {
-            font-size: 1.5rem;
+            font-size: 1.75rem;
             color: var(--primary-orange);
             transition: color 0.2s ease;
         }
+
         .kyc-upload-box.has-file .upload-icon {
             color: #22c55e;
         }
+
         .kyc-upload-box .upload-label {
-            font-size: 0.82rem;
+            font-size: 0.88rem;
             font-weight: 600;
-            color: #ffffff;
-            word-break: break-all;
+            color: var(--signup-title);
+            transition: color 0.3s ease;
         }
+
         .kyc-upload-box .upload-hint {
-            font-size: 0.7rem;
-            color: #94a3b8;
+            font-size: 0.74rem;
+            color: var(--signup-desc);
+            transition: color 0.3s ease;
         }
+
         .kyc-file-badge {
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            background: rgba(34, 197, 94, 0.2);
-            border: 1px solid rgba(34, 197, 94, 0.4);
-            color: #86efac;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.72rem;
-            font-weight: 600;
-            margin-top: 4px;
-        }
-        .kyc-banner-note {
-            background: rgba(249, 115, 22, 0.1);
-            border: 1px solid rgba(249, 115, 22, 0.25);
-            border-radius: 8px;
-            padding: 8px 12px;
+            background: rgba(34, 197, 94, 0.15);
+            border: 1px solid rgba(34, 197, 94, 0.35);
+            color: #16a34a;
+            padding: 3px 10px;
+            border-radius: 6px;
             font-size: 0.74rem;
-            color: #fed7aa;
-            line-height: 1.35;
+            font-weight: 600;
+            margin-top: 6px;
+        }
+
+        .dark-mode .kyc-file-badge,
+        [data-theme="dark"] .kyc-file-badge {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: rgba(34, 197, 94, 0.4);
+            color: #86efac;
+        }
+
+        .kyc-banner-note {
+            background: var(--signup-note-bg);
+            border: 1px solid var(--signup-note-border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 0.84rem;
+            color: var(--signup-note-text);
+            line-height: 1.5;
             display: flex;
             align-items: flex-start;
-            gap: 8px;
+            gap: 12px;
+            margin-bottom: 20px;
+            transition: background 0.3s ease, border-color 0.3s ease;
         }
+
+        /* ── Amenities Chips ── */
         .amenities-chips-wrap {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 6px;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 10px;
         }
+
         .amenity-chip {
             cursor: pointer;
             user-select: none;
             display: block;
             margin: 0;
         }
+
         .amenity-chip input {
             display: none;
         }
+
         .amenity-chip .chip-content {
             display: flex;
             align-items: center;
-            gap: 6px;
-            padding: 6px 10px;
-            background: rgba(15, 17, 21, 0.45);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 6px;
-            font-size: 0.74rem;
+            gap: 8px;
+            padding: 10px 14px;
+            background: var(--signup-chip-bg);
+            border: 1px solid var(--signup-chip-border);
+            border-radius: 10px;
+            font-size: 0.84rem;
             font-weight: 600;
-            color: #cbd5e1;
+            color: var(--signup-chip-text);
             transition: all 0.15s ease;
         }
+
         .amenity-chip:hover .chip-content {
-            border-color: rgba(249, 115, 22, 0.4);
-            color: #ffffff;
-        }
-        .amenity-chip input:checked + .chip-content {
-            background: rgba(249, 115, 22, 0.18);
             border-color: var(--primary-orange);
-            color: #ffedd5;
+            color: var(--signup-title);
         }
+
+        .amenity-chip input:checked + .chip-content {
+            background: var(--signup-chip-checked-bg);
+            border-color: var(--signup-chip-checked-border);
+            color: var(--signup-chip-checked-text);
+        }
+
         .amenity-chip input:checked + .chip-content i {
             color: var(--primary-orange);
         }
+
+        /* ── Submit Area ── */
+        .submit-btn-wrap {
+            margin-top: 36px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .signup-submit-button {
+            width: 100%;
+            padding: 15px 24px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #ffffff;
+            background: var(--primary-orange);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 14px rgba(230, 74, 25, 0.35);
+        }
+
+        .signup-submit-button:hover {
+            background: var(--primary-orange-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(230, 74, 25, 0.45);
+        }
+
+        .signup-terms-note {
+            font-size: 0.78rem;
+            color: var(--signup-desc);
+            text-align: center;
+            line-height: 1.45;
+            transition: color 0.3s ease;
+        }
+
+        .signup-login-prompt {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--signup-divider);
+            text-align: center;
+            font-size: 0.92rem;
+            color: var(--signup-desc);
+            transition: color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .signup-login-prompt a {
+            color: var(--primary-orange);
+            font-weight: 600;
+            text-decoration: underline;
+            margin-left: 4px;
+        }
     </style>
-    <!-- GSAP for page animations -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    <!-- Phosphor Icons -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
 </head>
 
 <body>
 
-    <div class="background-wrap">
-        <div class="overlay"></div>
-    </div>
-
     {% set hide_editorial_nav = true %}
     {% include 'landings/navigation.html' %}
 
+    <div class="signup-page-container">
+        <div class="signup-form-card">
+            
+            <header class="signup-header">
+                <div class="signup-kicker">
+                    <i class="ph ph-user-plus"></i> PickleballHub Member Registration
+                </div>
+                <h1>Create Your Account</h1>
+                <p>Complete the registration form to join the PickleballHub community.</p>
+            </header>
 
-    <section class="premium-hero-container" style="flex: 1; display: flex; align-items: center;">
-        <div class="hero-grid">
-            <!-- Column 1: Marketing -->
-            <div class="hero-marketing-col">
-                <span class="hero-tag">PREMIUM PICKLEBALL EXPERIENCE</span>
-                <h1 class="hero-heading">Where Players<br>Meet Excellence</h1>
-                <p class="hero-text">Join the fastest growing community of elite pickleball players. Book courts, find
-                    matches, and track your progress in real-time.</p>
-                <div class="hero-ctas">
-                    <a href="{{ url_for('auth.signup') }}" class="btn-solid hero-btn-join">Join Today <i
-                            class="ph ph-arrow-right"></i></a>
-                    <a href="#demo" class="btn-outline hero-btn-demo"><i class="ph ph-play-circle"></i> Watch Demo</a>
+            <!-- ── Plan Selection Ribbon ── -->
+            {% set plan = plan_info or {} %}
+            <div class="plan-summary-ribbon">
+                <div class="plan-ribbon-left">
+                    <div class="plan-ribbon-icon">
+                        <i class="ph {% if role == 'owner' %}ph-buildings{% elif role == 'clubadmin' %}ph-shield-check{% else %}ph-game-controller{% endif %}"></i>
+                    </div>
+                    <div class="plan-ribbon-details">
+                        <h4>
+                            <span>{{ plan.label or ((tier or 'Free')|capitalize ~ ' Tier') }}</span>
+                            <span class="plan-badge-tag {{ tier or 'free' }}">{{ (role or 'Player')|capitalize }}</span>
+                        </h4>
+                        <p>
+                            {% if (tier or 'free') == 'free' %}
+                                Standard free access with baseline features.
+                            {% else %}
+                                Premium {{ (cycle or 'monthly')|capitalize }} plan with enhanced capacity &amp; tools.
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                <div class="plan-ribbon-right">
+                    <div class="plan-price-display">
+                        <span class="plan-price-val">₱{{ plan.price_display or '0' }}</span>
+                        <span class="plan-price-cycle">/ {{ cycle if (tier or 'free') != 'free' else 'forever' }}</span>
+                    </div>
+                    <a href="{{ url_for('main.memberships', role=(role or 'player')) }}" class="btn-change-plan"><i class="ph ph-arrow-counter-clockwise"></i> Change Plan</a>
                 </div>
             </div>
 
-            <!-- Column 2: Live Dashboard Stats Widget -->
-            <div class="hero-stats-col">
-                <div class="stats-dashboard-card">
-                    <div class="widget-title-sec">
-                        <i class="ph ph-activity"></i>
-                        <span class="live-pulse-dot"></span>
-                        <span>Live Dashboard</span>
-                    </div>
-                    <div class="widget-row">
-                        <span class="widget-label">DUPR Rating</span>
-                        <span class="widget-value"><span id="live-dupr">{{ (live_stats.dupr if live_stats else '1,532') }}</span> <span class="rating-pill"><i class="ph ph-trend-up"></i> <span id="live-dupr-change">{{ (live_stats.dupr_change if live_stats else '+24') }}</span></span></span>
-                    </div>
-                    <div class="widget-row">
-                        <span class="widget-label">Win Streak</span>
-                        <span class="widget-value"><span class="win-streak-badge"><span id="live-win-streak">{{ (live_stats.win_streak if live_stats else '7') }}</span> <i class="ph ph-fire-simple"></i></span></span>
-                    </div>
-                    <div class="widget-row">
-                        <span class="widget-label">Upcoming Match</span>
-                        <span class="widget-value" id="live-upcoming-match" style="font-size: 0.95rem; font-weight: 600;">{{ (live_stats.upcoming_match if live_stats else '7:30 PM vs. Laguna Smashers') }}</span>
-                    </div>
-                    <div>
-                        <div class="widget-row" style="margin-bottom: 4px;">
-                            <span class="widget-label">Court Occupancy</span>
-                            <span class="widget-value" id="live-occupancy-val" style="font-size: 0.9rem; font-weight: 600;">{{ (live_stats.court_occupancy if live_stats else 85) }}%</span>
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="alerts" style="margin-bottom: 20px;">
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" style="padding: 12px; border-radius: 8px; font-size: 0.88rem; margin-bottom: 8px;">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <form id="form-unified-signup" action="{{ url_for('auth.signup') }}" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+                <input type="hidden" name="role" value="{{ role }}">
+                <input type="hidden" name="tier" value="{{ tier }}">
+                <input type="hidden" name="cycle" value="{{ cycle }}">
+
+                <!-- ═══════════════════════════════════════════════════════════
+                     SECTION 1: PERSONAL & ACCOUNT INFORMATION
+                     ═══════════════════════════════════════════════════════════ -->
+                <div class="form-section-title">
+                    <i class="ph ph-user-circle"></i>
+                    <span>Account Credentials &amp; Contact</span>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-field-group">
+                        <label>First Name <span class="req">*</span></label>
+                        <div class="field-input-box">
+                            <i class="ph ph-user field-icon"></i>
+                            <input type="text" name="first_name" placeholder="John" required value="{{ prefill.first_name if prefill else '' }}">
                         </div>
-                        <div class="progress-track">
-                            <div class="progress-fill" id="live-occupancy-fill" style="width: {{ (live_stats.court_occupancy if live_stats else 85) }}%;"></div>
+                    </div>
+                    <div class="form-field-group">
+                        <label>Last Name <span class="req">*</span></label>
+                        <div class="field-input-box">
+                            <i class="ph ph-user field-icon"></i>
+                            <input type="text" name="last_name" placeholder="Doe" required value="{{ prefill.last_name if prefill else '' }}">
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Column 3: Active Sign Up Card -->
-            <div class="hero-auth-col">
-                <div class="hero-auth-card">
-                    <h2 class="auth-card-title">Create Account</h2>
-                    <p class="auth-card-subtitle">Set up your profile to join the community.</p>
-
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                    <div class="alerts" style="margin-bottom: 20px;">
-                        {% for category, message in messages %}
-                        <div class="alert alert-{{ category }}"
-                            style="padding: 12px; border-radius: 8px; font-size: 0.88rem; margin-bottom: 8px;">{{
-                            message }}</div>
-                        {% endfor %}
+                <div class="form-grid-2">
+                    <div class="form-field-group">
+                        <label>Email Address <span class="req">*</span></label>
+                        <div class="field-input-box">
+                            <i class="ph ph-envelope field-icon"></i>
+                            <input type="email" name="email" placeholder="john@example.com" required value="{{ prefill.email if prefill else '' }}">
+                        </div>
                     </div>
-                    {% endif %}
-                    {% endwith %}
+                    <div class="form-field-group">
+                        <label>Cellphone Number <span class="req">*</span></label>
+                        <div class="field-input-box">
+                            <i class="ph ph-phone field-icon"></i>
+                            <input type="tel" name="phone" placeholder="0917-123-4567" required value="{{ prefill.phone if prefill else '' }}">
+                        </div>
+                    </div>
+                </div>
 
-                    <div class="step-title-badge" id="step-title-badge">
+                <div class="form-grid-2">
+                    <div class="form-field-group">
+                        <label>Password <span class="req">*</span></label>
+                        <div class="field-input-box">
+                            <i class="ph ph-lock-key field-icon"></i>
+                            <input type="password" name="password" id="unified-password" placeholder="Min. 6 characters" required minlength="6">
+                            <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('unified-password', this)">
+                                <i class="ph ph-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-field-group">
+                        <label>Confirm Password <span class="req">*</span></label>
+                        <div class="field-input-box">
+                            <i class="ph ph-lock-key-open field-icon"></i>
+                            <input type="password" name="confirm_password" id="unified-confirm-password" placeholder="Confirm password" required minlength="6">
+                            <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('unified-confirm-password', this)">
+                                <i class="ph ph-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════════════════════════════════════
+                     SECTION 2: ROLE-SPECIFIC FIELDS
+                     ═══════════════════════════════════════════════════════════ -->
+                {% if role == 'player' %}
+                    <div class="form-section-title">
+                        <i class="ph ph-trophy"></i>
+                        <span>Player Profile &amp; Rating</span>
+                    </div>
+
+                    <div class="form-field-group">
+                        <label>Proficiency / Skill Level <span class="req">*</span></label>
+                        <div class="field-input-box">
+                            <i class="ph ph-medal field-icon"></i>
+                            <select name="proficiency" required style="padding-left: 42px;">
+                                <option value="beginner" selected>Beginner (2.0 - 2.5) — Learning fundamentals</option>
+                                <option value="intermediate">Intermediate (3.0 - 3.5) — Consistent rallies</option>
+                                <option value="advanced">Advanced (4.0 - 4.5) — Tournament competitor</option>
+                                <option value="pro">Pro (5.0+) — Elite tournament player</option>
+                            </select>
+                        </div>
+                    </div>
+                {% elif role == 'owner' %}
+                    <div class="form-section-title">
+                        <i class="ph ph-buildings"></i>
+                        <span>First Facility Venue Setup</span>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-field-group">
+                            <label>Facility Name <span class="req">*</span></label>
+                            <div class="field-input-box">
+                                <i class="ph ph-buildings field-icon"></i>
+                                <input type="text" name="facility_name" placeholder="e.g. Siniloan Sports Hub" required value="{{ prefill.facility_name if prefill else '' }}">
+                            </div>
+                        </div>
+                        <div class="form-field-group">
+                            <label>Address / Location <span class="req">*</span></label>
+                            <div class="field-input-box">
+                                <i class="ph ph-map-pin field-icon"></i>
+                                <input type="text" name="facility_location" placeholder="e.g. Barangay Acevida, Siniloan, Laguna" required value="{{ prefill.facility_location if prefill else '' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-field-group">
+                        <label>Facility Description</label>
+                        <div class="field-input-box">
+                            <i class="ph ph-text-align-left field-icon" style="top: 14px;"></i>
+                            <textarea name="facility_description" rows="2" placeholder="Brief summary of your courts, amenities, and parking..." style="padding-left: 42px; resize: vertical;">{{ prefill.facility_description if prefill else '' }}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-field-group">
+                            <label>Open Time</label>
+                            <div class="field-input-box">
+                                <i class="ph ph-sun field-icon"></i>
+                                <input type="time" name="open_time" value="08:00" required>
+                            </div>
+                        </div>
+                        <div class="form-field-group">
+                            <label>Close Time</label>
+                            <div class="field-input-box">
+                                <i class="ph ph-moon field-icon"></i>
+                                <input type="time" name="close_time" value="21:00" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-3">
+                        <div class="form-field-group">
+                            <label>Slot Length</label>
+                            <div class="field-input-box">
+                                <i class="ph ph-timer field-icon"></i>
+                                <select name="slot_duration_minutes">
+                                    <option value="30">30 mins</option>
+                                    <option value="60" selected>60 mins (1 hr)</option>
+                                    <option value="90">90 mins</option>
+                                    <option value="120">120 mins</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-field-group">
+                            <label>Courts</label>
+                            <div class="field-input-box">
+                                <i class="ph ph-squares-four field-icon"></i>
+                                <input type="number" name="num_courts" value="2" min="1" max="20" required>
+                            </div>
+                        </div>
+                        <div class="form-field-group">
+                            <label>Rate (₱/hr)</label>
+                            <div class="field-input-box">
+                                <i class="ph ph-currency-circle-dollar field-icon"></i>
+                                <input type="number" name="court_hourly_rate" value="300" min="0" step="50" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-field-group">
+                            <label>Court Type</label>
+                            <div class="field-input-box">
+                                <i class="ph ph-house-line field-icon"></i>
+                                <select name="court_type">
+                                    <option value="indoor" selected>Indoor Covered Court</option>
+                                    <option value="outdoor">Outdoor Dedicated Court</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-field-group">
+                            <label>Facility Photo (Optional)</label>
+                            <div class="kyc-upload-box" id="zone-fac-img" onclick="document.getElementById('fac_image_input').click()" style="padding: 10px;">
+                                <input type="file" id="fac_image_input" name="facility_image" accept="image/png,image/jpeg,image/webp" style="display:none;" onchange="handleFileSelect(this, 'label-fac-img', 'badge-fac-img')">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <i class="ph ph-camera upload-icon" style="font-size: 1.2rem;"></i>
+                                    <span class="upload-label" id="label-fac-img" style="font-size: 0.78rem;">Upload facility photo</span>
+                                </div>
+                                <div id="badge-fac-img" class="kyc-file-badge" style="display:none;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KYC Verification -->
+                    <div class="form-section-title">
+                        <i class="ph ph-shield-check" style="color: #22c55e;"></i>
+                        <span>Mandatory Facility KYC Documents</span>
+                    </div>
+
+                    <div class="kyc-banner-note">
+                        <i class="ph ph-certificate" style="font-size: 1.2rem; color: var(--primary-orange); flex-shrink: 0; margin-top: 2px;"></i>
+                        <span>To maintain safety and verify venue legitimacy, submit your <strong>Transfer Certificate of Title (TCT) / OCT</strong> and <strong>Business Permit</strong>.</span>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <!-- TCT / OCT -->
+                        <div class="form-field-group">
+                            <label>TCT / OCT Document <span class="req">*</span></label>
+                            <div class="kyc-upload-box" id="zone-kyc-tct" onclick="document.getElementById('kyc_tct_input').click()">
+                                <input type="file" id="kyc_tct_input" name="kyc_tct" accept=".pdf,image/png,image/jpeg,image/webp" style="display:none;" required onchange="handleFileSelect(this, 'label-kyc-tct', 'badge-kyc-tct')">
+                                <i class="ph ph-certificate upload-icon"></i>
+                                <span class="upload-label" id="label-kyc-tct">Upload TCT / OCT Land Title</span>
+                                <span class="upload-hint">PDF, PNG, JPG (Max 10MB)</span>
+                                <div id="badge-kyc-tct" class="kyc-file-badge" style="display:none;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Business Permit -->
+                        <div class="form-field-group">
+                            <label>Business Permit (Mayor's / LGU) <span class="req">*</span></label>
+                            <div class="kyc-upload-box" id="zone-kyc-permit" onclick="document.getElementById('kyc_permit_input').click()">
+                                <input type="file" id="kyc_permit_input" name="kyc_permit" accept=".pdf,image/png,image/jpeg,image/webp" style="display:none;" required onchange="handleFileSelect(this, 'label-kyc-permit', 'badge-kyc-permit')">
+                                <i class="ph ph-file-text upload-icon"></i>
+                                <span class="upload-label" id="label-kyc-permit">Upload Business Permit</span>
+                                <span class="upload-hint">Mayor's or municipal permit</span>
+                                <div id="badge-kyc-permit" class="kyc-file-badge" style="display:none;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Venue Amenities -->
+                    <div class="form-field-group" style="margin-top: 10px;">
+                        <label style="margin-bottom: 8px;"><i class="ph ph-sparkle" style="color: var(--primary-orange);"></i> Venue Amenities</label>
+                        <div class="amenities-chips-wrap">
+                            <label class="amenity-chip">
+                                <input type="checkbox" name="amenities" value="LED Night Lights">
+                                <span class="chip-content"><i class="ph ph-lightning"></i> LED Lights</span>
+                            </label>
+                            <label class="amenity-chip">
+                                <input type="checkbox" name="amenities" value="Free Parking">
+                                <span class="chip-content"><i class="ph ph-car"></i> Parking</span>
+                            </label>
+                            <label class="amenity-chip">
+                                <input type="checkbox" name="amenities" value="Paddle & Ball Rental">
+                                <span class="chip-content"><i class="ph ph-tennis-ball"></i> Paddle Rental</span>
+                            </label>
+                            <label class="amenity-chip">
+                                <input type="checkbox" name="amenities" value="Restrooms & Lockers">
+                                <span class="chip-content"><i class="ph ph-toilet"></i> Restrooms</span>
+                            </label>
+                            <label class="amenity-chip">
+                                <input type="checkbox" name="amenities" value="Air-conditioned Lounge">
+                                <span class="chip-content"><i class="ph ph-snowflake"></i> AC Lounge</span>
+                            </label>
+                            <label class="amenity-chip">
+                                <input type="checkbox" name="amenities" value="High-Speed Wi-Fi">
+                                <span class="chip-content"><i class="ph ph-wifi-high"></i> Free Wi-Fi</span>
+                            </label>
+                        </div>
+                    </div>
+                {% elif role == 'clubadmin' %}
+                    <div class="form-section-title">
                         <i class="ph ph-shield-check"></i>
-                        <span id="step-badge-text">Step 1 of 3 · Role Selection</span>
+                        <span>Club Administrator Details</span>
                     </div>
 
-                    <div class="stepper-container" id="signup-stepper" style="margin-bottom: 20px;">
-                        <div class="step-indicator active" id="step-ind-1">1</div>
-                        <div class="step-indicator" id="step-ind-2">2</div>
-                        <div class="step-indicator" id="step-ind-3">3</div>
+                    <div class="form-grid-2">
+                        <div class="form-field-group">
+                            <label>Club Name <span class="req">*</span></label>
+                            <div class="field-input-box">
+                                <i class="ph ph-users-three field-icon"></i>
+                                <input type="text" name="club_name" placeholder="e.g. Laguna Smashers Club" required value="{{ prefill.club_name if prefill else '' }}">
+                            </div>
+                        </div>
+                        <div class="form-field-group">
+                            <label>Home Location / City <span class="req">*</span></label>
+                            <div class="field-input-box">
+                                <i class="ph ph-map-pin field-icon"></i>
+                                <input type="text" name="club_location" placeholder="e.g. Santa Rosa, Laguna" required value="{{ prefill.club_location if prefill else '' }}">
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Signup Form wrapper -->
-                    <div id="forms-wrapper" style="position: relative; overflow: visible;">
-                        <form id="form-signup" class="auth-form active" action="{{ url_for('auth.signup') }}"
-                            method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 16px;">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
-
-                            <!-- STEP 1: ROLE -->
-                            <div class="signup-step active" id="signup-step-1"
-                                style="flex-direction: column; gap: 16px;">
-                                <div class="form-group" style="margin-bottom: 0;">
-                                    <label style="margin-bottom: 6px; display: block;">I AM A...</label>
-                                </div>
-                                <div class="role-selection-group"
-                                    style="display: flex; flex-direction: column; gap: 12px;">
-                                    <div class="role-choice-card active" id="role-card-player"
-                                        onclick="selectRoleGrid('player')"
-                                        style="background: rgba(15, 17, 21, 0.45); border: 1px solid rgba(255,255,255,0.12); padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: var(--transition);">
-                                        <i class="ph ph-game-controller"
-                                            style="font-size: 1.5rem; color: var(--primary-orange);"></i>
-                                        <div class="role-info" style="display: flex; flex-direction: column;">
-                                            <span
-                                                style="font-weight: 600; color: #ffffff; font-size: 0.9rem;">Player</span>
-                                            <small style="font-size: 0.75rem; color: #94a3b8; line-height: 1.2;">Reserve
-                                                courts, join events, connect with community</small>
-                                        </div>
-                                    </div>
-                                    <div class="role-choice-card" id="role-card-clubadmin"
-                                        onclick="selectRoleGrid('clubadmin')"
-                                        style="background: rgba(15, 17, 21, 0.45); border: 1px solid rgba(255,255,255,0.12); padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: var(--transition);">
-                                        <i class="ph ph-shield"
-                                            style="font-size: 1.5rem; color: var(--primary-orange);"></i>
-                                        <div class="role-info" style="display: flex; flex-direction: column;">
-                                            <span style="font-weight: 600; color: #ffffff; font-size: 0.9rem;">Club
-                                                Administrator</span>
-                                            <small style="font-size: 0.75rem; color: #94a3b8; line-height: 1.2;">Manage
-                                                courts, users, queue, analytics & settings</small>
-                                        </div>
-                                    </div>
-                                    <div class="role-choice-card" id="role-card-owner" onclick="selectRoleGrid('owner')"
-                                        style="background: rgba(15, 17, 21, 0.45); border: 1px solid rgba(255,255,255,0.12); padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: var(--transition);">
-                                        <i class="ph ph-buildings"
-                                            style="font-size: 1.5rem; color: var(--primary-orange);"></i>
-                                        <div class="role-info" style="display: flex; flex-direction: column;">
-                                            <span style="font-weight: 600; color: #ffffff; font-size: 0.9rem;">Facility
-                                                Owner</span>
-                                            <small style="font-size: 0.75rem; color: #94a3b8; line-height: 1.2;">Manage
-                                                facility, revenue, events & analytics</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <input type="hidden" name="role" id="selected-role" value="player">
-
-                                <div class="button-group" style="margin-top: 8px;">
-                                    <button type="button" class="submit-btn primary-orange" onclick="nextSignupStep(1)"
-                                        style="width: 100%; padding: 12px; font-size: 0.95rem; border-radius: 8px;">Next
-                                        Step <i class="ph ph-arrow-right"></i></button>
-                                </div>
-                            </div>
-
-                            <!-- STEP 2: PERSONAL -->
-                            <div class="signup-step" id="signup-step-2" style="flex-direction: column; gap: 16px;">
-                                <div class="form-row" style="display: flex; gap: 16px;">
-                                    <div class="form-group" style="flex: 1; margin-bottom: 0;">
-                                        <label style="margin-bottom: 6px; display: block;">First Name *</label>
-                                        <div class="input-wrapper">
-                                            <i class="ph ph-user"></i>
-                                            <input type="text" name="first_name" placeholder="John" required>
-                                        </div>
-                                    </div>
-                                    <div class="form-group" style="flex: 1; margin-bottom: 0;">
-                                        <label style="margin-bottom: 6px; display: block;">Last Name *</label>
-                                        <div class="input-wrapper">
-                                            <i class="ph ph-user"></i>
-                                            <input type="text" name="last_name" placeholder="Doe" required>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="form-group" id="proficiency-group" style="margin-bottom: 0;">
-                                    <label style="margin-bottom: 6px; display: block;">Proficiency</label>
-                                    <div class="input-wrapper">
-                                        <i class="ph ph-trophy"></i>
-                                        <select name="proficiency" id="proficiency-input" class="select-input" required
-                                            style="background: rgba(15, 17, 21, 0.45); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; width: 100%; padding: 14px 16px 14px 48px; border-radius: 8px; outline: none; appearance: none; -webkit-appearance: none;">
-                                            <option value="beginner" selected style="background: #1e2530; color: #fff;">
-                                                 Beginner</option>
-                                            <option value="intermediate" style="background: #1e2530; color: #fff;">
-                                                Intermediate</option>
-                                            <option value="advanced" style="background: #1e2530; color: #fff;">Advanced
-                                            </option>
-                                            <option value="pro" style="background: #1e2530; color: #fff;">Pro</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="form-group" style="margin-bottom: 0;">
-                                    <label style="margin-bottom: 6px; display: block;">Cellphone Number *</label>
-                                    <div class="input-wrapper">
-                                        <i class="ph ph-phone"></i>
-                                        <input type="tel" name="phone" placeholder="e.g. 0917-123-4567" required>
-                                    </div>
-                                </div>
-
-                                <div class="button-group" style="display: flex; gap: 12px; margin-top: 8px;">
-                                    <button type="button" class="btn-secondary" onclick="prevSignupStep(2)"
-                                        style="flex: 1; padding: 12px; font-size: 0.95rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;"><i
-                                            class="ph ph-arrow-left"></i> Back</button>
-                                    <button type="button" class="submit-btn primary-orange" onclick="nextSignupStep(2)"
-                                        style="flex: 2; padding: 12px; font-size: 0.95rem; border-radius: 8px;">Next
-                                        Step <i class="ph ph-arrow-right"></i></button>
-                                </div>
-                            </div>
-
-                            <!-- STEP 3: FIRST FACILITY SETUP (Facility Owner Only) -->
-                            <div class="signup-step" id="signup-step-3" style="flex-direction: column; gap: 14px;">
-                                <div>
-                                    <div class="step-header"><i class="ph ph-buildings" style="color: var(--primary-orange);"></i> First Facility Venue</div>
-                                    <div class="step-subheader">Every question needed to schedule and list your primary facility.</div>
-                                </div>
-
-                                <div class="form-group" style="margin-bottom: 0;">
-                                    <label style="margin-bottom: 6px; display: block;">Facility Name *</label>
-                                    <div class="input-wrapper">
-                                        <i class="ph ph-buildings"></i>
-                                        <input type="text" name="facility_name" id="reg-facility-name" placeholder="e.g. Siniloan Sports Hub">
-                                    </div>
-                                </div>
-
-                                <div class="form-group" style="margin-bottom: 0;">
-                                    <label style="margin-bottom: 6px; display: block;">Address / Location *</label>
-                                    <div class="input-wrapper">
-                                        <i class="ph ph-map-pin"></i>
-                                        <input type="text" name="facility_location" id="reg-facility-location" placeholder="e.g. Barangay Acevida, Siniloan, Laguna">
-                                    </div>
-                                </div>
-
-                                <div class="form-row" style="display: flex; gap: 12px;">
-                                    <div class="form-group" style="flex: 1; margin-bottom: 0;">
-                                        <label style="margin-bottom: 6px; display: block; font-size: 0.8rem;">Open Time</label>
-                                        <div class="input-wrapper">
-                                            <i class="ph ph-sun"></i>
-                                            <input type="time" name="open_time" value="08:00" style="padding-left: 44px;">
-                                        </div>
-                                    </div>
-                                    <div class="form-group" style="flex: 1; margin-bottom: 0;">
-                                        <label style="margin-bottom: 6px; display: block; font-size: 0.8rem;">Close Time</label>
-                                        <div class="input-wrapper">
-                                            <i class="ph ph-moon"></i>
-                                            <input type="time" name="close_time" value="21:00" style="padding-left: 44px;">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="form-row" style="display: flex; gap: 10px;">
-                                    <div class="form-group" style="flex: 1.2; margin-bottom: 0;">
-                                        <label style="margin-bottom: 6px; display: block; font-size: 0.8rem;">Slot Length</label>
-                                        <div class="input-wrapper">
-                                            <i class="ph ph-timer"></i>
-                                            <select name="slot_duration_minutes" style="background: rgba(15, 17, 21, 0.45); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; width: 100%; padding: 12px 10px 12px 42px; border-radius: 8px; outline: none; font-size: 0.84rem;">
-                                                <option value="30">30 mins</option>
-                                                <option value="60" selected>60 mins (1 hr)</option>
-                                                <option value="90">90 mins</option>
-                                                <option value="120">120 mins</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="form-group" style="flex: 1; margin-bottom: 0;">
-                                        <label style="margin-bottom: 6px; display: block; font-size: 0.8rem;">Courts</label>
-                                        <div class="input-wrapper">
-                                            <i class="ph ph-squares-four"></i>
-                                            <input type="number" name="num_courts" value="2" min="1" max="20" placeholder="Courts" style="padding-left: 40px;">
-                                        </div>
-                                    </div>
-                                    <div class="form-group" style="flex: 1.2; margin-bottom: 0;">
-                                        <label style="margin-bottom: 6px; display: block; font-size: 0.8rem;">Rate (₱/hr)</label>
-                                        <div class="input-wrapper">
-                                            <i class="ph ph-currency-circle-dollar"></i>
-                                            <input type="number" name="court_hourly_rate" value="300" min="0" step="50" placeholder="₱300" style="padding-left: 40px;">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="form-group" style="margin-bottom: 0;">
-                                    <label style="margin-bottom: 6px; display: block; font-size: 0.8rem;">Court Type & Atmosphere</label>
-                                    <div class="input-wrapper">
-                                        <i class="ph ph-house-line"></i>
-                                        <select name="court_type" style="background: rgba(15, 17, 21, 0.45); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; width: 100%; padding: 12px 12px 12px 44px; border-radius: 8px; outline: none; font-size: 0.84rem;">
-                                            <option value="indoor" selected>Indoor Covered Court (All-weather)</option>
-                                            <option value="outdoor">Outdoor Dedicated Pickleball Court</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="form-group" style="margin-bottom: 0;">
-                                    <label style="margin-bottom: 6px; display: block; font-size: 0.8rem;">Facility Photo (Optional)</label>
-                                    <div class="kyc-upload-box" id="zone-fac-img" onclick="document.getElementById('fac_image_input').click()" style="padding: 10px;">
-                                        <input type="file" id="fac_image_input" name="facility_image" accept="image/png,image/jpeg,image/webp" style="display:none;" onchange="handleFacilityPhotoSelect(this)">
-                                        <div style="display: flex; align-items: center; gap: 8px;">
-                                            <i class="ph ph-camera upload-icon" style="font-size: 1.2rem;"></i>
-                                            <span class="upload-label" id="label-fac-img" style="font-size: 0.78rem;">Upload facility venue photo</span>
-                                        </div>
-                                        <div id="badge-fac-img" class="kyc-file-badge" style="display:none;"></div>
-                                    </div>
-                                </div>
-
-                                <div class="button-group" style="display: flex; gap: 12px; margin-top: 8px;">
-                                    <button type="button" class="btn-secondary" onclick="prevSignupStep(3)"
-                                        style="flex: 1; padding: 12px; font-size: 0.95rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;"><i class="ph ph-arrow-left"></i> Back</button>
-                                    <button type="button" class="submit-btn primary-orange" onclick="nextSignupStep(3)"
-                                        style="flex: 2; padding: 12px; font-size: 0.95rem; border-radius: 8px;">Next Step <i class="ph ph-arrow-right"></i></button>
-                                </div>
-                            </div>
-
-                            <!-- STEP 4: KYC VERIFICATION & AMENITIES (Facility Owner Only) -->
-                            <div class="signup-step" id="signup-step-4" style="flex-direction: column; gap: 14px;">
-                                <div>
-                                    <div class="step-header">
-                                        <i class="ph ph-shield-check" style="color: #22c55e;"></i> Facility KYC Verification
-                                    </div>
-                                    <div class="step-subheader">Mandatory legal and property ownership compliance before launch.</div>
-                                </div>
-
-                                <div class="kyc-banner-note">
-                                    <i class="ph ph-certificate" style="font-size: 1.2rem; color: var(--primary-orange); flex-shrink: 0; margin-top: 2px;"></i>
-                                    <span>Submit your <strong>Transfer Certificate of Title (TCT) / OCT</strong> and <strong>Business Permit</strong> for admin review.</span>
-                                </div>
-
-                                <!-- Document 1: TCT / OCT -->
-                                <div class="form-group" style="margin-bottom: 0;">
-                                    <label style="margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem; font-weight: 600; color: #ffffff;">
-                                        <span><i class="ph ph-certificate" style="color: var(--primary-orange);"></i> Transfer Certificate of Title (TCT) / OCT *</span>
-                                        <span style="font-size: 0.68rem; color: #f97316; background: rgba(249,115,22,0.15); padding: 2px 6px; border-radius: 4px;">Required</span>
-                                    </label>
-                                    <div class="kyc-upload-box" id="zone-kyc-tct" onclick="document.getElementById('kyc_tct_input').click()">
-                                        <input type="file" id="kyc_tct_input" name="kyc_tct" accept=".pdf,image/png,image/jpeg,image/webp" style="display:none;" onchange="handleKycFileSelect(this, 'tct')">
-                                        <i class="ph ph-certificate upload-icon" id="icon-kyc-tct"></i>
-                                        <span class="upload-label" id="label-kyc-tct">Click to upload TCT / OCT Title</span>
-                                        <span class="upload-hint" id="hint-kyc-tct">Land or property title document • PDF, PNG, JPG (Max 10MB)</span>
-                                        <div id="badge-kyc-tct" class="kyc-file-badge" style="display:none;"></div>
-                                    </div>
-                                </div>
-
-                                <!-- Document 2: Business Permit -->
-                                <div class="form-group" style="margin-bottom: 0;">
-                                    <label style="margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem; font-weight: 600; color: #ffffff;">
-                                        <span><i class="ph ph-file-text" style="color: var(--primary-orange);"></i> Business Permit (Mayor's / LGU) *</span>
-                                        <span style="font-size: 0.68rem; color: #f97316; background: rgba(249,115,22,0.15); padding: 2px 6px; border-radius: 4px;">Required</span>
-                                    </label>
-                                    <div class="kyc-upload-box" id="zone-kyc-permit" onclick="document.getElementById('kyc_permit_input').click()">
-                                        <input type="file" id="kyc_permit_input" name="kyc_permit" accept=".pdf,image/png,image/jpeg,image/webp" style="display:none;" onchange="handleKycFileSelect(this, 'permit')">
-                                        <i class="ph ph-file-text upload-icon" id="icon-kyc-permit"></i>
-                                        <span class="upload-label" id="label-kyc-permit">Click to upload Business Permit</span>
-                                        <span class="upload-hint" id="hint-kyc-permit">Mayor's or municipal permit • PDF, PNG, JPG (Max 10MB)</span>
-                                        <div id="badge-kyc-permit" class="kyc-file-badge" style="display:none;"></div>
-                                    </div>
-                                </div>
-
-                                <!-- Venue Amenities -->
-                                <div class="form-group" style="margin-bottom: 0;">
-                                    <label style="margin-bottom: 6px; display: block; font-size: 0.8rem; font-weight: 600; color: #ffffff;"><i class="ph ph-sparkle" style="color: var(--primary-orange);"></i> Venue Amenities</label>
-                                    <div class="amenities-chips-wrap">
-                                        <label class="amenity-chip">
-                                            <input type="checkbox" name="amenities" value="LED Night Lights">
-                                            <span class="chip-content"><i class="ph ph-lightning"></i> LED Lights</span>
-                                        </label>
-                                        <label class="amenity-chip">
-                                            <input type="checkbox" name="amenities" value="Free Parking">
-                                            <span class="chip-content"><i class="ph ph-car"></i> Parking</span>
-                                        </label>
-                                        <label class="amenity-chip">
-                                            <input type="checkbox" name="amenities" value="Paddle & Ball Rental">
-                                            <span class="chip-content"><i class="ph ph-tennis-ball"></i> Paddle Rental</span>
-                                        </label>
-                                        <label class="amenity-chip">
-                                            <input type="checkbox" name="amenities" value="Restrooms & Lockers">
-                                            <span class="chip-content"><i class="ph ph-toilet"></i> Restrooms</span>
-                                        </label>
-                                        <label class="amenity-chip">
-                                            <input type="checkbox" name="amenities" value="Air-conditioned Lounge">
-                                            <span class="chip-content"><i class="ph ph-snowflake"></i> AC Lounge</span>
-                                        </label>
-                                        <label class="amenity-chip">
-                                            <input type="checkbox" name="amenities" value="High-Speed Wi-Fi">
-                                            <span class="chip-content"><i class="ph ph-wifi-high"></i> Free Wi-Fi</span>
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <div class="button-group" style="display: flex; gap: 12px; margin-top: 8px;">
-                                    <button type="button" class="btn-secondary" onclick="prevSignupStep(4)"
-                                        style="flex: 1; padding: 12px; font-size: 0.95rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;"><i class="ph ph-arrow-left"></i> Back</button>
-                                    <button type="button" class="submit-btn primary-orange" onclick="nextSignupStep(4)"
-                                        style="flex: 2; padding: 12px; font-size: 0.95rem; border-radius: 8px;">Next Step <i class="ph ph-arrow-right"></i></button>
-                                </div>
-                            </div>
-
-                            <!-- STEP 5: CREDENTIALS (Email & Password) -->
-                            <div class="signup-step" id="signup-step-5" style="flex-direction: column; gap: 16px;">
-                                <div>
-                                    <div class="step-header"><i class="ph ph-lock-key" style="color: var(--primary-orange);"></i> Account Credentials</div>
-                                    <div class="step-subheader">Secure your login credentials to access your dashboard.</div>
-                                </div>
-
-                                <div class="form-group" style="margin-bottom: 0;">
-                                    <label style="margin-bottom: 6px; display: block;">Email Address *</label>
-                                    <div class="input-wrapper">
-                                        <i class="ph ph-envelope"></i>
-                                        <input type="email" name="email" placeholder="john@example.com" required>
-                                    </div>
-                                </div>
-
-                                <div class="form-group" style="margin-bottom: 0;">
-                                    <label style="margin-bottom: 6px; display: block;">Password *</label>
-                                    <div class="input-wrapper">
-                                        <i class="ph ph-lock-key"></i>
-                                        <input type="password" name="password" id="signup-password"
-                                            placeholder="Create a strong password" required minlength="6">
-                                        <i class="ph ph-eye hover-icon" onclick="togglePassword('signup-password')"></i>
-                                    </div>
-                                </div>
-
-                                <div class="button-group" style="display: flex; gap: 12px; margin-top: 8px;">
-                                    <button type="button" class="btn-secondary" onclick="prevSignupStep(5)"
-                                        style="flex: 1; padding: 12px; font-size: 0.95rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;"><i
-                                            class="ph ph-arrow-left"></i> Back</button>
-                                    <button type="submit" class="submit-btn primary-orange" id="signup-submit-btn"
-                                        onclick="return validateFinalStep()"
-                                        style="flex: 2; padding: 12px; font-size: 0.95rem; border-radius: 8px;">Create
-                                        Account <i class="ph ph-check"></i></button>
-                                </div>
-                                <div class="terms-text"
-                                    style="font-size: 0.72rem; color: #94a3b8; text-align: center; line-height: 1.4; margin-top: 8px;">
-                                    By creating an account, you agree to our Terms of Service and Privacy Policy.</div>
-                            </div>
-
-                        </form>
+                    <div class="form-field-group">
+                        <label>Club Description</label>
+                        <div class="field-input-box">
+                            <i class="ph ph-text-align-left field-icon" style="top: 14px;"></i>
+                            <textarea name="club_description" rows="2" placeholder="Tell players about your club mission, play schedules, and competitive levels..." style="padding-left: 42px; resize: vertical;">{{ prefill.club_description if prefill else '' }}</textarea>
+                        </div>
                     </div>
-                    <div class="auth-alternative">
-                        <span>Already have an account?</span>
-                        <a href="{{ url_for('auth.login') }}">Log in here</a>
-                    </div>
+                {% endif %}
+
+                <!-- ═══════════════════════════════════════════════════════════
+                     SECTION 3: SUBMIT BUTTON & DISCLAIMER
+                     ═══════════════════════════════════════════════════════════ -->
+                <div class="submit-btn-wrap">
+                    <button type="submit" class="signup-submit-button" id="btn-submit-signup">
+                        {% if tier == 'free' %}
+                            <span>Create Free Account</span>
+                            <i class="ph ph-arrow-right"></i>
+                        {% else %}
+                            <span>Create Account &amp; Proceed to Payment</span>
+                            <i class="ph ph-credit-card"></i>
+                        {% endif %}
+                    </button>
+                    
+                    <p class="signup-terms-note">
+                        {% if tier != 'free' %}
+                            You will verify your email first, then submit your GCash payment proof on sign-in. 
+                        {% endif %}
+                        By signing up, you agree to our Terms of Service and Privacy Policy.
+                    </p>
                 </div>
+
+            </form>
+
+            <div class="signup-login-prompt">
+                Already registered?
+                <a href="{{ url_for('auth.login') }}">Log in to your account</a>
             </div>
-        </div>
-    </section>
 
-    <!-- Value Proposition Lead-In -->
-    <section class="value-prop-banner">
-        <div class="value-prop-inner">
-            <p class="value-prop-kicker">Letters to the Editor · Join the Movement</p>
-            <h2 class="value-prop-headline">The definitive platform for Laguna pickleball.</h2>
-            <p class="value-prop-text">Whether you're a <strong>player</strong> looking for a match, a
-                <strong>club</strong> managing brackets, or an <strong>owner</strong> listing courts—secure your spot
-                instantly with local GCash checkout.
-            </p>
-            <a href="{{ url_for('auth.signup') }}" class="value-prop-cta">Sign Up for Free <i
-                    class="ph ph-arrow-right"></i></a>
         </div>
-    </section>
+    </div>
 
-    <!-- Footer include -->
     {% include 'landings/footer.html' %}
 
-    <!-- Custom JS -->
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-
-    <!-- GSAP Page Animations & Live Stats Polling -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            if (typeof gsap !== 'undefined') {
-                // Gentle load animations for hero and signup card
-                gsap.from('.hero-info', { duration: 0.8, x: -20, opacity: 0, ease: 'power2.out' });
-                gsap.from('.auth-card', { duration: 0.8, y: 20, opacity: 0, ease: 'power2.out', delay: 0.1 });
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                if (icon) icon.className = 'ph ph-eye-slash';
+            } else {
+                input.type = 'password';
+                if (icon) icon.className = 'ph ph-eye';
+            }
+        }
+
+        function handleFileSelect(input, labelId, badgeId) {
+            if (!input.files || !input.files[0]) return;
+            const file = input.files[0];
+            const labelEl = document.getElementById(labelId);
+            const badgeEl = document.getElementById(badgeId);
+            const box = input.closest('.kyc-upload-box');
+
+            if (labelEl) labelEl.textContent = file.name;
+            if (badgeEl) {
+                const sizeKb = (file.size / 1024).toFixed(0);
+                badgeEl.textContent = `${sizeKb} KB · Attached`;
+                badgeEl.style.display = 'inline-flex';
+            }
+            if (box) box.classList.add('has-file');
+        }
+
+        // Form validation on submit
+        document.getElementById('form-unified-signup').addEventListener('submit', function (e) {
+            const pw = document.getElementById('unified-password').value;
+            const cpw = document.getElementById('unified-confirm-password').value;
+
+            if (pw !== cpw) {
+                e.preventDefault();
+                alert('Passwords do not match. Please ensure both passwords are identical.');
+                return false;
+            }
+
+            const btn = document.getElementById('btn-submit-signup');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="ph ph-spinner ph-spin"></i> Creating Account...';
             }
         });
-
-        function updateLiveDashboardWidget() {
-            fetch('/api/live-dashboard-stats')
-                .then(res => res.json())
-                .then(data => {
-                    if (!data) return;
-                    const duprEl = document.getElementById('live-dupr');
-                    const changeEl = document.getElementById('live-dupr-change');
-                    const streakEl = document.getElementById('live-win-streak');
-                    const matchEl = document.getElementById('live-upcoming-match');
-                    const occValEl = document.getElementById('live-occupancy-val');
-                    const occFillEl = document.getElementById('live-occupancy-fill');
-
-                    if (duprEl && data.dupr) duprEl.textContent = data.dupr;
-                    if (changeEl && data.dupr_change) changeEl.textContent = data.dupr_change;
-                    if (streakEl && data.win_streak) streakEl.textContent = data.win_streak;
-                    if (matchEl && data.upcoming_match) matchEl.textContent = data.upcoming_match;
-                    if (occValEl && data.court_occupancy !== undefined) occValEl.textContent = data.court_occupancy + '%';
-                    if (occFillEl && data.court_occupancy !== undefined) occFillEl.style.width = data.court_occupancy + '%';
-                })
-                .catch(err => console.debug('Live stats polling:', err));
-        }
-        setInterval(updateLiveDashboardWidget, 30000);
     </script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 
 </html>

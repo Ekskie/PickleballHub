@@ -840,6 +840,9 @@
             <i class="ph ph-arrows-clockwise" id="refreshIcon"></i>
             <span>Refresh Feed</span>
         </button>
+        <a href="{{ url_for('adminstaff.subscriptions') }}" class="btn-action-sm" style="padding: 8px 14px; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+            <i class="ph ph-receipt"></i> Subscriptions Ledger
+        </a>
         <a href="{{ url_for('adminstaff.verifications') }}" class="btn-action-sm" style="padding: 8px 14px; background: var(--primary-orange); color: #fff; border-radius: 8px; font-size: 0.85rem;">
             <i class="ph ph-shield-check"></i> Verifications Hub
         </a>
@@ -929,6 +932,47 @@
             </span>
         </div>
     </div>
+</div>
+
+<!-- Secondary Subscriptions & Monetization Row -->
+<div class="stats-grid-interactive" style="grid-template-columns: repeat(2, 1fr); margin-top: -8px;">
+    <!-- Subscriptions Revenue -->
+    <a href="{{ url_for('adminstaff.subscriptions') }}" class="glass-card stat-card-clickable" style="text-decoration: none; color: inherit;">
+        <div class="stat-top-row">
+            <p class="stat-label-text">Subscription Revenue</p>
+            <div class="stat-icon-wrapper emerald">
+                <i class="ph ph-currency-circle-dollar"></i>
+            </div>
+        </div>
+        <div>
+            <div class="stat-number-display" style="font-size: 1.6rem; color: #10b981;">₱{{ "{:,.2f}".format(stats.subscription_revenue) }}</div>
+            <span class="stat-meta-badge positive">
+                <i class="ph ph-crown"></i> {{ stats.active_subscribers }} Active Paid Subscribers
+            </span>
+        </div>
+    </a>
+
+    <!-- Pending Subscription Verifications -->
+    <a href="{{ url_for('adminstaff.subscriptions', status='pending_approval') }}" class="glass-card stat-card-clickable {% if stats.pending_subscriptions > 0 %}active-filter{% endif %}" style="text-decoration: none; color: inherit;">
+        <div class="stat-top-row">
+            <p class="stat-label-text">Pending Subscriptions</p>
+            <div class="stat-icon-wrapper amber">
+                <i class="ph ph-receipt"></i>
+            </div>
+        </div>
+        <div>
+            <div class="stat-number-display" style="font-size: 1.6rem;">{{ stats.pending_subscriptions }}</div>
+            {% if stats.pending_subscriptions > 0 %}
+                <span class="stat-meta-badge warning">
+                    <i class="ph ph-hourglass-high"></i> {{ stats.pending_subscriptions }} Receipts Awaiting Review
+                </span>
+            {% else %}
+                <span class="stat-meta-badge positive">
+                    <i class="ph ph-check-circle"></i> Subscriptions Queue Clear
+                </span>
+            {% endif %}
+        </div>
+    </a>
 </div>
 
 <!-- Main Split Layout -->

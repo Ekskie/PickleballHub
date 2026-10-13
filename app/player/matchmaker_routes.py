@@ -98,7 +98,7 @@ def matchmaker():
         # Fetch active lobbies (status: open, full, completed)
         lob_resp = admin_db.table('matchmaker_lobbies').select(
             'id, creator_id, reservation_id, title, description, min_dupr, max_dupr, slots_total, slots_filled, status, created_at, match_type, '
-            'creator:profiles!creator_id(first_name, last_name, avatar_url, elo, dupr, proficiency), '
+            'creator:profiles!creator_id(first_name, last_name, avatar_url, elo, dupr, proficiency, subscription_tier, subscription_status), '
             'reservation:court_reservations!reservation_id(date, start_time, end_time, courts(name), facilities(name))'
         ).neq('status', 'cancelled').order('created_at', desc=True).execute()
 
@@ -123,6 +123,10 @@ def matchmaker():
             c_first = creator.get('first_name', '')
             c_last = creator.get('last_name', '')
             c_initials = ((c_first[0] if c_first else '') + (c_last[0] if c_last else '')).upper() or 'PL'
+
+            c_tier = (creator.get('subscription_tier') or 'free').strip().lower()
+            c_sub_status = (creator.get('subscription_status') or 'active').strip().lower()
+            is_creator_pro = (c_tier in ['pro', 'elite']) and (c_sub_status == 'active')
 
             st_raw = res.get('start_time') or '00:00'
             et_raw = res.get('end_time') or '00:00'
@@ -161,6 +165,8 @@ def matchmaker():
                 'time_range_12': f"{format_time_12h(st_raw)} - {format_time_12h(et_raw)}",
                 'is_creator': is_creator,
                 'is_joined': is_joined,
+                'is_creator_pro': is_creator_pro,
+                'created_at': lobby.get('created_at'),
             }
             lobby_item['display_status'] = get_lobby_display_status(
                 lobby_item['status'], lobby_item['date'], lobby_item['start_time'], lobby_item['end_time']
@@ -192,6 +198,13 @@ def matchmaker():
                     continue
 
             lobbies.append(lobby_item)
+
+        # Prioritize Open/Ongoing lobbies first, Pro-hosted lobbies at top of active queue, then by created_at desc
+        lobbies.sort(key=lambda lob: (
+            1 if lob.get('display_status') in ['open', 'ongoing'] else 0,
+            1 if lob.get('is_creator_pro') else 0,
+            str(lob.get('created_at') or '')
+        ), reverse=True)
 
     except Exception as e:
         flash('An error occurred. Please try again.', 'error')
@@ -282,7 +295,7 @@ def matchmaker_detail(lobby_id):
         lob_resp = db.table('matchmaker_lobbies').select(
             'id, creator_id, reservation_id, title, description, min_dupr, max_dupr, slots_total, slots_filled, status, score, winner_id, match_type, '
             'reported_score, reported_winner_id, reporter_id, verification_status, dispute_count, '
-            'creator:profiles!creator_id(first_name, last_name, elo, dupr, proficiency, avatar_url), '
+            'creator:profiles!creator_id(first_name, last_name, elo, dupr, proficiency, avatar_url, subscription_tier, subscription_status), '
             'reservation:court_reservations!reservation_id(date, start_time, end_time, courts(name), facilities(name))'
         ).eq('id', lobby_id).single().execute()
 
@@ -295,6 +308,10 @@ def matchmaker_detail(lobby_id):
         res = raw_lob.get('reservation') or {}
         court = res.get('courts') or {}
         facility = res.get('facilities') or {}
+
+        c_tier = (creator.get('subscription_tier') or 'free').strip().lower()
+        c_sub_status = (creator.get('subscription_status') or 'active').strip().lower()
+        is_creator_pro = (c_tier in ['pro', 'elite']) and (c_sub_status == 'active')
 
         lobby = {
             'id': raw_lob['id'],
@@ -318,6 +335,7 @@ def matchmaker_detail(lobby_id):
             'creator_name': f"{creator.get('first_name', '')} {creator.get('last_name', '')}".strip() or "Anonymous Player",
             'creator_dupr': creator.get('dupr') if creator.get('dupr') is not None else 3.00,
             'creator_avatar_url': creator.get('avatar_url') or None,
+            'is_creator_pro': is_creator_pro,
             'facility_name': facility.get('name', 'Unknown Facility'),
             'court_name': court.get('name', 'Court'),
             'date': res.get('date') or datetime.now(PH_TZ).strftime('%Y-%m-%d'),
@@ -337,7 +355,7 @@ def matchmaker_detail(lobby_id):
 
         # Fetch participants (including team and slot)
         part_resp = db.table('lobby_participants').select(
-            'id, player_id, status, team, slot, profiles!player_id(first_name, last_name, elo, dupr, avatar_url)'
+            'id, player_id, status, team, slot, profiles!player_id(first_name, last_name, elo, dupr, avatar_url, subscription_tier, subscription_status)'
         ).eq('lobby_id', lobby_id).eq('status', 'joined').execute()
         
         raw_participants = part_resp.data or []
@@ -352,7 +370,8 @@ def matchmaker_detail(lobby_id):
                     'dupr': lobby['creator_dupr'],
                     'initials': creator_initials,
                     'avatar_url': lobby.get('creator_avatar_url'),
-                    'is_host': True
+                    'is_host': True,
+                    'is_pro': is_creator_pro
                 }}
             ],
             'team2': []
@@ -378,9 +397,14 @@ def matchmaker_detail(lobby_id):
             p_profile = p.get('profiles') or {}
             first = p_profile.get('first_name') or 'P'
             last = p_profile.get('last_name') or ''
+            p_tier = (p_profile.get('subscription_tier') or 'free').strip().lower()
+            p_sub_status = (p_profile.get('subscription_status') or 'active').strip().lower()
+            p_is_pro = (p_tier in ['pro', 'elite']) and (p_sub_status == 'active')
+
             p['initials'] = (first[0] + (last[0] if last else '')).upper()
             p['name'] = f"{first} {last}".strip() or "Anonymous Player"
             p['avatar_url'] = p_profile.get('avatar_url') or None
+            p['is_pro'] = p_is_pro
             participants.append(p)
             
             if p['player_id'] == player_id:
@@ -393,6 +417,7 @@ def matchmaker_detail(lobby_id):
                 'initials': p['initials'],
                 'avatar_url': p_profile.get('avatar_url') or None,
                 'is_host': False,
+                'is_pro': p_is_pro,
                 'participant_id': p['id']
             }
             

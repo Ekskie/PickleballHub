@@ -1002,20 +1002,55 @@
     </div>
 
     <!-- ── Executive Financial & Operational KPIs ── -->
+    <!-- ── Executive Financial & Operational KPIs ── -->
     <div class="stats-kpi-grid">
-        <!-- 1. Verified Revenue -->
+        <!-- 1. Verified Gross Revenue -->
         <div class="kpi-card">
             <div class="kpi-icon-badge kpi-icon-green">
                 <i class="ph ph-currency-circle-dollar"></i>
             </div>
             <div class="kpi-details">
-                <span class="kpi-label">Verified Revenue</span>
+                <span class="kpi-label">Gross Revenue</span>
                 <span class="kpi-value">₱{{ "%.2f"|format(stats.total_verified_revenue) }}</span>
                 <span class="kpi-subtext">From {{ stats.approved_count }} settled bookings</span>
             </div>
         </div>
 
-        <!-- 2. Pending Inflow -->
+        <!-- 2. Net Owner Payout -->
+        <div class="kpi-card" style="border-color: rgba(16, 185, 129, 0.35); background: linear-gradient(135deg, rgba(16, 185, 129, 0.04) 0%, transparent 100%);">
+            <div class="kpi-icon-badge" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
+                <i class="ph-fill ph-wallet"></i>
+            </div>
+            <div class="kpi-details">
+                <span class="kpi-label" style="color: #059669;">Net Owner Payout</span>
+                <span class="kpi-value" style="color: #10b981;">₱{{ "%.2f"|format(stats.total_net_payout) }}</span>
+                <span class="kpi-subtext">After {{ stats.commission_rate_pct }}% platform fee</span>
+            </div>
+        </div>
+
+        <!-- 3. Commission & Tier Savings -->
+        <div class="kpi-card">
+            <div class="kpi-icon-badge {% if stats.commission_rate_pct == 0 %}kpi-icon-green{% else %}kpi-icon-blue{% endif %}">
+                <i class="ph {% if stats.commission_rate_pct == 0 %}ph-seal-check{% else %}ph-percent{% endif %}"></i>
+            </div>
+            <div class="kpi-details">
+                <span class="kpi-label">Commission ({{ stats.commission_rate_pct }}%)</span>
+                <span class="kpi-value">
+                    ₱{{ "%.2f"|format(stats.total_commission_fees) }}
+                </span>
+                <span class="kpi-subtext">
+                    {% if stats.tier_savings > 0 %}
+                    <span style="color: #10b981; font-weight: 700;">Saved ₱{{ "%.2f"|format(stats.tier_savings) }} vs Starter</span>
+                    {% elif stats.owner_tier == 'elite' %}
+                    <span style="color: #10b981; font-weight: 700;">100% Retained Revenue</span>
+                    {% else %}
+                    Platform processing fee
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <!-- 4. Pending Inflow -->
         <div class="kpi-card">
             <div class="kpi-icon-badge kpi-icon-amber">
                 <i class="ph ph-clock-countdown"></i>
@@ -1032,30 +1067,39 @@
                 </span>
             </div>
         </div>
+    </div>
 
-        <!-- 3. Settled Bookings -->
-        <div class="kpi-card">
-            <div class="kpi-icon-badge kpi-icon-blue">
-                <i class="ph ph-check-circle"></i>
+    <!-- ── Tier Commission Breakdown & Savings Banner ── -->
+    <div class="tier-commission-banner" style="background: linear-gradient(135deg, rgba(249, 115, 22, 0.08) 0%, rgba(234, 88, 12, 0.04) 100%); border: 1px solid rgba(249, 115, 22, 0.25); border-left: 5px solid var(--primary-orange); border-radius: 14px; padding: 14px 20px; margin-top: 16px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(249, 115, 22, 0.15); color: var(--primary-orange); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                <i class="ph-fill ph-percent"></i>
             </div>
-            <div class="kpi-details">
-                <span class="kpi-label">Approved & Settled</span>
-                <span class="kpi-value">{{ stats.approved_count }} <small>/ {{ stats.total_transactions }}</small></span>
-                <span class="kpi-subtext">{{ stats.completed_count }} completed • {{ stats.confirmed_count }} upcoming</span>
+            <div>
+                <div style="font-size: 0.88rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                    <span>Platform Commission: <strong>{{ stats.commission_rate_pct }}%</strong></span>
+                    <span style="font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800; text-transform: uppercase; background: {% if stats.owner_tier == 'elite' %}rgba(139, 92, 246, 0.15); color: #8b5cf6;{% elif stats.owner_tier == 'pro' %}rgba(245, 158, 11, 0.15); color: #d97706;{% else %}rgba(100, 116, 139, 0.15); color: var(--text-muted);{% endif %}">
+                        {{ 'Elite Enterprise (0% Fee)' if stats.owner_tier == 'elite' else ('Pro Facility Pass (3% Fee)' if stats.owner_tier == 'pro' else 'Starter Operator (8% Fee)') }}
+                    </span>
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">
+                    {% if stats.owner_tier == 'elite' %}
+                        You retain 100% of all player bookings. Total platform fees avoided: <strong style="color: #10b981;">₱{{ "%.2f"|format(stats.tier_savings) }}</strong>!
+                    {% elif stats.owner_tier == 'pro' %}
+                        Enjoying reduced 3% platform commission (vs 8% Starter). Total tier savings: <strong style="color: #10b981;">₱{{ "%.2f"|format(stats.tier_savings) }}</strong>.
+                    {% else %}
+                        Starter tier pays standard 8% commission (₱{{ "%.2f"|format(stats.total_commission_fees) }} in fees). Upgrade to Pro (3%) or Elite (0%) to keep up to 100% of your earnings.
+                    {% endif %}
+                </div>
             </div>
         </div>
-
-        <!-- 4. Declined / Cancelled -->
-        <div class="kpi-card">
-            <div class="kpi-icon-badge kpi-icon-rose">
-                <i class="ph ph-x-circle"></i>
-            </div>
-            <div class="kpi-details">
-                <span class="kpi-label">Declined / Cancelled</span>
-                <span class="kpi-value">{{ stats.declined_count }} <small>bookings</small></span>
-                <span class="kpi-subtext">Invalid reference or cancelled</span>
-            </div>
-        </div>
+        {% if stats.owner_tier != 'elite' %}
+        <a href="{{ url_for('billing.subscription_page') }}?highlight={{ 'elite' if stats.owner_tier == 'pro' else 'pro' }}" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; background: var(--primary-orange); color: #ffffff; font-size: 0.82rem; font-weight: 700; text-decoration: none; box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3); transition: all 0.2s;">
+            <i class="ph-fill ph-crown"></i>
+            <span>{{ 'Upgrade for 0% Fee' if stats.owner_tier == 'pro' else 'Upgrade to Save 5%' }}</span>
+            <i class="ph ph-arrow-right"></i>
+        </a>
+        {% endif %}
     </div>
 
     <!-- ── Urgent Action Alert (if pending payments exist) ── -->
@@ -1135,7 +1179,7 @@
                         <th>BOOKING & TIME</th>
                         <th>PLAYER</th>
                         <th>COURT & VENUE</th>
-                        <th>AMOUNT</th>
+                        <th>AMOUNT &amp; NET PAYOUT</th>
                         <th>GCASH REFERENCE</th>
                         <th>STATUS</th>
                         <th>RECEIPT</th>
@@ -1223,9 +1267,17 @@
                             </div>
                         </td>
 
-                        <!-- 4. Amount -->
+                        <!-- 4. Amount & Commission Breakdown -->
                         <td>
-                            <div class="amount-badge">₱{{ "%.2f"|format(t.total_amount) }}</div>
+                            <div class="amount-badge">₱{{ "%.2f"|format(t.gross_amount or t.total_amount) }}</div>
+                            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 3px; display: flex; flex-direction: column; gap: 1px;">
+                                {% if stats.commission_rate_pct > 0 %}
+                                <span>Fee: <span style="color: #ef4444;">-₱{{ "%.2f"|format(t.commission_fee or 0) }}</span> ({{ stats.commission_rate_pct }}%)</span>
+                                <span>Net: <strong style="color: #10b981;">₱{{ "%.2f"|format(t.net_amount or t.total_amount) }}</strong></span>
+                                {% else %}
+                                <span style="color: #10b981; font-weight: 700;"><i class="ph-fill ph-check-circle" style="font-size: 0.72rem;"></i> 0% Fee · 100% Payout</span>
+                                {% endif %}
+                            </div>
                         </td>
 
                         <!-- 5. GCash Reference with Copy -->
@@ -1238,7 +1290,7 @@
                             </div>
                         </td>
 
-                        <!-- 6. Status Pill -->
+                        <!-- 6. Status Pill & Audit Trail -->
                         <td>
                             {% if t.status == 'pending_payment' %}
                             <span class="status-pill pending">
@@ -1258,6 +1310,13 @@
                             </span>
                             {% else %}
                             <span class="status-pill">{{ t.status|title }}</span>
+                            {% endif %}
+
+                            {% if t.approved_by %}
+                            <div style="margin-top: 5px; font-size: 0.7rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px;" title="Verified by {{ t.approved_by.actor_name }} ({{ t.approved_by.role_label }})">
+                                <i class="ph-fill ph-user-check" style="color: var(--primary-orange); font-size: 0.8rem;"></i>
+                                <span>{{ t.approved_by.role_label }}: <strong>{{ t.approved_by.actor_name }}</strong></span>
+                            </div>
                             {% endif %}
                         </td>
 
@@ -1629,49 +1688,7 @@ function clearSearch() {
 
 /* ── Export CSV Function ── */
 function exportLedgerCSV() {
-    const rows = document.querySelectorAll('.ledger-item-row');
-    if (!rows.length) {
-        alert('No ledger transactions to export.');
-        return;
-    }
-
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Booking Date,Player Name,Contact Phone,Court Name,Facility,Amount (PHP),GCash Reference,Status\n";
-
-    rows.forEach(row => {
-        // Only export visible rows (honoring filters)
-        if (row.style.display === 'none') return;
-
-        const date = row.getAttribute('data-date') || '';
-        const name = (row.querySelector('.player-name') ? row.querySelector('.player-name').textContent.trim() : '').replace(/"/g, '""');
-        const phone = row.getAttribute('data-phone') || '';
-        const court = (row.querySelector('.court-name-title') ? row.querySelector('.court-name-title').textContent.trim() : '').replace(/"/g, '""');
-        const facility = (row.querySelector('.facility-sub-name') ? row.querySelector('.facility-sub-name').textContent.trim() : '').replace(/"/g, '""');
-        const amount = row.getAttribute('data-amount') || '0';
-        const ref = row.getAttribute('data-ref') || '';
-        const rawStatus = row.getAttribute('data-raw-status') || '';
-
-        const rowValues = [
-            `"${date}"`,
-            `"${name}"`,
-            `"${phone}"`,
-            `"${court}"`,
-            `"${facility}"`,
-            amount,
-            `"${ref}"`,
-            `"${rawStatus}"`
-        ];
-        csvContent += rowValues.join(",") + "\n";
-    });
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    const today = new Date().toISOString().slice(0, 10);
-    link.setAttribute("download", `pickleballhub_ledger_${today}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    window.location.href = "{{ url_for('owner.export_ledger_csv') }}";
 }
 </script>
 {% endblock %}

@@ -4,6 +4,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask import g
 from app.db import get_db, get_admin_db
 from app import limiter
+from app.billing.tiers import TIER_CONFIG, get_tier_limits
 
 auth_bp = Blueprint('auth', __name__, url_prefix='')
 
@@ -16,6 +17,28 @@ _ROLE_DASHBOARD_MAP = {
     'facilitystaff':'facilitystaff.dashboard',
     'adminstaff':   'adminstaff.dashboard',
 }
+
+def _get_plan_info(role: str, tier: str, cycle: str) -> dict:
+    """Helper to return display label and formatted price for signup plan ribbon."""
+    role = (role or 'player').strip().lower()
+    tier = (tier or 'free').strip().lower()
+    cycle = (cycle or 'monthly').strip().lower()
+    if cycle not in ['monthly', 'annual']:
+        cycle = 'monthly'
+
+    role_tiers = TIER_CONFIG.get(role, TIER_CONFIG.get('player', {}))
+    tier_cfg = role_tiers.get(tier, role_tiers.get('free', {}))
+    p_monthly = tier_cfg.get('price_monthly', 0)
+    p_annual = tier_cfg.get('price_annual', 0)
+    price_val = p_annual if cycle == 'annual' else p_monthly
+
+    return {
+        'label': tier_cfg.get('label', tier.capitalize()),
+        'price_display': f"{price_val:,}",
+        'price_num': price_val,
+        'cycle': cycle
+    }
+
 
 def _redirect_by_role(role: str):
     """Return the correct dashboard redirect for a given role string.
@@ -191,7 +214,15 @@ def login():
                             session.pop('last_integrity_check', None)
                     except Exception as profile_err:
                         print(f'[login] profile fetch error: {profile_err}')
-                        # Keep whatever role came from user_metadata
+                    # If user chose a paid subscription and hasn't submitted/completed payment,
+                    # forward them directly to the GCash checkout page
+                    sub_tier = (session.get('subscription_tier') or 'free').strip().lower()
+                    sub_status = (session.get('subscription_status') or 'active').strip().lower()
+                    sub_cycle = (session.get('cached_profile', {}).get('subscription_billing_cycle') or 'monthly').strip().lower()
+
+                    if sub_tier != 'free' and sub_status in ['pending_payment', 'unpaid']:
+                        flash(f"Welcome! Please submit your GCash payment proof to activate your {sub_tier.capitalize()} pass.", "info")
+                        return redirect(url_for('billing.checkout_page', plan=sub_tier, cycle=sub_cycle))
 
                     return _redirect_by_role(session['role'])
 
@@ -214,239 +245,316 @@ def signup():
     if request.method == 'GET' and session.get('user_id'):
         return _redirect_by_role(session.get('role', 'player'))
 
-    live_stats = get_live_dashboard_stats()
+    if request.method == 'GET':
+        role = request.args.get('role', '').strip().lower()
+        if not role or role not in ['owner', 'clubadmin', 'player']:
+            # Redirect to standalone subscription plans page if no role selected
+            return redirect(url_for('main.memberships'))
 
-    if request.method == 'POST':
-        email       = request.form.get('email', '').strip()
-        password    = request.form.get('password', '')
-        first_name  = request.form.get('first_name', '').strip()
-        last_name   = request.form.get('last_name', '').strip()
-        role        = request.form.get('role', 'player').strip().lower()
-        phone       = request.form.get('phone', '').strip()
-        proficiency = request.form.get('proficiency') if role == 'player' else None
+        tier = (request.args.get('tier') or request.args.get('plan') or 'free').strip().lower()
+        cycle = request.args.get('cycle', 'monthly').strip().lower()
+        if cycle not in ['monthly', 'annual']:
+            cycle = 'monthly'
 
-        # Facility Owner specific inputs
-        facility_name     = request.form.get('facility_name', '').strip()
-        facility_location = request.form.get('facility_location', '').strip()
-        facility_desc     = request.form.get('facility_description', '').strip()
-        open_time         = request.form.get('open_time', '08:00').strip()
-        close_time        = request.form.get('close_time', '21:00').strip()
-        slot_duration     = request.form.get('slot_duration_minutes', '60').strip()
-        num_courts_val    = request.form.get('num_courts', '2').strip()
-        court_type        = request.form.get('court_type', 'indoor').strip().lower()
-        court_rate_val    = request.form.get('court_hourly_rate', '300').strip()
-        amenities         = request.form.getlist('amenities')
+        role_tiers = TIER_CONFIG.get(role, {})
+        if tier not in role_tiers:
+            tier = 'free'
 
-        kyc_tct_file        = request.files.get('kyc_tct')
-        kyc_permit_file     = request.files.get('kyc_permit')
-        facility_image_file = request.files.get('facility_image')
+        plan_info = _get_plan_info(role, tier, cycle)
+        return render_template(
+            'landings/signup.html',
+            role=role,
+            tier=tier,
+            cycle=cycle,
+            plan_info=plan_info,
+            prefill={}
+        )
 
-        # Owner validation: Facility details & KYC documents (TCT/OCT + Business Permit) are mandatory
-        if role == 'owner':
-            if not facility_name:
-                flash('Facility Name is required to register as a facility owner.', 'error')
-                return render_template('landings/signup.html', live_stats=live_stats)
-            if not facility_location:
-                flash('Facility Address / Location is required.', 'error')
-                return render_template('landings/signup.html', live_stats=live_stats)
-            if not kyc_tct_file or not kyc_tct_file.filename:
-                flash('Transfer Certificate of Title (TCT) / Original Certificate of Title (OCT) document is required for verification.', 'error')
-                return render_template('landings/signup.html', live_stats=live_stats)
-            if not kyc_permit_file or not kyc_permit_file.filename:
-                flash('Business Permit document is required for verification.', 'error')
-                return render_template('landings/signup.html', live_stats=live_stats)
+    # ── Handle POST Form Submission ──
+    role = request.form.get('role', 'player').strip().lower()
+    if role not in ['owner', 'clubadmin', 'player']:
+        role = 'player'
+    tier = (request.form.get('tier') or 'free').strip().lower()
+    cycle = request.form.get('cycle', 'monthly').strip().lower()
+    if cycle not in ['monthly', 'annual']:
+        cycle = 'monthly'
 
-        try:
-            if get_db():
-                sign_up_resp = get_db().auth.sign_up({
-                    "email": email,
-                    "password": password,
-                    "options": {
-                        "email_redirect_to": url_for('auth.login', _external=True),
-                        "data": {
-                            "first_name":  first_name,
-                            "last_name":   last_name,
-                            "role":        role,
-                            "proficiency": proficiency,
-                            "phone":       phone
-                        }
+    role_tiers = TIER_CONFIG.get(role, {})
+    if tier not in role_tiers:
+        tier = 'free'
+
+    plan_info = _get_plan_info(role, tier, cycle)
+    prefill = request.form.to_dict()
+
+    email       = request.form.get('email', '').strip()
+    password    = request.form.get('password', '')
+    confirm_pw  = request.form.get('confirm_password', '')
+    first_name  = request.form.get('first_name', '').strip()
+    last_name   = request.form.get('last_name', '').strip()
+    phone       = request.form.get('phone', '').strip()
+    proficiency = request.form.get('proficiency') if role == 'player' else None
+
+    if not email or not password or not first_name or not last_name:
+        flash('Please fill in all required fields.', 'error')
+        return render_template('landings/signup.html', role=role, tier=tier, cycle=cycle, plan_info=plan_info, prefill=prefill)
+
+    if confirm_pw and password != confirm_pw:
+        flash('Passwords do not match. Please ensure both passwords match.', 'error')
+        return render_template('landings/signup.html', role=role, tier=tier, cycle=cycle, plan_info=plan_info, prefill=prefill)
+
+    # Owner specific validation
+    facility_name     = request.form.get('facility_name', '').strip()
+    facility_location = request.form.get('facility_location', '').strip()
+    facility_desc     = request.form.get('facility_description', '').strip()
+    open_time         = request.form.get('open_time', '08:00').strip()
+    close_time        = request.form.get('close_time', '21:00').strip()
+    slot_duration     = request.form.get('slot_duration_minutes', '60').strip()
+    num_courts_val    = request.form.get('num_courts', '2').strip()
+    court_type        = request.form.get('court_type', 'indoor').strip().lower()
+    court_rate_val    = request.form.get('court_hourly_rate', '300').strip()
+    amenities         = request.form.getlist('amenities')
+
+    kyc_tct_file        = request.files.get('kyc_tct')
+    kyc_permit_file     = request.files.get('kyc_permit')
+    facility_image_file = request.files.get('facility_image')
+
+    if role == 'owner':
+        if not facility_name:
+            flash('Facility Name is required to register as a facility owner.', 'error')
+            return render_template('landings/signup.html', role=role, tier=tier, cycle=cycle, plan_info=plan_info, prefill=prefill)
+        if not facility_location:
+            flash('Facility Address / Location is required.', 'error')
+            return render_template('landings/signup.html', role=role, tier=tier, cycle=cycle, plan_info=plan_info, prefill=prefill)
+        if not kyc_tct_file or not kyc_tct_file.filename:
+            flash('Transfer Certificate of Title (TCT) / Original Certificate of Title (OCT) document is required.', 'error')
+            return render_template('landings/signup.html', role=role, tier=tier, cycle=cycle, plan_info=plan_info, prefill=prefill)
+        if not kyc_permit_file or not kyc_permit_file.filename:
+            flash('Business Permit document is required for verification.', 'error')
+            return render_template('landings/signup.html', role=role, tier=tier, cycle=cycle, plan_info=plan_info, prefill=prefill)
+
+    # Club Admin validation
+    club_name     = request.form.get('club_name', '').strip()
+    club_location = request.form.get('club_location', '').strip()
+    club_desc     = request.form.get('club_description', '').strip()
+    if role == 'clubadmin':
+        if not club_name:
+            flash('Club Name is required for Club Administrators.', 'error')
+            return render_template('landings/signup.html', role=role, tier=tier, cycle=cycle, plan_info=plan_info, prefill=prefill)
+        if not club_location:
+            flash('Home Location / City is required.', 'error')
+            return render_template('landings/signup.html', role=role, tier=tier, cycle=cycle, plan_info=plan_info, prefill=prefill)
+
+    try:
+        if get_db():
+            sign_up_resp = get_db().auth.sign_up({
+                "email": email,
+                "password": password,
+                "options": {
+                    "email_redirect_to": url_for('auth.login', _external=True),
+                    "data": {
+                        "first_name":  first_name,
+                        "last_name":   last_name,
+                        "role":        role,
+                        "proficiency": proficiency,
+                        "phone":       phone
                     }
-                })
+                }
+            })
 
-                # Upsert the role into profiles so DB is always the source of truth.
-                if sign_up_resp and sign_up_resp.user:
-                    try:
-                        admin_client = get_admin_db()
-                        owner_id = sign_up_resp.user.id
-                        profile_data = {
-                            'id':         owner_id,
-                            'first_name': first_name,
-                            'last_name':  last_name,
-                            'role':       role,
-                            'phone':      phone,
-                            'email':      email,
-                        }
-                        if role == 'player':
-                            from app.ratings import get_initial_rating, ensure_initial_history
-                            elo, dupr = get_initial_rating(proficiency)
-                            profile_data['proficiency'] = proficiency
-                            profile_data['elo'] = elo
-                            profile_data['dupr'] = dupr
-                            
-                            import time
-                            max_retries = 3
-                            for attempt in range(max_retries):
-                                try:
-                                    update_resp = admin_client.table('profiles').update(profile_data).eq('id', owner_id).execute()
-                                    if not update_resp.data:
-                                        admin_client.table('profiles').upsert(profile_data, on_conflict='id').execute()
-                                    break
-                                except Exception as e:
-                                    if attempt == max_retries - 1:
-                                        raise e
-                                    time.sleep(0.5)
-                            
-                            now_str = datetime.now(timezone.utc).isoformat()
-                            ensure_initial_history(admin_client, owner_id, elo, dupr, now_str)
-                        else:
-                            import time
-                            max_retries = 3
-                            for attempt in range(max_retries):
-                                try:
-                                    update_resp = admin_client.table('profiles').update(profile_data).eq('id', owner_id).execute()
-                                    if not update_resp.data:
-                                        admin_client.table('profiles').upsert(profile_data, on_conflict='id').execute()
-                                    break
-                                except Exception as e:
-                                    if attempt == max_retries - 1:
-                                        raise e
-                                    time.sleep(0.5)
+            if sign_up_resp and sign_up_resp.user:
+                try:
+                    admin_client = get_admin_db()
+                    owner_id = sign_up_resp.user.id
+                    profile_data = {
+                        'id':                         owner_id,
+                        'first_name':                 first_name,
+                        'last_name':                  last_name,
+                        'role':                       role,
+                        'phone':                      phone,
+                        'email':                      email,
+                        'subscription_tier':          tier,
+                        'subscription_status':        'pending_payment' if tier != 'free' else 'active',
+                        'subscription_billing_cycle': cycle,
+                    }
 
-                        # If Facility Owner: Register first facility, upload KYC documents and initialize courts
-                        if role == 'owner':
+                    if role == 'player':
+                        from app.ratings import get_initial_rating, ensure_initial_history
+                        elo, dupr = get_initial_rating(proficiency)
+                        profile_data['proficiency'] = proficiency
+                        profile_data['elo'] = elo
+                        profile_data['dupr'] = dupr
+
+                        import time
+                        max_retries = 3
+                        for attempt in range(max_retries):
                             try:
-                                from app.upload_utils import validate_and_upload, ALLOWED_DOC_EXTENSIONS, MAX_DOC_SIZE, ALLOWED_IMAGE_EXTENSIONS
-                                
-                                # 1. Upload facility photo if provided
-                                facility_img_url = None
-                                if facility_image_file and facility_image_file.filename:
-                                    img_url, img_err = validate_and_upload(
-                                        admin_client, facility_image_file,
-                                        bucket='facility-images', prefix='facility',
-                                        owner_id=owner_id, allowed_exts=ALLOWED_IMAGE_EXTENSIONS
-                                    )
-                                    if not img_err and img_url:
-                                        facility_img_url = img_url
+                                update_resp = admin_client.table('profiles').update(profile_data).eq('id', owner_id).execute()
+                                if not update_resp.data:
+                                    admin_client.table('profiles').upsert(profile_data, on_conflict='id').execute()
+                                break
+                            except Exception as e:
+                                if attempt == max_retries - 1:
+                                    raise e
+                                time.sleep(0.5)
 
-                                # 2. Upload TCT / OCT KYC document
-                                tct_url = None
-                                if kyc_tct_file and kyc_tct_file.filename:
-                                    uploaded_tct, tct_err = validate_and_upload(
-                                        admin_client, kyc_tct_file,
-                                        bucket='kyc-documents', prefix='tct_oct',
-                                        owner_id=owner_id, allowed_exts=ALLOWED_DOC_EXTENSIONS,
-                                        max_size=MAX_DOC_SIZE
-                                    )
-                                    if not tct_err and uploaded_tct:
-                                        tct_url = uploaded_tct
-                                    elif tct_err:
-                                        current_app.logger.warning(f"KYC TCT upload error: {tct_err}")
+                        now_str = datetime.now(timezone.utc).isoformat()
+                        ensure_initial_history(admin_client, owner_id, elo, dupr, now_str)
+                    else:
+                        import time
+                        max_retries = 3
+                        for attempt in range(max_retries):
+                            try:
+                                update_resp = admin_client.table('profiles').update(profile_data).eq('id', owner_id).execute()
+                                if not update_resp.data:
+                                    admin_client.table('profiles').upsert(profile_data, on_conflict='id').execute()
+                                break
+                            except Exception as e:
+                                if attempt == max_retries - 1:
+                                    raise e
+                                time.sleep(0.5)
 
-                                # 3. Upload Business Permit KYC document
-                                permit_url = None
-                                if kyc_permit_file and kyc_permit_file.filename:
-                                    uploaded_permit, permit_err = validate_and_upload(
-                                        admin_client, kyc_permit_file,
-                                        bucket='kyc-documents', prefix='biz_permit',
-                                        owner_id=owner_id, allowed_exts=ALLOWED_DOC_EXTENSIONS,
-                                        max_size=MAX_DOC_SIZE
-                                    )
-                                    if not permit_err and uploaded_permit:
-                                        permit_url = uploaded_permit
-                                    elif permit_err:
-                                        current_app.logger.warning(f"KYC Permit upload error: {permit_err}")
+                    # If Facility Owner: Register first facility, upload KYC documents and initialize courts
+                    if role == 'owner':
+                        try:
+                            from app.upload_utils import validate_and_upload, ALLOWED_DOC_EXTENSIONS, MAX_DOC_SIZE, ALLOWED_IMAGE_EXTENSIONS
+                            
+                            facility_img_url = None
+                            if facility_image_file and facility_image_file.filename:
+                                img_url, img_err = validate_and_upload(
+                                    admin_client, facility_image_file,
+                                    bucket='facility-images', prefix='facility',
+                                    owner_id=owner_id, allowed_exts=ALLOWED_IMAGE_EXTENSIONS
+                                )
+                                if not img_err and img_url:
+                                    facility_img_url = img_url
 
-                                # Package KYC documents as structured JSON
-                                kyc_status = 'pending_approval' if (tct_url or permit_url) else 'unverified'
-                                kyc_doc_data = {
-                                    'tct_url': tct_url,
-                                    'tct_filename': kyc_tct_file.filename if kyc_tct_file else '',
-                                    'permit_url': permit_url,
-                                    'permit_filename': kyc_permit_file.filename if kyc_permit_file else '',
-                                    'submitted_at': datetime.now(timezone.utc).isoformat()
-                                }
-                                kyc_document_url = json.dumps(kyc_doc_data)
+                            tct_url = None
+                            if kyc_tct_file and kyc_tct_file.filename:
+                                uploaded_tct, tct_err = validate_and_upload(
+                                    admin_client, kyc_tct_file,
+                                    bucket='kyc-documents', prefix='tct_oct',
+                                    owner_id=owner_id, allowed_exts=ALLOWED_DOC_EXTENSIONS,
+                                    max_size=MAX_DOC_SIZE
+                                )
+                                if not tct_err and uploaded_tct:
+                                    tct_url = uploaded_tct
+                                elif tct_err:
+                                    current_app.logger.warning(f"KYC TCT upload error: {tct_err}")
 
-                                # Format description with embedded amenities for persistence
-                                from app.owner.facilities import clean_description
-                                clean_desc = clean_description(facility_desc)
-                                final_desc = (clean_desc + f"\n<!--AMENITIES:{json.dumps(amenities)}-->") if amenities else clean_desc
-                                duration_val = int(slot_duration) if str(slot_duration).isdigit() else 60
+                            permit_url = None
+                            if kyc_permit_file and kyc_permit_file.filename:
+                                uploaded_permit, permit_err = validate_and_upload(
+                                    admin_client, kyc_permit_file,
+                                    bucket='kyc-documents', prefix='biz_permit',
+                                    owner_id=owner_id, allowed_exts=ALLOWED_DOC_EXTENSIONS,
+                                    max_size=MAX_DOC_SIZE
+                                )
+                                if not permit_err and uploaded_permit:
+                                    permit_url = uploaded_permit
+                                elif permit_err:
+                                    current_app.logger.warning(f"KYC Permit upload error: {permit_err}")
 
-                                fac_payload = {
-                                    'owner_id': owner_id,
-                                    'name': facility_name,
-                                    'location': facility_location,
-                                    'description': final_desc,
-                                    'status': 'active',
-                                    'open_time': open_time,
-                                    'close_time': close_time,
-                                    'slot_duration_minutes': duration_val,
-                                    'kyc_status': kyc_status,
-                                    'kyc_document_url': kyc_document_url,
-                                    'image_url': facility_img_url,
-                                }
+                            kyc_status = 'pending_approval' if (tct_url or permit_url) else 'unverified'
+                            kyc_doc_data = {
+                                'tct_url': tct_url,
+                                'tct_filename': kyc_tct_file.filename if kyc_tct_file else '',
+                                'permit_url': permit_url,
+                                'permit_filename': kyc_permit_file.filename if kyc_permit_file else '',
+                                'submitted_at': datetime.now(timezone.utc).isoformat()
+                            }
+                            kyc_document_url = json.dumps(kyc_doc_data)
 
-                                fac_res = admin_client.table('facilities').insert(fac_payload).execute()
-                                created_fac = fac_res.data[0] if (fac_res and fac_res.data) else None
+                            from app.owner.facilities import clean_description
+                            clean_desc = clean_description(facility_desc)
+                            final_desc = (clean_desc + f"\n<!--AMENITIES:{json.dumps(amenities)}-->") if amenities else clean_desc
+                            duration_val = int(slot_duration) if str(slot_duration).isdigit() else 60
 
-                                if created_fac and created_fac.get('id'):
-                                    fac_id = created_fac['id']
-                                    
-                                    # Create initial courts (capped at tier limit, e.g. 2 courts on Free Starter)
-                                    from app.billing.tiers import get_tier_limits
-                                    owner_limits = get_tier_limits('owner', 'free')
-                                    max_allowed_courts = owner_limits.get('max_courts_per_facility', 2)
-                                    requested_courts = int(num_courts_val) if str(num_courts_val).isdigit() else 2
-                                    num_courts = max(1, min(requested_courts, max_allowed_courts))
-                                    hourly_rate = max(0.0, float(court_rate_val) if court_rate_val else 300.0)
-                                    v_court_type = court_type if court_type in ['indoor', 'outdoor'] else 'indoor'
+                            fac_payload = {
+                                'owner_id': owner_id,
+                                'name': facility_name,
+                                'location': facility_location,
+                                'description': final_desc,
+                                'status': 'active',
+                                'open_time': open_time,
+                                'close_time': close_time,
+                                'slot_duration_minutes': duration_val,
+                                'kyc_status': kyc_status,
+                                'kyc_document_url': kyc_document_url,
+                                'image_url': facility_img_url,
+                            }
 
-                                    courts_payload = [
-                                        {
-                                            'facility_id': fac_id,
-                                            'owner_id': owner_id,
-                                            'name': f"Court {idx}",
-                                            'type': v_court_type,
-                                            'hourly_rate': hourly_rate,
-                                            'status': 'active'
-                                        }
-                                        for idx in range(1, num_courts + 1)
-                                    ]
-                                    admin_client.table('courts').insert(courts_payload).execute()
-                                    current_app.logger.info(f"Registered facility '{facility_name}' ({fac_id}) with {num_courts} courts for owner {owner_id}")
+                            fac_res = admin_client.table('facilities').insert(fac_payload).execute()
+                            created_fac = fac_res.data[0] if (fac_res and fac_res.data) else None
 
-                            except Exception as fac_err:
-                                current_app.logger.error(f"[signup] Failed registering initial facility: {fac_err}")
+                            if created_fac and created_fac.get('id'):
+                                fac_id = created_fac['id']
+                                owner_limits = get_tier_limits('owner', tier)
+                                max_allowed_courts = owner_limits.get('max_courts_per_facility', 2)
+                                requested_courts = int(num_courts_val) if str(num_courts_val).isdigit() else 2
+                                num_courts = max(1, min(requested_courts, max_allowed_courts))
+                                hourly_rate = max(0.0, float(court_rate_val) if court_rate_val else 300.0)
+                                v_court_type = court_type if court_type in ['indoor', 'outdoor'] else 'indoor'
 
-                    except Exception as upsert_err:
-                        print(f'[signup] profile upsert/update error: {upsert_err}')
+                                courts_payload = [
+                                    {
+                                        'facility_id': fac_id,
+                                        'owner_id': owner_id,
+                                        'name': f"Court {idx}",
+                                        'type': v_court_type,
+                                        'hourly_rate': hourly_rate,
+                                        'status': 'active'
+                                    }
+                                    for idx in range(1, num_courts + 1)
+                                ]
+                                admin_client.table('courts').insert(courts_payload).execute()
+                                current_app.logger.info(f"Registered facility '{facility_name}' ({fac_id}) with {num_courts} courts for owner {owner_id}")
 
-                # Store email so the login page can pre-fill the resend form
-                session['pending_email'] = email
-                if role == 'owner':
-                    flash(f'Account created! Your facility "{facility_name}" and KYC documents (TCT/OCT Title & Business Permit) have been submitted for admin verification. Please verify your email to log in.', 'success')
-                return redirect(url_for('auth.login', pending_verification='1'))
+                        except Exception as fac_err:
+                            current_app.logger.error(f"[signup] Failed registering initial facility: {fac_err}")
+
+                    # If Club Admin: Register initial club
+                    elif role == 'clubadmin' and club_name:
+                        try:
+                            admin_client.table('clubs').insert({
+                                'admin_id': owner_id,
+                                'name': club_name,
+                                'location': club_location or 'Laguna',
+                                'description': club_desc,
+                                'membership_type': 'free',
+                                'membership_fee': 0.0,
+                                'status': 'active'
+                            }).execute()
+                            current_app.logger.info(f"Registered initial club '{club_name}' for admin {owner_id}")
+                        except Exception as club_err:
+                            current_app.logger.warning(f"[signup] Initial club registration warning: {club_err}")
+
+                except Exception as upsert_err:
+                    print(f'[signup] profile upsert/update error: {upsert_err}')
+
+            # Store pending email and plan in session for seamless login pre-fill
+            session['pending_email'] = email
+            session['pending_plan'] = tier
+            session['pending_cycle'] = cycle
+
+            if tier != 'free':
+                flash(
+                    f"Account created! Please verify your email ({email}) to sign in and submit your GCash payment for {plan_info['label']}.",
+                    "success"
+                )
             else:
-                flash('Supabase not configured locally.', 'error')
-                return render_template('landings/signup.html', live_stats=live_stats)
+                flash(
+                    f"Account created! Please verify your email ({email}) to sign in and start playing.",
+                    "success"
+                )
+            return redirect(url_for('auth.login', pending_verification='1'))
+        else:
+            flash('Database not configured locally.', 'error')
+            return render_template('landings/signup.html', role=role, tier=tier, cycle=cycle, plan_info=plan_info, prefill=prefill)
 
-        except Exception as e:
-            current_app.logger.error(f"Signup error: {e}")
-            flash("Signup failed. Please try again or use a different email.", 'error')
-            return render_template('landings/signup.html', live_stats=live_stats)
-
-    return render_template('landings/signup.html', live_stats=live_stats)
+    except Exception as e:
+        current_app.logger.error(f"Signup error: {e}")
+        flash("Signup failed. Please try again or use a different email.", 'error')
+        return render_template('landings/signup.html', role=role, tier=tier, cycle=cycle, plan_info=plan_info, prefill=prefill)
 
 
 @auth_bp.route('/resend-verification', methods=['POST'])

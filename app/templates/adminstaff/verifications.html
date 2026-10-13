@@ -1375,6 +1375,12 @@
         <p class="confirm-desc" id="confirmModalMessage">
             Are you sure you want to approve this facility?
         </p>
+        <div id="confirmModalReasonGroup" style="display: none; width: 100%; text-align: left; margin: 12px 0 6px 0;">
+            <label style="font-size: 0.76rem; font-weight: 700; color: var(--text-card-muted); text-transform: uppercase; margin-bottom: 4px; display: block;">
+                Rejection Reason (Sent directly to Facility Owner)
+            </label>
+            <textarea id="confirmModalReasonInput" placeholder="e.g. Incomplete or blurry Mayor's Permit, Property title holder does not match owner name..." style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color-soft); background: var(--input-bg, rgba(0,0,0,0.04)); color: var(--text-primary); padding: 8px 10px; font-size: 0.82rem; min-height: 65px; resize: vertical; outline: none; box-sizing: border-box;"></textarea>
+        </div>
         <div class="confirm-actions-row">
             <button type="button" class="btn-dialog cancel" onclick="closeConfirmDialog()">
                 Cancel
@@ -1440,11 +1446,22 @@
         const iconWrapper = document.getElementById('confirmModalIcon');
         const btn = document.getElementById('confirmModalActionBtn');
         const btnText = document.getElementById('confirmModalActionText');
+        const reasonGroup = document.getElementById('confirmModalReasonGroup');
+        const reasonInput = document.getElementById('confirmModalReasonInput');
 
         if (!modal) return;
 
         titleEl.textContent = title;
         msgEl.innerHTML = message;
+
+        if (reasonGroup) {
+            if (type === 'reject') {
+                reasonGroup.style.display = 'block';
+                if (reasonInput) reasonInput.value = '';
+            } else {
+                reasonGroup.style.display = 'none';
+            }
+        }
 
         iconWrapper.className = `confirm-icon-ring ${type}`;
         btn.className = `btn-dialog ${type}`;
@@ -1479,9 +1496,11 @@
         if (activeConfirmCallback) {
             const cb = activeConfirmCallback;
             const modal = document.getElementById('customConfirmModal');
+            const reasonInput = document.getElementById('confirmModalReasonInput');
+            const reason = reasonInput ? reasonInput.value.trim() : '';
             if (modal) modal.classList.remove('open');
             activeConfirmCallback = null;
-            cb();
+            cb(reason);
         }
     }
 
@@ -1507,7 +1526,7 @@
             message: message,
             type: status === 'verified' ? 'approve' : (status === 'rejected' ? 'reject' : 'reset'),
             confirmText: confirmText,
-            onConfirm: () => updateFacilityKycAjax(facilityId, status, facilityName)
+            onConfirm: (reason) => updateFacilityKycAjax(facilityId, status, facilityName, reason)
         });
     }
 
@@ -1612,7 +1631,7 @@
     }
 
     // ── Fast AJAX KYC Status Update ──
-    async function updateFacilityKycAjax(facilityId, status, facilityName) {
+    async function updateFacilityKycAjax(facilityId, status, facilityName, reason = '') {
         try {
             const resp = await fetch(`/adminstaff/verifications/${facilityId}/status`, {
                 method: 'POST',
@@ -1623,7 +1642,7 @@
                     'X-CSRFToken': getCsrfToken(),
                     'X-CSRF-Token': getCsrfToken()
                 },
-                body: JSON.stringify({ status: status })
+                body: JSON.stringify({ status: status, reason: reason })
             });
 
             const data = await resp.json();

@@ -130,7 +130,7 @@
             <h2 class="value-prop-headline">{{ landing_content.value_prop_headline or "The definitive platform for
                 Laguna pickleball." }}</h2>
             <p class="value-prop-text">{{ landing_content.value_prop_text | safe }}</p>
-            <a href="{{ landing_content.value_prop_cta_link or url_for('auth.signup') }}" class="value-prop-cta">{{
+            <a href="{{ landing_content.value_prop_cta_link or url_for('main.memberships') }}" class="value-prop-cta">{{
                 landing_content.value_prop_cta_text or "Sign Up for Free" }} <i class="ph ph-arrow-right"></i></a>
 
             <!-- Payment Trust Badges -->
@@ -560,7 +560,7 @@
                             <li><i class="ph ph-check-circle"></i> <span>Fast-track KYC approval &amp; live
                                     support</span></li>
                         </ul>
-                        <a href="{{ url_for('auth.signup') }}?role=owner&plan=pro" class="sub-btn">Launch Pro
+                        <a href="{{ url_for('auth.signup') }}?role=owner&tier=pro&cycle=monthly" class="sub-btn plan-cta-btn" data-role="owner" data-tier="pro">Launch Pro
                             Facility</a>
                     </div>
 
@@ -597,7 +597,7 @@
                             <li><i class="ph ph-check-circle"></i> <span>Dedicated account manager &amp; VIP
                                     onboarding</span></li>
                         </ul>
-                        <a href="{{ url_for('auth.signup') }}?role=owner&plan=elite" class="sub-btn elite-btn">Get
+                        <a href="{{ url_for('auth.signup') }}?role=owner&tier=elite&cycle=monthly" class="sub-btn elite-btn plan-cta-btn" data-role="owner" data-tier="elite">Get
                             Enterprise Access</a>
                     </div>
                 </div>
@@ -670,7 +670,7 @@
                             <li><i class="ph ph-check-circle"></i> <span>Priority tournament listing on platform
                                     feed</span></li>
                         </ul>
-                        <a href="{{ url_for('auth.signup') }}?role=clubadmin&plan=pro" class="sub-btn">Start Pro Club
+                        <a href="{{ url_for('auth.signup') }}?role=clubadmin&tier=pro&cycle=monthly" class="sub-btn plan-cta-btn" data-role="clubadmin" data-tier="pro">Start Pro Club
                             Pass</a>
                     </div>
                 </div>
@@ -711,7 +711,7 @@
                             <li class="disabled"><i class="ph ph-x-circle"></i> <span>Gold "PRO" Paddle Profile Badge
                                     &amp; analytics</span></li>
                         </ul>
-                        <a href="{{ url_for('auth.signup') }}?role=player" class="sub-btn outline">Create Player
+                        <a href="{{ url_for('auth.signup') }}?role=player&tier=free" class="sub-btn outline">Create Player
                             Profile</a>
                     </div>
 
@@ -748,7 +748,7 @@
                             <li><i class="ph ph-check-circle"></i> <span>Exclusive Pro community leaderboards</span>
                             </li>
                         </ul>
-                        <a href="{{ url_for('auth.signup') }}?role=player&plan=pro" class="sub-btn">Upgrade to Pro
+                        <a href="{{ url_for('auth.signup') }}?role=player&tier=pro&cycle=monthly" class="sub-btn plan-cta-btn" data-role="player" data-tier="pro">Upgrade to Pro
                             Player</a>
                     </div>
                 </div>
@@ -983,6 +983,14 @@
                 if (note !== null) {
                     el.textContent = note;
                 }
+            });
+
+            // Update plan links with active cycle
+            const cycleParam = isAnnual ? 'annual' : 'monthly';
+            document.querySelectorAll('.plan-cta-btn[data-role]').forEach(btn => {
+                const role = btn.getAttribute('data-role');
+                const tier = btn.getAttribute('data-tier');
+                btn.href = `{{ url_for('auth.signup') }}?role=${role}&tier=${tier}&cycle=${cycleParam}`;
             });
         }
 

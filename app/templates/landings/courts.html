@@ -1093,7 +1093,15 @@
                                     <img src="{{ fac.image_url if fac.image_url else url_for('static', filename='images/court-hero.jpg') }}" alt="{{ fac.name }}" class="facility-thumb-img">
                                     
                                     <div class="facility-info-body">
-                                        <span class="facility-location-tag"><i class="ph-fill ph-map-pin"></i> {{ fac.location or 'Laguna District' }}</span>
+                                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;">
+                                            <span class="facility-location-tag"><i class="ph-fill ph-map-pin"></i> {{ fac.location or 'Laguna District' }}</span>
+                                            {% if fac.is_featured_pin %}
+                                                <span class="badge-featured-pin" style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.72rem; font-weight: 700; background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.35); padding: 2px 8px; border-radius: 999px;"><i class="ph-fill ph-push-pin"></i> Featured Venue</span>
+                                            {% endif %}
+                                            {% if fac.is_verified_partner %}
+                                                <span class="badge-verified-partner" style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.72rem; font-weight: 700; background: rgba(34, 197, 94, 0.15); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.35); padding: 2px 8px; border-radius: 999px;"><i class="ph-fill ph-seal-check"></i> Verified Partner</span>
+                                            {% endif %}
+                                        </div>
                                         <h3 class="facility-name-title">{{ fac.name }}</h3>
                                         <p class="facility-description-text">{{ fac.description or 'Premium court facility in Laguna equipped with professional nets, lighting, and spectator areas.' }}</p>
                                         

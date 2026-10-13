@@ -55,12 +55,47 @@ def facilities():
                 f['amenities'] = extract_amenities(f)
                 f['display_description'] = clean_description(f.get('description'))
                 facilities_list.append(f)
+
+            # Check if any facility was rejected and retrieve the rejection feedback
+            rejected_facs = [f for f in facilities_list if f.get('kyc_status') == 'rejected']
+            if rejected_facs:
+                try:
+                    notifs_resp = db.table('notifications').select('*').eq('user_id', owner_id).eq('type', 'warning').order('created_at', desc=True).limit(10).execute()
+                    notifs = notifs_resp.data or []
+                    for rf in rejected_facs:
+                        for n in notifs:
+                            msg = n.get('message') or ''
+                            if rf['name'].lower() in msg.lower() or 'kyc' in (n.get('title') or '').lower():
+                                rf['rejection_reason'] = msg
+                                break
+                except Exception:
+                    pass
     except Exception as e:
         from flask import current_app
         current_app.logger.error(f"Error loading facilities for owner {owner_id}: {e}")
         flash('An error occurred loading facilities. Please try again.', 'error')
 
-    return render_template('owner/facilities.html', facilities=facilities_list)
+    # Tier and facility limit checks
+    from app.billing.tiers import check_feature_limit, get_user_tier, get_tier_limits
+    owner_tier = get_user_tier(owner_id, role='owner', db=db)
+    limits = get_tier_limits('owner', owner_tier)
+    facility_limit = limits.get('max_facilities', 1)
+    current_fac_count = len(facilities_list)
+    limit_check = check_feature_limit(owner_id, 'owner', 'max_facilities', current_count=current_fac_count, db=db)
+    can_add_facility = limit_check.get('allowed', True)
+    limit_message = limit_check.get('message', '')
+    required_tier = limit_check.get('required_tier', 'pro')
+
+    return render_template(
+        'owner/facilities.html',
+        facilities=facilities_list,
+        can_add_facility=can_add_facility,
+        facility_limit=facility_limit,
+        current_fac_count=current_fac_count,
+        limit_message=limit_message,
+        owner_tier=owner_tier,
+        required_tier=required_tier
+    )
 
 
 @owner_bp.route('/facilities/add', methods=['POST'])

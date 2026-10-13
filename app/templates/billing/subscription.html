@@ -23,6 +23,84 @@
         {% endif %}
     </div>
 
+    {% set pending_sub = (subscriptions_history|selectattr('status', 'equalto', 'pending_approval')|list)[0] if subscriptions_history else none %}
+    {% set rejected_sub = (subscriptions_history|selectattr('status', 'equalto', 'rejected')|list)[0] if (profile.subscription_status == 'rejected' and subscriptions_history) else none %}
+
+    {% if pending_sub %}
+    <!-- ── Verification In Progress Alert Card ── -->
+    <div class="sub-pending-card animate-entry" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(217, 119, 6, 0.06)); border: 1.5px solid rgba(245, 158, 11, 0.35); border-radius: 16px; padding: 22px 26px; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(245, 158, 11, 0.08);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+            <div style="display: flex; gap: 16px; align-items: flex-start;">
+                <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(245, 158, 11, 0.2); color: #f59e0b; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0;">
+                    <i class="ph ph-hourglass-high"></i>
+                </div>
+                <div>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                        <span style="background: #f59e0b; color: #fff; font-size: 0.72rem; font-weight: 800; padding: 3px 9px; border-radius: 999px; letter-spacing: 0.5px;">
+                            PAYMENT UNDER REVIEW
+                        </span>
+                        <span style="font-size: 0.82rem; color: var(--text-secondary);">
+                            Submitted {{ pending_sub.created_at[:10] if pending_sub.created_at else 'recently' }}
+                        </span>
+                    </div>
+                    <h3 style="margin: 0 0 6px 0; font-size: 1.15rem; font-weight: 800; color: var(--text-primary);">
+                        {{ pending_sub.tier|capitalize }} Pass ({{ pending_sub.billing_cycle|capitalize }}) &bull; ₱{{ "{:,.2f}".format(pending_sub.amount or 0) }}
+                    </h3>
+                    <p style="margin: 0; font-size: 0.88rem; color: var(--text-secondary); max-width: 620px; line-height: 1.5;">
+                        Your GCash payment proof is currently being reviewed by our administrative team. 
+                        Verification typically takes <strong>15–30 minutes</strong>. All {{ pending_sub.tier|capitalize }} perks (14-day early booking, ₱0 convenience fees, and priority matching) will activate immediately once confirmed.
+                    </p>
+                    <div style="display: flex; align-items: center; gap: 16px; margin-top: 12px; font-size: 0.85rem; flex-wrap: wrap;">
+                        <span><strong style="color: var(--text-secondary);">GCash Ref #:</strong> <code style="background: var(--input-bg); border: 1px solid var(--border-color); padding: 2px 7px; border-radius: 4px; font-weight: 700; color: var(--text-primary);">{{ pending_sub.gcash_reference or 'N/A' }}</code></span>
+                        {% if pending_sub.receipt_url %}
+                        <a href="{{ pending_sub.receipt_url }}" target="_blank" rel="noopener noreferrer" style="color: var(--primary-orange); font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                            <i class="ph ph-receipt"></i> View Uploaded Receipt <i class="ph ph-arrow-square-out" style="font-size: 0.8rem;"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div>
+                <span class="sub-status-pill warning" style="font-size: 0.8rem; padding: 6px 14px; border-radius: 8px; background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+                    <i class="ph ph-clock"></i> Awaiting Staff Confirmation
+                </span>
+            </div>
+        </div>
+    </div>
+    {% elif rejected_sub %}
+    <!-- ── Rejection Notice Card ── -->
+    <div class="sub-rejected-card animate-entry" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(220, 38, 38, 0.06)); border: 1.5px solid rgba(239, 68, 68, 0.35); border-radius: 16px; padding: 22px 26px; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(239, 68, 68, 0.08);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+            <div style="display: flex; gap: 16px; align-items: flex-start;">
+                <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(239, 68, 68, 0.2); color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0;">
+                    <i class="ph ph-warning-circle"></i>
+                </div>
+                <div>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                        <span style="background: #ef4444; color: #fff; font-size: 0.72rem; font-weight: 800; padding: 3px 9px; border-radius: 999px; letter-spacing: 0.5px;">
+                            PAYMENT PROOF REJECTED
+                        </span>
+                    </div>
+                    <h3 style="margin: 0 0 6px 0; font-size: 1.15rem; font-weight: 800; color: var(--text-primary);">
+                        Payment for {{ rejected_sub.tier|capitalize }} Pass could not be confirmed
+                    </h3>
+                    <p style="margin: 0 0 8px 0; font-size: 0.88rem; color: var(--text-secondary); max-width: 620px; line-height: 1.5;">
+                        <strong>Staff Note:</strong> {{ rejected_sub.notes or 'Payment reference could not be verified in GCash merchant statement. Please ensure your reference number matches and your receipt screenshot is clearly legible.' }}
+                    </p>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                        Previous Ref #: <code style="background: var(--input-bg); border: 1px solid var(--border-color); padding: 2px 7px; border-radius: 4px; font-weight: 700; color: var(--text-primary);">{{ rejected_sub.gcash_reference or 'N/A' }}</code>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <a href="{{ url_for('billing.checkout_page', plan=rejected_sub.tier or 'pro', cycle=rejected_sub.billing_cycle or 'monthly') }}" class="btn-solid" style="padding: 10px 20px; border-radius: 10px; background: #ef4444; color: #fff; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(239,68,68,0.3);">
+                    <i class="ph ph-arrow-counter-clockwise"></i> Resubmit Payment Proof
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Active Membership Snapshot -->
     <div class="sub-current-card">
         <div class="current-card-left">
@@ -43,12 +121,28 @@
                     {% endif %}
                 </h3>
                 <p class="current-desc">
-                    {% if current_tier == 'pro' %}
-                        Unlocked 14-day early access booking, ₱0 convenience fees, priority matchmaking, and verified gold badge.
-                    {% elif current_tier == 'elite' %}
-                        Unlimited facilities, unlimited courts, 0% platform commissions, and 90-day booking horizon.
+                    {% if role == 'player' %}
+                        {% if current_tier == 'pro' %}
+                            Unlocked 14-day early access booking, unlimited active bookings, priority matchmaking, and verified gold badge.
+                        {% else %}
+                            Standard free access. 3-day advance booking window and up to 2 active bookings.
+                        {% endif %}
+                    {% elif role == 'owner' %}
+                        {% if current_tier == 'elite' %}
+                            Unlocked unlimited facilities &amp; courts, unlimited staff delegations, payment ledger CSV export, dynamic pricing, and homepage featured pin.
+                        {% elif current_tier == 'pro' %}
+                            Unlocked up to 3 facilities, 8 courts per venue, up to 3 staff accounts, payment ledger CSV export, and Verified Partner badge.
+                        {% else %}
+                            Starter facility operator. 1 venue, up to 2 courts, schedule management.
+                        {% endif %}
+                    {% elif role == 'clubadmin' %}
+                        {% if current_tier == 'pro' %}
+                            Unlocked 1 managed club hub, unlimited members, unlimited tournaments up to 64 brackets, GCash entry fees, and roster CSV export.
+                        {% else %}
+                            Community club organizer. 1 managed club hub, up to 25 members, and 1 tournament per calendar month (8-player bracket).
+                        {% endif %}
                     {% else %}
-                        Standard free access. 3-day advance booking window and standard convenience fees.
+                        Standard free access.
                     {% endif %}
                 </p>
             </div>
@@ -101,14 +195,14 @@
                     <li><i class="ph ph-check-circle"></i> <span>Up to 2 active bookings at a time</span></li>
                     <li><i class="ph ph-check-circle"></i> <span>Open play community matchmaker</span></li>
                     <li><i class="ph ph-check-circle"></i> <span>DUPR &amp; ELO rating tracking</span></li>
-                    <li class="disabled"><i class="ph ph-x-circle"></i> <span>Standard ₱25 convenience fee per reservation</span></li>
                     <li class="disabled"><i class="ph ph-x-circle"></i> <span>14-day early access peak slot booking</span></li>
+                    <li class="disabled"><i class="ph ph-x-circle"></i> <span>Unlimited active bookings simultaneously</span></li>
                     <li class="disabled"><i class="ph ph-x-circle"></i> <span>Priority open play matchmaker queue</span></li>
                     <li class="disabled"><i class="ph ph-x-circle"></i> <span>Verified Gold "PRO" athlete badge</span></li>
                 </ul>
                 <div class="plan-footer">
                     {% if current_tier == 'free' %}
-                    <button type="button" class="btn-plan-action outline" disabled>Active Plan</button>
+                    <button type="button" class="btn-plan-action outline" disabled><i class="ph ph-check"></i> Current Plan Active</button>
                     {% else %}
                     <span class="sub-downgrade-note">Free standard tier</span>
                     {% endif %}
@@ -117,7 +211,11 @@
 
             <!-- Pro Player Pass -->
             <div class="plan-card featured {% if current_tier == 'pro' %}current-plan{% endif %}">
+                {% if current_tier == 'pro' %}
+                <span class="plan-status-flag current">Current Plan</span>
+                {% else %}
                 <span class="plan-status-flag popular">Recommended</span>
+                {% endif %}
                 <div class="plan-head">
                     <span class="plan-type-pill pro"><i class="ph ph-crown-simple"></i> PRO ATHLETE</span>
                     <h4>Pickleball Pro Pass</h4>
@@ -132,7 +230,6 @@
                 </div>
                 <ul class="plan-perks-list">
                     <li><i class="ph ph-check-circle"></i> <span><strong>14-Day Early Access Booking</strong> (lock peak weekend slots)</span></li>
-                    <li><i class="ph ph-check-circle"></i> <span><strong>₱0 Platform Convenience Fees</strong> (Unlimited savings)</span></li>
                     <li><i class="ph ph-check-circle"></i> <span><strong>Unlimited Active Bookings</strong> simultaneously</span></li>
                     <li><i class="ph ph-check-circle"></i> <span><strong>Priority Matchmaker Queue</strong> (Instant lobby pairing)</span></li>
                     <li><i class="ph ph-check-circle"></i> <span><strong>Verified Gold "PRO" Badge</strong> on profile &amp; rosters</span></li>
@@ -142,9 +239,13 @@
                 <div class="plan-footer">
                     {% if current_tier == 'pro' %}
                     <button type="button" class="btn-plan-action outline" disabled><i class="ph ph-check"></i> Current Plan Active</button>
+                    {% elif pending_sub and pending_sub.tier == 'pro' %}
+                    <button type="button" class="btn-plan-action outline" style="border-color: #f59e0b; color: #f59e0b; background: rgba(245,158,11,0.08); cursor: default;" disabled>
+                        <i class="ph ph-clock"></i> Verification in Progress
+                    </button>
                     {% else %}
-                    <a href="{{ url_for('billing.checkout_page', plan='pro', cycle='monthly') }}" class="btn-plan-action primary" id="btnProSelect">
-                        <i class="ph ph-credit-card"></i> Legit Subscribe with GCash
+                    <a href="{{ url_for('billing.checkout_page', plan='pro', cycle='monthly') }}" class="btn-plan-action primary" id="btnProSelect" data-plan="pro">
+                        <i class="ph ph-credit-card"></i> Subscribe with GCash
                     </a>
                     {% endif %}
                 </div>
@@ -153,6 +254,9 @@
         {% elif role == 'owner' %}
             <!-- Facility Owner Plans: Starter, Pro, Elite -->
             <div class="plan-card {% if current_tier == 'free' %}current-plan{% endif %}">
+                {% if current_tier == 'free' %}
+                <span class="plan-status-flag current">Current Plan</span>
+                {% endif %}
                 <div class="plan-head">
                     <span class="plan-type-pill">STARTER</span>
                     <h4>Starter Operator</h4>
@@ -160,75 +264,105 @@
                 </div>
                 <div class="plan-price-wrap">
                     <div class="plan-price">₱0 <span class="period">/ mo</span></div>
+                    <span class="plan-price-note">Free forever</span>
                 </div>
                 <ul class="plan-perks-list">
                     <li><i class="ph ph-check-circle"></i> <span>1 Registered Venue</span></li>
-                    <li><i class="ph ph-check-circle"></i> <span>Up to 2 Courts</span></li>
-                    <li><i class="ph ph-check-circle"></i> <span>8% Platform Booking Fee</span></li>
+                    <li><i class="ph ph-check-circle"></i> <span>Up to 2 Courts per Venue</span></li>
+                    <li><i class="ph ph-check-circle"></i> <span>Calendar &amp; Schedule Management</span></li>
+                    <li class="disabled"><i class="ph ph-x-circle"></i> <span>Staff account delegations (0 on Free)</span></li>
+                    <li class="disabled"><i class="ph ph-x-circle"></i> <span>Payment ledger CSV export</span></li>
+                    <li class="disabled"><i class="ph ph-x-circle"></i> <span>Verified Partner trust badge</span></li>
                 </ul>
                 <div class="plan-footer">
                     {% if current_tier == 'free' %}
-                    <button class="btn-plan-action outline" disabled>Active</button>
+                    <button type="button" class="btn-plan-action outline" disabled><i class="ph ph-check"></i> Current Plan Active</button>
+                    {% else %}
+                    <span class="sub-downgrade-note">Free standard tier</span>
                     {% endif %}
                 </div>
             </div>
 
+            <!-- Pro Facility Pass -->
             <div class="plan-card featured {% if current_tier == 'pro' %}current-plan{% endif %}">
+                {% if current_tier == 'pro' %}
+                <span class="plan-status-flag current">Current Plan</span>
+                {% else %}
                 <span class="plan-status-flag popular">Most Popular</span>
+                {% endif %}
                 <div class="plan-head">
                     <span class="plan-type-pill pro">PRO OPERATOR</span>
                     <h4>Pro Facility Pass</h4>
-                    <p>Grow court booking volume with 3% commission.</p>
+                    <p>Expanded venue management, staff accounts, and ledger exports.</p>
                 </div>
                 <div class="plan-price-wrap">
                     <div class="plan-price">
                         <span class="plan-val" data-monthly="1,299" data-annual="1,049">₱1,299</span>
                         <span class="period">/ mo</span>
                     </div>
+                    <span class="plan-price-note" data-monthly="Billed monthly" data-annual="₱12,588 billed annually (Save ₱3,000)">Billed monthly</span>
                 </div>
                 <ul class="plan-perks-list">
-                    <li><i class="ph ph-check-circle"></i> <span>Up to 3 Facilities</span></li>
-                    <li><i class="ph ph-check-circle"></i> <span>Up to 8 Courts per Venue</span></li>
-                    <li><i class="ph ph-check-circle"></i> <span>Low 3% Platform Fee</span></li>
-                    <li><i class="ph ph-check-circle"></i> <span>Up to 3 Staff Accounts</span></li>
+                    <li><i class="ph ph-check-circle"></i> <span><strong>Up to 3 Facilities</strong></span></li>
+                    <li><i class="ph ph-check-circle"></i> <span><strong>Up to 8 Courts</strong> per Venue</span></li>
+                    <li><i class="ph ph-check-circle"></i> <span><strong>Up to 3 Staff Accounts</strong> (Staff Delegation)</span></li>
+                    <li><i class="ph ph-check-circle"></i> <span><strong>Payment Ledger CSV Export</strong></span></li>
                     <li><i class="ph ph-check-circle"></i> <span>Peak Hour Dynamic Pricing</span></li>
-                    <li><i class="ph ph-check-circle"></i> <span>Verified Partner Gold Badge</span></li>
+                    <li><i class="ph ph-check-circle"></i> <span><strong>Verified Partner</strong> Gold Badge</span></li>
                 </ul>
                 <div class="plan-footer">
-                    <a href="{{ url_for('billing.checkout_page', plan='pro', cycle='monthly') }}" class="btn-plan-action primary" id="btnProSelect">
-                        Subscribe with GCash
+                    {% if current_tier == 'pro' %}
+                    <button type="button" class="btn-plan-action outline" disabled><i class="ph ph-check"></i> Current Plan Active</button>
+                    {% else %}
+                    <a href="{{ url_for('billing.checkout_page', plan='pro', cycle='monthly') }}" class="btn-plan-action primary" id="btnProSelect" data-plan="pro">
+                        <i class="ph ph-credit-card"></i> Subscribe with GCash
                     </a>
+                    {% endif %}
                 </div>
             </div>
 
-            <div class="plan-card {% if current_tier == 'elite' %}current-plan{% endif %}">
+            <!-- Elite Enterprise -->
+            <div class="plan-card {% if current_tier == 'elite' %}current-plan featured{% endif %}">
+                {% if current_tier == 'elite' %}
+                <span class="plan-status-flag current">Current Plan</span>
+                {% endif %}
                 <div class="plan-head">
                     <span class="plan-type-pill" style="background:#1e1b4b; color:#818cf8;">ENTERPRISE</span>
                     <h4>Elite Enterprise</h4>
-                    <p>Full-scale commercial sports club networks.</p>
+                    <p>Full-scale commercial sports club networks with featured placement.</p>
                 </div>
                 <div class="plan-price-wrap">
                     <div class="plan-price">
                         <span class="plan-val" data-monthly="2,999" data-annual="2,399">₱2,999</span>
                         <span class="period">/ mo</span>
                     </div>
+                    <span class="plan-price-note" data-monthly="Billed monthly" data-annual="₱28,788 billed annually (Save ₱7,200)">Billed monthly</span>
                 </div>
                 <ul class="plan-perks-list">
-                    <li><i class="ph ph-check-circle"></i> <span>Unlimited Facilities &amp; Courts</span></li>
-                    <li><i class="ph ph-check-circle"></i> <span>0% Platform Booking Commission</span></li>
-                    <li><i class="ph ph-check-circle"></i> <span>Unlimited Staff Delegations</span></li>
-                    <li><i class="ph ph-check-circle"></i> <span>Homepage Featured Pin Placement</span></li>
+                    <li><i class="ph ph-check-circle"></i> <span><strong>Unlimited Facilities &amp; Courts</strong></span></li>
+                    <li><i class="ph ph-check-circle"></i> <span><strong>Unlimited Staff Delegations</strong></span></li>
+                    <li><i class="ph ph-check-circle"></i> <span><strong>Payment Ledger CSV Export</strong></span></li>
+                    <li><i class="ph ph-check-circle"></i> <span>Peak Hour Dynamic Pricing</span></li>
+                    <li><i class="ph ph-check-circle"></i> <span><strong>Homepage Featured Venue Pin</strong></span></li>
+                    <li><i class="ph ph-check-circle"></i> <span>Verified Partner Gold Badge</span></li>
                 </ul>
                 <div class="plan-footer">
-                    <a href="{{ url_for('billing.checkout_page', plan='elite', cycle='monthly') }}" class="btn-plan-action primary">
-                        Subscribe with GCash
+                    {% if current_tier == 'elite' %}
+                    <button type="button" class="btn-plan-action outline" disabled><i class="ph ph-check"></i> Current Plan Active</button>
+                    {% else %}
+                    <a href="{{ url_for('billing.checkout_page', plan='elite', cycle='monthly') }}" class="btn-plan-action primary" data-plan="elite">
+                        <i class="ph ph-credit-card"></i> Subscribe with GCash
                     </a>
+                    {% endif %}
                 </div>
             </div>
 
         {% elif role == 'clubadmin' %}
             <!-- Club Admin Plans -->
             <div class="plan-card {% if current_tier == 'free' %}current-plan{% endif %}">
+                {% if current_tier == 'free' %}
+                <span class="plan-status-flag current">Current Plan</span>
+                {% endif %}
                 <div class="plan-head">
                     <span class="plan-type-pill">ORGANIZER</span>
                     <h4>Community Organizer</h4>
@@ -236,19 +370,32 @@
                 </div>
                 <div class="plan-price-wrap">
                     <div class="plan-price">₱0 <span class="period">/ mo</span></div>
+                    <span class="plan-price-note">Free forever</span>
                 </div>
                 <ul class="plan-perks-list">
-                    <li><i class="ph ph-check-circle"></i> <span>1 Managed Club</span></li>
-                    <li><i class="ph ph-check-circle"></i> <span>Up to 25 Members</span></li>
+                    <li><i class="ph ph-check-circle"></i> <span>1 Managed Club Hub</span></li>
+                    <li><i class="ph ph-check-circle"></i> <span>Up to 25 Club Members</span></li>
                     <li><i class="ph ph-check-circle"></i> <span>1 Tournament / Month (8 Max)</span></li>
+                    <li><i class="ph ph-check-circle"></i> <span>Single Elimination Bracket Format</span></li>
+                    <li class="disabled"><i class="ph ph-x-circle"></i> <span>Member roster CSV export</span></li>
+                    <li class="disabled"><i class="ph ph-x-circle"></i> <span>Automated GCash entry fee collection</span></li>
                 </ul>
                 <div class="plan-footer">
-                    <button class="btn-plan-action outline" disabled>Active</button>
+                    {% if current_tier == 'free' %}
+                    <button type="button" class="btn-plan-action outline" disabled><i class="ph ph-check"></i> Current Plan Active</button>
+                    {% else %}
+                    <span class="sub-downgrade-note">Free standard tier</span>
+                    {% endif %}
                 </div>
             </div>
 
+            <!-- Pro Club Pass -->
             <div class="plan-card featured {% if current_tier == 'pro' %}current-plan{% endif %}">
+                {% if current_tier == 'pro' %}
+                <span class="plan-status-flag current">Current Plan</span>
+                {% else %}
                 <span class="plan-status-flag popular">Organizer Favorite</span>
+                {% endif %}
                 <div class="plan-head">
                     <span class="plan-type-pill pro">PRO CLUB PASS</span>
                     <h4>Pro Club Pass</h4>
@@ -259,18 +406,24 @@
                         <span class="plan-val" data-monthly="599" data-annual="479">₱599</span>
                         <span class="period">/ mo</span>
                     </div>
+                    <span class="plan-price-note" data-monthly="Billed monthly" data-annual="₱5,748 billed annually (Save ₱1,440)">Billed monthly</span>
                 </div>
                 <ul class="plan-perks-list">
-                    <li><i class="ph ph-check-circle"></i> <span>Up to 5 Clubs</span></li>
-                    <li><i class="ph ph-check-circle"></i> <span>Unlimited Club Members</span></li>
-                    <li><i class="ph ph-check-circle"></i> <span>Automated GCash Entry Fee Collection</span></li>
+                    <li><i class="ph ph-check-circle"></i> <span><strong>1 Managed Club Hub</strong></span></li>
+                    <li><i class="ph ph-check-circle"></i> <span><strong>Unlimited Club Members</strong></span></li>
+                    <li><i class="ph ph-check-circle"></i> <span><strong>Unlimited Tournaments</strong> (Up to 64 Brackets)</span></li>
+                    <li><i class="ph ph-check-circle"></i> <span><strong>Automated GCash Entry Fee Collection</strong></span></li>
                     <li><i class="ph ph-check-circle"></i> <span>Double Elim, Round Robin &amp; Swiss</span></li>
-                    <li><i class="ph ph-check-circle"></i> <span>Export Roster &amp; Ledger CSV</span></li>
+                    <li><i class="ph ph-check-circle"></i> <span><strong>Export Member Rosters CSV</strong></span></li>
                 </ul>
                 <div class="plan-footer">
-                    <a href="{{ url_for('billing.checkout_page', plan='pro', cycle='monthly') }}" class="btn-plan-action primary" id="btnProSelect">
-                        Subscribe with GCash
+                    {% if current_tier == 'pro' %}
+                    <button type="button" class="btn-plan-action outline" disabled><i class="ph ph-check"></i> Current Plan Active</button>
+                    {% else %}
+                    <a href="{{ url_for('billing.checkout_page', plan='pro', cycle='monthly') }}" class="btn-plan-action primary" id="btnProSelect" data-plan="pro">
+                        <i class="ph ph-credit-card"></i> Subscribe with GCash
                     </a>
+                    {% endif %}
                 </div>
             </div>
         {% endif %}
@@ -762,6 +915,50 @@
         cursor: default;
     }
 
+    .plan-card.current-plan {
+        border-color: #8b5cf6 !important;
+        box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.4), 0 12px 32px rgba(139, 92, 246, 0.15) !important;
+    }
+
+    .plan-card.current-plan .btn-plan-action.outline {
+        background: rgba(139, 92, 246, 0.08);
+        border: 1.5px solid rgba(139, 92, 246, 0.35);
+        color: #7c3aed;
+        font-weight: 800;
+        cursor: default;
+    }
+
+    .sub-downgrade-note {
+        display: block;
+        text-align: center;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        padding: 10px 0;
+    }
+
+    html.dark-mode .plan-card.current-plan .btn-plan-action.outline,
+    [data-theme="dark"] .plan-card.current-plan .btn-plan-action.outline {
+        background: rgba(139, 92, 246, 0.18);
+        border-color: rgba(139, 92, 246, 0.45);
+        color: #c4b5fd;
+    }
+
+    html.dark-mode .sub-active-status-badge,
+    [data-theme="dark"] .sub-active-status-badge {
+        background: rgba(16, 185, 129, 0.15);
+        border-color: rgba(16, 185, 129, 0.4);
+        color: #34d399;
+    }
+    html.dark-mode .sub-active-status-badge strong,
+    [data-theme="dark"] .sub-active-status-badge strong {
+        color: #6ee7b7;
+    }
+    html.dark-mode .sub-active-status-badge span,
+    [data-theme="dark"] .sub-active-status-badge span {
+        color: #a7f3d0;
+    }
+
     /* ── History Table ── */
     .sub-history-card {
         background: var(--card-bg);
@@ -890,11 +1087,11 @@
             }
         });
 
-        const proBtn = document.getElementById('btnProSelect');
-        if (proBtn) {
-            const baseUrl = "{{ url_for('billing.checkout_page', plan='pro') }}";
-            proBtn.href = `${baseUrl}?cycle=${currentCycle}`;
-        }
+        document.querySelectorAll('.btn-plan-action[data-plan]').forEach(btnEl => {
+            const plan = btnEl.dataset.plan;
+            const baseUrl = "{{ url_for('billing.checkout_page') }}";
+            btnEl.href = `${baseUrl}?plan=${plan}&cycle=${currentCycle}`;
+        });
     }
 </script>
 {% endblock %}

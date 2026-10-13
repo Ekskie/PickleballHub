@@ -107,6 +107,12 @@ def bracket_generate(event_id):
             flash("Not enough players to generate a bracket.", "warning")
             return redirect(url_for('clubadmin.tournament_manage', event_id=event_id))
             
+        from app.billing.tiers import check_feature_limit
+        brack_chk = check_feature_limit(admin_id, 'clubadmin', 'max_tournament_bracket', current_count=len(players), db=db)
+        if not brack_chk['allowed']:
+            flash(brack_chk['message'], 'warning')
+            return redirect(url_for('clubadmin.tournament_manage', event_id=event_id))
+
         random.shuffle(players)
         
         matches_to_insert = []

@@ -170,6 +170,48 @@ def create_event():
         flash('Please fill all required fields.', 'error')
         return redirect(url_for('clubadmin.create_event'))
 
+    # Subscription limits check for tournament creation
+    from app.billing.tiers import check_feature_limit
+    try:
+        max_p = int(max_players)
+    except Exception:
+        max_p = 16
+
+    # 1. Bracket player cap check
+    bracket_chk = check_feature_limit(clubadmin_id, 'clubadmin', 'max_tournament_bracket', current_count=max_p, db=db)
+    if not bracket_chk['allowed']:
+        flash(bracket_chk['message'], 'warning')
+        return redirect(url_for('clubadmin.create_event'))
+
+    # 2. Monthly tournament count limit check
+    if event_type == 'tournament':
+        try:
+            cur_month_start = datetime.now(PH_TZ).strftime('%Y-%m-01')
+            month_tourn_resp = db.table('events').select('id', count='exact')\
+                .eq('organizer_id', clubadmin_id)\
+                .eq('type', 'tournament')\
+                .gte('event_date', cur_month_start)\
+                .execute()
+            month_count = month_tourn_resp.count if month_tourn_resp and month_tourn_resp.count is not None else 0
+            tourn_chk = check_feature_limit(clubadmin_id, 'clubadmin', 'monthly_tournaments_limit', current_count=month_count, db=db)
+            if not tourn_chk['allowed']:
+                flash(tourn_chk['message'], 'warning')
+                return redirect(url_for('clubadmin.create_event'))
+        except Exception as lim_err:
+            from flask import current_app
+            current_app.logger.warning(f"Error checking monthly tournament limit: {lim_err}")
+
+    # 3. Entry fee collection check (paid entry requires Pro)
+    try:
+        fee_val = float(entry_fee or 0)
+    except Exception:
+        fee_val = 0
+    if reg_type == 'paid' and fee_val > 0:
+        fee_chk = check_feature_limit(clubadmin_id, 'clubadmin', 'gcash_entry_fees_allowed', db=db)
+        if not fee_chk['allowed']:
+            flash(fee_chk['message'], 'warning')
+            return redirect(url_for('clubadmin.create_event'))
+
     # Check court conflicts before inserting
     if facility_id and court_ids:
         from app.booking_utils import check_court_conflict

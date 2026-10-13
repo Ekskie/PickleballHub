@@ -6,7 +6,7 @@ Defines monetization rules, role-based limits, paywall checks, and route decorat
 
 from functools import wraps
 from datetime import datetime, timezone, timedelta
-from flask import session, flash, redirect, url_for, g, current_app, request
+from flask import session, flash, redirect, url_for, g, current_app, request, has_request_context
 from app.db import get_admin_db
 
 # Philippine Standard Time (UTC+8)
@@ -80,7 +80,7 @@ TIER_CONFIG = {
             'label': 'Pro Club Pass',
             'price_monthly': 599,
             'price_annual': 479,  # ₱5,748/yr
-            'max_clubs': 5,
+            'max_clubs': 1,
             'max_members_per_club': 999999,
             'max_tournament_bracket': 64,
             'monthly_tournaments_limit': 999,
@@ -131,8 +131,9 @@ def get_user_tier(user_id_or_profile=None, role=None, db=None) -> str:
     for a given user or profile.
     Automatically verifies expiry timestamp against UTC. If expired, defaults to 'free'.
     """
+    in_req = has_request_context()
     if not user_id_or_profile:
-        user_id_or_profile = session.get('user_id')
+        user_id_or_profile = session.get('user_id') if in_req else None
 
     if not user_id_or_profile:
         return 'free'
@@ -145,11 +146,11 @@ def get_user_tier(user_id_or_profile=None, role=None, db=None) -> str:
         if 'subscription_tier' not in profile and profile.get('id'):
             return get_user_tier(profile['id'], role=role, db=db)
     else:
-        # Check cached profile on flask.g or session
-        cached = getattr(g, 'current_profile', None)
+        # Check cached profile on flask.g or session if in request context
+        cached = getattr(g, 'current_profile', None) if in_req else None
         if cached and cached.get('id') == user_id_or_profile:
             profile = cached
-        elif session.get('cached_profile') and session['cached_profile'].get('id') == user_id_or_profile:
+        elif in_req and session.get('cached_profile') and session['cached_profile'].get('id') == user_id_or_profile:
             profile = session['cached_profile']
         else:
             try:
@@ -160,21 +161,29 @@ def get_user_tier(user_id_or_profile=None, role=None, db=None) -> str:
                         .eq('id', user_id_or_profile).single().execute()
                     profile = resp.data if resp else None
             except Exception as e:
-                current_app.logger.warning(f"[get_user_tier] Error fetching tier for {user_id_or_profile}: {e}")
+                if in_req and current_app:
+                    current_app.logger.warning(f"[get_user_tier] Error fetching tier for {user_id_or_profile}: {e}")
 
+    sess_tier = session.get('subscription_tier') if in_req else None
     if not profile:
         # Fallback to session if present
-        sess_tier = session.get('subscription_tier')
         if sess_tier in ['pro', 'elite']:
             return sess_tier
         return 'free'
 
-    raw_tier = (profile.get('subscription_tier') or session.get('subscription_tier') or 'free').strip().lower()
+    raw_tier = (profile.get('subscription_tier') or sess_tier or 'free').strip().lower()
     if raw_tier not in ['pro', 'elite']:
         return 'free'
 
+    # Check status: must be active to unlock paid privileges (pending_approval defaults to free)
+    sess_status = session.get('subscription_status') if in_req else None
+    sub_status = (profile.get('subscription_status') or sess_status or 'active').strip().lower()
+    if sub_status != 'active':
+        return 'free'
+
     # Check expiration date
-    expires_at = profile.get('subscription_expires_at') or session.get('subscription_expires_at')
+    sess_exp = session.get('subscription_expires_at') if in_req else None
+    expires_at = profile.get('subscription_expires_at') or sess_exp
     if expires_at:
         try:
             exp_dt = datetime.fromisoformat(str(expires_at).replace('Z', '+00:00'))
@@ -232,21 +241,41 @@ def check_feature_limit(user_id_or_profile, role: str, feature_name: str,
         'required_tier': 'pro'
     }
 
-    # ── 1. Numerical Count Limits (Facilities, Courts, Members, etc.) ──
-    if feature_name in ['max_facilities', 'max_courts_per_facility', 'max_clubs', 'max_members_per_club', 'max_staff']:
+    # ── 1. Numerical Count Limits (Facilities, Courts, Members, Tournaments, etc.) ──
+    if feature_name in ['max_facilities', 'max_courts_per_facility', 'max_clubs', 'max_members_per_club', 'max_staff', 'monthly_tournaments_limit', 'max_tournament_bracket']:
         if limit_val is not None and current_count is not None:
-            if current_count >= limit_val:
+            if (feature_name == 'max_tournament_bracket' and current_count > limit_val) or (feature_name != 'max_tournament_bracket' and current_count >= limit_val):
                 result['allowed'] = False
                 if feature_name == 'max_facilities':
-                    result['message'] = f"You have reached your limit of {limit_val} facility on the {limits.get('label', tier)}. Upgrade to Pro to list up to 3 facilities!"
+                    if tier == 'free':
+                        result['message'] = f"You have reached your limit of {limit_val} facility on the Free Starter plan. Upgrade to Pro Facility Pass to list up to 3 facilities!"
+                        result['required_tier'] = 'pro'
+                    elif tier == 'pro':
+                        result['message'] = f"You have reached your limit of {limit_val} facilities on the Pro Facility Pass. Upgrade to Elite Enterprise to list unlimited venues!"
+                        result['required_tier'] = 'elite'
+                    else:
+                        result['message'] = f"You have reached your limit of {limit_val} facilities on your current plan."
+                        result['required_tier'] = 'elite'
                 elif feature_name == 'max_courts_per_facility':
-                    result['message'] = f"You have reached the limit of {limit_val} courts per venue on your current plan. Upgrade to Pro to add up to 8 courts!"
+                    if tier == 'free':
+                        result['message'] = f"You have reached the limit of {limit_val} courts per venue on Free Starter. Upgrade to Pro Facility Pass to add up to 8 courts!"
+                        result['required_tier'] = 'pro'
+                    elif tier == 'pro':
+                        result['message'] = f"You have reached the limit of {limit_val} courts per venue on Pro Facility Pass. Upgrade to Elite Enterprise for unlimited courts!"
+                        result['required_tier'] = 'elite'
+                    else:
+                        result['message'] = f"You have reached the limit of {limit_val} courts per venue on your current plan."
+                        result['required_tier'] = 'elite'
                 elif feature_name == 'max_clubs':
-                    result['message'] = f"You have reached the limit of {limit_val} active club hub on your plan. Upgrade to Pro Club Pass to manage up to 5 clubs!"
+                    result['message'] = f"Each account can manage 1 active club hub."
                 elif feature_name == 'max_members_per_club':
-                    result['message'] = f"This club has reached the maximum of {limit_val} members allowed on the Free Organizer plan."
+                    result['message'] = f"This club has reached the maximum of {limit_val} members allowed on the Free Organizer plan. Upgrade to Pro Club Pass for unlimited members!"
                 elif feature_name == 'max_staff':
-                    result['message'] = f"Staff account delegation requires a Pro Facility subscription (up to 3 staff members) or Elite Enterprise."
+                    result['message'] = f"Staff delegation requires a Pro Facility subscription (up to 3 staff members) or Elite Enterprise. Upgrade to add staff!"
+                elif feature_name == 'monthly_tournaments_limit':
+                    result['message'] = f"You have reached your limit of {limit_val} tournament per calendar month on the Free plan. Upgrade to Pro Club Pass to host unlimited tournaments!"
+                elif feature_name == 'max_tournament_bracket':
+                    result['message'] = f"The Free plan supports tournament brackets up to {limit_val} players. Upgrade to Pro Club Pass to host up to 64-player brackets!"
                 return result
 
     # ── 2. Player Advance Booking Window Limit ──

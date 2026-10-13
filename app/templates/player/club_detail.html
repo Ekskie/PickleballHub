@@ -1422,6 +1422,11 @@
                                         {% if is_admin %}
                                         <span style="font-size: 0.68rem; font-weight: 800; background: rgba(225,86,35,0.15); color: var(--primary-orange); padding: 2px 6px; border-radius: 6px; margin-left: 4px;">CAPTAIN</span>
                                         {% endif %}
+                                        {% if m.is_pro %}
+                                        <span class="pro-paddle-badge" style="display:inline-flex; align-items:center; gap:2px; background:linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.25)); color:#d97706; border:1px solid rgba(245, 158, 11, 0.4); font-size:0.62rem; font-weight:800; padding:1px 6px; border-radius:999px; vertical-align:middle; margin-left:4px;" title="Pickleball Pro Player">
+                                            <i class="ph-fill ph-medal" style="font-size:0.7rem; color:#f59e0b;"></i> PRO
+                                        </span>
+                                        {% endif %}
                                     </div>
                                     <div class="member-badges-row">
                                         <span>DUPR: <strong class="rating-pill dupr">{{ "%.2f"|format(m.profiles.dupr|float) if m.profiles.dupr else 'Unrated' }}</strong></span>
@@ -1526,7 +1531,14 @@
                                             <div class="member-circle-avatar" style="width: 32px; height: 32px; font-size: 0.75rem;" onclick="openPlayerDrawer('{{ m.profiles.id }}')">
                                                 {% if m.avatar_url %}<img src="{{ m.avatar_url }}">{% else %}{{ m.initials }}{% endif %}
                                             </div>
-                                            <span class="member-name-tag" onclick="openPlayerDrawer('{{ m.profiles.id }}')">{{ m.name }}</span>
+                                            <span class="member-name-tag" onclick="openPlayerDrawer('{{ m.profiles.id }}')">
+                                                {{ m.name }}
+                                                {% if m.is_pro %}
+                                                <span class="pro-paddle-badge" style="display:inline-flex; align-items:center; gap:2px; background:linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.25)); color:#d97706; border:1px solid rgba(245, 158, 11, 0.4); font-size:0.62rem; font-weight:800; padding:1px 6px; border-radius:999px; vertical-align:middle; margin-left:4px;" title="Pickleball Pro Player">
+                                                    <i class="ph-fill ph-medal" style="font-size:0.7rem; color:#f59e0b;"></i> PRO
+                                                </span>
+                                                {% endif %}
+                                            </span>
                                         </div>
                                     </td>
                                     <td>

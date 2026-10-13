@@ -56,7 +56,30 @@ def staff():
         current_app.logger.error(f"Error loading staff list for owner {owner_id}: {e}")
         flash('An error occurred loading staff members. Please try again.', 'error')
         
-    return render_template('owner/staff.html', staff=staff_list, facilities=facilities_list, stats=stats)
+    # Staff limit checks based on subscription tier
+    from app.billing.tiers import get_user_tier, get_tier_limits, check_feature_limit
+
+    owner_tier = get_user_tier(owner_id, role='owner', db=db)
+    limits = get_tier_limits('owner', owner_tier)
+    staff_limit = limits.get('max_staff', 0)
+    cur_staff_count = len(staff_list)
+    limit_check = check_feature_limit(owner_id, 'owner', 'max_staff', current_count=cur_staff_count, db=db)
+    can_add_staff = limit_check.get('allowed', False)
+    limit_message = limit_check.get('message', '')
+    required_tier = 'pro' if owner_tier == 'free' else 'elite'
+
+    return render_template(
+        'owner/staff.html',
+        staff=staff_list,
+        facilities=facilities_list,
+        stats=stats,
+        staff_limit=staff_limit,
+        cur_staff_count=cur_staff_count,
+        can_add_staff=can_add_staff,
+        limit_message=limit_message,
+        owner_tier=owner_tier,
+        required_tier=required_tier
+    )
 
 @owner_bp.route('/staff/add', methods=['POST'])
 @require_role('owner')
@@ -85,6 +108,20 @@ def add_staff():
             flash('Unauthorized facility selection.', 'error')
             return redirect(url_for('owner.staff'))
             
+        # Check owner's staff delegation limit based on subscription tier
+        from app.billing.tiers import check_feature_limit
+        facs_res = admin_db.table('facilities').select('id').eq('owner_id', owner_id).execute()
+        fac_ids = [f['id'] for f in (facs_res.data or [])]
+        cur_staff_count = 0
+        if fac_ids:
+            stf_res = admin_db.table('facility_staff').select('id', count='exact').in_('facility_id', fac_ids).execute()
+            cur_staff_count = stf_res.count if stf_res and stf_res.count is not None else 0
+            
+        lim_chk = check_feature_limit(owner_id, 'owner', 'max_staff', current_count=cur_staff_count, db=admin_db)
+        if not lim_chk['allowed']:
+            flash(lim_chk['message'], 'warning')
+            return redirect(url_for('owner.staff'))
+
         # 1. Create User in Supabase Auth
         new_user = admin_db.auth.admin.create_user({
             "email": email,

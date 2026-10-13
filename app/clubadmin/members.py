@@ -179,6 +179,16 @@ def approve_member(membership_id):
         return redirect(url_for('clubadmin.dashboard'))
         
     try:
+        admin_id = session.get('user_id')
+        from app.billing.tiers import check_feature_limit
+        # Check active members capacity
+        active_count_res = db.table('club_memberships').select('id', count='exact').eq('club_id', g.club['id']).eq('status', 'active').execute()
+        current_active = active_count_res.count if active_count_res and active_count_res.count is not None else 0
+        limit_chk = check_feature_limit(admin_id, 'clubadmin', 'max_members_per_club', current_count=current_active, db=db)
+        if not limit_chk['allowed']:
+            flash(limit_chk['message'], 'warning')
+            return redirect(request.form.get('next') or request.referrer or url_for('clubadmin.members'))
+
         # Calculate expires_at
         expires_at = None
         duration = g.club.get('membership_duration', 'lifetime')
@@ -203,6 +213,64 @@ def approve_member(membership_id):
         current_app.logger.error(f"Error approving membership {membership_id}: {e}")
         flash('An error occurred. Please try again.', 'error')
     return redirect(request.form.get('next') or request.referrer or url_for('clubadmin.members'))
+
+
+@clubadmin_bp.route('/members/export-csv')
+@require_role('clubadmin')
+def export_members_csv():
+    admin_id = session.get('user_id')
+    from app.billing.tiers import get_user_tier
+    tier = get_user_tier(admin_id, role='clubadmin')
+    if tier != 'pro':
+        flash("Exporting member rosters to CSV is a Pro Club Pass feature. Upgrade your plan to download rosters.", "warning")
+        return redirect(url_for('clubadmin.members'))
+
+    if not g.club:
+        flash("Club profile required.", "error")
+        return redirect(url_for('clubadmin.dashboard'))
+    
+    db = get_admin_db() or get_db()
+    try:
+        import csv
+        from io import StringIO
+        from flask import Response
+
+        mems_res = db.table('club_memberships').select(
+            'id, status, joined_at, profiles(first_name, last_name, email, phone, proficiency, elo, dupr)'
+        ).eq('club_id', g.club['id']).order('joined_at', desc=True).execute()
+        
+        rows = mems_res.data or []
+        si = StringIO()
+        writer = csv.writer(si)
+        writer.writerow(['First Name', 'Last Name', 'Email', 'Phone', 'Skill Level', 'ELO Rating', 'DUPR Rating', 'Status', 'Joined Date'])
+        
+        for r in rows:
+            p = r.get('profiles') or {}
+            writer.writerow([
+                p.get('first_name', ''),
+                p.get('last_name', ''),
+                p.get('email', ''),
+                p.get('phone', ''),
+                (p.get('proficiency') or '').capitalize(),
+                p.get('elo', ''),
+                p.get('dupr', ''),
+                r.get('status', ''),
+                (r.get('joined_at') or '')[:10]
+            ])
+            
+        output = si.getvalue()
+        club_slug = (g.club.get('name') or 'club').lower().replace(' ', '_')
+        filename = f"{club_slug}_members_{datetime.now().strftime('%Y%m%d')}.csv"
+        return Response(
+            output,
+            mimetype='text/csv',
+            headers={'Content-Disposition': f'attachment; filename={filename}'}
+        )
+    except Exception as e:
+        from flask import current_app
+        current_app.logger.error(f"Error exporting members CSV: {e}")
+        flash('An error occurred generating CSV export.', 'error')
+        return redirect(url_for('clubadmin.members'))
 
 @clubadmin_bp.route('/members/<membership_id>/reject', methods=['POST'])
 @require_role('clubadmin')

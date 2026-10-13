@@ -778,6 +778,22 @@
         letter-spacing: 0.5px;
     }
 
+    .pro-paddle-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.22));
+        color: #d97706;
+        border: 1px solid rgba(245, 158, 11, 0.45);
+        font-size: 0.65rem;
+        font-weight: 800;
+        padding: 2px 7px;
+        border-radius: 9999px;
+        letter-spacing: 0.04em;
+        vertical-align: middle;
+        box-shadow: 0 1px 3px rgba(245, 158, 11, 0.12);
+    }
+
     /* Rating Pills */
     .dupr-pill {
         display: inline-flex;
@@ -993,6 +1009,12 @@
         color: #94a3b8;
     }
 
+    html.dark-mode .pro-paddle-badge {
+        background: rgba(245, 158, 11, 0.18);
+        color: #fbbf24;
+        border-color: rgba(245, 158, 11, 0.5);
+    }
+
     @media (max-width: 860px) {
         .podium-container {
             flex-direction: column;
@@ -1116,6 +1138,11 @@
             </div>
             <h3 class="podium-player-name" onclick="openPlayerDrawer('{{ rankings[1].id }}')" title="View {{ rankings[1].name }} stats">
                 {{ rankings[1].name }}
+                {% if rankings[1].is_pro %}
+                <span class="pro-paddle-badge" title="Pickleball Pro Player">
+                    <i class="ph-fill ph-medal"></i> PRO
+                </span>
+                {% endif %}
             </h3>
             <div class="podium-dupr-tag">
                 {{ "%.2f"|format(rankings[1].dupr|float) }}
@@ -1144,6 +1171,11 @@
             </div>
             <h3 class="podium-player-name" onclick="openPlayerDrawer('{{ rankings[0].id }}')" title="View {{ rankings[0].name }} stats">
                 {{ rankings[0].name }}
+                {% if rankings[0].is_pro %}
+                <span class="pro-paddle-badge" title="Pickleball Pro Player">
+                    <i class="ph-fill ph-medal"></i> PRO
+                </span>
+                {% endif %}
             </h3>
             <div class="podium-dupr-tag">
                 <i class="ph-fill ph-crown" style="font-size: 1.15rem; color: #f59e0b;"></i>
@@ -1173,6 +1205,11 @@
             </div>
             <h3 class="podium-player-name" onclick="openPlayerDrawer('{{ rankings[2].id }}')" title="View {{ rankings[2].name }} stats">
                 {{ rankings[2].name }}
+                {% if rankings[2].is_pro %}
+                <span class="pro-paddle-badge" title="Pickleball Pro Player">
+                    <i class="ph-fill ph-medal"></i> PRO
+                </span>
+                {% endif %}
             </h3>
             <div class="podium-dupr-tag">
                 {{ "%.2f"|format(rankings[2].dupr|float) }}
@@ -1302,6 +1339,11 @@
                                 <div style="display: flex; flex-direction: column;">
                                     <span class="player-name-text" onclick="openPlayerDrawer('{{ player.id }}')" title="Open player drawer">
                                         {{ player.name }}
+                                        {% if player.is_pro %}
+                                        <span class="pro-paddle-badge" title="Pickleball Pro Player">
+                                            <i class="ph-fill ph-medal"></i> PRO
+                                        </span>
+                                        {% endif %}
                                         {% if is_me %}
                                         <span class="you-pill-tag">YOU</span>
                                         {% endif %}

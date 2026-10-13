@@ -171,6 +171,9 @@
         <li class="{% if request.endpoint == 'adminstaff.verifications' %}active{% endif %}">
             <a href="{{ url_for('adminstaff.verifications') }}"><i class="ph ph-shield"></i> <span>Verifications</span></a>
         </li>
+        <li class="{% if request.endpoint == 'adminstaff.subscriptions' %}active{% endif %}">
+            <a href="{{ url_for('adminstaff.subscriptions') }}"><i class="ph ph-credit-card"></i> <span>Subscriptions & Billing</span></a>
+        </li>
         <li class="{% if request.endpoint == 'adminstaff.disputes' %}active{% endif %}">
             <a href="{{ url_for('adminstaff.disputes') }}"><i class="ph ph-warning-circle"></i> <span>Disputes</span></a>
         </li>

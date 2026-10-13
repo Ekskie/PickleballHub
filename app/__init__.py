@@ -208,8 +208,19 @@ def create_app():
             'email':      '',
             'phone':      '',
             'role':       'Player',
+            'role_raw':   'player',
             'id':         None,
             'is_logged_in': False,
+            'subscription_tier': 'free',
+            'raw_subscription_tier': 'free',
+            'subscription_status': 'active',
+            'subscription_expires_at': None,
+            'subscription_billing_cycle': 'monthly',
+            'is_subscription_pending': False,
+            'is_subscription_rejected': False,
+            'is_pro': False,
+            'is_elite': False,
+            'tier_limits': {},
         }
 
         if not user_id:
@@ -264,25 +275,36 @@ def create_app():
             user_tier = get_user_tier(d, role=role)
             tier_limits = get_tier_limits(role, user_tier)
 
+            sub_status = (d.get('subscription_status') or session.get('subscription_status') or 'active').strip().lower()
+            raw_tier = (d.get('subscription_tier') or session.get('subscription_tier') or 'free').strip().lower()
+            sub_exp = d.get('subscription_expires_at') or session.get('subscription_expires_at')
+            sub_cycle = d.get('subscription_billing_cycle') or session.get('subscription_billing_cycle', 'monthly')
+
             return dict(current_user={
-                'first_name':          first,
-                'last_name':           last,
-                'full_name':           full,
-                'initials':            initials,
-                'email':               (d.get('email') or session.get('email', '')),
-                'phone':               (d.get('phone') or ''),
-                'role':                role.capitalize(),
-                'role_raw':            role,
-                'id':                  user_id,
-                'is_logged_in':        True,
-                'elo':                 elo,
-                'dupr':                dupr,
-                'proficiency':         d.get('proficiency'),
-                'avatar_url':          d.get('avatar_url'),
-                'subscription_tier':   user_tier,
-                'is_pro':              user_tier in ['pro', 'elite'],
-                'is_elite':            user_tier == 'elite',
-                'tier_limits':         tier_limits,
+                'first_name':                  first,
+                'last_name':                   last,
+                'full_name':                   full,
+                'initials':                    initials,
+                'email':                       (d.get('email') or session.get('email', '')),
+                'phone':                       (d.get('phone') or ''),
+                'role':                        role.capitalize(),
+                'role_raw':                    role,
+                'id':                          user_id,
+                'is_logged_in':                True,
+                'elo':                         elo,
+                'dupr':                        dupr,
+                'proficiency':                 d.get('proficiency'),
+                'avatar_url':                  d.get('avatar_url'),
+                'subscription_tier':           user_tier,
+                'raw_subscription_tier':       raw_tier,
+                'subscription_status':         sub_status,
+                'subscription_expires_at':     sub_exp,
+                'subscription_billing_cycle':  sub_cycle,
+                'is_subscription_pending':     (sub_status == 'pending_approval'),
+                'is_subscription_rejected':    (sub_status == 'rejected'),
+                'is_pro':                      user_tier in ['pro', 'elite'],
+                'is_elite':                    user_tier == 'elite',
+                'tier_limits':                 tier_limits,
             }, supabase_url=supabase_url, supabase_anon_key=supabase_key)
 
         # --- 2. Fall back to whatever was stored in session at login ---
@@ -299,25 +321,36 @@ def create_app():
         user_tier = session.get('subscription_tier', 'free')
         tier_limits = get_tier_limits(role, user_tier)
 
+        sub_status = (session.get('subscription_status') or 'active').strip().lower()
+        raw_tier = (session.get('subscription_tier') or 'free').strip().lower()
+        sub_exp = session.get('subscription_expires_at')
+        sub_cycle = session.get('subscription_billing_cycle', 'monthly')
+
         return dict(current_user={
-            'first_name':          first,
-            'last_name':           last,
-            'full_name':           full,
-            'initials':            initials,
-            'email':               session.get('email', ''),
-            'phone':               session.get('phone', ''),
-            'role':                role.capitalize(),
-            'role_raw':            role,
-            'id':                  user_id,
-            'is_logged_in':        True,
-            'elo':                 session.get('elo', elo_def),
-            'dupr':                session.get('dupr', dupr_def),
-            'proficiency':         session.get('proficiency'),
-            'avatar_url':          session.get('avatar_url'),
-            'subscription_tier':   user_tier,
-            'is_pro':              user_tier in ['pro', 'elite'],
-            'is_elite':            user_tier == 'elite',
-            'tier_limits':         tier_limits,
+            'first_name':                  first,
+            'last_name':                   last,
+            'full_name':                   full,
+            'initials':                    initials,
+            'email':                       session.get('email', ''),
+            'phone':                       session.get('phone', ''),
+            'role':                        role.capitalize(),
+            'role_raw':                    role,
+            'id':                          user_id,
+            'is_logged_in':                True,
+            'elo':                         session.get('elo', elo_def),
+            'dupr':                        session.get('dupr', dupr_def),
+            'proficiency':                 session.get('proficiency'),
+            'avatar_url':                  session.get('avatar_url'),
+            'subscription_tier':           user_tier,
+            'raw_subscription_tier':       raw_tier,
+            'subscription_status':         sub_status,
+            'subscription_expires_at':     sub_exp,
+            'subscription_billing_cycle':  sub_cycle,
+            'is_subscription_pending':     (sub_status == 'pending_approval'),
+            'is_subscription_rejected':    (sub_status == 'rejected'),
+            'is_pro':                      user_tier in ['pro', 'elite'],
+            'is_elite':                    user_tier == 'elite',
+            'tier_limits':                 tier_limits,
         }, supabase_url=supabase_url, supabase_anon_key=supabase_key)
 
     @app.context_processor

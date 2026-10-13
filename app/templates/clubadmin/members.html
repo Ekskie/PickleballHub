@@ -1709,31 +1709,7 @@ function sortMembers() {
 
 /* ── CSV Export ── */
 function exportMembersCSV() {
-    const rows = document.querySelectorAll('.member-row');
-    if (!rows.length) {
-        alert('No members to export.');
-        return;
-    }
-    
-    let csvContent = "data:text/csv;charset=utf-8,Member Name,Skill Level,DUPR,ELO,Phone,Join Date,Status\n";
-    rows.forEach(r => {
-        const name = `"${r.dataset.name || ''}"`;
-        const skill = `"${r.dataset.skill || ''}"`;
-        const dupr = r.dataset.dupr || '';
-        const phone = `"${r.dataset.phone || ''}"`;
-        const date = r.dataset.date || '';
-        const status = `"${r.dataset.status || ''}"`;
-        const elo = r.querySelector('.badge-elo-score')?.textContent.trim() || '1200';
-        csvContent += `${name},${skill},${dupr},${elo},${phone},${date},${status}\n`;
-    });
-    
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `club_members_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    window.location.href = "{{ url_for('clubadmin.export_members_csv') }}";
 }
 
 // Restore user view preference on load

@@ -936,6 +936,12 @@
                         <i class="ph ph-sparkles"></i> Casual
                         {% endif %}
                     </span>
+
+                    {% if lobby.is_creator_pro %}
+                    <span class="status-pill status-priority" style="background:linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(217, 119, 6, 0.28)); color:#d97706; border:1px solid rgba(245, 158, 11, 0.45); font-weight:800;" title="Priority Queue: Hosted by a Pickleball Pro Member">
+                        <i class="ph-fill ph-lightning" style="color:#f59e0b;"></i> Pro Match
+                    </span>
+                    {% endif %}
                 </div>
 
                 <!-- DUPR Rating Chip always top right -->
@@ -996,9 +1002,19 @@
                     <span class="info-text">
                         {% if lobby.is_creator %}
                         Hosted by <strong>You</strong> <span class="badge-you-pill">Host</span>
+                        {% if current_user.is_pro %}
+                        <span class="pro-paddle-badge" style="display:inline-flex; align-items:center; gap:2px; background:linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.25)); color:#d97706; border:1px solid rgba(245, 158, 11, 0.4); font-size:0.62rem; font-weight:800; padding:1px 6px; border-radius:999px; vertical-align:middle; margin-left:4px;" title="Pro Member">
+                            <i class="ph-fill ph-medal" style="font-size:0.7rem; color:#f59e0b;"></i> PRO
+                        </span>
+                        {% endif %}
                         <span style="color:var(--text-muted);font-size:0.75rem;margin-left:4px;">({{ "%.2f"|format(lobby.creator_dupr|float) }} DUPR)</span>
                         {% else %}
                         Hosted by <strong>{{ lobby.creator_name }}</strong>
+                        {% if lobby.is_creator_pro %}
+                        <span class="pro-paddle-badge" style="display:inline-flex; align-items:center; gap:2px; background:linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.25)); color:#d97706; border:1px solid rgba(245, 158, 11, 0.4); font-size:0.62rem; font-weight:800; padding:1px 6px; border-radius:999px; vertical-align:middle; margin-left:4px;" title="Pro Member">
+                            <i class="ph-fill ph-medal" style="font-size:0.7rem; color:#f59e0b;"></i> PRO
+                        </span>
+                        {% endif %}
                         <span style="color:var(--text-muted);font-size:0.75rem;margin-left:4px;">({{ "%.2f"|format(lobby.creator_dupr|float) }} DUPR)</span>
                         {% endif %}
                     </span>

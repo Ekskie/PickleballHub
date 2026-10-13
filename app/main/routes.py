@@ -253,14 +253,28 @@ def courts_listing():
             # Fetch all active courts with facility info
             resp = client.table('courts').select(
                 'id, name, type, hourly_rate, status, '
-                'facility_id, facilities(id, name, location, latitude, longitude, kyc_status, image_url, description)'
+                'facility_id, facilities(id, name, location, latitude, longitude, kyc_status, image_url, description, owner_id)'
             ).eq('status', 'active').execute()
 
             if resp.data:
+                # Batch fetch owner tiers to surface Pro/Elite partner badges
+                owner_ids = list({c.get('facilities', {}).get('owner_id') for c in resp.data if c.get('facilities') and c['facilities'].get('owner_id')})
+                owner_tiers = {}
+                if owner_ids:
+                    try:
+                        from app.billing.tiers import get_user_tier
+                        prof_res = client.table('profiles').select('id, subscription_tier, subscription_status').in_('id', owner_ids).execute()
+                        for p in (prof_res.data or []):
+                            owner_tiers[p['id']] = get_user_tier(p, role='owner', db=client)
+                    except Exception as oe:
+                        pass
+
                 for court in resp.data:
                     facility = court.get('facilities') or {}
                     f_id = str(facility.get('id') or court.get('facility_id') or 'unknown')
                     fac_name = facility.get('name', 'Unknown Facility')
+                    owner_id = facility.get('owner_id')
+                    owner_tier = owner_tiers.get(owner_id, 'free')
                     
                     if f_id not in facilities_dict:
                         facilities_dict[f_id] = {
@@ -271,6 +285,9 @@ def courts_listing():
                             'description': facility.get('description'),
                             'latitude': float(facility.get('latitude')) if facility.get('latitude') is not None else None,
                             'longitude': float(facility.get('longitude')) if facility.get('longitude') is not None else None,
+                            'owner_tier': owner_tier,
+                            'is_verified_partner': (owner_tier in ['pro', 'elite']),
+                            'is_featured_pin': (owner_tier == 'elite'),
                             'courts': []
                         }
                     
@@ -285,6 +302,8 @@ def courts_listing():
                     })
                     
         facilities = list(facilities_dict.values())
+        # Sort facilities: Featured top pin (Elite) first, then verified partner (Pro), then alphabetical
+        facilities.sort(key=lambda x: (not x.get('is_featured_pin', False), not x.get('is_verified_partner', False), x.get('name', '')))
         facilities_list = sorted(list({f['name'] for f in facilities if f.get('name')}))
 
         # Filter by selected facility if provided
@@ -913,4 +932,21 @@ def api_tutorials_delete(id):
         return jsonify({'success': True, 'message': 'Tutorial deleted successfully.'})
     except Exception as e:
         return jsonify({'success': False, 'error': f'Deletion failed: {e}'}), 500
+
+
+@main_bp.route('/memberships')
+def memberships():
+    """Render the dedicated public memberships and pricing tiers page."""
+    active_role = request.args.get('role', 'owner').strip().lower()
+    if active_role not in ['owner', 'clubadmin', 'player']:
+        active_role = 'owner'
+    return render_template('landings/memberships.html', active_role=active_role)
+
+
+@main_bp.route('/pricing')
+def pricing():
+    """Alias for memberships and pricing tiers page."""
+    return memberships()
+
+
 

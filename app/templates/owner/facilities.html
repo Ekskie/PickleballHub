@@ -766,6 +766,430 @@
 .btn-sm-primary:hover { background:var(--primary-orange-hover); }
 .btn-sm-danger { background:rgba(239,68,68,0.1); color:#ef4444; border:1px solid rgba(239,68,68,0.2); }
 .btn-sm-danger:hover { background:rgba(239,68,68,0.2); }
+
+/* ── Facility Limit Alert Banner ── */
+.facility-limit-banner {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.08) 100%);
+    border: 1.5px solid rgba(245, 158, 11, 0.4);
+    border-left: 6px solid #f59e0b;
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.08);
+    transition: all 0.3s ease;
+}
+
+html.dark-mode .facility-limit-banner {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(120, 53, 15, 0.25) 100%);
+    border-color: rgba(245, 158, 11, 0.5);
+    border-left-color: #fbbf24;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35), 0 0 20px rgba(245, 158, 11, 0.15);
+}
+
+.limit-banner-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    flex: 1;
+    min-width: 0;
+}
+
+.limit-banner-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background: rgba(245, 158, 11, 0.2);
+    border: 1.5px solid rgba(245, 158, 11, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #d97706;
+    font-size: 1.6rem;
+}
+
+html.dark-mode .limit-banner-icon {
+    background: rgba(245, 158, 11, 0.25);
+    border-color: rgba(245, 158, 11, 0.55);
+    color: #fbbf24;
+}
+
+.limit-banner-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.limit-banner-header-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+}
+
+.limit-banner-tag {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 20px;
+    background: #f59e0b;
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.limit-badge-count {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: rgba(245, 158, 11, 0.15);
+    color: #b45309;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+html.dark-mode .limit-badge-count {
+    background: rgba(245, 158, 11, 0.22);
+    color: #fde68a;
+    border-color: rgba(245, 158, 11, 0.4);
+}
+
+.limit-banner-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #78350f;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.2px;
+}
+
+html.dark-mode .limit-banner-title {
+    color: #fef3c7;
+}
+
+.limit-banner-desc {
+    font-size: 0.86rem;
+    color: #92400e;
+    margin: 0;
+    line-height: 1.45;
+}
+
+html.dark-mode .limit-banner-desc {
+    color: #fde68a;
+}
+
+.limit-banner-actions {
+    flex-shrink: 0;
+}
+
+.btn-upgrade-glow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+    color: #ffffff !important;
+    font-size: 0.88rem;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+    transition: all 0.25s ease;
+    white-space: nowrap;
+}
+
+.btn-upgrade-glow:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45);
+    filter: brightness(1.06);
+}
+
+/* Button & Pill styles when limit is reached */
+.limit-locked-btn {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    color: #ffffff !important;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+    transition: all 0.2s ease;
+    border: none;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+.limit-locked-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.35);
+    filter: brightness(1.05);
+}
+.btn-limit-pill {
+    background: rgba(0, 0, 0, 0.22);
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.plan-capacity-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 8px;
+    background: var(--input-bg, #f1f5f9);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+.plan-capacity-tag.max-reached {
+    background: rgba(245, 158, 11, 0.12);
+    color: #b45309;
+    border-color: rgba(245, 158, 11, 0.35);
+}
+html.dark-mode .plan-capacity-tag.max-reached {
+    background: rgba(245, 158, 11, 0.18);
+    color: #fde68a;
+    border-color: rgba(245, 158, 11, 0.45);
+}
+
+/* ── Facility Limit Modal Styles ── */
+.limit-modal-box {
+    max-width: 520px !important;
+    width: 92% !important;
+    border-radius: 18px !important;
+    overflow: hidden;
+    padding: 0 !important;
+    background: var(--card-bg, #ffffff) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35) !important;
+}
+
+.limit-modal-hero {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(234, 88, 12, 0.1) 100%);
+    padding: 26px 24px 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+html.dark-mode .limit-modal-hero {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(120, 53, 15, 0.3) 100%);
+    border-bottom-color: rgba(245, 158, 11, 0.3);
+}
+
+.limit-modal-icon-ring {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f59e0b, #ea580c);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    color: #fff;
+    box-shadow: 0 6px 18px rgba(245, 158, 11, 0.4);
+}
+
+.limit-modal-body {
+    padding: 24px;
+}
+
+.limit-modal-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(245, 158, 11, 0.15);
+    color: #b45309;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    margin-bottom: 10px;
+}
+
+html.dark-mode .limit-modal-badge {
+    background: rgba(245, 158, 11, 0.22);
+    color: #fbbf24;
+    border-color: rgba(245, 158, 11, 0.4);
+}
+
+.limit-modal-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 8px 0;
+    line-height: 1.25;
+}
+
+.limit-modal-subtitle {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    margin: 0 0 18px 0;
+    line-height: 1.45;
+}
+
+.limit-modal-comparison {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 12px;
+    background: var(--input-bg, #f8fafc);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 18px;
+}
+
+html.dark-mode .limit-modal-comparison {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.comparison-card {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.comp-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+.comp-tier {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+.comp-value {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+}
+.comp-value span {
+    font-weight: 800;
+    color: var(--text-primary);
+}
+.comp-status {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #ef4444;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.comp-status.unlocked {
+    color: #10b981;
+}
+
+.comparison-divider {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    opacity: 0.6;
+}
+
+.limit-benefits-list {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    margin-bottom: 22px;
+}
+
+.limit-benefit-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.limit-benefit-item i {
+    color: #10b981;
+    font-size: 1.05rem;
+    flex-shrink: 0;
+}
+
+.limit-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-color);
+}
+
+.btn-limit-dismiss {
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 0.86rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    border: 1.5px solid var(--border-color);
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+}
+
+.btn-limit-dismiss:hover {
+    background: var(--input-bg, #f1f5f9);
+    color: var(--text-primary);
+}
+
+.btn-limit-upgrade {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+    color: #ffffff !important;
+    text-decoration: none;
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+    transition: all 0.2s ease;
+}
+
+.btn-limit-upgrade:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(245, 158, 11, 0.45);
+    filter: brightness(1.06);
+}
+
+@media (max-width: 640px) {
+    .facility-limit-banner {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .btn-upgrade-glow {
+        justify-content: center;
+    }
+    .limit-modal-comparison {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 8px;
+    }
+    .comparison-divider {
+        transform: rotate(90deg);
+        margin: 2px 0;
+    }
+}
 </style>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -773,14 +1197,68 @@
 {% endblock %}
 
 {% block content %}
+{% if not can_add_facility %}
+<!-- Prominent Limit Reached Alert Banner -->
+<div class="facility-limit-banner">
+    <div class="limit-banner-content">
+        <div class="limit-banner-icon">
+            <i class="ph-fill ph-lock-key"></i>
+        </div>
+        <div class="limit-banner-text">
+            <div class="limit-banner-header-row">
+                <span class="limit-banner-tag">Facility Limit Reached</span>
+                <span class="limit-badge-count">{{ current_fac_count }} of {{ facility_limit }} Used</span>
+            </div>
+            <h4 class="limit-banner-title">
+                {% if owner_tier == 'free' %}
+                    Free Starter Venue Quota Reached (1 Facility Max)
+                {% elif owner_tier == 'pro' %}
+                    Pro Facility Pass Quota Reached (3 Facilities Max)
+                {% else %}
+                    Active Subscription Facility Limit Reached
+                {% endif %}
+            </h4>
+            <p class="limit-banner-desc">
+                {{ limit_message or 'You have utilized the full facility quota allowed on your active subscription plan. Upgrade your plan to list additional venues and unlock premium venue features.' }}
+            </p>
+        </div>
+    </div>
+    <div class="limit-banner-actions">
+        <a href="{{ url_for('billing.subscription_page') }}?highlight={{ required_tier }}" class="btn-upgrade-glow">
+            <i class="ph-fill ph-crown"></i>
+            <span>Upgrade to {{ 'Pro Facility Pass' if required_tier == 'pro' else 'Elite Enterprise' }}</span>
+            <i class="ph ph-arrow-right"></i>
+        </a>
+    </div>
+</div>
+{% endif %}
+
 <div class="dashboard-header">
     <div>
         <h1 class="page-title">My Facilities</h1>
-        <p style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">{{ facilities|length }} facilit{{ 'y' if facilities|length == 1 else 'ies' }} registered</p>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
+            <p style="font-size:0.85rem;color:var(--text-muted);margin:0;">{{ facilities|length }} facilit{{ 'y' if facilities|length == 1 else 'ies' }} registered</p>
+            {% if not can_add_facility %}
+            <span class="plan-capacity-tag max-reached">
+                <i class="ph-fill ph-lock-key"></i> Capacity Reached ({{ current_fac_count }}/{{ facility_limit }})
+            </span>
+            {% else %}
+            <span class="plan-capacity-tag">
+                <i class="ph ph-check-circle"></i> {{ current_fac_count }}/{{ facility_limit }} Used
+            </span>
+            {% endif %}
+        </div>
     </div>
+    {% if can_add_facility %}
     <button class="action-box green" style="width:auto;padding:0.5rem 1.1rem;" onclick="openModal('addFacilityModal')">
         <i class="ph ph-plus-circle"></i> Add Facility
     </button>
+    {% else %}
+    <button class="action-box limit-locked-btn" style="width:auto;padding:0.5rem 1.1rem;" onclick="openModal('facilityLimitModal')" title="Capacity reached ({{ current_fac_count }}/{{ facility_limit }}). Click to upgrade plan.">
+        <i class="ph-fill ph-lock-key"></i> Add Facility
+        <span class="btn-limit-pill">{{ current_fac_count }}/{{ facility_limit }} Max</span>
+    </button>
+    {% endif %}
 </div>
 
 <div class="facility-grid">
@@ -812,6 +1290,10 @@
                         <span class="facility-badge-glass badge-kyc-pending" title="KYC Submitted - Pending Admin Review">
                             <i class="ph ph-hourglass-high"></i> KYC Pending
                         </span>
+                    {% elif f.kyc_status == 'rejected' %}
+                        <button type="button" class="facility-badge-glass badge-kyc-unverified-btn" style="background: rgba(239, 68, 68, 0.95); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);" onclick="openKycModal('{{ f.id }}')" title="KYC Rejected. Click to re-upload documents">
+                            <i class="ph-fill ph-warning-circle"></i> KYC Rejected — Resubmit
+                        </button>
                     {% else %}
                         <button type="button" class="facility-badge-glass badge-kyc-unverified-btn" onclick="openKycModal('{{ f.id }}')" title="Click to submit verification documents">
                             <i class="ph ph-shield-warning"></i> Submit KYC
@@ -843,6 +1325,24 @@
                         <span>{{ f.location or 'Address not specified' }}</span>
                     </p>
                 </div>
+
+                {% if f.kyc_status == 'rejected' and f.rejection_reason %}
+                <!-- Verification Feedback Banner -->
+                <div class="kyc-rejected-banner" style="background: rgba(239, 68, 68, 0.08); border: 1.5px solid rgba(239, 68, 68, 0.3); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start;">
+                    <i class="ph-fill ph-warning-circle" style="color: #ef4444; font-size: 1.25rem; flex-shrink: 0; margin-top: 1px;"></i>
+                    <div style="flex: 1;">
+                        <span style="font-size: 0.72rem; font-weight: 800; color: #ef4444; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 2px;">
+                            KYC Verification Notice
+                        </span>
+                        <p style="font-size: 0.8rem; color: var(--text-primary); margin: 0 0 6px 0; line-height: 1.4;">
+                            {{ f.rejection_reason }}
+                        </p>
+                        <button type="button" onclick="openKycModal('{{ f.id }}')" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.74rem; font-weight: 700; color: #ffffff; background: #ef4444; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer;">
+                            <i class="ph ph-upload-simple"></i> Re-upload Permits
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
 
                 <!-- Operational Specs Strip -->
                 <div class="facility-ops-bar">
@@ -925,15 +1425,89 @@
             <i class="ph ph-buildings"></i>
             <h3>No Facilities Yet</h3>
             <p>Add your first facility to start managing courts and accepting event bookings.</p>
+            {% if can_add_facility %}
             <button class="action-box green" style="width:auto;margin-top:6px;" onclick="openModal('addFacilityModal')">
                 <i class="ph ph-plus-circle"></i> Add Facility
             </button>
+            {% else %}
+            <button class="action-box limit-locked-btn" style="width:auto;margin-top:6px;" onclick="openModal('facilityLimitModal')">
+                <i class="ph-fill ph-lock-key"></i> Upgrade to Add Facility
+            </button>
+            {% endif %}
         </div>
     {% endif %}
 </div>
 {% endblock %}
 
 {% block modals %}
+
+<!-- FACILITY LIMIT REACHED MODAL -->
+<div class="modal-overlay" id="facilityLimitModal">
+    <div class="modal-box limit-modal-box">
+        <div class="limit-modal-hero">
+            <div class="limit-modal-icon-ring">
+                <i class="ph-fill ph-lock-key"></i>
+            </div>
+            <button type="button" class="modal-close" onclick="closeModal('facilityLimitModal')" aria-label="Close dialog"><i class="ph ph-x"></i></button>
+        </div>
+        <div class="limit-modal-body">
+            <div class="limit-modal-badge">Plan Quota Reached</div>
+            <h3 class="limit-modal-title">Facility Limit Reached</h3>
+            <p class="limit-modal-subtitle">
+                You have reached your limit of <strong>{{ current_fac_count }} / {{ facility_limit }}</strong> facilities on the 
+                <strong>{{ 'Free Starter Venue' if owner_tier == 'free' else ('Pro Facility Pass' if owner_tier == 'pro' else 'Current Plan') }}</strong>.
+            </p>
+
+            <div class="limit-modal-comparison">
+                <div class="comparison-card current">
+                    <div class="comp-label">Current Plan</div>
+                    <div class="comp-tier">{{ 'Starter Venue' if owner_tier == 'free' else ('Pro Facility Pass' if owner_tier == 'pro' else 'Current Plan') }}</div>
+                    <div class="comp-value"><span>{{ facility_limit }}</span> facility max</div>
+                    <div class="comp-status"><i class="ph-fill ph-warning-circle"></i> Capacity Reached</div>
+                </div>
+                <div class="comparison-divider">
+                    <i class="ph ph-arrow-right"></i>
+                </div>
+                <div class="comparison-card next">
+                    <div class="comp-label">Recommended Upgrade</div>
+                    <div class="comp-tier">{{ 'Pro Facility Pass' if required_tier == 'pro' else 'Elite Enterprise' }}</div>
+                    <div class="comp-value"><span>{{ 'Up to 3' if required_tier == 'pro' else 'Unlimited' }}</span> facilities</div>
+                    <div class="comp-status unlocked"><i class="ph-fill ph-sparkle"></i> Unlock more facilities</div>
+                </div>
+            </div>
+
+            <div class="limit-benefits-list">
+                <div class="limit-benefit-item">
+                    <i class="ph-fill ph-check-circle"></i>
+                    <span>List {{ 'up to 3 facilities' if required_tier == 'pro' else 'unlimited facility locations' }}</span>
+                </div>
+                <div class="limit-benefit-item">
+                    <i class="ph-fill ph-check-circle"></i>
+                    <span>{{ 'Up to 8 courts per venue (vs 2 on Free)' if required_tier == 'pro' else 'Unlimited courts per venue' }}</span>
+                </div>
+                <div class="limit-benefit-item">
+                    <i class="ph-fill ph-check-circle"></i>
+                    <span>{{ 'Reduced 3% commission fee (vs 8% on Free)' if required_tier == 'pro' else '0% commission (Keep 100% of revenue)' }}</span>
+                </div>
+                <div class="limit-benefit-item">
+                    <i class="ph-fill ph-check-circle"></i>
+                    <span>{{ 'Peak hour variable pricing & 3 staff accounts' if required_tier == 'pro' else 'Priority homepage pin & dedicated VIP support' }}</span>
+                </div>
+            </div>
+
+            <div class="limit-modal-footer">
+                <button type="button" class="btn-limit-dismiss" onclick="closeModal('facilityLimitModal')">
+                    Back to Facilities
+                </button>
+                <a href="{{ url_for('billing.subscription_page') }}?highlight={{ required_tier }}" class="btn-limit-upgrade">
+                    <i class="ph-fill ph-crown"></i>
+                    <span>Upgrade to {{ 'Pro Pass' if required_tier == 'pro' else 'Elite' }}</span>
+                    <i class="ph ph-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- ADD FACILITY MODAL: STEP-BY-STEP WIZARD -->
 <div class="modal-overlay" id="addFacilityModal">
@@ -1950,7 +2524,15 @@ function clearPhotoUpload(mode) {
     }
 }
 
+const CAN_ADD_FACILITY = {{ 'true' if can_add_facility else 'false' }};
+
 function openModal(id) { 
+    // Intercept Add Facility modal upfront if the owner has reached their plan's facility limit
+    if (id === 'addFacilityModal' && !CAN_ADD_FACILITY) {
+        openModal('facilityLimitModal');
+        return;
+    }
+
     const modal = document.getElementById(id);
     if (!modal) return;
     if (modal.parentElement !== document.body) {

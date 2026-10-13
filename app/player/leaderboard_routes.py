@@ -15,7 +15,8 @@ def leaderboard():
 
     try:
         # Fetch all players, including wins and losses if they exist
-        p_query = db.table('profiles').select('id, first_name, last_name, elo, dupr, proficiency, avatar_url, wins, losses').eq('role', 'player')
+        from app.billing.tiers import get_user_tier
+        p_query = db.table('profiles').select('id, first_name, last_name, elo, dupr, proficiency, avatar_url, wins, losses, subscription_tier, subscription_status, subscription_expires_at').eq('role', 'player')
         if proficiency_filter:
             p_query = p_query.eq('proficiency', proficiency_filter)
         
@@ -40,6 +41,7 @@ def leaderboard():
                 losses = p.get('losses') or 0
                 played = wins + losses
                 win_rate = round((wins / played) * 100) if played > 0 else 0
+                p_tier = get_user_tier(p, role='player', db=db)
 
                 rankings.append({
                     'id': p['id'],
@@ -51,7 +53,9 @@ def leaderboard():
                     'proficiency': p.get('proficiency') or 'beginner',
                     'wins': wins,
                     'losses': losses,
-                    'win_rate': win_rate
+                    'win_rate': win_rate,
+                    'is_pro': (p_tier in ['pro', 'elite']),
+                    'subscription_tier': p_tier
                 })
         else:
             # Fallback dynamic mode: Count tournament matches
@@ -82,6 +86,7 @@ def leaderboard():
 
                 s = stats.get(p['id'], {'wins': 0, 'losses': 0, 'played': 0})
                 win_rate = round((s['wins'] / s['played']) * 100) if s['played'] > 0 else 0
+                p_tier = get_user_tier(p, role='player', db=db)
 
                 rankings.append({
                     'id': p['id'],
@@ -93,7 +98,9 @@ def leaderboard():
                     'proficiency': p.get('proficiency') or 'beginner',
                     'wins': s['wins'],
                     'losses': s['losses'],
-                    'win_rate': win_rate
+                    'win_rate': win_rate,
+                    'is_pro': (p_tier in ['pro', 'elite']),
+                    'subscription_tier': p_tier
                 })
 
         # Multi-option sorting

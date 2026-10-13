@@ -91,10 +91,52 @@
         </div>
     </header>
 
+    {% if current_user.is_subscription_pending %}
+    <div class="sports-card animate-entry" style="margin-bottom: 20px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(217, 119, 6, 0.05)); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 14px; padding: 14px 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(245, 158, 11, 0.2); color: #f59e0b; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;">
+                    <i class="ph ph-hourglass-high"></i>
+                </div>
+                <div>
+                    <strong style="color: var(--text-primary); font-size: 0.92rem; display: block;">Pickleball Pro Pass Payment Under Review</strong>
+                    <span style="font-size: 0.82rem; color: var(--text-secondary);">Your GCash subscription proof is being confirmed by admin staff. Benefits (₱0 fees, 14-day early booking) will activate automatically.</span>
+                </div>
+            </div>
+            <a href="{{ url_for('billing.subscription_page') }}" class="sports-pill-btn outline" style="padding: 6px 14px; font-size: 0.8rem; border-color: rgba(245, 158, 11, 0.5); color: #f59e0b; text-decoration: none;">
+                <i class="ph ph-receipt"></i> Check Status
+            </a>
+        </div>
+    </div>
+    {% elif current_user.is_subscription_rejected %}
+    <div class="sports-card animate-entry" style="margin-bottom: 20px; background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(220, 38, 38, 0.05)); border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 14px; padding: 14px 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(239, 68, 68, 0.2); color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;">
+                    <i class="ph ph-warning-circle"></i>
+                </div>
+                <div>
+                    <strong style="color: var(--text-primary); font-size: 0.92rem; display: block;">Subscription Payment Verification Issue</strong>
+                    <span style="font-size: 0.82rem; color: var(--text-secondary);">Your payment proof could not be verified by admin staff. Please resubmit your GCash reference and receipt.</span>
+                </div>
+            </div>
+            <a href="{{ url_for('billing.subscription_page') }}" class="sports-pill-btn primary" style="padding: 6px 14px; font-size: 0.8rem; background: #ef4444; border: none; color: #fff; text-decoration: none;">
+                <i class="ph ph-arrow-counter-clockwise"></i> Fix &amp; Resubmit
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- ── 2. HERO: ATHLETIC IDENTITY & PROGRESSION SUMMARY ─────────────── -->
     <section class="sports-hero-card animate-entry">
         <div class="sports-hero-top">
             <div class="player-identity-group">
+                {% if current_user.is_pro %}
+                    <span class="player-rank-badge pro-pass" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.3)); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.5);">
+                        <i class="ph-fill ph-crown-simple" style="color: #f59e0b;"></i> PRO PASS
+                    </span>
+                {% endif %}
+
                 {% set rating = current_user.dupr|float %}
                 {% if rating < 3.0 %}
                     <span class="player-rank-badge beginner"><i class="ph ph-shield"></i> Beginner Division</span>

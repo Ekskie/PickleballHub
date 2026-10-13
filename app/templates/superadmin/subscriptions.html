@@ -1,0 +1,664 @@
+{% extends "superadmin/base_superadmin.html" %}
+{% block title %}Subscriptions &amp; Monetization Ledger{% endblock %}
+
+{% block superadmin_extra_head %}
+<style>
+    /* ── Subscriptions Management Styles ── */
+    .sub-mgmt-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .sub-title-group h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0 0 6px 0;
+        letter-spacing: -0.02em;
+    }
+
+    .sub-subtitle {
+        color: var(--text-secondary);
+        font-size: 0.88rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* ── Metrics Grid ── */
+    .sub-metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    @media (max-width: 1024px) {
+        .sub-metrics-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 640px) {
+        .sub-metrics-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .metric-stat-card {
+        padding: 18px 20px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        background: var(--card-bg, #1e222b);
+        border: 1px solid var(--border-color-soft, rgba(255, 255, 255, 0.08));
+    }
+
+    .metric-icon-wrap {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+        flex-shrink: 0;
+    }
+
+    .metric-icon-wrap.green {
+        background: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+    }
+
+    .metric-icon-wrap.amber {
+        background: rgba(245, 158, 11, 0.15);
+        color: #f59e0b;
+    }
+
+    .metric-icon-wrap.orange {
+        background: rgba(249, 115, 22, 0.15);
+        color: var(--primary-orange);
+    }
+
+    .metric-icon-wrap.indigo {
+        background: rgba(99, 102, 241, 0.15);
+        color: #818cf8;
+    }
+
+    .metric-stat-details .metric-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-secondary);
+        margin-bottom: 4px;
+        display: block;
+    }
+
+    .metric-stat-details .metric-val {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        line-height: 1.1;
+    }
+
+    .metric-stat-details .metric-note {
+        font-size: 0.74rem;
+        color: var(--text-secondary);
+        margin-top: 3px;
+    }
+
+    /* ── Filter & Search Toolbar ── */
+    .sub-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .sub-filter-tabs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .sub-tab-btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 0.84rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        background: var(--card-bg, #1e222b);
+        border: 1px solid var(--border-color-soft, rgba(255, 255, 255, 0.08));
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .sub-tab-btn:hover {
+        border-color: rgba(249, 115, 22, 0.3);
+        color: var(--text-primary);
+    }
+
+    .sub-tab-btn.active {
+        background: rgba(249, 115, 22, 0.15);
+        border-color: var(--primary-orange);
+        color: var(--primary-orange);
+    }
+
+    .sub-tab-badge {
+        padding: 2px 7px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        background: rgba(245, 158, 11, 0.2);
+        color: #f59e0b;
+    }
+
+    .sub-search-box {
+        position: relative;
+        width: 280px;
+    }
+
+    .sub-search-box i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+    }
+
+    .sub-search-box input {
+        width: 100%;
+        padding: 8px 12px 8px 36px;
+        background: var(--card-bg, #1e222b);
+        border: 1px solid var(--border-color-soft, rgba(255, 255, 255, 0.08));
+        border-radius: 8px;
+        color: var(--text-primary);
+        font-size: 0.85rem;
+        outline: none;
+    }
+
+    /* ── Receipt Proof Thumbnail ── */
+    .receipt-thumb-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .receipt-thumb {
+        width: 38px;
+        height: 38px;
+        border-radius: 6px;
+        object-fit: cover;
+        cursor: pointer;
+        border: 1px solid var(--border-color-soft);
+        transition: transform 0.15s ease;
+    }
+
+    .receipt-thumb:hover {
+        transform: scale(1.08);
+        border-color: var(--primary-orange);
+    }
+
+    .btn-receipt-view {
+        background: none;
+        border: none;
+        color: var(--primary-orange);
+        cursor: pointer;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 0;
+    }
+
+    .btn-receipt-view:hover {
+        text-decoration: underline;
+    }
+
+    /* ── Modal Styles ── */
+    .sub-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.75);
+        backdrop-filter: blur(6px);
+        z-index: 99999;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .sub-modal-backdrop.open {
+        display: flex;
+    }
+
+    .sub-modal-card {
+        background: var(--card-bg, #1a1e26);
+        border: 1px solid var(--border-color, rgba(255, 255, 255, 0.15));
+        border-radius: 16px;
+        max-width: 580px;
+        width: 100%;
+        padding: 24px 28px;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .sub-modal-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 18px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border-color-soft, rgba(255, 255, 255, 0.08));
+    }
+
+    .sub-modal-head h3 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-close-modal {
+        background: none;
+        border: none;
+        color: var(--text-secondary, #94a3b8);
+        cursor: pointer;
+        font-size: 1.3rem;
+        padding: 4px;
+        border-radius: 6px;
+        transition: color 0.15s ease;
+    }
+
+    .btn-close-modal:hover {
+        color: var(--text-primary, #ffffff);
+    }
+
+    .receipt-preview-img {
+        width: 100%;
+        max-height: 450px;
+        object-fit: contain;
+        border-radius: 10px;
+        background: var(--bg-tertiary, #0b0d11);
+        border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+        margin-bottom: 16px;
+        display: block;
+    }
+
+    .gcash-ref-badge {
+        background: var(--input-bg, rgba(125, 125, 125, 0.08));
+        border: 1px solid var(--border-color, rgba(125, 125, 125, 0.2));
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        letter-spacing: 0.5px;
+        display: inline-block;
+        word-break: break-all;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sub-mgmt-container">
+
+    <!-- Top Header -->
+    <div class="sub-mgmt-header">
+        <div class="sub-title-group">
+            <h1>Subscriptions &amp; Monetization Ledger</h1>
+            <div class="sub-subtitle">
+                <i class="ph ph-receipt"></i>
+                <span>Review GCash payments, approve subscriptions, and track cashflow analytics.</span>
+            </div>
+        </div>
+        <div>
+            <a href="{{ url_for('superadmin.reports') }}" class="btn-outline" style="padding: 8px 16px; font-size: 0.85rem; border-radius: 8px;">
+                <i class="ph ph-chart-line-up"></i> Full Financial Reports
+            </a>
+        </div>
+    </div>
+
+    <!-- Metrics Cards -->
+    <div class="sub-metrics-grid">
+        <div class="metric-stat-card glass-card">
+            <div class="metric-icon-wrap green">
+                <i class="ph ph-money"></i>
+            </div>
+            <div class="metric-stat-details">
+                <span class="metric-label">Total Cash Collected</span>
+                <span class="metric-val">₱{{ "{:,.2f}".format(analytics.total_cash) }}</span>
+                <span class="metric-note">Confirmed subscriptions</span>
+            </div>
+        </div>
+
+        <div class="metric-stat-card glass-card">
+            <div class="metric-icon-wrap amber">
+                <i class="ph ph-hourglass-high"></i>
+            </div>
+            <div class="metric-stat-details">
+                <span class="metric-label">Pending Verification</span>
+                <span class="metric-val">₱{{ "{:,.2f}".format(analytics.pending_cash) }}</span>
+                <span class="metric-note">{{ analytics.pending_count }} request(s) waiting</span>
+            </div>
+        </div>
+
+        <div class="metric-stat-card glass-card">
+            <div class="metric-icon-wrap orange">
+                <i class="ph ph-crown"></i>
+            </div>
+            <div class="metric-stat-details">
+                <span class="metric-label">Active Paid Subscribers</span>
+                <span class="metric-val">{{ analytics.active_subscribers }}</span>
+                <span class="metric-note">Pro &amp; Elite members</span>
+            </div>
+        </div>
+
+        <div class="metric-stat-card glass-card">
+            <div class="metric-icon-wrap indigo">
+                <i class="ph ph-trend-up"></i>
+            </div>
+            <div class="metric-stat-details">
+                <span class="metric-label">Plan Breakdown</span>
+                <span class="metric-val">{{ analytics.pro_count }} Pro / {{ analytics.elite_count }} Elite</span>
+                <span class="metric-note">Across all user personas</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Tabs & Search -->
+    <div class="sub-toolbar">
+        <div class="sub-filter-tabs">
+            <a href="{{ url_for('superadmin.subscriptions', status='pending_approval') }}" class="sub-tab-btn {% if current_filter == 'pending_approval' %}active{% endif %}">
+                <i class="ph ph-clock"></i>
+                <span>Pending Approval</span>
+                {% if analytics.pending_count > 0 %}
+                <span class="sub-tab-badge">{{ analytics.pending_count }}</span>
+                {% endif %}
+            </a>
+            <a href="{{ url_for('superadmin.subscriptions', status='active') }}" class="sub-tab-btn {% if current_filter == 'active' %}active{% endif %}">
+                <i class="ph ph-check-circle"></i>
+                <span>Active Subscriptions</span>
+            </a>
+            <a href="{{ url_for('superadmin.subscriptions', status='rejected') }}" class="sub-tab-btn {% if current_filter == 'rejected' %}active{% endif %}">
+                <i class="ph ph-x-circle"></i>
+                <span>Rejected</span>
+            </a>
+            <a href="{{ url_for('superadmin.subscriptions', status='all') }}" class="sub-tab-btn {% if current_filter == 'all' %}active{% endif %}">
+                <i class="ph ph-list"></i>
+                <span>All Records</span>
+            </a>
+        </div>
+
+        <div class="sub-search-box">
+            <i class="ph ph-magnifying-glass"></i>
+            <input type="text" id="subSearchInput" placeholder="Search by name, email, or GCash ref..." oninput="filterSubTable(this.value)">
+        </div>
+    </div>
+
+    <!-- Subscriptions Table -->
+    <div class="table-container glass-card">
+        <table class="data-grid" id="subscriptionsTable">
+            <thead>
+                <tr>
+                    <th>Subscriber</th>
+                    <th>Role</th>
+                    <th>Plan &amp; Cycle</th>
+                    <th>Amount</th>
+                    <th>GCash Ref #</th>
+                    <th>Receipt Proof</th>
+                    <th>Submitted</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if subscriptions %}
+                    {% for sub in subscriptions %}
+                    {% set prof = sub.profiles or {} %}
+                    <tr class="sub-row" data-search="{{ prof.first_name|lower }} {{ prof.last_name|lower }} {{ prof.email|lower }} {{ sub.gcash_reference|lower }}">
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 34px; height: 34px; border-radius: 50%; background: rgba(249, 115, 22, 0.15); color: var(--primary-orange); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0;">
+                                    {% if prof.avatar_url %}
+                                        <img src="{{ prof.avatar_url }}" alt="" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
+                                    {% else %}
+                                        {{ (prof.first_name or 'U')[0] }}{{ (prof.last_name or '')[0] }}
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <strong style="color: var(--text-primary); font-size: 0.9rem; display: block;">{{ prof.first_name }} {{ prof.last_name }}</strong>
+                                    <span style="font-size: 0.76rem; color: var(--text-secondary);">{{ prof.email }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-pill info">{{ sub.role|capitalize }}</span>
+                        </td>
+                        <td>
+                            <div style="font-size: 0.88rem; font-weight: 600; color: var(--text-primary);">
+                                {{ sub.tier|capitalize }} Pass
+                            </div>
+                            <span style="font-size: 0.74rem; color: var(--text-secondary); text-transform: capitalize;">
+                                {{ sub.billing_cycle }} billing
+                            </span>
+                        </td>
+                        <td>
+                            <strong style="color: #10b981; font-size: 0.95rem;">₱{{ "{:,.2f}".format(sub.amount or 0) }}</strong>
+                        </td>
+                        <td>
+                            <code style="background: rgba(255,255,255,0.06); padding: 3px 7px; border-radius: 4px; font-size: 0.82rem; color: var(--text-primary);">
+                                {{ sub.gcash_reference or 'N/A' }}
+                            </code>
+                        </td>
+                        <td>
+                            {% if sub.receipt_url %}
+                            <div class="receipt-thumb-wrap"
+                                 data-receipt-url="{{ sub.receipt_url }}"
+                                 data-gcash-ref="{{ sub.gcash_reference or 'N/A' }}"
+                                 data-name="{{ prof.first_name }} {{ prof.last_name }}"
+                                 data-amount="₱{{ '{:,.2f}'.format(sub.amount or 0) }}">
+                                <img src="{{ sub.receipt_url }}" alt="Receipt" class="receipt-thumb" onclick="openReceiptModal(this.closest('.receipt-thumb-wrap'))" loading="lazy" onerror="this.style.opacity='0.4'; this.title='Image preview not available';">
+                                <button type="button" class="btn-receipt-view" onclick="openReceiptModal(this.closest('.receipt-thumb-wrap'))">
+                                    <i class="ph ph-eye"></i> View
+                                </button>
+                            </div>
+                            {% else %}
+                            <span style="color: var(--text-secondary); font-size: 0.8rem;">No receipt</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span style="font-size: 0.82rem; color: var(--text-secondary);">
+                                {{ sub.created_at[:10] if sub.created_at else '—' }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if sub.status == 'active' %}
+                                <span class="status-pill success"><i class="ph ph-check-circle"></i> Active</span>
+                            {% elif sub.status == 'pending_approval' %}
+                                <span class="status-pill warning"><i class="ph ph-clock"></i> Pending</span>
+                            {% elif sub.status == 'rejected' %}
+                                <span class="status-pill danger"><i class="ph ph-x-circle"></i> Rejected</span>
+                            {% else %}
+                                <span class="status-pill info">{{ sub.status|capitalize }}</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: right;">
+                            <div class="action-button-group">
+                                {% if sub.status == 'pending_approval' %}
+                                    <form method="POST" action="{{ url_for('superadmin.subscriptions') }}" style="display: inline;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <input type="hidden" name="action" value="approve">
+                                        <input type="hidden" name="sub_id" value="{{ sub.id }}">
+                                        <button type="submit" class="btn-action-pill approve" onclick="return confirm('Confirm and approve subscription payment of ₱{{ "{:,.2f}".format(sub.amount) }} for {{ prof.first_name }} {{ prof.last_name }}?')">
+                                            <i class="ph ph-check"></i> Confirm &amp; Approve
+                                        </button>
+                                    </form>
+
+                                    <button type="button" class="btn-action-pill reject" onclick="openRejectModal('{{ sub.id }}', '{{ prof.first_name }} {{ prof.last_name }}')">
+                                        <i class="ph ph-x"></i> Reject
+                                    </button>
+                                {% elif sub.status == 'active' %}
+                                    <button type="button" class="btn-action-pill reject" onclick="openRejectModal('{{ sub.id }}', '{{ prof.first_name }} {{ prof.last_name }}')">
+                                        <i class="ph ph-arrow-counter-clockwise"></i> Revoke
+                                    </button>
+                                {% elif sub.status == 'rejected' %}
+                                    <form method="POST" action="{{ url_for('superadmin.subscriptions') }}" style="display: inline;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <input type="hidden" name="action" value="approve">
+                                        <input type="hidden" name="sub_id" value="{{ sub.id }}">
+                                        <button type="submit" class="btn-action-pill approve" onclick="return confirm('Re-approve subscription for {{ prof.first_name }} {{ prof.last_name }}?')">
+                                            <i class="ph ph-check"></i> Re-approve
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="9" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                            <i class="ph ph-receipt" style="font-size: 2.2rem; display: block; margin-bottom: 8px; opacity: 0.5;"></i>
+                            No subscription records found in this category.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- ── Modal 1: Receipt Preview Modal ── -->
+<div id="receiptModal" class="sub-modal-backdrop" onclick="if(event.target === this) closeReceiptModal()">
+    <div class="sub-modal-card">
+        <div class="sub-modal-head">
+            <h3><i class="ph ph-receipt" style="color: var(--primary-orange);"></i> GCash Payment Proof</h3>
+            <button type="button" class="btn-close-modal" onclick="closeReceiptModal()"><i class="ph ph-x"></i></button>
+        </div>
+        <div style="position: relative; text-align: center; margin-bottom: 16px;">
+            <img id="modalReceiptImg" src="" alt="Payment Receipt" class="receipt-preview-img" onerror="this.style.opacity='0.4'; this.alt='Receipt image could not be loaded';">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; font-size: 0.88rem;">
+            <div>
+                <span style="color: var(--text-secondary); display: block; font-size: 0.8rem; margin-bottom: 2px;">Subscriber:</span>
+                <strong id="modalSubscriberName" style="color: var(--text-primary); font-size: 0.95rem;"></strong>
+            </div>
+            <div>
+                <span style="color: var(--text-secondary); display: block; font-size: 0.8rem; margin-bottom: 2px;">Amount Paid:</span>
+                <strong id="modalSubAmount" style="color: #10b981; font-size: 0.95rem;"></strong>
+            </div>
+            <div style="grid-column: span 2;">
+                <span style="color: var(--text-secondary); display: block; font-size: 0.8rem; margin-bottom: 4px;">GCash Reference Number:</span>
+                <code id="modalGcashRef" class="gcash-ref-badge"></code>
+            </div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; border-top: 1px solid var(--border-color-soft, rgba(255,255,255,0.08)); padding-top: 16px;">
+            <a id="modalReceiptLink" href="#" target="_blank" rel="noopener noreferrer" class="btn-outline" style="padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; border: 1px solid var(--border-color-soft, rgba(255,255,255,0.15)); color: var(--text-primary);">
+                <i class="ph ph-arrow-square-out"></i> Open Full Image
+            </a>
+            <button type="button" class="btn-solid" onclick="closeReceiptModal()" style="padding: 8px 20px; border-radius: 8px; background: var(--primary-orange); color: #fff; border: none; cursor: pointer; font-weight: 600;">Done</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Modal 2: Rejection Reason Modal ── -->
+<div id="rejectModal" class="sub-modal-backdrop" onclick="if(event.target === this) closeRejectModal()">
+    <div class="sub-modal-card">
+        <div class="sub-modal-head">
+            <h3><i class="ph ph-warning-circle" style="color: #ef4444;"></i> Reject Payment Proof</h3>
+            <button type="button" class="btn-close-modal" onclick="closeRejectModal()"><i class="ph ph-x"></i></button>
+        </div>
+        <form method="POST" action="{{ url_for('superadmin.subscriptions') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="action" value="reject">
+            <input type="hidden" name="sub_id" id="rejectSubId" value="">
+
+            <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 14px;">
+                You are rejecting the subscription payment for <strong id="rejectSubscriberName" style="color: var(--text-primary);"></strong>. 
+                The user's account tier will revert to free.
+            </p>
+
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 0.82rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">
+                    Rejection Reason / Notes:
+                </label>
+                <textarea name="notes" rows="3" required placeholder="e.g. Invalid reference number, unreadable screenshot, or amount mismatch..." style="width: 100%; padding: 10px 12px; background: var(--input-bg, rgba(15,17,21,0.6)); border: 1px solid var(--border-color, rgba(255,255,255,0.15)); border-radius: 8px; color: var(--text-primary, #fff); font-size: 0.85rem; outline: none;"></textarea>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn-outline" onclick="closeRejectModal()" style="padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border-color-soft, rgba(255,255,255,0.15)); color: var(--text-primary);">Cancel</button>
+                <button type="submit" class="btn-action-pill reject" style="padding: 8px 18px; border-radius: 8px; font-size: 0.88rem;">Confirm Rejection</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openReceiptModal(target, ref, name, amount) {
+        let url = target;
+        if (typeof target === 'object' && target !== null) {
+            url = target.dataset.receiptUrl || target.getAttribute('data-receipt-url');
+            ref = target.dataset.gcashRef || target.getAttribute('data-gcash-ref');
+            name = target.dataset.name || target.getAttribute('data-name');
+            amount = target.dataset.amount || target.getAttribute('data-amount');
+        }
+        const modalImg = document.getElementById('modalReceiptImg');
+        const modalLink = document.getElementById('modalReceiptLink');
+        if (modalImg) {
+            modalImg.style.opacity = '1';
+            modalImg.src = url || '';
+        }
+        if (modalLink) {
+            modalLink.href = url || '#';
+            modalLink.style.display = url ? 'inline-flex' : 'none';
+        }
+        const refEl = document.getElementById('modalGcashRef');
+        if (refEl) refEl.textContent = ref || 'N/A';
+        const nameEl = document.getElementById('modalSubscriberName');
+        if (nameEl) nameEl.textContent = name || 'N/A';
+        const amountEl = document.getElementById('modalSubAmount');
+        if (amountEl) amountEl.textContent = amount || '₱0.00';
+        document.getElementById('receiptModal').classList.add('open');
+    }
+
+    function closeReceiptModal() {
+        document.getElementById('receiptModal').classList.remove('open');
+    }
+
+    function openRejectModal(subId, name) {
+        document.getElementById('rejectSubId').value = subId;
+        document.getElementById('rejectSubscriberName').textContent = name;
+        document.getElementById('rejectModal').classList.add('open');
+    }
+
+    function closeRejectModal() {
+        document.getElementById('rejectModal').classList.remove('open');
+    }
+
+    function filterSubTable(query) {
+        const q = query.toLowerCase().trim();
+        document.querySelectorAll('.sub-row').forEach(row => {
+            const data = row.getAttribute('data-search') || '';
+            row.style.display = data.includes(q) ? '' : 'none';
+        });
+    }
+</script>
+{% endblock %}

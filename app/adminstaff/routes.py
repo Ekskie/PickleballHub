@@ -23,7 +23,10 @@ def dashboard():
         'verified_kyc': 0,
         'rejected_kyc': 0,
         'unverified_kyc': 0,
-        'verification_rate': 0.0
+        'verification_rate': 0.0,
+        'subscription_revenue': 0.0,
+        'pending_subscriptions': 0,
+        'active_subscribers': 0,
     }
     recent_tickets = []
     pending_facilities = []
@@ -109,8 +112,17 @@ def dashboard():
             ).order('created_at', desc=True).limit(6).execute()
             recent_audit_logs = audit_resp.data or []
         except Exception as a_err:
-            print(f"Error fetching audit logs: {a_err}")
             recent_audit_logs = []
+
+        # 7. Subscriptions Ledger Metrics
+        try:
+            subs_resp = db.table('subscriptions').select('amount, status').execute()
+            all_subs = subs_resp.data or []
+            stats['subscription_revenue'] = sum(float(s.get('amount') or 0) for s in all_subs if s.get('status') == 'active')
+            stats['pending_subscriptions'] = sum(1 for s in all_subs if s.get('status') == 'pending_approval')
+            stats['active_subscribers'] = sum(1 for s in all_subs if s.get('status') == 'active')
+        except Exception as sub_err:
+            print(f"Adminstaff subscription metrics error: {sub_err}")
 
     except Exception as e:
         flash(f'An error occurred: {e}', 'error')
@@ -232,6 +244,7 @@ def verifications():
 def update_kyc_status(facility_id):
     req_json = request.get_json(silent=True) or {}
     status = request.form.get('status') or req_json.get('status')
+    reason = (request.form.get('reason') or req_json.get('reason') or '').strip()
     is_ajax = request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', '')
 
     if status not in ['verified', 'rejected', 'unverified', 'pending_approval']:
@@ -242,8 +255,42 @@ def update_kyc_status(facility_id):
         return redirect(url_for('adminstaff.verifications'))
     db = get_admin_db()
     try:
+        # Fetch facility info to notify the facility owner
+        fac_resp = db.table('facilities').select('id, name, owner_id').eq('id', facility_id).single().execute()
+        fac_data = fac_resp.data or {}
+        owner_id = fac_data.get('owner_id')
+        fac_name = fac_data.get('name', 'Facility')
+
         db.table('facilities').update({'kyc_status': status}).eq('id', facility_id).execute()
-        log_audit_action('update_facility_kyc', facility_id, {'status': status}, raise_on_error=True)
+        log_audit_action('update_facility_kyc', facility_id, {'status': status, 'reason': reason}, raise_on_error=False)
+
+        # Send in-app notification to facility owner
+        if owner_id:
+            try:
+                if status == 'verified':
+                    db.table('notifications').insert({
+                        'user_id': owner_id,
+                        'title': 'Facility KYC Approved',
+                        'message': f'Great news! Your facility "{fac_name}" KYC has been verified. You can now accept public reservations.',
+                        'type': 'success',
+                        'link': '/owner/facilities'
+                    }).execute()
+                elif status == 'rejected':
+                    rej_msg = f'Your KYC verification for "{fac_name}" was rejected.'
+                    if reason:
+                        rej_msg += f' Reason: {reason}.'
+                    rej_msg += ' Please update your documents and resubmit.'
+                    db.table('notifications').insert({
+                        'user_id': owner_id,
+                        'title': 'Facility KYC Rejected',
+                        'message': rej_msg,
+                        'type': 'warning',
+                        'link': '/owner/facilities'
+                    }).execute()
+            except Exception as notif_err:
+                from flask import current_app
+                current_app.logger.warning(f"Failed to insert KYC notification for owner {owner_id}: {notif_err}")
+
         msg = f'Facility KYC status updated to {status.replace("_", " ").title()}.'
         if is_ajax:
             return jsonify({'success': True, 'message': msg, 'status': status})
@@ -444,4 +491,175 @@ def community():
 @require_role('adminstaff')
 def tutorials():
     return render_template('adminstaff/tutorials.html')
+
+
+@adminstaff_bp.route('/subscriptions', methods=['GET', 'POST'])
+@require_role('adminstaff')
+def subscriptions():
+    """Subscriptions & Billing ledger for Admin Staff: verify GCash receipts, track members, approve/reject."""
+    db = get_admin_db()
+
+    if request.method == 'POST':
+        action = request.form.get('action')
+        sub_id = request.form.get('sub_id')
+
+        if not sub_id:
+            flash('Invalid subscription record specified.', 'error')
+            return redirect(url_for('adminstaff.subscriptions'))
+
+        try:
+            sub_res = db.table('subscriptions').select('*, profiles!user_id(id, first_name, last_name, email)').eq('id', sub_id).single().execute()
+            sub_data = sub_res.data
+            if not sub_data:
+                flash('Subscription record not found.', 'error')
+                return redirect(url_for('adminstaff.subscriptions'))
+
+            user_id = sub_data.get('user_id')
+            user_prof = sub_data.get('profiles') or {}
+            user_name = f"{user_prof.get('first_name', '')} {user_prof.get('last_name', '')}".strip() or "User"
+            reviewer_id = session.get('user_id')
+            now_utc = datetime.now(timezone.utc)
+            now_iso = now_utc.isoformat()
+
+            if action == 'approve':
+                cycle = sub_data.get('billing_cycle', 'monthly')
+                plan = sub_data.get('tier', 'pro')
+                amount = float(sub_data.get('amount') or 0.0)
+                duration_days = 365 if cycle == 'annual' else 30
+                expires_at_iso = (now_utc + timedelta(days=duration_days)).isoformat()
+
+                # Update subscription record
+                db.table('subscriptions').update({
+                    'status': 'active',
+                    'reviewed_by': reviewer_id,
+                    'reviewed_at': now_iso,
+                    'starts_at': now_iso,
+                    'expires_at': expires_at_iso,
+                    'updated_at': now_iso
+                }).eq('id', sub_id).execute()
+
+                # Update user profile
+                db.table('profiles').update({
+                    'subscription_tier': plan,
+                    'subscription_status': 'active',
+                    'subscription_billing_cycle': cycle,
+                    'subscription_expires_at': expires_at_iso
+                }).eq('id', user_id).execute()
+
+                log_audit_action('approve_subscription', str(sub_id), {
+                    'user_id': user_id,
+                    'tier': plan,
+                    'cycle': cycle,
+                    'amount': amount
+                })
+
+                # Send in-app notification to the user
+                try:
+                    plan_label = 'Pickleball Pro Pass' if plan == 'pro' else f"{plan.capitalize()} Membership"
+                    db.table('notifications').insert({
+                        'user_id': user_id,
+                        'title': '🎉 Subscription Approved!',
+                        'message': f"Your {plan_label} payment of ₱{amount:,.2f} has been verified and approved! You now enjoy full {plan.capitalize()} privileges and perks.",
+                        'type': 'success',
+                        'link': url_for('billing.subscription_page')
+                    }).execute()
+                except Exception as notif_err:
+                    current_app.logger.warning(f"Error sending subscription approval notification: {notif_err}")
+
+                flash(f'Subscription payment of ₱{amount:,.2f} for {user_name} approved successfully!', 'success')
+
+            elif action == 'reject':
+                notes = request.form.get('notes', '').strip() or 'Payment proof rejected by admin staff'
+
+                # Update subscription record
+                db.table('subscriptions').update({
+                    'status': 'rejected',
+                    'reviewed_by': reviewer_id,
+                    'reviewed_at': now_iso,
+                    'notes': notes,
+                    'updated_at': now_iso
+                }).eq('id', sub_id).execute()
+
+                # Revert user profile to free tier
+                db.table('profiles').update({
+                    'subscription_tier': 'free',
+                    'subscription_status': 'rejected'
+                }).eq('id', user_id).execute()
+
+                log_audit_action('reject_subscription', str(sub_id), {
+                    'user_id': user_id,
+                    'notes': notes
+                })
+
+                # Send in-app notification to the user
+                try:
+                    db.table('notifications').insert({
+                        'user_id': user_id,
+                        'title': '⚠️ Subscription Payment Needs Attention',
+                        'message': f"Your subscription payment proof could not be verified. Note from admin: '{notes}'. Click to review and resubmit.",
+                        'type': 'warning',
+                        'link': url_for('billing.subscription_page')
+                    }).execute()
+                except Exception as notif_err:
+                    current_app.logger.warning(f"Error sending subscription rejection notification: {notif_err}")
+
+                flash(f'Subscription payment for {user_name} has been rejected. Account reverted to free tier.', 'warning')
+
+        except Exception as e:
+            flash(f'Failed to process subscription action: {e}', 'error')
+
+        return redirect(url_for('adminstaff.subscriptions'))
+
+    # GET Request
+    filter_status = request.args.get('status', 'pending_approval').strip()
+    analytics = {
+        'total_cash': 0.0,
+        'pending_cash': 0.0,
+        'active_subscribers': 0,
+        'pending_count': 0,
+        'rejected_count': 0,
+        'pro_count': 0,
+        'elite_count': 0,
+        'total_count': 0
+    }
+    subscriptions_list = []
+
+    try:
+        sub_query = db.table('subscriptions').select(
+            '*, profiles!user_id(id, first_name, last_name, email, phone, avatar_url, role)'
+        ).order('created_at', desc=True).execute()
+        all_subs = sub_query.data or []
+
+        analytics['total_count'] = len(all_subs)
+        for s in all_subs:
+            st = s.get('status')
+            amt = float(s.get('amount') or 0.0)
+            tier = (s.get('tier') or '').lower()
+
+            if st == 'active':
+                analytics['total_cash'] += amt
+                analytics['active_subscribers'] += 1
+                if tier == 'pro':
+                    analytics['pro_count'] += 1
+                elif tier == 'elite':
+                    analytics['elite_count'] += 1
+            elif st == 'pending_approval':
+                analytics['pending_cash'] += amt
+                analytics['pending_count'] += 1
+            elif st == 'rejected':
+                analytics['rejected_count'] += 1
+
+        if filter_status == 'all':
+            subscriptions_list = all_subs
+        else:
+            subscriptions_list = [s for s in all_subs if s.get('status') == filter_status]
+
+    except Exception as e:
+        flash(f'Error retrieving subscriptions ledger: {e}', 'error')
+
+    return render_template('adminstaff/subscriptions.html',
+                           subscriptions=subscriptions_list,
+                           analytics=analytics,
+                           current_filter=filter_status)
+
 

@@ -360,6 +360,10 @@ function toggleTheme() {
         localStorage.setItem('theme', 'light');
     }
 
+    syncThemeIcons(isDark);
+}
+
+function syncThemeIcons(isDark) {
     const icons = document.querySelectorAll('#theme-icon, #themeToggleIcon, .theme-icon');
     icons.forEach(icon => {
         if (isDark) {
@@ -371,6 +375,33 @@ function toggleTheme() {
         }
     });
 }
+
+function syncThemeOnLoad() {
+    const savedTheme = localStorage.getItem('theme');
+    const html = document.documentElement;
+    const isDark = (savedTheme === 'dark');
+    if (isDark) {
+        html.classList.add('dark-mode');
+        html.setAttribute('data-theme', 'dark');
+        if (document.body) {
+            document.body.classList.add('dark-mode');
+            document.body.setAttribute('data-theme', 'dark');
+        }
+    } else if (savedTheme === 'light') {
+        html.classList.remove('dark-mode');
+        html.setAttribute('data-theme', 'light');
+        if (document.body) {
+            document.body.classList.remove('dark-mode');
+            document.body.setAttribute('data-theme', 'light');
+        }
+    }
+    syncThemeIcons(html.classList.contains('dark-mode') || html.getAttribute('data-theme') === 'dark');
+}
+
+// Immediate run and hook into DOMContentLoaded
+syncThemeOnLoad();
+document.addEventListener('DOMContentLoaded', syncThemeOnLoad);
+
 
 /* Editorial Hero Slider */
 let currentSlide = 0;

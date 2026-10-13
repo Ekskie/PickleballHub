@@ -1466,6 +1466,11 @@
                         <div class="host-name-row">
                             <span class="host-name-link" onclick="openPlayerDrawer('{{ lobby.creator_id }}')">{{ lobby.creator_name }}</span>
                             <span class="host-badge-tag">Host</span>
+                            {% if lobby.is_creator_pro %}
+                            <span class="pro-paddle-badge" style="display:inline-flex; align-items:center; gap:2px; background:linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(217, 119, 6, 0.28)); color:#d97706; border:1px solid rgba(245, 158, 11, 0.45); font-size:0.62rem; font-weight:800; padding:1px 6px; border-radius:999px; vertical-align:middle; margin-left:4px;" title="Pro Member">
+                                <i class="ph-fill ph-medal" style="font-size:0.7rem; color:#f59e0b;"></i> PRO
+                            </span>
+                            {% endif %}
                         </div>
                         <span class="host-dupr-tag">{{ "%.2f"|format(lobby.creator_dupr|float) }} DUPR</span>
                     </div>
@@ -1518,9 +1523,14 @@
                                             {% if cell.player.avatar_url %}<img src="{{ cell.player.avatar_url }}">{% else %}{{ cell.player.initials }}{% endif %}
                                         </div>
                                         <div style="margin-left: 8px;">
-                                            <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">
+                                            <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 4px;">
                                                 <span class="host-name-link" onclick="openPlayerDrawer('{{ cell.player.id }}')">{{ cell.player.name }}</span>
                                                 {% if cell.player.is_host %}<span style="color: #f59e0b;">★</span>{% endif %}
+                                                {% if cell.player.is_pro %}
+                                                <span class="pro-paddle-badge" style="display:inline-flex; align-items:center; gap:2px; background:linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.25)); color:#d97706; border:1px solid rgba(245, 158, 11, 0.4); font-size:0.58rem; font-weight:800; padding:1px 5px; border-radius:999px;" title="Pro Member">
+                                                    <i class="ph-fill ph-medal" style="font-size:0.65rem; color:#f59e0b;"></i> PRO
+                                                </span>
+                                                {% endif %}
                                             </div>
                                             <div style="font-size: 0.72rem; color: var(--text-muted);">
                                                 {{ "%.2f"|format(cell.player.dupr|float) }} DUPR
@@ -1585,8 +1595,13 @@
                                             {% if cell.player.avatar_url %}<img src="{{ cell.player.avatar_url }}">{% else %}{{ cell.player.initials }}{% endif %}
                                         </div>
                                         <div style="margin-left: 8px;">
-                                            <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">
+                                            <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 4px;">
                                                 <span class="host-name-link" onclick="openPlayerDrawer('{{ cell.player.id }}')">{{ cell.player.name }}</span>
+                                                {% if cell.player.is_pro %}
+                                                <span class="pro-paddle-badge" style="display:inline-flex; align-items:center; gap:2px; background:linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.25)); color:#d97706; border:1px solid rgba(245, 158, 11, 0.4); font-size:0.58rem; font-weight:800; padding:1px 5px; border-radius:999px;" title="Pro Member">
+                                                    <i class="ph-fill ph-medal" style="font-size:0.65rem; color:#f59e0b;"></i> PRO
+                                                </span>
+                                                {% endif %}
                                             </div>
                                             <div style="font-size: 0.72rem; color: var(--text-muted);">
                                                 {{ "%.2f"|format(cell.player.dupr|float) }} DUPR

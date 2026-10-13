@@ -191,46 +191,56 @@ def checkout_page():
             'payment_method': 'gcash',
             'gcash_reference': gcash_ref,
             'receipt_url': receipt_url,
-            'status': 'active',
+            'status': 'pending_approval',
             'starts_at': now_utc.isoformat(),
             'expires_at': expires_at_iso,
-            'notes': f"Direct GCash subscription payment verified for {role} {plan} ({cycle})"
+            'notes': f"Direct GCash subscription payment submitted for {role} {plan} ({cycle}) - Awaiting admin confirmation"
         }).execute()
 
         # Update profiles table
         admin_db.table('profiles').update({
             'subscription_tier': plan,
-            'subscription_status': 'active',
+            'subscription_status': 'pending_approval',
             'subscription_billing_cycle': cycle,
             'subscription_expires_at': expires_at_iso
         }).eq('id', user_id).execute()
 
         # Update session & cache
         session['subscription_tier'] = plan
-        session['subscription_status'] = 'active'
+        session['subscription_status'] = 'pending_approval'
         session['subscription_billing_cycle'] = cycle
         session['subscription_expires_at'] = expires_at_iso
         session.pop('last_integrity_check', None)
         if session.get('cached_profile'):
             session['cached_profile']['subscription_tier'] = plan
-            session['cached_profile']['subscription_status'] = 'active'
+            session['cached_profile']['subscription_status'] = 'pending_approval'
             session['cached_profile']['subscription_billing_cycle'] = cycle
             session['cached_profile']['subscription_expires_at'] = expires_at_iso
         if hasattr(g, 'current_profile') and g.current_profile:
             g.current_profile['subscription_tier'] = plan
-            g.current_profile['subscription_status'] = 'active'
+            g.current_profile['subscription_status'] = 'pending_approval'
             g.current_profile['subscription_billing_cycle'] = cycle
             g.current_profile['subscription_expires_at'] = expires_at_iso
 
         flash(
-            f"🎉 Congratulations! Your {plan_cfg.get('label', plan.capitalize())} subscription is now active! "
-            f"Reference #{gcash_ref} has been recorded.",
+            f"Payment proof submitted! Your {plan_cfg.get('label', plan.capitalize())} subscription payment "
+            f"(Reference #{gcash_ref}) has been sent for admin verification. Your account is active with standard features while our team verifies your payment.",
             "success"
         )
 
         if return_to and return_to.startswith('/'):
             return redirect(return_to)
-        return redirect(url_for('billing.subscription_page'))
+
+        role_dashboards = {
+            'player': 'player.dashboard',
+            'owner': 'owner.dashboard',
+            'clubadmin': 'clubadmin.dashboard',
+            'superadmin': 'superadmin.dashboard',
+            'adminstaff': 'adminstaff.dashboard',
+            'facilitystaff': 'facilitystaff.dashboard',
+        }
+        dest = role_dashboards.get(role, 'billing.subscription_page')
+        return redirect(url_for(dest))
 
     except Exception as e:
         current_app.logger.error(f"[checkout_page] Error completing subscription: {e}")
