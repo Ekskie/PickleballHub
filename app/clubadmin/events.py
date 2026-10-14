@@ -258,6 +258,7 @@ def create_event():
             'location_label': location_label,
             'image_url': image_url,
             'status': event_status,
+            'is_ranked': request.form.get('is_ranked', 'true') in ['true', 'True', '1', 'on'],
         }
         if facility_id:
             insert_data['facility_id'] = facility_id
@@ -441,6 +442,7 @@ def edit_event(event_id):
             'entry_fee': float(entry_fee),
             'prize_pool': float(prize_pool) if prize_pool else 0,
             'location_label': location_label,
+            'is_ranked': request.form.get('is_ranked', 'true') in ['true', 'True', '1', 'on'],
         }
         if facility_id:
             update_data['facility_id'] = facility_id

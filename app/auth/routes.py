@@ -4,7 +4,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask import g
 from app.db import get_db, get_admin_db
 from app import limiter
-from app.billing.tiers import TIER_CONFIG, get_tier_limits
+from app.billing.tiers import TIER_CONFIG, get_tier_limits, load_dynamic_tier_config
 
 auth_bp = Blueprint('auth', __name__, url_prefix='')
 
@@ -26,7 +26,7 @@ def _get_plan_info(role: str, tier: str, cycle: str) -> dict:
     if cycle not in ['monthly', 'annual']:
         cycle = 'monthly'
 
-    role_tiers = TIER_CONFIG.get(role, TIER_CONFIG.get('player', {}))
+    role_tiers = load_dynamic_tier_config(role=role)
     tier_cfg = role_tiers.get(tier, role_tiers.get('free', {}))
     p_monthly = tier_cfg.get('price_monthly', 0)
     p_annual = tier_cfg.get('price_annual', 0)
@@ -256,7 +256,7 @@ def signup():
         if cycle not in ['monthly', 'annual']:
             cycle = 'monthly'
 
-        role_tiers = TIER_CONFIG.get(role, {})
+        role_tiers = load_dynamic_tier_config(role=role)
         if tier not in role_tiers:
             tier = 'free'
 
@@ -279,7 +279,7 @@ def signup():
     if cycle not in ['monthly', 'annual']:
         cycle = 'monthly'
 
-    role_tiers = TIER_CONFIG.get(role, {})
+    role_tiers = load_dynamic_tier_config(role=role)
     if tier not in role_tiers:
         tier = 'free'
 

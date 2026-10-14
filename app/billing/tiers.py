@@ -4,6 +4,9 @@ PickleballHub Centralized Subscription & Tier Limits Engine.
 Defines monetization rules, role-based limits, paywall checks, and route decorators.
 """
 
+import copy
+import json
+import time
 from functools import wraps
 from datetime import datetime, timezone, timedelta
 from flask import session, flash, redirect, url_for, g, current_app, request, has_request_context
@@ -15,7 +18,7 @@ PH_TZ = timezone(timedelta(hours=8))
 # ─────────────────────────────────────────────────────────────────────────────
 # 1. TIER DEFINITIONS AND OPERATIONAL LIMITS CONFIGURATION
 # ─────────────────────────────────────────────────────────────────────────────
-TIER_CONFIG = {
+DEFAULT_TIER_CONFIG = {
     # ── Facility Owners (B2B SaaS) ──
     'owner': {
         'free': {
@@ -121,6 +124,112 @@ TIER_CONFIG = {
     }
 }
 
+# Backward compatibility alias
+TIER_CONFIG = DEFAULT_TIER_CONFIG
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DYNAMIC PRICING ENGINE & PERSISTENCE
+# ─────────────────────────────────────────────────────────────────────────────
+_cached_tier_config = None
+_tier_cache_time = 0.0
+TIER_CACHE_TTL = 30.0  # cache dynamic pricing in memory for 30s
+
+def clear_tier_pricing_cache():
+    """Invalidates the in-memory tier pricing cache."""
+    global _cached_tier_config, _tier_cache_time
+    _cached_tier_config = None
+    _tier_cache_time = 0.0
+
+def load_dynamic_tier_config(role: str = None, force_refresh: bool = False) -> dict:
+    """
+    Returns the complete tier configuration merged with dynamic pricing overrides
+    from public.platform_settings ('subscription_pricing').
+    If role is provided, returns only that role's tier dictionary.
+    """
+    global _cached_tier_config, _tier_cache_time
+    now = time.time()
+    if force_refresh or _cached_tier_config is None or (now - _tier_cache_time) > TIER_CACHE_TTL:
+        config = copy.deepcopy(DEFAULT_TIER_CONFIG)
+        try:
+            from app.settings_helper import get_db_client
+            db = get_db_client()
+            if db:
+                resp = db.table('platform_settings').select('value').eq('key', 'subscription_pricing').execute()
+                if resp.data and resp.data[0].get('value'):
+                    pricing_val = resp.data[0]['value']
+                    if isinstance(pricing_val, str):
+                        custom_prices = json.loads(pricing_val)
+                    elif isinstance(pricing_val, dict):
+                        custom_prices = pricing_val
+                    else:
+                        custom_prices = {}
+
+                    # Merge custom prices into config
+                    for r_key, tiers_dict in custom_prices.items():
+                        if r_key in config and isinstance(tiers_dict, dict):
+                            for t_key, price_fields in tiers_dict.items():
+                                if t_key in config[r_key] and isinstance(price_fields, dict):
+                                    if 'price_monthly' in price_fields and price_fields['price_monthly'] is not None:
+                                        try:
+                                            config[r_key][t_key]['price_monthly'] = float(price_fields['price_monthly']) if '.' in str(price_fields['price_monthly']) else int(price_fields['price_monthly'])
+                                        except (ValueError, TypeError):
+                                            pass
+                                    if 'price_annual' in price_fields and price_fields['price_annual'] is not None:
+                                        try:
+                                            config[r_key][t_key]['price_annual'] = float(price_fields['price_annual']) if '.' in str(price_fields['price_annual']) else int(price_fields['price_annual'])
+                                        except (ValueError, TypeError):
+                                            pass
+        except Exception as e:
+            # Fallback cleanly to default
+            pass
+
+        _cached_tier_config = config
+        _tier_cache_time = now
+
+    if role:
+        return _cached_tier_config.get(role, _cached_tier_config.get('player', {}))
+    return _cached_tier_config
+
+def save_tier_pricing(pricing_data: dict, db=None) -> bool:
+    """
+    Saves new pricing into platform_settings under 'subscription_pricing' key
+    and invalidates the memory cache.
+    """
+    if not db:
+        from app.settings_helper import get_db_client
+        db = get_db_client()
+    if not db:
+        return False
+    try:
+        json_val = json.dumps(pricing_data)
+        db.table('platform_settings').upsert({
+            'key': 'subscription_pricing',
+            'value': json_val
+        }, on_conflict='key').execute()
+        clear_tier_pricing_cache()
+        return True
+    except Exception as e:
+        print(f"[save_tier_pricing] Error saving pricing: {e}")
+        return False
+
+def reset_tier_pricing(db=None) -> bool:
+    """
+    Resets pricing to system defaults by deleting 'subscription_pricing' from platform_settings
+    and clearing the memory cache.
+    """
+    if not db:
+        from app.settings_helper import get_db_client
+        db = get_db_client()
+    if not db:
+        return False
+    try:
+        db.table('platform_settings').delete().eq('key', 'subscription_pricing').execute()
+        clear_tier_pricing_cache()
+        return True
+    except Exception as e:
+        print(f"[reset_tier_pricing] Error resetting pricing: {e}")
+        return False
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 2. TIER RETRIEVAL & EXPIRY VERIFICATION
@@ -202,7 +311,7 @@ def get_tier_limits(role: str, tier: str = None) -> dict:
     role = (role or 'player').strip().lower()
     tier = (tier or 'free').strip().lower()
 
-    role_configs = TIER_CONFIG.get(role, TIER_CONFIG.get('player'))
+    role_configs = load_dynamic_tier_config(role=role)
     return role_configs.get(tier, role_configs.get('free', {}))
 
 

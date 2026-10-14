@@ -221,12 +221,16 @@
                     <h4>Pickleball Pro Pass</h4>
                     <p>For active athletes who play regularly and want prime court access.</p>
                 </div>
+                {% set p_m = (all_role_tiers.pro.price_monthly if all_role_tiers and all_role_tiers.pro else tier_pricing.player.pro.price_monthly) %}
+                {% set p_a = (all_role_tiers.pro.price_annual if all_role_tiers and all_role_tiers.pro else tier_pricing.player.pro.price_annual) %}
+                {% set p_yr = (p_a * 12)|int %}
+                {% set p_save = ((p_m * 12) - p_yr)|int %}
                 <div class="plan-price-wrap">
                     <div class="plan-price">
-                        <span class="plan-val" data-monthly="199" data-annual="149">₱199</span>
+                        <span class="plan-val" data-monthly="{{ '{:,.0f}'.format(p_m) }}" data-annual="{{ '{:,.0f}'.format(p_a) }}">₱{{ "{:,.0f}".format(p_m) }}</span>
                         <span class="period">/ mo</span>
                     </div>
-                    <span class="plan-price-note" data-monthly="Billed monthly" data-annual="₱1,788 billed annually (Save ₱600)">Billed monthly</span>
+                    <span class="plan-price-note" data-monthly="Billed monthly" data-annual="₱{{ '{:,.0f}'.format(p_yr) }} billed annually{% if p_save > 0 %} (Save ₱{{ '{:,.0f}'.format(p_save) }}){% endif %}">Billed monthly</span>
                 </div>
                 <ul class="plan-perks-list">
                     <li><i class="ph ph-check-circle"></i> <span><strong>14-Day Early Access Booking</strong> (lock peak weekend slots)</span></li>
@@ -295,12 +299,16 @@
                     <h4>Pro Facility Pass</h4>
                     <p>Expanded venue management, staff accounts, and ledger exports.</p>
                 </div>
+                {% set o_p_m = (all_role_tiers.pro.price_monthly if all_role_tiers and all_role_tiers.pro else tier_pricing.owner.pro.price_monthly) %}
+                {% set o_p_a = (all_role_tiers.pro.price_annual if all_role_tiers and all_role_tiers.pro else tier_pricing.owner.pro.price_annual) %}
+                {% set o_p_yr = (o_p_a * 12)|int %}
+                {% set o_p_save = ((o_p_m * 12) - o_p_yr)|int %}
                 <div class="plan-price-wrap">
                     <div class="plan-price">
-                        <span class="plan-val" data-monthly="1,299" data-annual="1,049">₱1,299</span>
+                        <span class="plan-val" data-monthly="{{ '{:,.0f}'.format(o_p_m) }}" data-annual="{{ '{:,.0f}'.format(o_p_a) }}">₱{{ "{:,.0f}".format(o_p_m) }}</span>
                         <span class="period">/ mo</span>
                     </div>
-                    <span class="plan-price-note" data-monthly="Billed monthly" data-annual="₱12,588 billed annually (Save ₱3,000)">Billed monthly</span>
+                    <span class="plan-price-note" data-monthly="Billed monthly" data-annual="₱{{ '{:,.0f}'.format(o_p_yr) }} billed annually{% if o_p_save > 0 %} (Save ₱{{ '{:,.0f}'.format(o_p_save) }}){% endif %}">Billed monthly</span>
                 </div>
                 <ul class="plan-perks-list">
                     <li><i class="ph ph-check-circle"></i> <span><strong>Up to 3 Facilities</strong></span></li>
@@ -331,12 +339,16 @@
                     <h4>Elite Enterprise</h4>
                     <p>Full-scale commercial sports club networks with featured placement.</p>
                 </div>
+                {% set o_e_m = (all_role_tiers.elite.price_monthly if all_role_tiers and all_role_tiers.elite else tier_pricing.owner.elite.price_monthly) %}
+                {% set o_e_a = (all_role_tiers.elite.price_annual if all_role_tiers and all_role_tiers.elite else tier_pricing.owner.elite.price_annual) %}
+                {% set o_e_yr = (o_e_a * 12)|int %}
+                {% set o_e_save = ((o_e_m * 12) - o_e_yr)|int %}
                 <div class="plan-price-wrap">
                     <div class="plan-price">
-                        <span class="plan-val" data-monthly="2,999" data-annual="2,399">₱2,999</span>
+                        <span class="plan-val" data-monthly="{{ '{:,.0f}'.format(o_e_m) }}" data-annual="{{ '{:,.0f}'.format(o_e_a) }}">₱{{ "{:,.0f}".format(o_e_m) }}</span>
                         <span class="period">/ mo</span>
                     </div>
-                    <span class="plan-price-note" data-monthly="Billed monthly" data-annual="₱28,788 billed annually (Save ₱7,200)">Billed monthly</span>
+                    <span class="plan-price-note" data-monthly="Billed monthly" data-annual="₱{{ '{:,.0f}'.format(o_e_yr) }} billed annually{% if o_e_save > 0 %} (Save ₱{{ '{:,.0f}'.format(o_e_save) }}){% endif %}">Billed monthly</span>
                 </div>
                 <ul class="plan-perks-list">
                     <li><i class="ph ph-check-circle"></i> <span><strong>Unlimited Facilities &amp; Courts</strong></span></li>
@@ -401,12 +413,16 @@
                     <h4>Pro Club Pass</h4>
                     <p>Unlimited members, automated tournament GCash entry fees.</p>
                 </div>
+                {% set c_p_m = (all_role_tiers.pro.price_monthly if all_role_tiers and all_role_tiers.pro else tier_pricing.clubadmin.pro.price_monthly) %}
+                {% set c_p_a = (all_role_tiers.pro.price_annual if all_role_tiers and all_role_tiers.pro else tier_pricing.clubadmin.pro.price_annual) %}
+                {% set c_p_yr = (c_p_a * 12)|int %}
+                {% set c_p_save = ((c_p_m * 12) - c_p_yr)|int %}
                 <div class="plan-price-wrap">
                     <div class="plan-price">
-                        <span class="plan-val" data-monthly="599" data-annual="479">₱599</span>
+                        <span class="plan-val" data-monthly="{{ '{:,.0f}'.format(c_p_m) }}" data-annual="{{ '{:,.0f}'.format(c_p_a) }}">₱{{ "{:,.0f}".format(c_p_m) }}</span>
                         <span class="period">/ mo</span>
                     </div>
-                    <span class="plan-price-note" data-monthly="Billed monthly" data-annual="₱5,748 billed annually (Save ₱1,440)">Billed monthly</span>
+                    <span class="plan-price-note" data-monthly="Billed monthly" data-annual="₱{{ '{:,.0f}'.format(c_p_yr) }} billed annually{% if c_p_save > 0 %} (Save ₱{{ '{:,.0f}'.format(c_p_save) }}){% endif %}">Billed monthly</span>
                 </div>
                 <ul class="plan-perks-list">
                     <li><i class="ph ph-check-circle"></i> <span><strong>1 Managed Club Hub</strong></span></li>

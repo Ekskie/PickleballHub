@@ -1005,9 +1005,15 @@
                 <span class="champion-badge-pill">
                     <i class="ph ph-crown"></i> Tournament Champion
                 </span>
+                {% if champion.id %}
                 <h2 class="champion-winner-name" onclick="openPlayerDrawer('{{ champion.id }}')" title="View champion player profile">
                     {{ champion.first_name }} {{ champion.last_name }}
                 </h2>
+                {% else %}
+                <h2 class="champion-winner-name">
+                    {{ champion.first_name }} {{ champion.last_name }}
+                </h2>
+                {% endif %}
                 <span class="champion-sub-text">1st Place &bull; Bracket Winner</span>
             </div>
         </div>
@@ -1103,8 +1109,13 @@
                         {% set is_my_match   = (match.player1_id == player_id or match.player2_id == player_id) %}
                         {% set i_won         = (match.winner_id == player_id) %}
                         {% set i_lost        = (is_my_match and match.status == 'completed' and not i_won) %}
-                        {% set p1_name = (match.player1.first_name ~ ' ' ~ match.player1.last_name) if match.player1 else 'TBD' %}
-                        {% set p2_name = (match.player2.first_name ~ ' ' ~ match.player2.last_name) if match.player2 else 'BYE' %}
+                        {% set p1_is_walkin = not match.player1_id and match.player1_guest_name %}
+                        {% set p1_name = (match.player1.first_name ~ ' ' ~ match.player1.last_name) if match.player1 else (match.player1_guest_name if match.player1_guest_name else 'TBD') %}
+                        {% set p2_is_walkin = not match.player2_id and match.player2_guest_name %}
+                        {% set p2_is_bye = not match.player2_id and not match.player2_guest_name and not match.player2_reg_id %}
+                        {% set p2_name = (match.player2.first_name ~ ' ' ~ match.player2.last_name) if match.player2 else (match.player2_guest_name if match.player2_guest_name else ('BYE' if p2_is_bye else 'TBD')) %}
+                        {% set p1_won = (match.winner_id and match.winner_id == match.player1_id) or (match.winner_reg_id and match.winner_reg_id == match.player1_reg_id) or (match.winner_guest_name and match.winner_guest_name == match.player1_guest_name) %}
+                        {% set p2_won = (match.winner_id and match.winner_id == match.player2_id) or (match.winner_reg_id and match.winner_reg_id == match.player2_reg_id) or (match.winner_guest_name and match.winner_guest_name == match.player2_guest_name) %}
 
                         <article class="match-node {% if match.status == 'completed' %}is-done{% endif %} {% if is_my_match %}is-mine{% endif %} {% if is_final %}is-final{% endif %}"
                                  data-match-id="{{ match.id }}"
@@ -1115,30 +1126,33 @@
 
                             <!-- Player 1 Row -->
                             <div class="mp-row
-                                        {% if match.winner_id == match.player1_id and match.status == 'completed' %}is-winner{% elif match.status == 'completed' %}is-loser{% endif %}
+                                        {% if p1_won and match.status == 'completed' %}is-winner{% elif match.status == 'completed' %}is-loser{% endif %}
                                         {% if match.player1_id == player_id %}is-you-row{% endif %}">
                                 <div class="mp-avatar">
                                     {% if match.player1 and match.player1.avatar_url %}
                                     <img src="{{ match.player1.avatar_url }}" alt="{{ p1_name }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                                     <span style="display: none;">{{ match.player1.first_name[0] ~ match.player1.last_name[0] if match.player1 else '?' }}</span>
                                     {% else %}
-                                    {{ match.player1.first_name[0] ~ match.player1.last_name[0] if match.player1 else '?' }}
+                                    {{ p1_name.split(' ')[0][0] ~ (p1_name.split(' ')[1][0] if p1_name.split(' ')|length > 1 else '') }}
                                     {% endif %}
                                 </div>
 
-                                {% if match.player1_id %}
-                                <span class="mp-name clickable-name" onclick="openPlayerDrawer('{{ match.player1_id }}')" title="View {{ p1_name }} profile">
-                                    {{ p1_name }}
-                                </span>
-                                {% else %}
-                                <span class="mp-name">{{ p1_name }}</span>
-                                {% endif %}
+                                <div style="flex:1;overflow:hidden;display:flex;align-items:center;gap:6px;">
+                                    {% if match.player1_id %}
+                                    <span class="mp-name clickable-name" onclick="openPlayerDrawer('{{ match.player1_id }}')" title="View {{ p1_name }} profile">
+                                        {{ p1_name }}
+                                    </span>
+                                    {% else %}
+                                    <span class="mp-name">{{ p1_name }}</span>
+                                    {% endif %}
+                                    {% if p1_is_walkin %}<span style="font-size:0.6rem;background:rgba(249,115,22,0.15);color:#fb923c;padding:1px 5px;border-radius:4px;font-weight:700;">Walk-in</span>{% endif %}
+                                </div>
 
                                 {% if match.player1_id == player_id %}
                                 <span class="you-badge">YOU</span>
                                 {% endif %}
 
-                                {% if match.winner_id == match.player1_id and match.status == 'completed' %}
+                                {% if p1_won and match.status == 'completed' %}
                                 <i class="ph ph-check-circle" style="color: #10b981; font-size: 0.95rem;"></i>
                                 {% endif %}
 
@@ -1147,38 +1161,41 @@
 
                             <!-- Player 2 Row -->
                             <div class="mp-row
-                                        {% if match.winner_id == match.player2_id and match.status == 'completed' %}is-winner{% elif match.status == 'completed' and match.player2 %}is-loser{% endif %}
+                                        {% if p2_won and match.status == 'completed' %}is-winner{% elif match.status == 'completed' and not p2_is_bye %}is-loser{% endif %}
                                         {% if match.player2_id == player_id %}is-you-row{% endif %}">
-                                {% if match.player2 %}
+                                {% if match.player2 or match.player2_guest_name %}
                                 <div class="mp-avatar">
-                                    {% if match.player2.avatar_url %}
+                                    {% if match.player2 and match.player2.avatar_url %}
                                     <img src="{{ match.player2.avatar_url }}" alt="{{ p2_name }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                                     <span style="display: none;">{{ match.player2.first_name[0] ~ match.player2.last_name[0] }}</span>
                                     {% else %}
-                                    {{ match.player2.first_name[0] ~ match.player2.last_name[0] }}
+                                    {{ p2_name.split(' ')[0][0] ~ (p2_name.split(' ')[1][0] if p2_name.split(' ')|length > 1 else '') }}
                                     {% endif %}
                                 </div>
 
-                                {% if match.player2_id %}
-                                <span class="mp-name clickable-name" onclick="openPlayerDrawer('{{ match.player2_id }}')" title="View {{ p2_name }} profile">
-                                    {{ p2_name }}
-                                </span>
-                                {% else %}
-                                <span class="mp-name">{{ p2_name }}</span>
-                                {% endif %}
+                                <div style="flex:1;overflow:hidden;display:flex;align-items:center;gap:6px;">
+                                    {% if match.player2_id %}
+                                    <span class="mp-name clickable-name" onclick="openPlayerDrawer('{{ match.player2_id }}')" title="View {{ p2_name }} profile">
+                                        {{ p2_name }}
+                                    </span>
+                                    {% else %}
+                                    <span class="mp-name">{{ p2_name }}</span>
+                                    {% endif %}
+                                    {% if p2_is_walkin %}<span style="font-size:0.6rem;background:rgba(249,115,22,0.15);color:#fb923c;padding:1px 5px;border-radius:4px;font-weight:700;">Walk-in</span>{% endif %}
+                                </div>
 
                                 {% if match.player2_id == player_id %}
                                 <span class="you-badge">YOU</span>
                                 {% endif %}
 
-                                {% if match.winner_id == match.player2_id and match.status == 'completed' %}
+                                {% if p2_won and match.status == 'completed' %}
                                 <i class="ph ph-check-circle" style="color: #10b981; font-size: 0.95rem;"></i>
                                 {% endif %}
 
                                 <span class="mp-score">{{ match.player2_score if match.player2_score is not none else '–' }}</span>
                                 {% else %}
                                 <div class="mp-avatar bye-avatar">BYE</div>
-                                <span class="mp-name bye-name">BYE</span>
+                                <span class="mp-name bye-name" style="opacity: 0.5;">BYE</span>
                                 <span class="mp-score">–</span>
                                 {% endif %}
                             </div>

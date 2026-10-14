@@ -355,12 +355,14 @@ def create_app():
 
     @app.context_processor
     def inject_platform_settings():
-        """Inject platform settings (SEO, tracking, name, email) and landing page content into all templates."""
+        """Inject platform settings (SEO, tracking, name, email), dynamic tier pricing, and landing page content into all templates."""
         from app.settings_helper import load_platform_settings
         from app.landing_helper import get_landing_content
+        from app.billing.tiers import load_dynamic_tier_config
         return dict(
             platform_settings=load_platform_settings(),
-            landing_content=get_landing_content()
+            landing_content=get_landing_content(),
+            tier_pricing=load_dynamic_tier_config()
         )
 
 

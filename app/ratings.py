@@ -8,7 +8,9 @@ def elo_to_dupr(elo):
 def get_initial_rating(proficiency):
     """Get the baseline Elo and DUPR ratings based on registered proficiency."""
     prof = (proficiency or 'beginner').lower().strip()
-    if prof == 'beginner':
+    if prof == 'novice':
+        return 800, 2.00
+    elif prof == 'beginner':
         return 1000, 2.50
     elif prof == 'intermediate':
         return 1400, 3.50
@@ -68,110 +70,261 @@ def update_match_ratings(db, match_id, prev_match=None):
         # 1. Fetch match record
         match_resp = db.table('tournament_matches').select('*').eq('id', match_id).single().execute()
         match = match_resp.data
-        if not match or not match.get('winner_id') or match.get('status') != 'completed':
+        if not match or match.get('status') != 'completed':
             return
+            
+        winner_id = match.get('winner_id')
+        winner_guest_name = match.get('winner_guest_name')
+        winner_reg_id = match.get('winner_reg_id')
+        if not winner_id and not winner_guest_name and not winner_reg_id:
+            return
+
+        # Check if tournament is unranked / casual
+        event_id = match.get('event_id')
+        if event_id:
+            try:
+                ev_resp = db.table('events').select('is_ranked').eq('id', event_id).single().execute()
+                if ev_resp.data and ev_resp.data.get('is_ranked') is False:
+                    print(f"[update_match_ratings] Skipping rating update: event {event_id} is unranked/casual.")
+                    return
+            except Exception as ev_err:
+                print(f"[update_match_ratings] Warning: failed to fetch event ranked status: {ev_err}")
             
         p1_id = match.get('player1_id')
         p2_id = match.get('player2_id')
-        winner_id = match.get('winner_id')
-        
-        # If it's a bye (missing one player), no rating changes
-        if not p1_id or not p2_id:
+        p1_guest = match.get('player1_guest_name')
+        p2_guest = match.get('player2_guest_name')
+        p1_reg_id = match.get('player1_reg_id')
+        p2_reg_id = match.get('player2_reg_id')
+
+        # If it's a bye (missing one player completely), no rating changes
+        has_p1 = bool(p1_id or p1_guest or p1_reg_id)
+        has_p2 = bool(p2_id or p2_guest or p2_reg_id)
+        if not has_p1 or not has_p2:
             return
-            
-        # 2. Fetch player profiles
-        p1_resp = db.table('profiles').select('*').eq('id', p1_id).single().execute()
-        p2_resp = db.table('profiles').select('*').eq('id', p2_id).single().execute()
-        p1 = p1_resp.data
-        p2 = p2_resp.data
-        
-        if not p1 or not p2:
+
+        # If both are walk-ins, no profile exists to update
+        if not p1_id and not p2_id:
             return
-            
-        # 3. Get current ratings, fallback if null
-        r1_elo = p1.get('elo')
-        r1_dupr = p1.get('dupr')
-        if r1_elo is None or r1_dupr is None:
-            r1_elo, r1_dupr = init_player_rating(db, p1_id, p1.get('proficiency'))
-            
-        r2_elo = p2.get('elo')
-        r2_dupr = p2.get('dupr')
-        if r2_elo is None or r2_dupr is None:
-            r2_elo, r2_dupr = init_player_rating(db, p2_id, p2.get('proficiency'))
-            
-        # 4. Calculate expected outcomes (Elo formulas)
-        expected1 = 1.0 / (1.0 + 10.0 ** ((r2_elo - r1_elo) / 400.0))
-        expected2 = 1.0 - expected1
-        
-        # 5. Determine actual scores
-        if winner_id == p1_id:
-            actual1 = 1.0
-            actual2 = 0.0
-        elif winner_id == p2_id:
-            actual1 = 0.0
-            actual2 = 1.0
-        else:
-            actual1 = 0.5
-            actual2 = 0.5
-            
-        # 6. Calculate new ratings (K = 32)
-        new_elo1 = round(r1_elo + 32 * (actual1 - expected1))
-        new_elo2 = round(r2_elo + 32 * (actual2 - expected2))
-        
-        # Convert to DUPR
-        new_dupr1 = elo_to_dupr(new_elo1)
-        new_dupr2 = elo_to_dupr(new_elo2)
-        
-        # 7. Calculate wins and losses changes (including prev_match rollback if needed)
-        p1_wins, p1_losses = (1, 0) if winner_id == p1_id else ((0, 1) if winner_id == p2_id else (0, 0))
-        p2_wins, p2_losses = (0, 1) if winner_id == p1_id else ((1, 0) if winner_id == p2_id else (0, 0))
-        
-        p1_wins_change = p1_wins
-        p1_losses_change = p1_losses
-        p2_wins_change = p2_wins
-        p2_losses_change = p2_losses
-        
-        if prev_match and prev_match.get('stats_applied'):
-            prev_winner = prev_match.get('winner_id')
-            prev_loser = p2_id if prev_winner == p1_id else (p1_id if prev_winner == p2_id else None)
-            
-            if prev_winner == p1_id:
-                p1_wins_change -= 1
-            elif prev_winner == p2_id:
-                p2_wins_change -= 1
-                
-            if prev_loser == p1_id:
-                p1_losses_change -= 1
-            elif prev_loser == p2_id:
-                p2_losses_change -= 1
 
         match_created = match.get('created_at') or datetime.now(timezone.utc).isoformat()
         played_at = match.get('played_at') or datetime.now(timezone.utc).isoformat()
 
-        # Get initial ELO values in case history is missing
-        p1_init_elo, p1_init_dupr = get_initial_rating(p1.get('proficiency'))
-        p2_init_elo, p2_init_dupr = get_initial_rating(p2.get('proficiency'))
+        def get_walkin_rating(reg_id):
+            if reg_id:
+                try:
+                    reg_resp = db.table('event_registrations').select('estimated_elo, skill_level').eq('id', reg_id).single().execute()
+                    if reg_resp.data:
+                        elo = reg_resp.data.get('estimated_elo')
+                        if elo:
+                            return elo, elo_to_dupr(elo)
+                        return get_initial_rating(reg_resp.data.get('skill_level'))
+                except Exception:
+                    pass
+            return 1400, 3.50
 
-        # 8. Execute Postgres transaction RPC
-        db.rpc('apply_match_ratings_rpc', {
-            'p_match_id': match_id,
-            'p_p1_id': p1_id,
-            'p_p2_id': p2_id,
-            'p1_elo': new_elo1,
-            'p1_dupr': new_dupr1,
-            'p2_elo': new_elo2,
-            'p2_dupr': new_dupr2,
-            'p1_wins_change': p1_wins_change,
-            'p1_losses_change': p1_losses_change,
-            'p2_wins_change': p2_wins_change,
-            'p2_losses_change': p2_losses_change,
-            'p_played_at': played_at,
-            'p_match_created': match_created,
-            'p1_initial_elo': p1_init_elo,
-            'p1_initial_dupr': p1_init_dupr,
-            'p2_initial_elo': p2_init_elo,
-            'p2_initial_dupr': p2_init_dupr
-        }).execute()
+        # CASE 1: Both players are registered
+        if p1_id and p2_id:
+            p1_resp = db.table('profiles').select('*').eq('id', p1_id).single().execute()
+            p2_resp = db.table('profiles').select('*').eq('id', p2_id).single().execute()
+            p1 = p1_resp.data
+            p2 = p2_resp.data
+            
+            if not p1 or not p2:
+                return
+                
+            r1_elo = p1.get('elo')
+            r1_dupr = p1.get('dupr')
+            if r1_elo is None or r1_dupr is None:
+                r1_elo, r1_dupr = init_player_rating(db, p1_id, p1.get('proficiency'))
+                
+            r2_elo = p2.get('elo')
+            r2_dupr = p2.get('dupr')
+            if r2_elo is None or r2_dupr is None:
+                r2_elo, r2_dupr = init_player_rating(db, p2_id, p2.get('proficiency'))
+                
+            expected1 = 1.0 / (1.0 + 10.0 ** ((r2_elo - r1_elo) / 400.0))
+            expected2 = 1.0 - expected1
+            
+            if winner_id == p1_id:
+                actual1, actual2 = 1.0, 0.0
+            elif winner_id == p2_id:
+                actual1, actual2 = 0.0, 1.0
+            else:
+                actual1, actual2 = 0.5, 0.5
+                
+            new_elo1 = round(r1_elo + 32 * (actual1 - expected1))
+            new_elo2 = round(r2_elo + 32 * (actual2 - expected2))
+            new_dupr1 = elo_to_dupr(new_elo1)
+            new_dupr2 = elo_to_dupr(new_elo2)
+            
+            p1_wins_change = 1 if winner_id == p1_id else 0
+            p1_losses_change = 0 if winner_id == p1_id else 1
+            p2_wins_change = 1 if winner_id == p2_id else 0
+            p2_losses_change = 0 if winner_id == p2_id else 1
+            
+            if prev_match and prev_match.get('stats_applied'):
+                prev_winner = prev_match.get('winner_id')
+                prev_loser = p2_id if prev_winner == p1_id else (p1_id if prev_winner == p2_id else None)
+                if prev_winner == p1_id:
+                    p1_wins_change -= 1
+                elif prev_winner == p2_id:
+                    p2_wins_change -= 1
+                if prev_loser == p1_id:
+                    p1_losses_change -= 1
+                elif prev_loser == p2_id:
+                    p2_losses_change -= 1
+
+            p1_init_elo, p1_init_dupr = get_initial_rating(p1.get('proficiency'))
+            p2_init_elo, p2_init_dupr = get_initial_rating(p2.get('proficiency'))
+
+            try:
+                db.rpc('apply_match_ratings_rpc', {
+                    'p_match_id': match_id,
+                    'p_p1_id': p1_id,
+                    'p_p2_id': p2_id,
+                    'p1_elo': new_elo1,
+                    'p1_dupr': new_dupr1,
+                    'p2_elo': new_elo2,
+                    'p2_dupr': new_dupr2,
+                    'p1_wins_change': p1_wins_change,
+                    'p1_losses_change': p1_losses_change,
+                    'p2_wins_change': p2_wins_change,
+                    'p2_losses_change': p2_losses_change,
+                    'p_played_at': played_at,
+                    'p_match_created': match_created,
+                    'p1_initial_elo': p1_init_elo,
+                    'p1_initial_dupr': p1_init_dupr,
+                    'p2_initial_elo': p2_init_elo,
+                    'p2_initial_dupr': p2_init_dupr
+                }).execute()
+            except Exception as rpc_err:
+                print(f"[update_match_ratings] Dual RPC failed, applying direct update fallback: {rpc_err}")
+                db.table('profiles').update({
+                    'elo': new_elo1, 'dupr': new_dupr1,
+                    'wins': max(0, (p1.get('wins') or 0) + p1_wins_change),
+                    'losses': max(0, (p1.get('losses') or 0) + p1_losses_change)
+                }).eq('id', p1_id).execute()
+                db.table('profiles').update({
+                    'elo': new_elo2, 'dupr': new_dupr2,
+                    'wins': max(0, (p2.get('wins') or 0) + p2_wins_change),
+                    'losses': max(0, (p2.get('losses') or 0) + p2_losses_change)
+                }).eq('id', p2_id).execute()
+                db.table('rating_history').insert([
+                    {'player_id': p1_id, 'match_id': match_id, 'elo': new_elo1, 'dupr': new_dupr1, 'recorded_at': played_at},
+                    {'player_id': p2_id, 'match_id': match_id, 'elo': new_elo2, 'dupr': new_dupr2, 'recorded_at': played_at}
+                ]).execute()
+                db.table('tournament_matches').update({'stats_applied': True}).eq('id', match_id).execute()
+
+        # CASE 2: Player 1 is registered, Player 2 is walk-in
+        elif p1_id and not p2_id:
+            p1_resp = db.table('profiles').select('*').eq('id', p1_id).single().execute()
+            p1 = p1_resp.data
+            if not p1:
+                return
+
+            r1_elo = p1.get('elo')
+            r1_dupr = p1.get('dupr')
+            if r1_elo is None or r1_dupr is None:
+                r1_elo, r1_dupr = init_player_rating(db, p1_id, p1.get('proficiency'))
+
+            r2_elo, r2_dupr = get_walkin_rating(p2_reg_id)
+            expected1 = 1.0 / (1.0 + 10.0 ** ((r2_elo - r1_elo) / 400.0))
+            
+            p1_won = (winner_id == p1_id)
+            actual1 = 1.0 if p1_won else 0.0
+            new_elo1 = round(r1_elo + 32 * (actual1 - expected1))
+            new_dupr1 = elo_to_dupr(new_elo1)
+
+            p1_wins_change = 1 if p1_won else 0
+            p1_losses_change = 0 if p1_won else 1
+            if prev_match and prev_match.get('stats_applied'):
+                prev_winner = prev_match.get('winner_id')
+                if prev_winner == p1_id:
+                    p1_wins_change -= 1
+                else:
+                    p1_losses_change -= 1
+
+            p1_init_elo, p1_init_dupr = get_initial_rating(p1.get('proficiency'))
+
+            try:
+                db.rpc('apply_single_player_match_rating_rpc', {
+                    'p_match_id': match_id,
+                    'p_player_id': p1_id,
+                    'p_elo': new_elo1,
+                    'p_dupr': new_dupr1,
+                    'p_wins_change': p1_wins_change,
+                    'p_losses_change': p1_losses_change,
+                    'p_played_at': played_at,
+                    'p_initial_elo': p1_init_elo,
+                    'p_initial_dupr': p1_init_dupr
+                }).execute()
+            except Exception as rpc_err:
+                print(f"[update_match_ratings] Single player RPC failed, using python fallback: {rpc_err}")
+                db.table('profiles').update({
+                    'elo': new_elo1, 'dupr': new_dupr1,
+                    'wins': max(0, (p1.get('wins') or 0) + p1_wins_change),
+                    'losses': max(0, (p1.get('losses') or 0) + p1_losses_change)
+                }).eq('id', p1_id).execute()
+                db.table('rating_history').insert({
+                    'player_id': p1_id, 'match_id': match_id, 'elo': new_elo1, 'dupr': new_dupr1, 'recorded_at': played_at
+                }).execute()
+                db.table('tournament_matches').update({'stats_applied': True}).eq('id', match_id).execute()
+
+        # CASE 3: Player 2 is registered, Player 1 is walk-in
+        elif p2_id and not p1_id:
+            p2_resp = db.table('profiles').select('*').eq('id', p2_id).single().execute()
+            p2 = p2_resp.data
+            if not p2:
+                return
+
+            r2_elo = p2.get('elo')
+            r2_dupr = p2.get('dupr')
+            if r2_elo is None or r2_dupr is None:
+                r2_elo, r2_dupr = init_player_rating(db, p2_id, p2.get('proficiency'))
+
+            r1_elo, r1_dupr = get_walkin_rating(p1_reg_id)
+            expected2 = 1.0 / (1.0 + 10.0 ** ((r1_elo - r2_elo) / 400.0))
+
+            p2_won = (winner_id == p2_id)
+            actual2 = 1.0 if p2_won else 0.0
+            new_elo2 = round(r2_elo + 32 * (actual2 - expected2))
+            new_dupr2 = elo_to_dupr(new_elo2)
+
+            p2_wins_change = 1 if p2_won else 0
+            p2_losses_change = 0 if p2_won else 1
+            if prev_match and prev_match.get('stats_applied'):
+                prev_winner = prev_match.get('winner_id')
+                if prev_winner == p2_id:
+                    p2_wins_change -= 1
+                else:
+                    p2_losses_change -= 1
+
+            p2_init_elo, p2_init_dupr = get_initial_rating(p2.get('proficiency'))
+
+            try:
+                db.rpc('apply_single_player_match_rating_rpc', {
+                    'p_match_id': match_id,
+                    'p_player_id': p2_id,
+                    'p_elo': new_elo2,
+                    'p_dupr': new_dupr2,
+                    'p_wins_change': p2_wins_change,
+                    'p_losses_change': p2_losses_change,
+                    'p_played_at': played_at,
+                    'p_initial_elo': p2_init_elo,
+                    'p_initial_dupr': p2_init_dupr
+                }).execute()
+            except Exception as rpc_err:
+                print(f"[update_match_ratings] Single player RPC failed, using python fallback: {rpc_err}")
+                db.table('profiles').update({
+                    'elo': new_elo2, 'dupr': new_dupr2,
+                    'wins': max(0, (p2.get('wins') or 0) + p2_wins_change),
+                    'losses': max(0, (p2.get('losses') or 0) + p2_losses_change)
+                }).eq('id', p2_id).execute()
+                db.table('rating_history').insert({
+                    'player_id': p2_id, 'match_id': match_id, 'elo': new_elo2, 'dupr': new_dupr2, 'recorded_at': played_at
+                }).execute()
+                db.table('tournament_matches').update({'stats_applied': True}).eq('id', match_id).execute()
         
     except Exception as e:
         print(f"[update_match_ratings] Failed to update match ratings for match {match_id}: {e}")

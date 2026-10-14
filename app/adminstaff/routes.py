@@ -534,8 +534,7 @@ def subscriptions():
                     'reviewed_by': reviewer_id,
                     'reviewed_at': now_iso,
                     'starts_at': now_iso,
-                    'expires_at': expires_at_iso,
-                    'updated_at': now_iso
+                    'expires_at': expires_at_iso
                 }).eq('id', sub_id).execute()
 
                 # Update user profile
@@ -576,8 +575,7 @@ def subscriptions():
                     'status': 'rejected',
                     'reviewed_by': reviewer_id,
                     'reviewed_at': now_iso,
-                    'notes': notes,
-                    'updated_at': now_iso
+                    'notes': notes
                 }).eq('id', sub_id).execute()
 
                 # Revert user profile to free tier

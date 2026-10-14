@@ -232,6 +232,137 @@
         from { transform: scale(1); }
         to { transform: scale(1.15); }
     }
+
+    /* ── Action Buttons & Table Layout ── */
+    .action-button-group {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        flex-wrap: nowrap;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .action-button-group form,
+    .inline-action-form {
+        display: inline-flex;
+        margin: 0;
+        padding: 0;
+    }
+
+    .btn-action-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border-radius: 9px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        line-height: 1.25;
+        font-family: inherit;
+        cursor: pointer;
+        border: 1px solid transparent;
+        text-decoration: none !important;
+        white-space: nowrap;
+        user-select: none;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+        -webkit-appearance: none;
+        appearance: none;
+        background: transparent;
+    }
+
+    .btn-action-pill:focus-visible {
+        outline: 2px solid var(--primary-orange);
+        outline-offset: 2px;
+    }
+
+    .btn-action-pill:active {
+        transform: translateY(0) scale(0.97) !important;
+    }
+
+    .btn-action-pill i {
+        font-size: 0.95rem;
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        transition: transform 0.2s ease;
+    }
+
+    .btn-action-pill.approve {
+        background: rgba(16, 185, 129, 0.12);
+        border-color: rgba(16, 185, 129, 0.32);
+        color: #059669;
+    }
+
+    html.dark-mode .btn-action-pill.approve {
+        background: rgba(16, 185, 129, 0.16);
+        border-color: rgba(16, 185, 129, 0.4);
+        color: #34d399;
+    }
+
+    .btn-action-pill.approve:hover {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border-color: #059669;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+        transform: translateY(-1.5px);
+    }
+
+    .btn-action-pill.approve:hover i {
+        transform: scale(1.18);
+    }
+
+    .btn-action-pill.reject {
+        background: rgba(239, 68, 68, 0.08);
+        border-color: rgba(239, 68, 68, 0.28);
+        color: #dc2626;
+    }
+
+    html.dark-mode .btn-action-pill.reject {
+        background: rgba(239, 68, 68, 0.14);
+        border-color: rgba(239, 68, 68, 0.38);
+        color: #f87171;
+    }
+
+    .btn-action-pill.reject:hover {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        border-color: #dc2626;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+        transform: translateY(-1.5px);
+    }
+
+    .btn-action-pill.reject:hover i {
+        transform: rotate(90deg);
+    }
+
+    .btn-action-pill.revoke {
+        background: rgba(245, 158, 11, 0.08);
+        border-color: rgba(245, 158, 11, 0.3);
+        color: #d97706;
+    }
+
+    html.dark-mode .btn-action-pill.revoke {
+        background: rgba(245, 158, 11, 0.14);
+        border-color: rgba(245, 158, 11, 0.4);
+        color: #fbbf24;
+    }
+
+    .btn-action-pill.revoke:hover {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        border-color: #d97706;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+        transform: translateY(-1.5px);
+    }
+
+    .btn-action-pill.revoke:hover i {
+        transform: rotate(-45deg);
+    }
 </style>
 {% block superadmin_extra_head %}{% endblock %}
 {% endblock %}
@@ -318,3 +449,7 @@
     </ul>
 </li>
 {% endblock %}
+
+{% block modals %}
+    {{ super() }}
+{% endblock %}

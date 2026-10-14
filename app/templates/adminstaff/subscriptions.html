@@ -213,20 +213,26 @@
     }
 
     .btn-receipt-view {
-        background: none;
-        border: none;
+        background: rgba(249, 115, 22, 0.1);
+        border: 1px solid rgba(249, 115, 22, 0.25);
         color: var(--primary-orange);
         cursor: pointer;
-        font-size: 0.8rem;
+        font-size: 0.78rem;
         font-weight: 600;
         display: inline-flex;
         align-items: center;
         gap: 4px;
-        padding: 0;
+        padding: 4px 10px;
+        border-radius: 6px;
+        transition: all 0.18s ease;
+        text-decoration: none;
     }
 
     .btn-receipt-view:hover {
-        text-decoration: underline;
+        background: var(--primary-orange);
+        color: #ffffff;
+        border-color: var(--primary-orange);
+        box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
     }
 
     /* ── Modal Styles ── */
@@ -317,47 +323,158 @@
         word-break: break-all;
     }
 
-    .btn-action-pill {
-        padding: 6px 14px;
-        border-radius: 8px;
-        font-size: 0.82rem;
-        font-weight: 600;
-        cursor: pointer;
+    /* ── Action Buttons & Table Layout ── */
+    .action-button-group {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        border: 1px solid transparent;
-        transition: all 0.2s ease;
-        text-decoration: none;
+        justify-content: flex-end;
+        gap: 8px;
+        flex-wrap: nowrap;
+        white-space: nowrap;
+        vertical-align: middle;
     }
 
+    .action-button-group form,
+    .inline-action-form {
+        display: inline-flex;
+        margin: 0;
+        padding: 0;
+    }
+
+    .btn-action-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border-radius: 9px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        line-height: 1.25;
+        font-family: inherit;
+        cursor: pointer;
+        border: 1px solid transparent;
+        text-decoration: none !important;
+        white-space: nowrap;
+        user-select: none;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+        -webkit-appearance: none;
+        appearance: none;
+        background: transparent;
+    }
+
+    .btn-action-pill:focus-visible {
+        outline: 2px solid var(--primary-orange);
+        outline-offset: 2px;
+    }
+
+    .btn-action-pill:active {
+        transform: translateY(0) scale(0.97) !important;
+    }
+
+    .btn-action-pill i {
+        font-size: 0.95rem;
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        transition: transform 0.2s ease;
+    }
+
+    /* Approve Button (Emerald Theme) */
     .btn-action-pill.approve {
-        background: rgba(16, 185, 129, 0.15);
-        border-color: rgba(16, 185, 129, 0.3);
-        color: #10b981;
+        background: rgba(16, 185, 129, 0.12);
+        border-color: rgba(16, 185, 129, 0.32);
+        color: #059669;
+    }
+
+    html.dark-mode .btn-action-pill.approve {
+        background: rgba(16, 185, 129, 0.16);
+        border-color: rgba(16, 185, 129, 0.4);
+        color: #34d399;
     }
 
     .btn-action-pill.approve:hover {
-        background: #10b981;
-        color: #fff;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border-color: #059669;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+        transform: translateY(-1.5px);
     }
 
+    .btn-action-pill.approve:hover i {
+        transform: scale(1.18);
+    }
+
+    /* Reject Button (Rose / Crimson Theme) */
     .btn-action-pill.reject {
-        background: rgba(239, 68, 68, 0.15);
-        border-color: rgba(239, 68, 68, 0.3);
-        color: #ef4444;
+        background: rgba(239, 68, 68, 0.08);
+        border-color: rgba(239, 68, 68, 0.28);
+        color: #dc2626;
+    }
+
+    html.dark-mode .btn-action-pill.reject {
+        background: rgba(239, 68, 68, 0.14);
+        border-color: rgba(239, 68, 68, 0.38);
+        color: #f87171;
     }
 
     .btn-action-pill.reject:hover {
-        background: #ef4444;
-        color: #fff;
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        border-color: #dc2626;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+        transform: translateY(-1.5px);
     }
 
-    .action-button-group {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        justify-content: flex-end;
+    .btn-action-pill.reject:hover i {
+        transform: rotate(90deg);
+    }
+
+    /* Revoke Button (Amber Theme) */
+    .btn-action-pill.revoke {
+        background: rgba(245, 158, 11, 0.08);
+        border-color: rgba(245, 158, 11, 0.3);
+        color: #d97706;
+    }
+
+    html.dark-mode .btn-action-pill.revoke {
+        background: rgba(245, 158, 11, 0.14);
+        border-color: rgba(245, 158, 11, 0.4);
+        color: #fbbf24;
+    }
+
+    .btn-action-pill.revoke:hover {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        border-color: #d97706;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+        transform: translateY(-1.5px);
+    }
+
+    .btn-action-pill.revoke:hover i {
+        transform: rotate(-45deg);
+    }
+
+    /* Modal Cancel Button */
+    .btn-modal-cancel {
+        padding: 8px 18px;
+        border-radius: 8px;
+        background: transparent;
+        border: 1px solid var(--border-color-soft, rgba(255, 255, 255, 0.15));
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        font-family: inherit;
+    }
+
+    .btn-modal-cancel:hover {
+        color: var(--text-primary);
+        border-color: var(--border-color, rgba(255, 255, 255, 0.3));
+        background: rgba(255, 255, 255, 0.04);
     }
 </style>
 {% endblock %}
@@ -460,7 +577,7 @@
 
     <!-- Subscriptions Table -->
     <div class="table-container glass-card" style="overflow-x: auto; border-radius: 14px; border: 1px solid var(--border-color-soft);">
-        <table class="data-grid" id="subscriptionsTable" style="width: 100%; border-collapse: collapse;">
+        <table class="data-grid" id="subscriptionsTable" style="width: 100%; min-width: 1040px; border-collapse: collapse;">
             <thead>
                 <tr style="border-bottom: 1px solid var(--border-color-soft); text-align: left; font-size: 0.8rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px;">
                     <th style="padding: 14px 16px;">Subscriber</th>
@@ -471,7 +588,7 @@
                     <th style="padding: 14px 16px;">Receipt Proof</th>
                     <th style="padding: 14px 16px;">Submitted</th>
                     <th style="padding: 14px 16px;">Status</th>
-                    <th style="padding: 14px 16px; text-align: right;">Actions</th>
+                    <th style="padding: 14px 16px; text-align: right; min-width: 220px; white-space: nowrap;">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -545,34 +662,50 @@
                                 <span class="status-pill info" style="font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; background: rgba(99, 102, 241, 0.12); color: #818cf8;">{{ sub.status|capitalize }}</span>
                             {% endif %}
                         </td>
-                        <td style="padding: 14px 16px; text-align: right;">
+                        <td style="padding: 14px 16px; text-align: right; white-space: nowrap;">
                             <div class="action-button-group">
                                 {% if sub.status == 'pending_approval' %}
-                                    <form method="POST" action="{{ url_for('adminstaff.subscriptions') }}" style="display: inline;">
-                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                        <input type="hidden" name="action" value="approve">
-                                        <input type="hidden" name="sub_id" value="{{ sub.id }}">
-                                        <button type="submit" class="btn-action-pill approve" onclick="return confirm('Confirm and approve subscription payment of ₱{{ "{:,.2f}".format(sub.amount) }} for {{ prof.first_name }} {{ prof.last_name }}?')">
-                                            <i class="ph ph-check"></i> Confirm &amp; Approve
-                                        </button>
-                                    </form>
+                                    <button type="button" 
+                                            class="btn-action-pill approve" 
+                                            data-sub-id="{{ sub.id }}"
+                                            data-name="{{ prof.first_name }} {{ prof.last_name }}"
+                                            data-plan="{{ sub.tier|capitalize }} Pass ({{ sub.billing_cycle|capitalize }})"
+                                            data-amount="₱{{ '{:,.2f}'.format(sub.amount or 0) }}"
+                                            data-gcash-ref="{{ sub.gcash_reference or 'N/A' }}"
+                                            onclick="openApproveModal(this)">
+                                        <i class="ph-bold ph-check"></i>
+                                        <span>Confirm &amp; Approve</span>
+                                    </button>
 
-                                    <button type="button" class="btn-action-pill reject" onclick="openRejectModal('{{ sub.id }}', '{{ prof.first_name }} {{ prof.last_name }}')">
-                                        <i class="ph ph-x"></i> Reject
+                                    <button type="button" 
+                                            class="btn-action-pill reject" 
+                                            data-sub-id="{{ sub.id }}"
+                                            data-name="{{ prof.first_name }} {{ prof.last_name }}"
+                                            onclick="openRejectModal(this)">
+                                        <i class="ph-bold ph-x"></i>
+                                        <span>Reject</span>
                                     </button>
                                 {% elif sub.status == 'active' %}
-                                    <button type="button" class="btn-action-pill reject" onclick="openRejectModal('{{ sub.id }}', '{{ prof.first_name }} {{ prof.last_name }}')">
-                                        <i class="ph ph-arrow-counter-clockwise"></i> Revoke
+                                    <button type="button" 
+                                            class="btn-action-pill revoke" 
+                                            data-sub-id="{{ sub.id }}"
+                                            data-name="{{ prof.first_name }} {{ prof.last_name }}"
+                                            onclick="openRejectModal(this)">
+                                        <i class="ph-bold ph-arrow-counter-clockwise"></i>
+                                        <span>Revoke</span>
                                     </button>
                                 {% elif sub.status == 'rejected' %}
-                                    <form method="POST" action="{{ url_for('adminstaff.subscriptions') }}" style="display: inline;">
-                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                        <input type="hidden" name="action" value="approve">
-                                        <input type="hidden" name="sub_id" value="{{ sub.id }}">
-                                        <button type="submit" class="btn-action-pill approve" onclick="return confirm('Re-approve subscription for {{ prof.first_name }} {{ prof.last_name }}?')">
-                                            <i class="ph ph-check"></i> Re-approve
-                                        </button>
-                                    </form>
+                                    <button type="button" 
+                                            class="btn-action-pill approve" 
+                                            data-sub-id="{{ sub.id }}"
+                                            data-name="{{ prof.first_name }} {{ prof.last_name }}"
+                                            data-plan="{{ sub.tier|capitalize }} Pass ({{ sub.billing_cycle|capitalize }})"
+                                            data-amount="₱{{ '{:,.2f}'.format(sub.amount or 0) }}"
+                                            data-gcash-ref="{{ sub.gcash_reference or 'N/A' }}"
+                                            onclick="openApproveModal(this)">
+                                        <i class="ph-bold ph-arrow-counter-clockwise"></i>
+                                        <span>Re-approve</span>
+                                    </button>
                                 {% endif %}
                             </div>
                         </td>
@@ -649,9 +782,57 @@
                 <textarea name="notes" rows="3" required placeholder="e.g. Invalid reference number, unreadable screenshot, or amount mismatch..." style="width: 100%; padding: 10px 12px; background: var(--input-bg, rgba(15,17,21,0.6)); border: 1px solid var(--border-color, rgba(255,255,255,0.15)); border-radius: 8px; color: var(--text-primary, #fff); font-size: 0.85rem; outline: none;"></textarea>
             </div>
 
-            <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                <button type="button" class="btn-outline" onclick="closeRejectModal()" style="padding: 8px 16px; border-radius: 8px; background: transparent; border: 1px solid var(--border-color-soft, rgba(255,255,255,0.15)); color: var(--text-primary); cursor: pointer;">Cancel</button>
-                <button type="submit" class="btn-action-pill reject" style="padding: 8px 18px; border-radius: 8px; font-size: 0.88rem;">Confirm Rejection</button>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; align-items: center;">
+                <button type="button" class="btn-modal-cancel" onclick="closeRejectModal()">Cancel</button>
+                <button type="submit" class="btn-action-pill reject" style="padding: 9px 20px; font-size: 0.88rem; font-weight: 600;">
+                    <i class="ph-bold ph-x"></i>
+                    <span>Confirm Rejection</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ── Modal 3: Confirm Subscription Approval Modal ── -->
+<div id="approveModal" class="sub-modal-backdrop" onclick="if(event.target === this) closeApproveModal()">
+    <div class="sub-modal-card">
+        <div class="sub-modal-head">
+            <h3><i class="ph-bold ph-check-circle" style="color: #10b981;"></i> Confirm Subscription Approval</h3>
+            <button type="button" class="btn-close-modal" onclick="closeApproveModal()" aria-label="Close modal"><i class="ph ph-x"></i></button>
+        </div>
+        <form method="POST" action="{{ url_for('adminstaff.subscriptions') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="action" value="approve">
+            <input type="hidden" name="sub_id" id="approveSubId" value="">
+
+            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5;">
+                You are approving the subscription payment and activating premium privileges for 
+                <strong id="approveSubscriberName" style="color: var(--text-primary);"></strong>.
+            </p>
+
+            <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 12px; padding: 16px; margin-bottom: 22px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px;">
+                    <div>
+                        <span style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; color: var(--text-secondary); margin-bottom: 3px;">Plan &amp; Cycle</span>
+                        <strong id="approvePlanTier" style="font-size: 0.95rem; color: var(--text-primary);"></strong>
+                    </div>
+                    <div>
+                        <span style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; color: var(--text-secondary); margin-bottom: 3px;">Amount Paid</span>
+                        <strong id="approveSubAmount" style="font-size: 1.05rem; color: #10b981; font-weight: 800;"></strong>
+                    </div>
+                </div>
+                <div>
+                    <span style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px;">GCash Reference Number</span>
+                    <code id="approveGcashRef" class="gcash-ref-badge" style="font-size: 0.9rem;"></code>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 12px; align-items: center;">
+                <button type="button" class="btn-modal-cancel" onclick="closeApproveModal()">Cancel</button>
+                <button type="submit" class="btn-action-pill approve" style="padding: 10px 22px; font-size: 0.88rem; font-weight: 700;">
+                    <i class="ph-bold ph-check"></i>
+                    <span>Confirm &amp; Activate</span>
+                </button>
             </div>
         </form>
     </div>
@@ -689,9 +870,35 @@
         document.getElementById('receiptModal').classList.remove('open');
     }
 
-    function openRejectModal(subId, name) {
-        document.getElementById('rejectSubId').value = subId;
-        document.getElementById('rejectSubscriberName').textContent = name;
+    function openApproveModal(target, name, plan, amount, ref) {
+        let subId = target;
+        if (typeof target === 'object' && target !== null) {
+            subId = target.dataset.subId || target.getAttribute('data-sub-id');
+            name = target.dataset.name || target.getAttribute('data-name');
+            plan = target.dataset.plan || target.getAttribute('data-plan');
+            amount = target.dataset.amount || target.getAttribute('data-amount');
+            ref = target.dataset.gcashRef || target.getAttribute('data-gcash-ref');
+        }
+        document.getElementById('approveSubId').value = subId || '';
+        document.getElementById('approveSubscriberName').textContent = name || 'Subscriber';
+        document.getElementById('approvePlanTier').textContent = plan || 'Subscription Plan';
+        document.getElementById('approveSubAmount').textContent = amount || '₱0.00';
+        document.getElementById('approveGcashRef').textContent = ref || 'N/A';
+        document.getElementById('approveModal').classList.add('open');
+    }
+
+    function closeApproveModal() {
+        document.getElementById('approveModal').classList.remove('open');
+    }
+
+    function openRejectModal(target, name) {
+        let subId = target;
+        if (typeof target === 'object' && target !== null) {
+            subId = target.dataset.subId || target.getAttribute('data-sub-id');
+            name = target.dataset.name || target.getAttribute('data-name');
+        }
+        document.getElementById('rejectSubId').value = subId || '';
+        document.getElementById('rejectSubscriberName').textContent = name || 'Subscriber';
         document.getElementById('rejectModal').classList.add('open');
     }
 
@@ -706,5 +913,13 @@
             row.style.display = data.includes(q) ? '' : 'none';
         });
     }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeReceiptModal();
+            closeRejectModal();
+            closeApproveModal();
+        }
+    });
 </script>
 {% endblock %}

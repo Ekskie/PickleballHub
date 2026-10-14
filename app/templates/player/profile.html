@@ -786,7 +786,7 @@
                     </a>
                     {% else %}
                     <a href="{{ url_for('billing.subscription_page') }}" class="sports-pill-btn primary" style="text-decoration: none; background: linear-gradient(135deg, #f59e0b, var(--primary-orange)); border: none; color: #fff;">
-                        <i class="ph ph-sparkles"></i> Upgrade to Pro Pass (₱199/mo)
+                        <i class="ph ph-sparkles"></i> Upgrade to Pro Pass (₱{{ "{:,.0f}".format(tier_pricing.player.pro.price_monthly if tier_pricing and tier_pricing.player and tier_pricing.player.pro else 199) }}/mo)
                     </a>
                     {% endif %}
                 </div>

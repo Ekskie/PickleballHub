@@ -534,13 +534,17 @@
                         <h3>Pro Facility Pass</h3>
                         <p>For growing pickleball clubs seeking lower transaction fees, multi-court capacity, and staff
                             tools.</p>
+                        {% set o_p_m = (tier_pricing.owner.pro.price_monthly if tier_pricing and tier_pricing.owner and tier_pricing.owner.pro else 1299) %}
+                        {% set o_p_a = (tier_pricing.owner.pro.price_annual if tier_pricing and tier_pricing.owner and tier_pricing.owner.pro else 1049) %}
+                        {% set o_p_yr = (o_p_a * 12)|int %}
+                        {% set o_p_save = ((o_p_m * 12) - o_p_yr)|int %}
                         <div class="sub-price-wrap">
                             <div class="sub-price">
-                                <span class="val-price" data-monthly="1299" data-annual="1049">₱1,299</span>
+                                <span class="val-price" data-monthly="{{ o_p_m }}" data-annual="{{ o_p_a }}">₱{{ "{:,.0f}".format(o_p_m) }}</span>
                                 <span class="period">/ mo</span>
                             </div>
                             <span class="sub-annual-note" data-monthly=""
-                                data-annual="Billed ₱12,588/yr (Save ₱3,000)"></span>
+                                data-annual="Billed ₱{{ '{:,.0f}'.format(o_p_yr) }}/yr{% if o_p_save > 0 %} (Save ₱{{ '{:,.0f}'.format(o_p_save) }}){% endif %}"></span>
                         </div>
                         <ul class="sub-features">
                             <li><i class="ph ph-check-circle"></i> <span>Up to <strong>3 Facilities &amp; 8
@@ -571,13 +575,17 @@
                         <h3>Elite Enterprise</h3>
                         <p>Flagship package for commercial sports arenas, municipal facilities, and multi-venue
                             franchises.</p>
+                        {% set o_e_m = (tier_pricing.owner.elite.price_monthly if tier_pricing and tier_pricing.owner and tier_pricing.owner.elite else 2999) %}
+                        {% set o_e_a = (tier_pricing.owner.elite.price_annual if tier_pricing and tier_pricing.owner and tier_pricing.owner.elite else 2399) %}
+                        {% set o_e_yr = (o_e_a * 12)|int %}
+                        {% set o_e_save = ((o_e_m * 12) - o_e_yr)|int %}
                         <div class="sub-price-wrap">
                             <div class="sub-price">
-                                <span class="val-price" data-monthly="2999" data-annual="2399">₱2,999</span>
+                                <span class="val-price" data-monthly="{{ o_e_m }}" data-annual="{{ o_e_a }}">₱{{ "{:,.0f}".format(o_e_m) }}</span>
                                 <span class="period">/ mo</span>
                             </div>
                             <span class="sub-annual-note" data-monthly=""
-                                data-annual="Billed ₱28,788/yr (Save ₱7,200)"></span>
+                                data-annual="Billed ₱{{ '{:,.0f}'.format(o_e_yr) }}/yr{% if o_e_save > 0 %} (Save ₱{{ '{:,.0f}'.format(o_e_save) }}){% endif %}"></span>
                         </div>
                         <ul class="sub-features">
                             <li><i class="ph ph-check-circle"></i> <span><strong>Unlimited Facilities &amp;
@@ -644,13 +652,17 @@
                         <span class="sub-card-tag" style="color: var(--primary-orange);">League Builder</span>
                         <h3>Pro Club Pass</h3>
                         <p>For serious tournament directors, circuit coordinators, and sanctioned club networks.</p>
+                        {% set c_p_m = (tier_pricing.clubadmin.pro.price_monthly if tier_pricing and tier_pricing.clubadmin and tier_pricing.clubadmin.pro else 599) %}
+                        {% set c_p_a = (tier_pricing.clubadmin.pro.price_annual if tier_pricing and tier_pricing.clubadmin and tier_pricing.clubadmin.pro else 479) %}
+                        {% set c_p_yr = (c_p_a * 12)|int %}
+                        {% set c_p_save = ((c_p_m * 12) - c_p_yr)|int %}
                         <div class="sub-price-wrap">
                             <div class="sub-price">
-                                <span class="val-price" data-monthly="599" data-annual="479">₱599</span>
+                                <span class="val-price" data-monthly="{{ c_p_m }}" data-annual="{{ c_p_a }}">₱{{ "{:,.0f}".format(c_p_m) }}</span>
                                 <span class="period">/ mo</span>
                             </div>
                             <span class="sub-annual-note" data-monthly=""
-                                data-annual="Billed ₱5,748/yr (Save ₱1,440)"></span>
+                                data-annual="Billed ₱{{ '{:,.0f}'.format(c_p_yr) }}/yr{% if c_p_save > 0 %} (Save ₱{{ '{:,.0f}'.format(c_p_save) }}){% endif %}"></span>
                         </div>
                         <ul class="sub-features">
                             <li><i class="ph ph-check-circle"></i> <span><strong>Up to 5 Active Clubs</strong></span>
@@ -722,13 +734,17 @@
                         <h3>Pickleball Pro Pass</h3>
                         <p>For active athletes who play multiple times a week and want peak court slots before anyone
                             else.</p>
+                        {% set p_m = (tier_pricing.player.pro.price_monthly if tier_pricing and tier_pricing.player and tier_pricing.player.pro else 199) %}
+                        {% set p_a = (tier_pricing.player.pro.price_annual if tier_pricing and tier_pricing.player and tier_pricing.player.pro else 149) %}
+                        {% set p_yr = (p_a * 12)|int %}
+                        {% set p_save = ((p_m * 12) - p_yr)|int %}
                         <div class="sub-price-wrap">
                             <div class="sub-price">
-                                <span class="val-price" data-monthly="199" data-annual="149">₱199</span>
+                                <span class="val-price" data-monthly="{{ p_m }}" data-annual="{{ p_a }}">₱{{ "{:,.0f}".format(p_m) }}</span>
                                 <span class="period">/ mo</span>
                             </div>
                             <span class="sub-annual-note" data-monthly=""
-                                data-annual="Billed ₱1,788/yr (Save ₱600)"></span>
+                                data-annual="Billed ₱{{ '{:,.0f}'.format(p_yr) }}/yr{% if p_save > 0 %} (Save ₱{{ '{:,.0f}'.format(p_save) }}){% endif %}"></span>
                         </div>
                         <ul class="sub-features">
                             <li><i class="ph ph-check-circle"></i> <span><strong>14-Day Early Court Booking</strong>

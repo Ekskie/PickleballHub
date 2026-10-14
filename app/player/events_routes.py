@@ -308,6 +308,7 @@ def tournament_bracket(event_id):
         match_resp = db.table('tournament_matches').select(
             'id, round_number, match_number, player1_id, player2_id, winner_id, '
             'player1_score, player2_score, status, court_id, court_name, referee_name, '
+            'player1_guest_name, player2_guest_name, winner_guest_name, player1_reg_id, player2_reg_id, winner_reg_id, '
             'player1:profiles!player1_id(id, first_name, last_name, avatar_url), '
             'player2:profiles!player2_id(id, first_name, last_name, avatar_url), '
             'winner:profiles!winner_id(id, first_name, last_name, avatar_url)'
@@ -318,8 +319,15 @@ def tournament_bracket(event_id):
             max_round = max(m['round_number'] for m in matches)
             if event.get('status') == 'completed':
                 final_ms = [m for m in matches if m['round_number'] == max_round and m['status'] == 'completed']
-                if final_ms and final_ms[0].get('winner'):
-                    champion = final_ms[0]['winner']
+                if final_ms:
+                    if final_ms[0].get('winner'):
+                        champion = final_ms[0]['winner']
+                    elif final_ms[0].get('winner_guest_name'):
+                        champion = {
+                            'first_name': final_ms[0]['winner_guest_name'],
+                            'last_name': '(Walk-in)',
+                            'id': None
+                        }
 
     except Exception as e:
         flash('An error occurred. Please try again.', 'error')

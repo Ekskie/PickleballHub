@@ -275,6 +275,7 @@ def tournament_manage(event_id):
         # Get matches
         matches_resp = db.table('tournament_matches').select(
             'id, round_number, match_number, player1_id, player2_id, winner_id, player1_score, player2_score, status, played_at, court_id, court_name, referee_name, '
+            'player1_guest_name, player2_guest_name, winner_guest_name, player1_reg_id, player2_reg_id, winner_reg_id, '
             'player1:profiles!player1_id(id, first_name, last_name, avatar_url), '
             'player2:profiles!player2_id(id, first_name, last_name, avatar_url), '
             'winner:profiles!winner_id(id, first_name, last_name, avatar_url)'

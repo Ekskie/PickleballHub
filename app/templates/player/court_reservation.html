@@ -3640,13 +3640,15 @@
             </div>
         </div>
 
+        {% set player_pro_m = (tier_pricing.player.pro.price_monthly if tier_pricing and tier_pricing.player and tier_pricing.player.pro else 199) %}
+        {% set player_pro_a = (tier_pricing.player.pro.price_annual if tier_pricing and tier_pricing.player and tier_pricing.player.pro else 149) %}
         <div class="early-pricing-callout">
             <div>
-                <div class="price-tag">₱199 <span>/ month</span></div>
+                <div class="price-tag">₱{{ "{:,.0f}".format(player_pro_m) }} <span>/ month</span></div>
                 <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">Cancel or switch anytime</div>
             </div>
             <div class="save-tag">
-                <i class="ph ph-sparkle"></i> Or ₱149/mo Billed Annually
+                <i class="ph ph-sparkle"></i> Or ₱{{ "{:,.0f}".format(player_pro_a) }}/mo Billed Annually
             </div>
         </div>
 
@@ -3661,7 +3663,7 @@
             </a>
             {% else %}
             <a href="{{ url_for('billing.checkout_page', plan='pro', cycle='monthly', return_to=url_for('player.reservation')) }}" class="btn-upgrade-pro-action" style="text-decoration:none;">
-                <i class="ph ph-credit-card"></i> Upgrade with GCash (₱199/mo)
+                <i class="ph ph-credit-card"></i> Upgrade with GCash (₱{{ "{:,.0f}".format(player_pro_m) }}/mo)
             </a>
             {% endif %}
             <div style="display:flex; gap:8px;">

@@ -885,8 +885,7 @@ def subscriptions():
                     'reviewed_by': reviewer_id,
                     'reviewed_at': now_iso,
                     'starts_at': now_iso,
-                    'expires_at': expires_at_iso,
-                    'updated_at': now_iso
+                    'expires_at': expires_at_iso
                 }).eq('id', sub_id).execute()
 
                 # Update user profile
@@ -927,8 +926,7 @@ def subscriptions():
                     'status': 'rejected',
                     'reviewed_by': reviewer_id,
                     'reviewed_at': now_iso,
-                    'notes': notes,
-                    'updated_at': now_iso
+                    'notes': notes
                 }).eq('id', sub_id).execute()
 
                 # Revert user profile to free tier
@@ -1008,10 +1006,102 @@ def subscriptions():
     except Exception as e:
         flash(f'Error retrieving subscriptions ledger: {e}', 'error')
 
+    from app.billing.tiers import load_dynamic_tier_config
+    current_pricing = load_dynamic_tier_config()
+
     return render_template('superadmin/subscriptions.html',
                            subscriptions=subscriptions_list,
                            analytics=analytics,
-                           current_filter=filter_status)
+                           current_filter=filter_status,
+                           current_pricing=current_pricing)
+
+
+@superadmin_bp.route('/subscriptions/pricing', methods=['POST'])
+@require_role('superadmin')
+def update_subscription_pricing():
+    """Update or reset subscription plan prices for all roles."""
+    action = request.form.get('action', 'save')
+
+    if action == 'reset':
+        try:
+            from app.billing.tiers import reset_tier_pricing
+            reset_tier_pricing()
+            log_audit_action('reset_subscription_pricing', 'pricing_settings', {
+                'performed_by': session.get('user_id')
+            })
+            flash('Subscription pricing reset to baseline system defaults.', 'info')
+        except Exception as e:
+            flash(f'Failed to reset subscription pricing: {e}', 'error')
+        return redirect(url_for('superadmin.subscriptions'))
+
+    # Save action
+    try:
+        from app.billing.tiers import save_tier_pricing, load_dynamic_tier_config
+
+        def _clean_price(val, default_val):
+            try:
+                num = float(val)
+                if num < 0:
+                    return default_val
+                return int(num) if num.is_integer() else round(num, 2)
+            except (ValueError, TypeError):
+                return default_val
+
+        current_cfg = load_dynamic_tier_config()
+
+        # Extract and validate values for the 3 roles
+        player_pro_monthly = _clean_price(request.form.get('player_pro_monthly'), current_cfg['player']['pro']['price_monthly'])
+        player_pro_annual = _clean_price(request.form.get('player_pro_annual'), current_cfg['player']['pro']['price_annual'])
+
+        club_pro_monthly = _clean_price(request.form.get('clubadmin_pro_monthly'), current_cfg['clubadmin']['pro']['price_monthly'])
+        club_pro_annual = _clean_price(request.form.get('clubadmin_pro_annual'), current_cfg['clubadmin']['pro']['price_annual'])
+
+        owner_pro_monthly = _clean_price(request.form.get('owner_pro_monthly'), current_cfg['owner']['pro']['price_monthly'])
+        owner_pro_annual = _clean_price(request.form.get('owner_pro_annual'), current_cfg['owner']['pro']['price_annual'])
+
+        owner_elite_monthly = _clean_price(request.form.get('owner_elite_monthly'), current_cfg['owner']['elite']['price_monthly'])
+        owner_elite_annual = _clean_price(request.form.get('owner_elite_annual'), current_cfg['owner']['elite']['price_annual'])
+
+        pricing_payload = {
+            'player': {
+                'pro': {
+                    'price_monthly': player_pro_monthly,
+                    'price_annual': player_pro_annual
+                }
+            },
+            'clubadmin': {
+                'pro': {
+                    'price_monthly': club_pro_monthly,
+                    'price_annual': club_pro_annual
+                }
+            },
+            'owner': {
+                'pro': {
+                    'price_monthly': owner_pro_monthly,
+                    'price_annual': owner_pro_annual
+                },
+                'elite': {
+                    'price_monthly': owner_elite_monthly,
+                    'price_annual': owner_elite_annual
+                }
+            }
+        }
+
+        success = save_tier_pricing(pricing_payload)
+        if success:
+            log_audit_action('update_subscription_pricing', 'pricing_settings', {
+                'performed_by': session.get('user_id'),
+                'pricing': pricing_payload
+            })
+            flash('Subscription pricing updated successfully across all 3 roles!', 'success')
+        else:
+            flash('Failed to save subscription pricing to database.', 'error')
+
+    except Exception as e:
+        flash(f'Error updating subscription pricing: {e}', 'error')
+
+    return redirect(url_for('superadmin.subscriptions'))
+
 
 
 

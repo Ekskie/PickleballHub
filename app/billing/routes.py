@@ -6,7 +6,7 @@ from flask import (
 )
 from app.db import get_admin_db
 from app.billing.tiers import (
-    TIER_CONFIG, get_user_tier, get_tier_limits
+    TIER_CONFIG, get_user_tier, get_tier_limits, load_dynamic_tier_config
 )
 from app.upload_utils import validate_and_upload, ALLOWED_IMAGE_EXTENSIONS, MAX_IMAGE_SIZE
 
@@ -54,7 +54,7 @@ def subscription_page():
 
     current_tier = get_user_tier(profile or user_id, role=role, db=admin_db)
     tier_limits = get_tier_limits(role, current_tier)
-    all_role_tiers = TIER_CONFIG.get(role, TIER_CONFIG.get('player', {}))
+    all_role_tiers = load_dynamic_tier_config(role=role)
 
     # Calculate days remaining if active
     days_remaining = None
@@ -89,7 +89,7 @@ def checkout_page():
         return redirect(url_for('auth.login', next=request.full_path))
 
     admin_db = get_admin_db()
-    all_role_tiers = TIER_CONFIG.get(role, TIER_CONFIG.get('player', {}))
+    all_role_tiers = load_dynamic_tier_config(role=role)
 
     if request.method == 'GET':
         plan = request.args.get('plan', 'pro').strip().lower()
