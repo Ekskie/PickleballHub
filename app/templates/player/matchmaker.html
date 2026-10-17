@@ -303,7 +303,7 @@
         background: #ffffff; /* 100% Solid Opaque White in Light Mode */
         border: 1.5px solid var(--border-color);
         border-radius: 16px;
-        padding: 22px;
+        padding: 20px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -312,6 +312,7 @@
         transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
         box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
         box-sizing: border-box;
+        overflow: hidden;
     }
 
     html.dark-mode .lobby-card,
@@ -350,34 +351,41 @@
         box-shadow: 0 14px 30px rgba(16, 185, 129, 0.16);
     }
 
-    /* Fixed Single-Line Card Header (Status + DUPR) */
+    /* Responsive Wrapping Card Header (Status + DUPR) */
     .lobby-card-header-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
+        row-gap: 6px;
         margin-bottom: 12px;
+        flex-wrap: wrap;
     }
 
     .header-status-group {
         display: flex;
-        gap: 6px;
+        gap: 5px;
+        row-gap: 5px;
         align-items: center;
+        flex-wrap: wrap;
+        flex: 1 1 auto;
+        min-width: 0;
     }
 
     .dupr-rating-chip {
-        font-size: 0.72rem;
+        font-size: 0.7rem;
         font-weight: 800;
         color: var(--text-primary);
         background: var(--input-bg);
         border: 1px solid var(--border-color);
-        padding: 4px 9px;
+        padding: 3px 8px;
         border-radius: 8px;
         display: inline-flex;
         align-items: center;
         gap: 4px;
         white-space: nowrap;
         flex-shrink: 0;
+        margin-left: auto;
     }
 
     /* Dedicated Ownership Banner Strip (Clean & Unwrapped) */
@@ -467,6 +475,7 @@
         gap: 9px;
         font-size: 0.82rem;
         color: var(--text-secondary);
+        min-width: 0;
     }
 
     .lobby-info-item i {
@@ -479,6 +488,8 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        min-width: 0;
+        flex: 1;
     }
 
     .lobby-info-item.host-item {
@@ -631,15 +642,17 @@
     }
 
     .status-pill {
-        padding: 4px 10px;
+        padding: 3px 8px;
         border-radius: 20px;
-        font-size: 0.72rem;
+        font-size: 0.68rem;
         font-weight: 700;
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: 4px;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.4px;
+        white-space: nowrap;
+        flex-shrink: 0;
     }
 
     .status-pill.status-completed {

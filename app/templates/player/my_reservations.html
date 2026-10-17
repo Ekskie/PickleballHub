@@ -2,14 +2,20 @@
 {% block title %}My Reservations{% endblock %}
 
 {% block extra_head %}
+<script src="{{ url_for('static', filename='js/qrcode.min.js') }}"></script>
 <style>
 /* ── Header ── */
 .res-header { display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px; }
 
 /* ── Tabs ── */
 .res-tabs { display:flex;gap:6px;margin-bottom:22px;flex-wrap:wrap; }
-.res-tab { padding:7px 16px;border-radius:20px;border:1px solid var(--border-color);background:var(--card-bg);color:var(--text-muted);font-size:.8rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s; }
+.res-tab { padding:7px 16px;border-radius:20px;border:1px solid var(--border-color);background:var(--card-bg);color:var(--text-muted);font-size:.8rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;display:inline-flex;align-items:center;gap:6px; }
 .res-tab.active,.res-tab:hover { background:var(--primary-orange);border-color:var(--primary-orange);color:#fff; }
+.tab-badge-sm { display:inline-flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:800;padding:1px 7px;border-radius:12px;background:rgba(0,0,0,0.08);color:inherit; }
+.res-tab.active .tab-badge-sm { background:rgba(255,255,255,0.25);color:#fff; }
+.tab-badge-sm.amber { background:#f59e0b;color:#fff; }
+.tab-badge-sm.warning { background:#ea580c;color:#fff; }
+.tab-badge-sm.green { background:#10b981;color:#fff; }
 
 /* ── Reservation Card ── */
 .res-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:18px; }
@@ -74,12 +80,29 @@
 <!-- Tabs and Search -->
 <div class="res-tabs-container" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:22px;">
     <div class="res-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin:0;">
-        <button class="res-tab active" onclick="filterRes('all',this)">All <span style="opacity:.7;font-weight:400;">({{ reservations|length }})</span></button>
-        <button class="res-tab" onclick="filterRes('pending_payment',this)"><i class="ph ph-hourglass-low"></i> Pending Payment</button>
-        <button class="res-tab" onclick="filterRes('pending_verification',this)"><i class="ph ph-shield-warning"></i> Pending Verification</button>
-        <button class="res-tab" onclick="filterRes('confirmed',this)"><i class="ph ph-check-circle"></i> Confirmed</button>
-        <button class="res-tab" onclick="filterRes('completed',this)"><i class="ph ph-tennis-ball"></i> Completed</button>
-        <button class="res-tab" onclick="filterRes('cancelled',this)"><i class="ph ph-x-circle"></i> Cancelled</button>
+        <button type="button" class="res-tab {% if default_filter == 'all' %}active{% endif %}" data-status="all" onclick="filterRes('all',this)">
+            All <span class="tab-badge-sm">{{ reservations|length }}</span>
+        </button>
+        <button type="button" class="res-tab {% if default_filter == 'pending_payment' %}active{% endif %}" data-status="pending_payment" onclick="filterRes('pending_payment',this)">
+            <i class="ph ph-hourglass-low"></i> Pending Payment
+            {% if pending_pay_count and pending_pay_count > 0 %}<span class="tab-badge-sm warning">{{ pending_pay_count }}</span>{% endif %}
+        </button>
+        <button type="button" class="res-tab {% if default_filter == 'pending_verification' %}active{% endif %}" data-status="pending_verification" onclick="filterRes('pending_verification',this)">
+            <i class="ph ph-shield-warning"></i> Pending Verification
+            {% if pending_verif_count and pending_verif_count > 0 %}<span class="tab-badge-sm amber">{{ pending_verif_count }}</span>{% endif %}
+        </button>
+        <button type="button" class="res-tab {% if default_filter == 'confirmed' %}active{% endif %}" data-status="confirmed" onclick="filterRes('confirmed',this)">
+            <i class="ph ph-check-circle"></i> Confirmed
+            {% if confirmed_count and confirmed_count > 0 %}<span class="tab-badge-sm green">{{ confirmed_count }}</span>{% endif %}
+        </button>
+        <button type="button" class="res-tab {% if default_filter == 'completed' %}active{% endif %}" data-status="completed" onclick="filterRes('completed',this)">
+            <i class="ph ph-tennis-ball"></i> Completed
+            {% if completed_count and completed_count > 0 %}<span class="tab-badge-sm">{{ completed_count }}</span>{% endif %}
+        </button>
+        <button type="button" class="res-tab {% if default_filter == 'cancelled' %}active{% endif %}" data-status="cancelled" onclick="filterRes('cancelled',this)">
+            <i class="ph ph-x-circle"></i> Cancelled
+            {% if cancelled_count and cancelled_count > 0 %}<span class="tab-badge-sm">{{ cancelled_count }}</span>{% endif %}
+        </button>
     </div>
     <div class="local-search-bar" style="flex:1; max-width:300px; min-width:200px; position:relative;">
         <i class="ph ph-magnifying-glass" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted);"></i>
@@ -186,6 +209,35 @@
                     <small>{{ r.total_hours|int }} hr × ₱{{ '%.2f'|format(r.hourly_rate) }}</small>
                 </div>
                 <div class="res-actions">
+                    {% if status == 'confirmed' %}
+                    <button type="button" class="btn-pay" style="background:#10b981;"
+                            onclick='openPassModalFromData({
+                                id: "{{ r.id }}",
+                                pass_code: "{{ r.pass_code or ('PB-' ~ r.id[:8]|upper) }}",
+                                court_name: "{{ (r.courts.name if r.courts else 'Court')|escape }}",
+                                court_type: "{{ (r.courts.type if r.courts else 'Court')|capitalize }}",
+                                facility_name: "{{ (fac.name if fac else 'Facility')|escape }}",
+                                facility_location: "{{ (fac.location if fac else '')|escape }}",
+                                facility_latitude: "{{ fac.latitude if fac and fac.latitude else '' }}",
+                                facility_longitude: "{{ fac.longitude if fac and fac.longitude else '' }}",
+                                date_friendly: "{{ r.date }}",
+                                time_friendly: "{{ r.start_time_12 }} – {{ r.end_time_12 }}",
+                                player_name: "{{ current_user.full_name or 'Player' }}"
+                            })'>
+                        <i class="ph ph-ticket"></i> View Pass
+                    </button>
+                    {% if fac and fac.latitude and fac.longitude %}
+                    <a href="https://www.google.com/maps/dir/?api=1&destination={{ fac.latitude }},{{ fac.longitude }}"
+                       target="_blank" rel="noopener" class="btn-cancel" style="color:var(--text-primary);border-color:var(--card-border);" title="GPS Directions">
+                        <i class="ph ph-navigation-arrow"></i> Directions
+                    </a>
+                    {% elif fac and fac.location %}
+                    <a href="https://www.google.com/maps/dir/?api=1&destination={{ (fac.name ~ ' ' ~ fac.location)|urlencode }}"
+                       target="_blank" rel="noopener" class="btn-cancel" style="color:var(--text-primary);border-color:var(--card-border);" title="Directions">
+                        <i class="ph ph-navigation-arrow"></i> Directions
+                    </a>
+                    {% endif %}
+                    {% endif %}
                     {% if status == 'pending_payment' and not r.gcash_ref %}
                     <a href="{{ url_for('player.payment', reservation_id=r.id) }}" class="btn-pay">
                         <i class="ph ph-device-mobile-camera"></i> Pay Now
@@ -217,8 +269,96 @@
 {% endif %}
 </div>
 
+<!-- ── DIGITAL COURT ENTRY PASS MODAL ───────────────────────── -->
+<div id="viewPassModal" class="sports-pass-modal-overlay" style="display:none;" onclick="handlePassModalBackdropClick(event)">
+    <div class="sports-pass-dialog" role="dialog" aria-modal="true" aria-labelledby="passCourtName">
+        <!-- Close button -->
+        <button type="button" class="pass-modal-close" onclick="closeViewPassModal()" aria-label="Close Pass">
+            <i class="ph ph-x"></i>
+        </button>
+
+        <!-- Digital Ticket Card -->
+        <div class="sports-pass-ticket">
+            <!-- Ticket Top Header -->
+            <div class="pass-ticket-top">
+                <div class="pass-brand-row">
+                    <div class="pass-brand-logo">
+                        <span class="pass-logo-ball"><i class="ph-fill ph-tennis-ball"></i></span>
+                        <div>
+                            <span class="pass-brand-title">PICKLEBALL HUB</span>
+                            <span class="pass-brand-sub">OFFICIAL DIGITAL COURT PASS</span>
+                        </div>
+                    </div>
+                    <div class="pass-status-pill">
+                        <span class="pass-status-dot"></span>
+                        <span>CONFIRMED</span>
+                    </div>
+                </div>
+
+                <div class="pass-court-hero">
+                    <h2 class="pass-court-name" id="passCourtName">Assigned Court</h2>
+                    <div class="pass-facility-row">
+                        <i class="ph ph-buildings"></i>
+                        <span id="passFacilityName">Sports Hub</span>
+                        <span class="pass-badge-type" id="passCourtType">Court</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Perforation divider line -->
+            <div class="pass-tear-divider"></div>
+
+            <!-- Ticket Middle: QR Code Container (High-contrast for front-desk scanning) -->
+            <div class="pass-ticket-body">
+                <div class="pass-qr-frame">
+                    <div id="passQrCanvasBox" class="pass-qr-canvas-box"></div>
+                    <img id="passQrImgFallback" class="pass-qr-img-fallback" src="" alt="QR Pass Code" style="display:none;" />
+                    <div class="pass-code-pill" id="passCodePill" title="Click to copy pass reference" onclick="copyPassCode()">
+                        <i class="ph ph-barcode"></i>
+                        <span id="passCodeText">PB-PASS-REF</span>
+                        <i class="ph ph-copy" style="font-size:0.8rem;opacity:0.7;"></i>
+                    </div>
+                    <p class="pass-scan-instruction">
+                        <i class="ph ph-scan"></i> Show to front desk staff to confirm check-in &amp; enter court
+                    </p>
+                </div>
+
+                <!-- Booking Details Grid -->
+                <div class="pass-details-grid">
+                    <div class="pass-detail-cell">
+                        <span class="pdc-label"><i class="ph ph-user"></i> Primary Player</span>
+                        <span class="pdc-value" id="passPlayerName">{{ current_user.full_name or 'Player' }}</span>
+                    </div>
+                    <div class="pass-detail-cell">
+                        <span class="pdc-label"><i class="ph ph-calendar"></i> Date</span>
+                        <span class="pdc-value" id="passDate">--</span>
+                    </div>
+                    <div class="pass-detail-cell">
+                        <span class="pdc-label"><i class="ph ph-clock"></i> Session Time</span>
+                        <span class="pdc-value highlight" id="passTime">--</span>
+                    </div>
+                    <div class="pass-detail-cell">
+                        <span class="pdc-label"><i class="ph ph-map-pin"></i> Venue Location</span>
+                        <span class="pdc-value" id="passLocation">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ticket Footer: Action buttons -->
+            <div class="pass-ticket-footer">
+                <a id="passDirectionsBtn" href="#" target="_blank" rel="noopener" class="pass-btn-action primary" title="Open Google Maps GPS navigation to exact court coordinates">
+                    <i class="ph ph-navigation-arrow"></i> GPS Directions
+                </a>
+                <button type="button" class="pass-btn-action secondary" onclick="window.print()">
+                    <i class="ph ph-printer"></i> Print / Save
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-let currentFilterStatus = 'all';
+let currentFilterStatus = "{{ default_filter|default('all') }}";
 
 function filterRes(status, btn){
     currentFilterStatus = status;
@@ -248,5 +388,122 @@ function filterRes(status, btn){
         noResMsg.style.display = visibleCount === 0 ? 'block' : 'none';
     }
 }
+
+function openPassModalFromData(data) {
+    const modal = document.getElementById('viewPassModal');
+    if (!modal) return;
+
+    if (modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+    }
+
+    document.getElementById('passCourtName').textContent = data.court_name || 'Assigned Court';
+    document.getElementById('passFacilityName').textContent = data.facility_name || 'Sports Hub';
+    document.getElementById('passCourtType').textContent = (data.court_type || 'Court') + ' Court';
+    document.getElementById('passPlayerName').textContent = data.player_name || 'Player';
+    document.getElementById('passDate').textContent = data.date_friendly || '--';
+    document.getElementById('passTime').textContent = data.time_friendly || '--';
+    document.getElementById('passLocation').textContent = data.facility_location || '--';
+    document.getElementById('passCodeText').textContent = data.pass_code || ('PB-' + (data.id || '').substring(0, 8).toUpperCase());
+
+    const dirBtn = document.getElementById('passDirectionsBtn');
+    if (dirBtn) {
+        if (data.facility_latitude && data.facility_longitude) {
+            dirBtn.href = `https://www.google.com/maps/dir/?api=1&destination=${data.facility_latitude},${data.facility_longitude}`;
+        } else if (data.facility_location) {
+            dirBtn.href = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent((data.facility_name || '') + ' ' + (data.facility_location || ''))}`;
+        } else {
+            dirBtn.href = '#';
+        }
+    }
+
+    const qrBox = document.getElementById('passQrCanvasBox');
+    const fallbackImg = document.getElementById('passQrImgFallback');
+    if (qrBox && data.id) {
+        qrBox.innerHTML = '';
+        qrBox.style.display = 'flex';
+        if (fallbackImg) fallbackImg.style.display = 'none';
+
+        try {
+            if (typeof QRCode !== 'undefined') {
+                new QRCode(qrBox, {
+                    text: data.id,
+                    width: 190,
+                    height: 190,
+                    colorDark: "#0f172a",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+            } else if (fallbackImg) {
+                qrBox.style.display = 'none';
+                fallbackImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data=${encodeURIComponent(data.id)}`;
+                fallbackImg.style.display = 'block';
+            }
+        } catch (e) {
+            console.warn('QRCode generation fallback:', e);
+            if (fallbackImg) {
+                qrBox.style.display = 'none';
+                fallbackImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data=${encodeURIComponent(data.id)}`;
+                fallbackImg.style.display = 'block';
+            }
+        }
+    }
+
+    modal.classList.add('active');
+    modal.style.setProperty('display', 'flex', 'important');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeViewPassModal() {
+    const modal = document.getElementById('viewPassModal');
+    if (modal) {
+        modal.classList.remove('active');
+        modal.style.setProperty('display', 'none', 'important');
+        document.body.style.overflow = '';
+    }
+}
+
+function handlePassModalBackdropClick(event) {
+    if (event.target && event.target.id === 'viewPassModal') {
+        closeViewPassModal();
+    }
+}
+
+function copyPassCode() {
+    const code = document.getElementById('passCodeText')?.innerText;
+    if (code) {
+        navigator.clipboard.writeText(code).then(() => {
+            const pill = document.getElementById('passCodePill');
+            if (pill) {
+                const orig = pill.innerHTML;
+                pill.innerHTML = '<i class="ph ph-check" style="color:#10b981;"></i> <span style="color:#10b981;">Copied!</span>';
+                setTimeout(() => pill.innerHTML = orig, 1800);
+            }
+        }).catch(() => {});
+    }
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeViewPassModal();
+    }
+});
+
+// Automatically filter to priority ongoing/pending status on page load
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('viewPassModal');
+    if (modal) {
+        if (modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+        modal.classList.remove('active');
+        modal.style.setProperty('display', 'none', 'important');
+    }
+
+    const activeTab = document.querySelector(`.res-tab[data-status="${currentFilterStatus}"]`) || document.querySelector('.res-tab.active');
+    if (activeTab) {
+        filterRes(currentFilterStatus, activeTab);
+    }
+});
 </script>
 {% endblock %}

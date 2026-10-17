@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for, session, flash
+from flask import render_template, request, redirect, url_for, session, flash, jsonify
 from app.decorators import require_role
 from app.db import get_db
 from app.player import player_bp
@@ -339,3 +339,49 @@ def tournament_bracket(event_id):
                            max_round=max_round,
                            champion=champion,
                            player_id=player_id)
+
+
+@player_bp.route('/api/tournaments/<event_id>/bracket')
+@require_role('player')
+def api_tournament_bracket(event_id):
+    db = get_db()
+    try:
+        ev_resp = db.table('events').select('id, title, status').eq('id', event_id).single().execute()
+        event = ev_resp.data
+        if not event:
+            return jsonify({'success': False, 'error': 'Tournament not found'}), 404
+
+        match_resp = db.table('tournament_matches').select(
+            'id, round_number, match_number, player1_id, player2_id, winner_id, '
+            'player1_score, player2_score, status, court_id, court_name, referee_name, '
+            'player1_guest_name, player2_guest_name, winner_guest_name, '
+            'player1:profiles!player1_id(id, first_name, last_name, avatar_url), '
+            'player2:profiles!player2_id(id, first_name, last_name, avatar_url), '
+            'winner:profiles!winner_id(id, first_name, last_name, avatar_url)'
+        ).eq('event_id', event_id).order('round_number').order('match_number').execute()
+        matches = match_resp.data or []
+
+        max_round = max((m['round_number'] for m in matches), default=0)
+        champion = None
+        if event.get('status') == 'completed' and matches:
+            final_ms = [m for m in matches if m['round_number'] == max_round and m['status'] == 'completed']
+            if final_ms:
+                if final_ms[0].get('winner'):
+                    champion = final_ms[0]['winner']
+                elif final_ms[0].get('winner_guest_name'):
+                    champion = {
+                        'first_name': final_ms[0]['winner_guest_name'],
+                        'last_name': '(Walk-in)',
+                        'id': None
+                    }
+
+        return jsonify({
+            'success': True,
+            'event': event,
+            'matches': matches,
+            'max_round': max_round,
+            'champion': champion
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+

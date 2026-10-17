@@ -34,6 +34,15 @@ def format_date_friendly(date_str):
         return str(date_str)
 
 
+def format_court_name(name):
+    if not name:
+        return 'Court'
+    import re
+    cleaned = re.sub(r'([a-z])([A-Z0-9])', r'\1 \2', str(name))
+    cleaned = re.sub(r'([A-Z]+)([A-Z][a-z])', r'\1 \2', cleaned)
+    return cleaned.strip()
+
+
 def check_player_memberships_expiry(db, player_id):
     """Check if any of the player's active memberships has expired and update status."""
     if not player_id:
@@ -180,24 +189,66 @@ def dashboard():
 
     # Calculate player stats (Wins, Played, Win Rate) from profile table
     player_stats = {'total_played': 0, 'wins': 0, 'win_rate': 0}
+    player_full_name = session.get('user_name') or 'Player'
     try:
-        prof_resp = db.table('profiles').select('wins, losses').eq('id', player_id).single().execute()
+        prof_resp = db.table('profiles').select('wins, losses, first_name, last_name').eq('id', player_id).single().execute()
         if prof_resp.data:
             player_stats['wins'] = prof_resp.data.get('wins') or 0
             losses = prof_resp.data.get('losses') or 0
             player_stats['total_played'] = player_stats['wins'] + losses
             if player_stats['total_played'] > 0:
                 player_stats['win_rate'] = round((player_stats['wins'] / player_stats['total_played']) * 100)
+            p_first = prof_resp.data.get('first_name') or ''
+            p_last = prof_resp.data.get('last_name') or ''
+            if p_first or p_last:
+                player_full_name = f"{p_first} {p_last}".strip()
     except Exception as e:
         print(f"Error loading player stats from profile: {e}")
-
     try:
-        # Fetch next confirmed reservation
+        # Fetch next confirmed upcoming reservation with live countdown metrics
+        now_dt = datetime.now(PH_TZ)
+        today_iso = now_dt.strftime('%Y-%m-%d')
+        now_time_str = now_dt.strftime('%H:%M:%S')
+
         res_resp = admin_db.table('court_reservations').select(
-            'id, date, start_time, end_time, status, courts(name, image_url), facilities(name, location)'
-        ).eq('player_id', player_id).in_('status', ['confirmed']).order('date').order('start_time').limit(1).execute()
-        if res_resp.data:
-            next_reservation = res_resp.data[0]
+            'id, date, start_time, end_time, status, total_amount, '
+            'courts(id, name, type, hourly_rate, image_url), '
+            'facilities(id, name, location, latitude, longitude, image_url, owner_id)'
+        ).eq('player_id', player_id).eq('status', 'confirmed').gte('date', today_iso).order('date').order('start_time').execute()
+
+        for r in (res_resp.data or []):
+            r_date = str(r.get('date'))[:10]
+            r_start = str(r.get('start_time') or '00:00:00')[:8]
+            r_end = str(r.get('end_time') or '23:59:59')[:8]
+
+            if r_date > today_iso or (r_date == today_iso and r_end > now_time_str):
+                try:
+                    match_dt = datetime.strptime(f"{r_date} {r_start}", "%Y-%m-%d %H:%M:%S").replace(tzinfo=PH_TZ)
+                    diff_seconds = max(0, int((match_dt - now_dt).total_seconds()))
+                except Exception:
+                    diff_seconds = 0
+
+                c = r.get('courts') or {}
+                f = r.get('facilities') or {}
+                r['countdown_seconds'] = diff_seconds
+                r['target_iso'] = f"{r_date}T{r_start}"
+                r['start_time_12'] = format_time_12h(r_start)
+                r['end_time_12'] = format_time_12h(r_end)
+                r['date_friendly'] = format_date_friendly(r_date)
+                r['is_today'] = (r_date == today_iso)
+                r['is_ongoing'] = (r_date == today_iso and r_start <= now_time_str <= r_end)
+                r['court_name'] = format_court_name(c.get('name') or 'Court')
+                r['court_type'] = (c.get('type') or 'Outdoor').capitalize()
+                r['hourly_rate'] = float(c.get('hourly_rate') or 0)
+                r['facility_name'] = f.get('name') or 'Sports Hub'
+                r['facility_location'] = f.get('location') or 'Pickleball Facility'
+                r['facility_latitude'] = f.get('latitude')
+                r['facility_longitude'] = f.get('longitude')
+                r['facility_owner_id'] = f.get('owner_id')
+                r['player_name'] = player_full_name
+                r['pass_code'] = f"PB-{str(r['id'])[:8].upper()}"
+                next_reservation = r
+                break
 
         # Fetch pending reservations to display on dashboard so the user immediately knows their status
         pending_resp = admin_db.table('court_reservations').select(
@@ -231,6 +282,9 @@ def dashboard():
             'id, facility_id, name, type, hourly_rate, status, facilities(id, name, location)'
         ).eq('status', 'active').limit(4).execute()
         available_courts = court_resp.data or []
+        for c in available_courts:
+            c['formatted_name'] = format_court_name(c.get('name') or 'Court')
+
 
         # Fetch upcoming events (including details)
         ev_resp = admin_db.table('events').select(
@@ -286,7 +340,7 @@ def dashboard():
             'time': f"{pr.get('start_time_12')} - {pr.get('end_time_12')}",
             'venue': f"{c_info.get('name', 'Court')} · {f_info.get('name', 'Facility')}",
             'status': pr.get('status_label', 'Pending'),
-            'link': url_for('player.reservation_payment', res_id=pr['id']) if (pr.get('display_status') == 'pending_payment' and not pr.get('gcash_ref')) else url_for('player.reservation')
+            'link': url_for('player.payment', reservation_id=pr['id']) if (pr.get('display_status') == 'pending_payment' and not pr.get('gcash_ref')) else url_for('player.reservation')
         })
 
     if upcoming_events:
@@ -322,7 +376,7 @@ def dashboard():
         posts_resp = admin_db.table('community_posts').select(
             'id, author_id, content, image_url, created_at, '
             'author:profiles!community_posts_author_id_fkey(id, first_name, last_name, avatar_url, role, dupr)'
-        ).order('created_at', desc=True).limit(6).execute()
+        ).order('created_at', desc=True).limit(2).execute()
         raw_posts = posts_resp.data or []
         post_ids = [p['id'] for p in raw_posts if p.get('id')]
 

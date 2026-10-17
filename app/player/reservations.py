@@ -192,7 +192,6 @@ def reservation():
                 user_reservations.append(r)
         except Exception as re:
             print(f"[reservation] error fetching user reservations: {re}")
-
     return render_template(
         'player/court_reservation.html',
         facilities=facilities,
@@ -372,9 +371,22 @@ def api_facility_occupancy():
         except Exception as ee:
             print(f"[api_facility_occupancy] event lookup error: {ee}")
         
+        # Fetch facility operating hours
+        open_time = '08:00'
+        close_time = '22:00'
+        try:
+            fac_resp = admin_db.table('facilities').select('open_time, close_time').eq('id', facility_id).single().execute()
+            if fac_resp.data:
+                open_time = (fac_resp.data.get('open_time') or '08:00')[:5]
+                close_time = (fac_resp.data.get('close_time') or '22:00')[:5]
+        except Exception as fe:
+            print(f"[api_facility_occupancy] facility lookup error: {fe}")
+
         return jsonify({
             'courts': courts,
-            'reservations': all_reservations
+            'reservations': all_reservations,
+            'open_time': open_time,
+            'close_time': close_time
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -509,6 +521,13 @@ def api_facility_month_availability():
 @player_bp.route('/reservation/book', methods=['POST'])
 @require_role('player')
 def book_reservation():
+    wants_json = (
+        request.is_json
+        or request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        or request.args.get('format') == 'json'
+        or 'application/json' in request.headers.get('Accept', '')
+    )
+
     player_id   = session.get('user_id')
     court_id    = request.form.get('court_id')
     facility_id = request.form.get('facility_id')
@@ -520,9 +539,26 @@ def book_reservation():
     total_amount = request.form.get('total_amount', 0)
     party_size  = request.form.get('party_size', 1)
 
-    if not all([court_id, facility_id, date, start_time, end_time]):
-        flash('Missing reservation details. Please try again.', 'error')
+    if request.is_json:
+        j = request.get_json() or {}
+        court_id = court_id or j.get('court_id')
+        facility_id = facility_id or j.get('facility_id')
+        date = date or j.get('date')
+        start_time = start_time or j.get('start_time')
+        end_time = end_time or j.get('end_time')
+        total_hours = j.get('total_hours', total_hours)
+        hourly_rate = j.get('hourly_rate', hourly_rate)
+        total_amount = j.get('total_amount', total_amount)
+        party_size = j.get('party_size', party_size)
+
+    def fail(msg, category='error', code=400):
+        if wants_json:
+            return jsonify({'success': False, 'error': msg}), code
+        flash(msg, category)
         return redirect(url_for('player.reservation'))
+
+    if not all([court_id, facility_id, date, start_time, end_time]):
+        return fail('Missing reservation details. Please try again.')
 
     db = get_db()
     try:
@@ -530,8 +566,7 @@ def book_reservation():
         from app.billing.tiers import check_feature_limit
         adv_check = check_feature_limit(player_id, 'player', 'advance_booking_days', target_date=date, db=db)
         if not adv_check['allowed']:
-            flash(adv_check['message'], 'warning')
-            return redirect(url_for('player.reservation'))
+            return fail(adv_check['message'], 'warning')
 
         # Check max active upcoming bookings limit
         try:
@@ -543,8 +578,7 @@ def book_reservation():
             active_count = active_bookings_res.count if active_bookings_res and active_bookings_res.count is not None else 0
             active_check = check_feature_limit(player_id, 'player', 'max_active_bookings', current_count=active_count, db=db)
             if not active_check['allowed']:
-                flash(active_check['message'], 'warning')
-                return redirect(url_for('player.reservation'))
+                return fail(active_check['message'], 'warning')
         except Exception as lim_e:
             pass
 
@@ -553,8 +587,7 @@ def book_reservation():
         has_conf, conf_detail = check_court_conflict(get_admin_db(), court_id, date, start_time, end_time)
         if has_conf:
             c_label = conf_detail.get('label') or conf_detail.get('title') or 'Scheduled booking'
-            flash(f"This court is already reserved during the selected time slot ({c_label} {conf_detail['start_time']} - {conf_detail['end_time']}). Please choose another court or time.", 'error')
-            return redirect(url_for('player.reservation'))
+            return fail(f"This court is already reserved during the selected time slot ({c_label} {conf_detail['start_time']} - {conf_detail['end_time']}). Please choose another court or time.")
 
         # Check if player already has another overlapping reservation (prevent double-booking)
         player_overlap = db.table('court_reservations').select('id')\
@@ -566,8 +599,7 @@ def book_reservation():
             .execute()
             
         if player_overlap.data:
-            flash('You already have another court reservation during this time slot.', 'error')
-            return redirect(url_for('player.reservation'))
+            return fail('You already have another court reservation during this time slot.')
 
         resp = db.table('court_reservations').insert({
             'player_id':    player_id,
@@ -585,12 +617,20 @@ def book_reservation():
 
         if resp.data:
             reservation_id = resp.data[0]['id']
+            pay_url = url_for('player.payment', reservation_id=reservation_id)
+            if wants_json:
+                return jsonify({
+                    'success': True,
+                    'reservation_id': reservation_id,
+                    'redirect_url': pay_url,
+                    'message': 'Reservation created! Complete payment to confirm.'
+                })
             flash('Reservation created! Complete payment to confirm.', 'success')
-            return redirect(url_for('player.payment', reservation_id=reservation_id))
+            return redirect(pay_url)
     except Exception as e:
-        flash('An error occurred. Please try again.', 'error')
+        return fail(f'An error occurred: {str(e)}')
 
-    return redirect(url_for('player.reservation'))
+    return fail('Unable to create reservation.')
 
 
 @player_bp.route('/my-reservations')
@@ -603,7 +643,7 @@ def my_reservations():
         resp = admin_db.table('court_reservations').select(
             'id, date, start_time, end_time, total_hours, hourly_rate, total_amount, '
             'status, gcash_ref, created_at, '
-            'courts(name, type, image_url), facilities(id, name, location, owner_id, owner:profiles!owner_id(id, first_name, last_name, avatar_url, phone))'
+            'courts(name, type, image_url), facilities(id, name, location, latitude, longitude, owner_id, owner:profiles!owner_id(id, first_name, last_name, avatar_url, phone))'
         ).eq('player_id', player_id).order('created_at', desc=True).execute()
         raw_reservations = resp.data or []
         
@@ -623,6 +663,7 @@ def my_reservations():
         now = datetime.now(PH_TZ)
         for r in raw_reservations:
             r['can_cancel'] = False
+            r['pass_code'] = f"PB-{str(r['id'])[:8].upper()}"
 
             # Format facility owner info if present
             fac = r.get('facilities') or {}
@@ -661,7 +702,33 @@ def my_reservations():
             
     except Exception as e:
         flash('An error occurred. Please try again.', 'error')
-    return render_template('player/my_reservations.html', reservations=reservations)
+
+    # Detect active / ongoing / pending bookings to prioritize tab display
+    pending_verif_count = sum(1 for r in reservations if r.get('status') == 'pending_payment' and r.get('gcash_ref'))
+    pending_pay_count   = sum(1 for r in reservations if r.get('status') == 'pending_payment' and not r.get('gcash_ref'))
+    confirmed_count     = sum(1 for r in reservations if r.get('status') == 'confirmed')
+    completed_count     = sum(1 for r in reservations if r.get('status') == 'completed')
+    cancelled_count     = sum(1 for r in reservations if r.get('status') in ['cancelled', 'declined'])
+
+    if pending_verif_count > 0:
+        default_filter = 'pending_verification'
+    elif pending_pay_count > 0:
+        default_filter = 'pending_payment'
+    elif confirmed_count > 0:
+        default_filter = 'confirmed'
+    else:
+        default_filter = 'all'
+
+    return render_template(
+        'player/my_reservations.html',
+        reservations=reservations,
+        default_filter=default_filter,
+        pending_verif_count=pending_verif_count,
+        pending_pay_count=pending_pay_count,
+        confirmed_count=confirmed_count,
+        completed_count=completed_count,
+        cancelled_count=cancelled_count
+    )
 
 
 @player_bp.route('/reservation/cancel/<reservation_id>', methods=['POST'])

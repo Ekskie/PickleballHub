@@ -485,6 +485,56 @@ def match_score(event_id, match_id):
         update_match_ratings(admin_db, match_id, prev_match=prev_match)
 
         _advance_bracket(admin_db, event_id)
+
+        # Notify participating players of match score and round advancement
+        try:
+            ev_title_resp = admin_db.table('events').select('title').eq('id', event_id).single().execute()
+            ev_title = (ev_title_resp.data or {}).get('title', 'Tournament')
+            
+            p1_id = prev_match.get('player1_id')
+            p2_id = prev_match.get('player2_id')
+            p1_name = prev_match.get('player1_guest_name') or 'Player 1'
+            p2_name = prev_match.get('player2_guest_name') or 'Player 2'
+            
+            if p1_id:
+                try:
+                    p1_prof = admin_db.table('profiles').select('first_name, last_name').eq('id', p1_id).single().execute()
+                    if p1_prof.data:
+                        p1_name = f"{p1_prof.data.get('first_name', '')} {p1_prof.data.get('last_name', '')}".strip() or p1_name
+                except Exception:
+                    pass
+            if p2_id:
+                try:
+                    p2_prof = admin_db.table('profiles').select('first_name, last_name').eq('id', p2_id).single().execute()
+                    if p2_prof.data:
+                        p2_name = f"{p2_prof.data.get('first_name', '')} {p2_prof.data.get('last_name', '')}".strip() or p2_name
+                except Exception:
+                    pass
+
+            rnd = prev_match.get('round_number', 1)
+
+            if p1_id:
+                won_p1 = (winner_id == p1_id)
+                admin_db.table('notifications').insert({
+                    'user_id': p1_id,
+                    'title': f"{'🏆 Match Won' if won_p1 else '🎾 Match Result'}: Round {rnd}",
+                    'message': f"Match result recorded for {ev_title} (Round {rnd}): {p1_name} ({p1_score}) vs {p2_name} ({p2_score}). {'You advanced to the next round!' if won_p1 else 'Good effort! Match ratings updated.'}",
+                    'type': 'success' if won_p1 else 'info',
+                    'link': f"/player/tournaments/{event_id}"
+                }).execute()
+
+            if p2_id:
+                won_p2 = (winner_id == p2_id)
+                admin_db.table('notifications').insert({
+                    'user_id': p2_id,
+                    'title': f"{'🏆 Match Won' if won_p2 else '🎾 Match Result'}: Round {rnd}",
+                    'message': f"Match result recorded for {ev_title} (Round {rnd}): {p2_name} ({p2_score}) vs {p1_name} ({p1_score}). {'You advanced to the next round!' if won_p2 else 'Good effort! Match ratings updated.'}",
+                    'type': 'success' if won_p2 else 'info',
+                    'link': f"/player/tournaments/{event_id}"
+                }).execute()
+        except Exception as notif_e:
+            current_app.logger.warning(f"Error sending match score notifications: {notif_e}")
+
         flash("Score recorded! Bracket and ratings updated.", "success")
 
     except Exception as e:
@@ -522,6 +572,31 @@ def match_assign(event_id, match_id):
             'referee_name': referee_name
         }).eq('id', match_id).eq('event_id', event_id).execute()
         
+        # Notify players of court/referee assignment
+        try:
+            m_resp = admin_db.table('tournament_matches').select('player1_id, player2_id, round_number, match_number, events(title)').eq('id', match_id).single().execute()
+            if m_resp.data:
+                m_info = m_resp.data
+                ev_t = (m_info.get('events') or {}).get('title', 'Tournament')
+                loc_desc = []
+                if court_name:
+                    loc_desc.append(f"Court: {court_name}")
+                if referee_name:
+                    loc_desc.append(f"Referee: {referee_name}")
+                loc_str = " · ".join(loc_desc) if loc_desc else "Court assignment updated"
+
+                for p_id in [m_info.get('player1_id'), m_info.get('player2_id')]:
+                    if p_id:
+                        admin_db.table('notifications').insert({
+                            'user_id': p_id,
+                            'title': f"📍 Court Assigned: Round {m_info.get('round_number', 1)}",
+                            'message': f"Your upcoming match in {ev_t} has been assigned — {loc_str}. Head to the court when called!",
+                            'type': 'info',
+                            'link': f"/player/tournaments/{event_id}"
+                        }).execute()
+        except Exception as assign_notif_err:
+            current_app.logger.warning(f"Error notifying court assignment: {assign_notif_err}")
+
         flash("Match assignment updated.", "success")
     except Exception as e:
         current_app.logger.error(f"Error assigning match: {e}")

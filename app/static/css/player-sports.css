@@ -83,15 +83,18 @@ html.dark-mode {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 16px;
-  padding-bottom: 4px;
+  padding: 6px 0 4px 0;
+  width: 100%;
 }
 
 .sports-welcome-wrap {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .sports-avatar-ring {
@@ -136,6 +139,57 @@ html.dark-mode {
   border-radius: 50%;
 }
 
+.sports-player-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sports-identity-badges {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.sports-identity-badges .player-rank-badge {
+  padding: 3px 10px;
+  font-size: 0.72rem;
+}
+
+.sports-identity-badges .streak-pill {
+  padding: 3px 10px;
+  font-size: 0.72rem;
+}
+
+.streak-pill.in-season {
+  background: rgba(148, 163, 184, 0.12);
+  color: var(--sports-text-muted);
+  border-color: rgba(148, 163, 184, 0.25);
+  box-shadow: none;
+}
+
+.streak-pill.in-season i {
+  color: var(--sports-text-dim);
+  animation: none;
+}
+
+.league-meta-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--sports-text-dim);
+  letter-spacing: 0.2px;
+  margin-left: 2px;
+}
+
+.league-meta-tag i {
+  color: var(--pb-orange);
+}
+
 .sports-greeting-tag {
   display: inline-flex;
   align-items: center;
@@ -149,18 +203,225 @@ html.dark-mode {
 }
 
 .sports-title {
-  font-size: 1.75rem;
+  font-size: 1.55rem;
   font-weight: 900;
   letter-spacing: -0.03em;
   color: var(--sports-text-main);
   line-height: 1.15;
   margin: 0;
+  white-space: nowrap;
 }
 
 .sports-subtitle {
   font-size: 0.88rem;
   color: var(--sports-text-muted);
   margin-top: 3px;
+}
+
+/* Micro Sports Progression Strip */
+.sports-mini-xp-strip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  background: rgba(0, 0, 0, 0.03);
+  padding: 3px 8px 3px 5px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--sports-border);
+  width: fit-content;
+}
+
+[data-theme="dark"] .sports-mini-xp-strip {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.mini-level-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--pb-orange);
+  background: rgba(255, 87, 34, 0.12);
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  letter-spacing: 0.3px;
+}
+
+.mini-xp-track {
+  width: 90px;
+  height: 5px;
+  background: rgba(148, 163, 184, 0.25);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.mini-xp-track .sports-xp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--pb-orange), var(--pb-green));
+  border-radius: var(--radius-pill);
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mini-xp-label {
+  font-size: 0.72rem;
+  color: var(--sports-text-muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.mini-xp-label strong {
+  color: var(--sports-text-main);
+  font-weight: 800;
+}
+
+.mini-xp-sub {
+  color: var(--sports-text-dim);
+  font-size: 0.68rem;
+  margin-left: 4px;
+}
+
+/* Compact Stats Bar & CTA Hub */
+.sports-header-stats-hub {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.compact-stats-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--sports-card-bg);
+  border: 1px solid var(--sports-border);
+  border-radius: 12px;
+  padding: 6px 14px;
+  box-shadow: var(--sports-shadow-sm);
+  backdrop-filter: blur(12px);
+  transition: var(--sports-transition);
+}
+
+.compact-stats-bar:hover {
+  border-color: var(--sports-border-subtle);
+  box-shadow: var(--sports-shadow-md);
+}
+
+.compact-stat-cell {
+  display: flex;
+  flex-direction: column;
+  min-width: 52px;
+}
+
+.compact-stat-cell .cs-label {
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--sports-text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.compact-stat-cell .cs-value {
+  font-size: 1.15rem;
+  font-weight: 900;
+  line-height: 1.15;
+  color: var(--sports-text-main);
+  letter-spacing: -0.02em;
+}
+
+.compact-stat-cell .cs-value.orange-highlight {
+  color: var(--pb-orange);
+}
+
+.compact-stat-cell .cs-value.green-highlight {
+  color: var(--pb-green);
+}
+
+.compact-stat-cell .cs-sub {
+  font-size: 0.62rem;
+  font-weight: 700;
+  margin-top: 1px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  line-height: 1.2;
+}
+
+.compact-stat-cell .cs-sub.positive {
+  color: var(--pb-green);
+}
+
+.compact-stat-cell .cs-sub.neutral {
+  color: var(--sports-text-dim);
+}
+
+.cs-divider {
+  width: 1px;
+  height: 26px;
+  background: var(--sports-border);
+  flex-shrink: 0;
+}
+
+.sports-header-cta-wrap {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.sports-header-cta-wrap .sports-pill-btn {
+  padding: 8px 16px;
+  font-size: 0.82rem;
+}
+
+@media (max-width: 860px) {
+  .sports-header {
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+  .sports-header-stats-hub {
+    width: 100%;
+    justify-content: space-between;
+    margin-left: 0;
+  }
+  .compact-stats-bar {
+    flex: 1;
+    justify-content: space-around;
+  }
+}
+
+@media (max-width: 580px) {
+  .sports-welcome-wrap {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .sports-title {
+    white-space: normal;
+  }
+  .sports-header-stats-hub {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .compact-stats-bar {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 10px;
+  }
+  .cs-divider {
+    display: none;
+  }
+  .sports-header-cta-wrap a {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 .sports-header-actions {
@@ -1742,4 +2003,1218 @@ html.dark-mode .sports-xp-track {
     box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
   }
 }
+
+/* ── Volt Button & Glow ─────────────────────────────────────────────── */
+.sports-pill-btn.volt {
+  background: linear-gradient(135deg, #84cc16, #65a30d);
+  color: #0f172a;
+  border: none;
+  font-weight: 800;
+  box-shadow: 0 4px 14px rgba(132, 204, 22, 0.35);
+}
+
+.sports-pill-btn.volt:hover {
+  background: linear-gradient(135deg, #a3e635, #84cc16);
+  color: #022c22;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(132, 204, 22, 0.45);
+}
+
+.sports-pill-btn.pulse-glow {
+  animation: voltGlow 2.5s infinite;
+}
+
+@keyframes voltGlow {
+  0% { box-shadow: 0 0 0 0 rgba(132, 204, 22, 0.5); }
+  70% { box-shadow: 0 0 0 8px rgba(132, 204, 22, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(132, 204, 22, 0); }
+}
+
+/* ==========================================================================
+   LIVE MATCH COUNTDOWN HERO BANNER
+   ========================================================================== */
+.sports-countdown-hero {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(255, 87, 34, 0.06) 50%, rgba(139, 92, 246, 0.06) 100%);
+  border: 1.5px solid rgba(16, 185, 129, 0.3);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--sports-shadow-md);
+  margin-bottom: 24px;
+}
+
+html.dark-mode .sports-countdown-hero {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(255, 87, 34, 0.08) 50%, rgba(139, 92, 246, 0.1) 100%);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.sports-countdown-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #10b981, #ff5722, #8b5cf6);
+}
+
+.countdown-hero-grid {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.countdown-hero-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 580px;
+}
+
+.live-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  width: fit-content;
+}
+
+.live-tag.pulse {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.live-tag.pulse i {
+  animation: pulsePing 1.2s infinite;
+}
+
+.live-tag.today {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.live-tag.upcoming {
+  background: rgba(59, 130, 246, 0.12);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.countdown-court-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--sports-text-main);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.countdown-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.82rem;
+  color: var(--sports-text-muted);
+  font-weight: 600;
+}
+
+.countdown-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Monospace Ticking Clock */
+.match-countdown-clock {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--sports-card-bg);
+  border: 1.5px solid var(--sports-border);
+  padding: 10px 16px;
+  border-radius: 14px;
+  box-shadow: var(--sports-shadow-sm);
+}
+
+.clock-segment {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 44px;
+}
+
+.clock-num {
+  font-size: 1.35rem;
+  font-weight: 900;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: var(--sports-text-main);
+  line-height: 1;
+}
+
+.clock-lbl {
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: var(--sports-text-dim);
+  letter-spacing: 0.5px;
+  margin-top: 3px;
+}
+
+.clock-colon {
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: var(--sports-text-dim);
+  margin-bottom: 8px;
+}
+
+.countdown-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   FEATURED COURT BOOKING SHOWCASE HERO (PRIMARY CONVERSION FOCUS)
+   ========================================================================== */
+.sports-booking-showcase {
+  background: var(--sports-card-bg);
+  border: 1.5px solid var(--sports-border);
+  border-radius: var(--radius-lg);
+  padding: 22px 24px;
+  box-shadow: var(--sports-shadow-sm);
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.sports-booking-showcase::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--pb-orange), var(--pb-volt), var(--pb-green));
+}
+
+.booking-showcase-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.booking-kicker-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.booking-kicker {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--pb-orange);
+  letter-spacing: 0.6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.booking-held-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(245, 158, 11, 0.14);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+}
+
+.booking-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.booking-header-actions .sports-pill-btn.small,
+.bpr-right .sports-pill-btn.small {
+  padding: 6px 12px;
+  font-size: 0.78rem;
+}
+
+.booking-hero-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--sports-text-main);
+  margin: 2px 0 0 0;
+}
+
+.booking-hero-subtitle {
+  font-size: 0.8rem;
+  color: var(--sports-text-muted);
+  margin: 2px 0 0 0;
+}
+
+/* Merged Pending Strip List */
+.booking-pending-strip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.booking-pending-row {
+  background: var(--sports-card-elevated, #f8fafc);
+  border: 1px solid rgba(245, 158, 11, 0.32);
+  border-left: 4px solid #f59e0b;
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  transition: var(--sports-transition);
+}
+
+html.dark-mode .booking-pending-row {
+  background: rgba(245, 158, 11, 0.05);
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+.booking-pending-row:hover {
+  border-color: rgba(245, 158, 11, 0.65);
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.08);
+}
+
+.bpr-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bpr-court-tag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bpr-court-tag strong {
+  font-size: 0.94rem;
+  font-weight: 800;
+  color: var(--sports-text-main);
+}
+
+.bpr-facility {
+  font-size: 0.76rem;
+  color: var(--sports-text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+
+.bpr-details {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 0.76rem;
+  color: var(--sports-text-muted);
+}
+
+.bpr-details span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bpr-price {
+  font-weight: 800;
+  color: var(--pb-green) !important;
+}
+
+.bpr-ref {
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563eb !important;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  padding: 1px 7px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.7rem;
+}
+
+.bpr-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .booking-pending-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .bpr-right {
+    justify-content: space-between;
+    width: 100%;
+  }
+}
+
+.booking-showcase-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 340px) 1fr;
+  gap: 16px;
+  align-items: stretch;
+}
+
+@media (max-width: 900px) {
+  .booking-showcase-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+
+/* Available Courts Row */
+.booking-available-cards-wrap {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  width: 100%;
+}
+
+@media (max-width: 1100px) {
+  .booking-available-cards-wrap {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .booking-available-cards-wrap {
+    grid-template-columns: 1fr;
+  }
+}
+
+.booking-quick-card {
+  background: var(--sports-card-elevated, #f8fafc);
+  border: 1.5px solid var(--sports-border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+
+.booking-quick-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--pb-orange);
+  box-shadow: var(--sports-shadow-md);
+}
+
+.quick-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.quick-court-type {
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--sports-text-dim);
+}
+
+.quick-court-rate {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--pb-green);
+}
+
+.quick-court-name {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--sports-text-main);
+  margin: 6px 0 2px 0;
+}
+
+.quick-facility-name {
+  font-size: 0.74rem;
+  color: var(--sports-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.quick-card-action {
+  margin-top: 10px;
+}
+
+
+
+/* ==========================================================================
+   COURT RESERVATION SCHEDULE TIMELINE MATRIX
+   ========================================================================== */
+.schedule-view-switcher {
+  display: inline-flex;
+  background: var(--input-bg, #f1f5f9);
+  padding: 3px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  gap: 4px;
+}
+
+.switch-view-btn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary, #64748b);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.switch-view-btn.active {
+  background: var(--card-bg, #ffffff);
+  color: var(--primary-orange, #ff5722);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Court Schedule Timeline Matrix (Fit-to-Screen Period Layout) ── */
+.court-timeline-matrix-wrap {
+  width: 100%;
+  margin-top: 14px;
+}
+
+.timeline-toolbar-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--input-bg, #f8fafc);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+
+.timeline-period-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.timeline-tab-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  border: 1px solid var(--border-color, #cbd5e1);
+  background: var(--card-bg, #ffffff);
+  color: var(--text-secondary, #475569);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.timeline-tab-btn:hover {
+  border-color: var(--primary-orange, #ff5722);
+  color: var(--primary-orange, #ff5722);
+}
+
+.timeline-tab-btn.active {
+  background: var(--primary-orange, #ff5722);
+  color: #ffffff;
+  border-color: var(--primary-orange, #ff5722);
+  box-shadow: 0 2px 8px rgba(255, 87, 34, 0.25);
+}
+
+.timeline-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted, #64748b);
+  flex-wrap: wrap;
+}
+
+.timeline-legend-row .legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.timeline-period-block {
+  background: var(--card-bg, #ffffff);
+  border: 1.5px solid var(--border-color, #e2e8f0);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+}
+
+.timeline-period-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--border-color, #e2e8f0);
+}
+
+.timeline-period-title {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--text-primary, #0f172a);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.timeline-period-title i {
+  color: var(--primary-orange, #ff5722);
+  font-size: 1rem;
+}
+
+.timeline-period-meta {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted, #94a3b8);
+}
+
+.court-timeline-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.court-timeline-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 4px;
+}
+
+.court-timeline-table th {
+  padding: 6px 4px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--text-muted, #64748b);
+  text-align: center;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+}
+
+.court-timeline-table td {
+  padding: 0;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.timeline-court-header {
+  text-align: left !important;
+  width: 135px;
+  min-width: 110px;
+  max-width: 150px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--text-primary, #0f172a);
+  padding: 6px 8px !important;
+  background: var(--input-bg, #f8fafc);
+  border-radius: 8px;
+}
+
+.timeline-court-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.timeline-court-name {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--text-primary, #0f172a);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timeline-court-sub {
+  font-size: 0.65rem;
+  color: var(--text-muted, #64748b);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timeline-cell-slot {
+  height: 42px;
+  width: 100%;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.timeline-cell-slot.avail {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border: 1.5px solid rgba(16, 185, 129, 0.35);
+}
+
+.timeline-cell-slot.avail:hover {
+  background: #10b981;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.35);
+}
+
+.timeline-cell-slot.booked {
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  cursor: not-allowed;
+  opacity: 0.65;
+  font-size: 0.68rem;
+}
+
+.timeline-cell-slot.event {
+  background: rgba(139, 92, 246, 0.12);
+  color: #8b5cf6;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  cursor: not-allowed;
+  font-size: 0.68rem;
+}
+
+.timeline-cell-slot.past {
+  background: var(--input-bg, #f1f5f9);
+  color: var(--text-dim, #94a3b8);
+  border: 1px solid var(--border-color, #e2e8f0);
+  cursor: not-allowed;
+  opacity: 0.45;
+  font-size: 0.68rem;
+}
+
+.timeline-cell-slot.selected {
+  background: var(--primary-orange, #ff5722);
+  color: #ffffff;
+  border: 1.5px solid var(--primary-orange, #ff5722);
+  box-shadow: 0 4px 12px rgba(255, 87, 34, 0.35);
+}
+
+/* ── DIGITAL COURT ENTRY PASS MODAL ── */
+.sports-pass-modal-overlay {
+  display: none !important;
+  position: fixed !important;
+  inset: 0 !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(15, 23, 42, 0.75) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  z-index: 100000005 !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 20px !important;
+  box-sizing: border-box !important;
+  overflow-y: auto !important;
+}
+
+.sports-pass-modal-overlay.active {
+  display: flex !important;
+}
+
+.sports-pass-dialog {
+  position: relative !important;
+  width: 100% !important;
+  max-width: 440px !important;
+  background: var(--card-bg, #ffffff) !important;
+  border: 1px solid var(--card-border, #e2e8f0) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+  overflow: hidden !important;
+  animation: passModalSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  z-index: 100000006 !important;
+  margin: auto !important;
+  color: var(--text-primary, #0f172a) !important;
+}
+
+@keyframes passModalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.pass-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--input-bg, #f1f5f9);
+  border: 1px solid var(--border-color, #e2e8f0);
+  color: var(--text-muted, #64748b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  transition: all 0.2s ease;
+  z-index: 20 !important;
+}
+
+.pass-modal-close:hover {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+  transform: rotate(90deg);
+}
+
+.pass-ticket-top {
+  padding: 22px 24px 16px;
+  background: linear-gradient(135deg, rgba(255, 87, 34, 0.08) 0%, rgba(16, 185, 129, 0.06) 100%);
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+}
+
+.pass-brand-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-right: 32px;
+}
+
+.pass-brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pass-logo-ball {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #ff5722;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  box-shadow: 0 0 10px rgba(255, 87, 34, 0.35);
+}
+
+.pass-brand-title {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  color: var(--text-primary, #0f172a);
+}
+
+.pass-brand-sub {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #059669;
+  letter-spacing: 0.6px;
+}
+
+.pass-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #059669;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.pass-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+  animation: pulse-ping-green 1.5s infinite;
+}
+
+.pass-court-hero {
+  margin-top: 4px;
+}
+
+.pass-court-name {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: var(--text-primary, #0f172a);
+  margin: 0 0 4px 0;
+  line-height: 1.2;
+}
+
+.pass-facility-row {
+  font-size: 0.82rem;
+  color: var(--text-secondary, #64748b);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pass-badge-type {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: var(--input-bg, #f1f5f9);
+  color: var(--text-secondary, #475569);
+  border: 1px solid var(--border-color, #e2e8f0);
+}
+
+/* Subtle dashed perforation line */
+.pass-tear-divider {
+  height: 1px;
+  border-top: 1.5px dashed var(--border-color, #cbd5e1);
+  margin: 0 20px;
+}
+
+/* Ticket Body & QR Frame */
+.pass-ticket-body {
+  padding: 20px 24px 16px;
+  background: var(--card-bg, #ffffff);
+}
+
+.pass-qr-frame {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.pass-qr-canvas-box {
+  background: #ffffff;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1.5px solid var(--border-color, #e2e8f0);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 204px;
+  min-height: 204px;
+}
+
+.pass-qr-canvas-box canvas, .pass-qr-canvas-box img {
+  display: block;
+  border-radius: 6px;
+}
+
+.pass-qr-img-fallback {
+  width: 204px;
+  height: 204px;
+  background: #ffffff;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1.5px solid var(--border-color, #e2e8f0);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.pass-code-pill {
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--input-bg, #f8fafc);
+  border: 1px solid var(--border-color, #cbd5e1);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 0.84rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: var(--text-primary, #0f172a);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pass-code-pill:hover {
+  background: rgba(255, 87, 34, 0.08);
+  border-color: rgba(255, 87, 34, 0.4);
+  color: #ff5722;
+}
+
+.pass-scan-instruction {
+  font-size: 0.73rem;
+  color: var(--text-muted, #64748b);
+  text-align: center;
+  margin: 8px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  justify-content: center;
+}
+
+/* Pass Details Grid */
+.pass-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  background: var(--input-bg, #f8fafc);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.pass-detail-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pdc-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-muted, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pdc-value {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--text-primary, #0f172a);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pdc-value.highlight {
+  color: #ea580c;
+  font-weight: 800;
+}
+
+/* Ticket Footer Actions */
+.pass-ticket-footer {
+  display: flex;
+  gap: 10px;
+  padding: 14px 24px 20px;
+  background: var(--card-bg, #ffffff);
+  border-top: 1px solid var(--border-color, #e2e8f0);
+}
+
+.pass-btn-action {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.pass-btn-action.primary {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+}
+
+.pass-btn-action.primary:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-1px);
+}
+
+.pass-btn-action.secondary {
+  background: var(--input-bg, #f1f5f9);
+  border: 1.5px solid var(--border-color, #cbd5e1);
+  color: var(--text-primary, #1e293b);
+}
+
+.pass-btn-action.secondary:hover {
+  background: var(--border-color, #e2e8f0);
+  color: var(--text-primary, #0f172a);
+  transform: translateY(-1px);
+}
+
+/* Dark Mode Overrides */
+html.dark-mode .sports-pass-dialog,
+body.dark-mode .sports-pass-dialog {
+  background: #111827 !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #f8fafc !important;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 35px rgba(16, 185, 129, 0.15) !important;
+}
+
+html.dark-mode .pass-modal-close,
+body.dark-mode .pass-modal-close {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: var(--sports-text-muted, #94a3b8);
+}
+
+html.dark-mode .pass-ticket-top,
+body.dark-mode .pass-ticket-top {
+  background: linear-gradient(135deg, rgba(255, 87, 34, 0.08) 0%, rgba(16, 185, 129, 0.06) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+html.dark-mode .pass-brand-title,
+body.dark-mode .pass-brand-title,
+html.dark-mode .pass-court-name,
+body.dark-mode .pass-court-name {
+  color: #f8fafc !important;
+}
+
+html.dark-mode .pass-badge-type,
+body.dark-mode .pass-badge-type {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+  border-color: transparent;
+}
+
+html.dark-mode .pass-tear-divider,
+body.dark-mode .pass-tear-divider {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+html.dark-mode .pass-ticket-body,
+body.dark-mode .pass-ticket-body,
+html.dark-mode .pass-ticket-footer,
+body.dark-mode .pass-ticket-footer {
+  background: #111827 !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+html.dark-mode .pass-code-pill,
+body.dark-mode .pass-code-pill {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #f8fafc;
+}
+
+html.dark-mode .pass-details-grid,
+body.dark-mode .pass-details-grid {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.07);
+}
+
+html.dark-mode .pdc-value,
+body.dark-mode .pdc-value {
+  color: #f8fafc;
+}
+
+html.dark-mode .pass-btn-action.secondary,
+body.dark-mode .pass-btn-action.secondary {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #f8fafc;
+}
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  #viewPassModal, #viewPassModal * {
+    visibility: visible !important;
+  }
+  #viewPassModal {
+    position: fixed !important;
+    inset: 0 !important;
+    background: #ffffff !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+  }
+  .sports-pass-dialog {
+    box-shadow: none !important;
+    border: 2px solid #000000 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    max-width: 420px !important;
+  }
+  .pass-modal-close, .pass-ticket-footer {
+    display: none !important;
+  }
+  .pass-ticket-top {
+    background: #f1f5f9 !important;
+    color: #000000 !important;
+  }
+  .pass-court-name, .pdc-value, .pass-brand-title {
+    color: #000000 !important;
+  }
+  .pass-code-pill {
+    border: 1px solid #000 !important;
+    color: #000 !important;
+  }
+}
+
 

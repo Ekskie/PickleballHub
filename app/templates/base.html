@@ -20,16 +20,21 @@
 
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script>
-        // Init Dark Mode from localStorage on load to prevent flickering
+        // Init Dark Mode & Sidebar Collapse from localStorage on load to prevent flickering
         (function() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            if (savedTheme === 'dark') {
-                document.documentElement.classList.add('dark-mode');
-                document.documentElement.setAttribute('data-theme', 'dark');
-            } else {
-                document.documentElement.classList.remove('dark-mode');
-                document.documentElement.setAttribute('data-theme', 'light');
-            }
+            try {
+                const savedTheme = localStorage.getItem('theme') || 'light';
+                if (savedTheme === 'dark') {
+                    document.documentElement.classList.add('dark-mode');
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                } else {
+                    document.documentElement.classList.remove('dark-mode');
+                    document.documentElement.setAttribute('data-theme', 'light');
+                }
+                if (window.innerWidth > 992 && localStorage.getItem('sidebar_collapsed') === 'true') {
+                    document.documentElement.classList.add('sidebar-collapsed');
+                }
+            } catch(e){}
         })();
     </script>
     <style>
@@ -434,23 +439,20 @@
         <button class="sidebar-close" onclick="toggleSidebar(false)" aria-label="Close sidebar">
             <i class="ph ph-x"></i>
         </button>
-        <a href="{{ url_for(current_user.role_raw ~ '.dashboard') if current_user and current_user.role_raw and current_user.role_raw != 'main' else url_for('main.index') }}" style="text-decoration: none;">
-            <div class="sidebar-header">
-                <img class="sidebar-logo" src="{{ url_for('static', filename='images/logo.png') }}"
-                    alt="{{ platform_settings.platform_name }} Logo">
-                <h2>{{ platform_settings.platform_name }}</h2>
+        <div class="sidebar-header-wrapper">
+            <div class="sidebar-header-brand" onclick="handleBrandClick(event)" data-href="{{ url_for(current_user.role_raw ~ '.dashboard') if current_user and current_user.role_raw and current_user.role_raw != 'main' else url_for('main.index') }}" title="PickleballHub">
+                <div class="sidebar-logo-box">
+                    <img class="sidebar-logo" src="{{ url_for('static', filename='images/logo.png') }}"
+                        alt="{{ platform_settings.platform_name }} Logo">
+                    <div class="sidebar-hover-burger" title="Expand sidebar">
+                        <i class="ph ph-list"></i>
+                    </div>
+                </div>
+                <h2 class="sidebar-title">{{ platform_settings.platform_name }}</h2>
             </div>
-        </a>
-        <div class="sidebar-profile">
-            <p class="welcome-text">Welcome,</p>
-            <p class="profile-name">{{ current_user.first_name }}</p>
-            <span class="role-pill"><i class="ph ph-identification-card"></i> {{ current_user.role }}</span>
-            {% if current_user.role_raw == 'player' %}
-            <span class="role-pill"
-                style="background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); margin-top: 6px; display: inline-flex; align-items: center; gap: 4px;">
-                <i class="ph ph-trophy"></i> DUPR: {{ "%.2f"|format(current_user.dupr|float) }}
-            </span>
-            {% endif %}
+            <button type="button" class="sidebar-toggle-btn desktop-only" onclick="toggleSidebarCollapse(true)" aria-label="Collapse sidebar" title="Collapse sidebar">
+                <i class="ph ph-list"></i>
+            </button>
         </div>
 
         <ul class="sidebar-nav">
@@ -521,7 +523,7 @@
             {% endblock %}
         </ul>
         <div class="sidebar-footer">
-            <a href="{{ url_for('auth.logout') }}" class="logout-btn"><i class="ph ph-sign-out"></i> Log Out</a>
+            <a href="{{ url_for('auth.logout') }}" class="logout-btn" title="Log Out"><i class="ph ph-sign-out"></i> <span>Log Out</span></a>
         </div>
     </aside>
 
@@ -529,13 +531,9 @@
     <div class="main-wrapper">
         <!-- Reusable Header -->
         <header class="top-header">
-            <button class="hamburger-menu" onclick="toggleSidebar(true)" aria-label="Open sidebar">
+            <button class="hamburger-menu mobile-only" id="header-sidebar-toggle" onclick="toggleSidebar(true)" aria-label="Open mobile menu" title="Open navigation">
                 <i class="ph ph-list"></i>
             </button>
-            <div class="header-search">
-                <i class="ph ph-magnifying-glass"></i>
-                <input type="text" placeholder="Search courts, events, players...">
-            </div>
             <div class="header-actions">
                 <button class="icon-btn theme-toggle" onclick="toggleTheme()"><i class="ph ph-moon"
                         id="theme-icon"></i></button>
@@ -552,22 +550,279 @@
                 <a href="{{ url_for(current_user.role_raw ~ '.notifications') }}"><button
                         class="icon-btn notification-bell"><i class="ph ph-bell"></i> <span
                             class="badge"></span></button></a>
-                <a href="{{ url_for(current_user.role_raw ~ '.profile') }}" class="user-profile"
-                    id="header-user-profile">
-                    <div class="avatar"
-                        style="overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                        {% if current_user.avatar_url %}
-                        <img src="{{ current_user.avatar_url }}" alt="Avatar"
-                            style="width: 100%; height: 100%; object-fit: cover;">
-                        {% else %}
-                        {{ current_user.initials }}
+                <div class="user-profile-dropdown" id="user-profile-dropdown">
+                    <button type="button" class="user-profile user-profile-btn" id="header-user-profile"
+                        onclick="toggleUserProfileDropdown(event)" aria-expanded="false" aria-haspopup="true"
+                        title="My Account &amp; Bookings">
+                        <div class="avatar"
+                            style="overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                            {% if current_user.avatar_url %}
+                            <img src="{{ current_user.avatar_url }}" alt="Avatar"
+                                style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                            {{ current_user.initials }}
+                            {% endif %}
+                        </div>
+                        <div class="avatar-info">
+                            <span class="name">{{ current_user.full_name }}</span>
+                            <span class="role">{{ current_user.role }}</span>
+                        </div>
+                        <i class="ph ph-caret-down profile-dropdown-caret"></i>
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    <div class="user-dropdown-menu" id="user-dropdown-menu">
+                        <!-- Quick Profile Header -->
+                        <div class="user-dropdown-header">
+                            <div class="udh-avatar">
+                                {% if current_user.avatar_url %}
+                                <img src="{{ current_user.avatar_url }}" alt="Avatar">
+                                {% else %}
+                                <span>{{ current_user.initials }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="udh-info">
+                                <div class="udh-name">{{ current_user.full_name }}</div>
+                                <div class="udh-role-badge">
+                                    <span>{{ current_user.role }}</span>
+                                    {% if current_user.role_raw == 'player' %}
+                                        {% if current_user.is_elite %}
+                                            <span class="udh-pro-tag elite">ELITE</span>
+                                        {% elif current_user.is_pro %}
+                                            <span class="udh-pro-tag pro">PRO PASS</span>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ── Role Specific "MY..." Activities ── -->
+                        {% if current_user.role_raw == 'player' %}
+                        <div class="user-dropdown-section">
+                            <div class="user-dropdown-section-title">My Activities</div>
+                            <a href="{{ url_for('player.my_reservations') }}" class="user-dropdown-item highlighted">
+                                <span class="udi-icon orange"><i class="ph ph-calendar-check"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">My Bookings</span>
+                                    <span class="udi-sub">Active courts &amp; held reservations</span>
+                                </div>
+                            </a>
+                            <a href="{{ url_for('player.queue') }}" class="user-dropdown-item">
+                                <span class="udi-icon green"><i class="ph ph-users-three"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">My Court Queue</span>
+                                    <span class="udi-sub">Live waitlist position &amp; calls</span>
+                                </div>
+                            </a>
+                            <a href="{{ url_for('player.my_tournaments') }}" class="user-dropdown-item">
+                                <span class="udi-icon purple"><i class="ph ph-trophy"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">My Tournaments</span>
+                                    <span class="udi-sub">Matches, brackets &amp; events</span>
+                                </div>
+                            </a>
+                            <a href="{{ url_for('player.my_clubs') }}" class="user-dropdown-item">
+                                <span class="udi-icon blue"><i class="ph ph-shield-star"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">My Clubs</span>
+                                    <span class="udi-sub">Club memberships &amp; perks</span>
+                                </div>
+                            </a>
+                            <a href="{{ url_for('player.matchmaker') }}" class="user-dropdown-item">
+                                <span class="udi-icon amber"><i class="ph ph-handshake"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">My Open Play Lobbies</span>
+                                    <span class="udi-sub">Matchmaker sessions</span>
+                                </div>
+                            </a>
+                            <a href="{{ url_for('player.messages') }}" class="user-dropdown-item">
+                                <span class="udi-icon cyan"><i class="ph ph-chat-circle-dots"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">My Messages</span>
+                                    <span class="udi-sub">Direct messages &amp; host chats</span>
+                                </div>
+                            </a>
+                        </div>
+                        {% elif current_user.role_raw == 'owner' %}
+                        <div class="user-dropdown-section">
+                            <div class="user-dropdown-section-title">My Management</div>
+                            <a href="{{ url_for('owner.court_schedule') }}" class="user-dropdown-item highlighted">
+                                <span class="udi-icon orange"><i class="ph ph-calendar-check"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">My Court Schedules</span>
+                                    <span class="udi-sub">Facility availability &amp; bookings</span>
+                                </div>
+                            </a>
+                            <a href="{{ url_for('owner.facilities') }}" class="user-dropdown-item">
+                                <span class="udi-icon blue"><i class="ph ph-buildings"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">My Facilities &amp; Courts</span>
+                                    <span class="udi-sub">Venues and court settings</span>
+                                </div>
+                            </a>
+                            <a href="{{ url_for('owner.queue') }}" class="user-dropdown-item">
+                                <span class="udi-icon green"><i class="ph ph-users-three"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">My Court Queue</span>
+                                    <span class="udi-sub">Live court rotation desk</span>
+                                </div>
+                            </a>
+                            <a href="{{ url_for('owner.payment_ledger') }}" class="user-dropdown-item">
+                                <span class="udi-icon amber"><i class="ph ph-receipt"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">My Revenue &amp; Ledger</span>
+                                    <span class="udi-sub">Payment verification receipts</span>
+                                </div>
+                            </a>
+                            <a href="{{ url_for('owner.events') }}" class="user-dropdown-item">
+                                <span class="udi-icon purple"><i class="ph ph-trophy"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">My Hosted Events</span>
+                                    <span class="udi-sub">Tournaments &amp; clinics</span>
+                                </div>
+                            </a>
+                            <a href="{{ url_for('owner.staff') }}" class="user-dropdown-item">
+                                <span class="udi-icon teal"><i class="ph ph-identification-badge"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">My Staff</span>
+                                    <span class="udi-sub">Desk assignments</span>
+                                </div>
+                            </a>
+                            <a href="{{ url_for('owner.messages') }}" class="user-dropdown-item">
+                                <span class="udi-icon cyan"><i class="ph ph-chat-circle-dots"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">My Messages</span>
+                                </div>
+                            </a>
+                        </div>
+                        {% elif current_user.role_raw == 'facilitystaff' %}
+                        <div class="user-dropdown-section">
+                            <div class="user-dropdown-section-title">My Desk</div>
+                            <a href="{{ url_for('facilitystaff.schedule') }}" class="user-dropdown-item highlighted">
+                                <span class="udi-icon orange"><i class="ph ph-calendar-check"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">My Court Schedule</span>
+                                    <span class="udi-sub">Reservations &amp; check-ins</span>
+                                </div>
+                            </a>
+                            <a href="{{ url_for('facilitystaff.queue') }}" class="user-dropdown-item">
+                                <span class="udi-icon green"><i class="ph ph-users-three"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">My Court Queue</span>
+                                    <span class="udi-sub">Live court waitlist rotation</span>
+                                </div>
+                            </a>
+                            <a href="{{ url_for('facilitystaff.walkin') }}" class="user-dropdown-item">
+                                <span class="udi-icon teal"><i class="ph ph-person-simple-walk"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">My Walk-in Desk</span>
+                                    <span class="udi-sub">Direct court entry</span>
+                                </div>
+                            </a>
+                            <a href="{{ url_for('facilitystaff.payment_ledger') }}" class="user-dropdown-item">
+                                <span class="udi-icon amber"><i class="ph ph-receipt"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">My Payment Verification</span>
+                                    <span class="udi-sub">GCash receipts</span>
+                                </div>
+                            </a>
+                            <a href="{{ url_for('facilitystaff.messages') }}" class="user-dropdown-item">
+                                <span class="udi-icon cyan"><i class="ph ph-chat-circle-dots"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">My Messages</span>
+                                </div>
+                            </a>
+                        </div>
+                        {% elif current_user.role_raw == 'clubadmin' %}
+                        <div class="user-dropdown-section">
+                            <div class="user-dropdown-section-title">My Club</div>
+                            <a href="{{ url_for('clubadmin.tournaments') }}" class="user-dropdown-item highlighted">
+                                <span class="udi-icon purple"><i class="ph ph-trophy"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">My Tournaments</span>
+                                    <span class="udi-sub">Brackets &amp; events</span>
+                                </div>
+                            </a>
+                            <a href="{{ url_for('clubadmin.members') }}" class="user-dropdown-item">
+                                <span class="udi-icon blue"><i class="ph ph-users"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">My Club Members</span>
+                                    <span class="udi-sub">Roster &amp; approvals</span>
+                                </div>
+                            </a>
+                            <a href="{{ url_for('clubadmin.ledger') }}" class="user-dropdown-item">
+                                <span class="udi-icon amber"><i class="ph ph-receipt"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">My Club Ledger</span>
+                                    <span class="udi-sub">Member fees &amp; earnings</span>
+                                </div>
+                            </a>
+                            <a href="{{ url_for('clubadmin.messages') }}" class="user-dropdown-item">
+                                <span class="udi-icon cyan"><i class="ph ph-chat-circle-dots"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">My Messages</span>
+                                </div>
+                            </a>
+                        </div>
+                        {% elif current_user.role_raw == 'adminstaff' %}
+                        <div class="user-dropdown-section">
+                            <div class="user-dropdown-section-title">My Desk</div>
+                            <a href="{{ url_for('adminstaff.verifications') }}" class="user-dropdown-item highlighted">
+                                <span class="udi-icon orange"><i class="ph ph-shield-check"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">My Verifications</span>
+                                    <span class="udi-sub">KYC &amp; facility review</span>
+                                </div>
+                            </a>
+                            <a href="{{ url_for('adminstaff.disputes') }}" class="user-dropdown-item">
+                                <span class="udi-icon amber"><i class="ph ph-scales"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">My Disputes Desk</span>
+                                </div>
+                            </a>
+                            <a href="{{ url_for('adminstaff.support') }}" class="user-dropdown-item">
+                                <span class="udi-icon green"><i class="ph ph-lifebuoy"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">My Support Tickets</span>
+                                </div>
+                            </a>
+                            <a href="{{ url_for('adminstaff.messages') }}" class="user-dropdown-item">
+                                <span class="udi-icon cyan"><i class="ph ph-chat-circle-dots"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">My Messages</span>
+                                </div>
+                            </a>
+                        </div>
                         {% endif %}
+
+                        <!-- Account & Preferences -->
+                        <div class="user-dropdown-section">
+                            <div class="user-dropdown-section-title">Account</div>
+                            {% if current_user.role_raw and current_user.role_raw != 'main' %}
+                            <a href="{{ url_for(current_user.role_raw ~ '.profile') }}" class="user-dropdown-item">
+                                <span class="udi-icon slate"><i class="ph ph-user-circle"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">My Profile &amp; Settings</span>
+                                </div>
+                            </a>
+                            {% endif %}
+                            {% if current_user.role_raw in ['player', 'owner', 'clubadmin'] %}
+                            <a href="{{ url_for('billing.subscription_page') }}" class="user-dropdown-item">
+                                <span class="udi-icon gold"><i class="ph ph-crown-simple"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">My Membership / Pro Pass</span>
+                                </div>
+                            </a>
+                            {% endif %}
+                            <a href="{{ url_for('auth.logout') }}" class="user-dropdown-item logout">
+                                <span class="udi-icon red"><i class="ph ph-sign-out"></i></span>
+                                <div class="udi-text">
+                                    <span class="udi-label">Log Out</span>
+                                </div>
+                            </a>
+                        </div>
                     </div>
-                    <div class="avatar-info">
-                        <span class="name">{{ current_user.full_name }}</span>
-                        <span class="role">{{ current_user.role }}</span>
-                    </div>
-                </a>
+                </div>
             </div>
         </header>
 
@@ -765,6 +1020,45 @@
             });
         })();
 
+        // Handle Brand / Logo click in sidebar (expand if collapsed, navigate if expanded)
+        function handleBrandClick(event) {
+            const isCollapsed = document.documentElement.classList.contains('sidebar-collapsed') ||
+                                document.body.classList.contains('sidebar-collapsed');
+            if (isCollapsed && window.innerWidth > 992) {
+                if (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                toggleSidebarCollapse(false);
+            } else {
+                const href = event.currentTarget.getAttribute('data-href');
+                if (href) {
+                    window.location.href = href;
+                }
+            }
+        }
+
+        function toggleSidebarCollapse(forceState) {
+            const isCurrentlyCollapsed = document.documentElement.classList.contains('sidebar-collapsed') ||
+                                          document.body.classList.contains('sidebar-collapsed');
+            const nextState = (forceState !== undefined) ? forceState : !isCurrentlyCollapsed;
+
+            if (nextState) {
+                document.documentElement.classList.add('sidebar-collapsed');
+                document.body.classList.add('sidebar-collapsed');
+                try { localStorage.setItem('sidebar_collapsed', 'true'); } catch(e){}
+            } else {
+                document.documentElement.classList.remove('sidebar-collapsed');
+                document.body.classList.remove('sidebar-collapsed');
+                try { localStorage.setItem('sidebar_collapsed', 'false'); } catch(e){}
+            }
+
+            const tt = document.getElementById('sidebar-floating-tooltip');
+            if (tt) tt.classList.remove('visible');
+
+            window.dispatchEvent(new Event('resize'));
+        }
+
         // Toggle Sidebar for Mobile Responsive View
         function toggleSidebar(show) {
             const sidebar = document.querySelector('.sidebar');
@@ -804,8 +1098,51 @@
             }
         }
 
+        // Floating tooltips for collapsed sidebar
+        function initSidebarTooltips() {
+            let tooltip = document.getElementById('sidebar-floating-tooltip');
+            if (!tooltip) {
+                tooltip = document.createElement('div');
+                tooltip.id = 'sidebar-floating-tooltip';
+                tooltip.className = 'sidebar-floating-tooltip';
+                document.body.appendChild(tooltip);
+            }
+
+            const sidebarLinks = document.querySelectorAll('.sidebar-nav a, .sidebar-footer a');
+            sidebarLinks.forEach(link => {
+                link.addEventListener('mouseenter', () => {
+                    const isCollapsed = document.documentElement.classList.contains('sidebar-collapsed') ||
+                                        document.body.classList.contains('sidebar-collapsed');
+                    if (!isCollapsed || window.innerWidth <= 992) return;
+
+                    const labelSpan = link.querySelector('span');
+                    const text = labelSpan ? labelSpan.textContent.trim() : (link.getAttribute('title') || link.innerText.trim());
+                    if (!text) return;
+
+                    tooltip.textContent = text;
+                    const rect = link.getBoundingClientRect();
+                    tooltip.style.top = `${rect.top + (rect.height / 2)}px`;
+                    tooltip.style.left = `${rect.right + 10}px`;
+                    tooltip.classList.add('visible');
+                });
+
+                link.addEventListener('mouseleave', () => {
+                    tooltip.classList.remove('visible');
+                });
+
+                link.addEventListener('click', () => {
+                    tooltip.classList.remove('visible');
+                });
+            });
+        }
+
         // Initialize and persist sidebar dropdown states
         document.addEventListener('DOMContentLoaded', () => {
+            if (document.documentElement.classList.contains('sidebar-collapsed')) {
+                document.body.classList.add('sidebar-collapsed');
+            }
+            initSidebarTooltips();
+
             document.querySelectorAll('.sidebar-dropdown-group').forEach(group => {
                 const groupId = group.getAttribute('data-group');
                 const hasActive = group.querySelector('li.active, a.active') !== null;
@@ -827,6 +1164,50 @@
                     } catch(e){}
                 }
             });
+
+        });
+
+        // ── Topbar User Profile Dropdown Controller (Global Window Scope) ──
+        window.toggleUserProfileDropdown = function(e) {
+            if (e) {
+                if (e.stopPropagation) e.stopPropagation();
+            }
+            const dropdown = document.getElementById('user-profile-dropdown');
+            const btn = document.getElementById('header-user-profile');
+            if (!dropdown) return;
+
+            const willOpen = !dropdown.classList.contains('open');
+            if (willOpen) {
+                dropdown.classList.add('open');
+                if (btn) btn.setAttribute('aria-expanded', 'true');
+            } else {
+                dropdown.classList.remove('open');
+                if (btn) btn.setAttribute('aria-expanded', 'false');
+            }
+        };
+
+        // Close on outside click
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('user-profile-dropdown');
+            if (dropdown && dropdown.classList.contains('open')) {
+                if (!dropdown.contains(e.target)) {
+                    dropdown.classList.remove('open');
+                    const btn = document.getElementById('header-user-profile');
+                    if (btn) btn.setAttribute('aria-expanded', 'false');
+                }
+            }
+        });
+
+        // Close on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const dropdown = document.getElementById('user-profile-dropdown');
+                if (dropdown && dropdown.classList.contains('open')) {
+                    dropdown.classList.remove('open');
+                    const btn = document.getElementById('header-user-profile');
+                    if (btn) btn.setAttribute('aria-expanded', 'false');
+                }
+            }
         });
     </script>
 
@@ -1490,6 +1871,9 @@
     {% if request.blueprint == 'player' or (current_user and current_user.role_raw == 'player') %}
     {% include "player/partials/booking_cart_drawer.html" %}
     {% endif %}
+
+    <!-- Global Floating Tooltip for Collapsed Sidebar -->
+    <div id="sidebar-floating-tooltip" class="sidebar-floating-tooltip"></div>
 
     {% block extra_scripts %}{% endblock %}
     {% block scripts %}{% endblock %}

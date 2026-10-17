@@ -1311,7 +1311,7 @@ def matchmaker_detail(lobby_id):
         court = res.get('courts') or {}
         facility = res.get('facilities') or {}
 
-        from app.player.routes import get_lobby_display_status
+        from app.player.matchmaker_routes import get_lobby_display_status
         lobby = {
             'id': raw_lob['id'],
             'creator_id': raw_lob['creator_id'],
@@ -1760,6 +1760,16 @@ def verify_pass():
         return jsonify({'success': False, 'message': 'Please provide a pass code or booking reference.'}), 400
         
     try:
+        import json
+        if code.startswith('{') and code.endswith('}'):
+            try:
+                parsed = json.loads(code)
+                if isinstance(parsed, dict):
+                    code = str(parsed.get('reservation_id') or parsed.get('code') or parsed.get('id') or code).strip()
+            except Exception:
+                pass
+
+        clean_code = code.replace('PB-PASS-', '').replace('pb-pass-', '').replace('PB-', '').replace('pb-', '').strip()
         now = datetime.now(PH_TZ)
         today_str = now.strftime('%Y-%m-%d')
         
@@ -1778,7 +1788,10 @@ def verify_pass():
             guest_name = r.get('guest_name') or ''
             rid = str(r.get('id') or '')
             
-            if code.lower() in rid.lower() or code.lower() in full_name.lower() or code.lower() in guest_name.lower():
+            if (code.lower() in rid.lower() or rid.lower() in code.lower()) or \
+               (clean_code and (clean_code.lower() in rid.lower() or rid.lower() in clean_code.lower())) or \
+               (clean_code and clean_code.lower() in full_name.lower()) or \
+               (clean_code and clean_code.lower() in guest_name.lower()):
                 matches.append(r)
                 
         # 2. If not found today, search recent reservations
@@ -1791,7 +1804,10 @@ def verify_pass():
                 full_name = f"{p.get('first_name', '')} {p.get('last_name', '')}".strip()
                 guest_name = r.get('guest_name') or ''
                 rid = str(r.get('id') or '')
-                if code.lower() in rid.lower() or code.lower() in full_name.lower() or code.lower() in guest_name.lower():
+                if (code.lower() in rid.lower() or rid.lower() in code.lower()) or \
+                   (clean_code and (clean_code.lower() in rid.lower() or rid.lower() in clean_code.lower())) or \
+                   (clean_code and clean_code.lower() in full_name.lower()) or \
+                   (clean_code and clean_code.lower() in guest_name.lower()):
                     matches.append(r)
                 
         if matches:

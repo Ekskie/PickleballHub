@@ -500,20 +500,24 @@
         transition: all 0.2s;
         font-family: inherit;
     }
+
     .btn-chat-person.owner {
         background: rgba(255, 87, 34, 0.12);
         color: var(--primary-orange);
         border: 1px solid rgba(255, 87, 34, 0.35);
     }
+
     .btn-chat-person.owner:hover {
         background: var(--primary-orange);
         color: #fff;
     }
+
     .btn-chat-person.staff {
         background: rgba(16, 185, 129, 0.12);
         color: var(--btn-green);
         border: 1px solid rgba(16, 185, 129, 0.35);
     }
+
     .btn-chat-person.staff:hover {
         background: var(--btn-green);
         color: #fff;
@@ -531,6 +535,7 @@
         border-radius: 12px;
         transition: border-color 0.2s ease;
     }
+
     .modal-team-member:hover {
         border-color: rgba(255, 87, 34, 0.3);
     }
@@ -547,16 +552,19 @@
         flex-shrink: 0;
         overflow: hidden;
     }
+
     .modal-member-avatar.owner {
         background: rgba(255, 87, 34, 0.15);
         color: var(--primary-orange);
         border: 1.5px solid rgba(255, 87, 34, 0.4);
     }
+
     .modal-member-avatar.staff {
         background: rgba(16, 185, 129, 0.15);
         color: var(--btn-green);
         border: 1.5px solid rgba(16, 185, 129, 0.4);
     }
+
     .modal-member-avatar img {
         width: 100%;
         height: 100%;
@@ -567,6 +575,7 @@
         flex: 1;
         min-width: 0;
     }
+
     .modal-member-name {
         font-size: 0.88rem;
         font-weight: 700;
@@ -575,6 +584,7 @@
         overflow: hidden;
         text-overflow: ellipsis;
     }
+
     .modal-member-role {
         font-size: 0.72rem;
         color: var(--text-muted);
@@ -606,6 +616,7 @@
         text-decoration: none;
         transition: all 0.2s;
     }
+
     .btn-modal-phone:hover {
         border-color: var(--primary-orange);
         color: var(--primary-orange);
@@ -622,20 +633,24 @@
         text-decoration: none;
         transition: all 0.2s;
     }
+
     .btn-modal-chat.owner {
         background: rgba(255, 87, 34, 0.12);
         color: var(--primary-orange);
         border: 1px solid rgba(255, 87, 34, 0.35);
     }
+
     .btn-modal-chat.owner:hover {
         background: var(--primary-orange);
         color: #fff;
     }
+
     .btn-modal-chat.staff {
         background: rgba(16, 185, 129, 0.12);
         color: var(--btn-green);
         border: 1px solid rgba(16, 185, 129, 0.35);
     }
+
     .btn-modal-chat.staff:hover {
         background: var(--btn-green);
         color: #fff;
@@ -644,12 +659,12 @@
     /* ── Step 2 Layout: Calendar & Time Slots ── */
     .step2-layout {
         display: grid;
-        grid-template-columns: 420px 1fr;
-        gap: 24px;
+        grid-template-columns: 360px 1fr;
+        gap: 20px;
         align-items: start;
     }
 
-    @media (max-width: 1100px) {
+    @media (max-width: 1040px) {
         .step2-layout {
             grid-template-columns: 1fr;
         }
@@ -797,7 +812,8 @@
         font-weight: 900;
     }
 
-    .cal-day.past, .cal-day.disabled {
+    .cal-day.past,
+    .cal-day.disabled {
         opacity: 0.4;
         cursor: not-allowed;
         background: var(--input-bg);
@@ -872,11 +888,26 @@
         border-radius: 50%;
     }
 
-    .cal-legend-dot.avail { background: #16a34a; }
-    .cal-legend-dot.limited { background: #d97706; }
-    .cal-legend-dot.full { background: #dc2626; }
-    .cal-legend-dot.pro-locked { background: #8b5cf6; box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.25); }
-    .cal-legend-dot.past { background: var(--text-muted); }
+    .cal-legend-dot.avail {
+        background: #16a34a;
+    }
+
+    .cal-legend-dot.limited {
+        background: #d97706;
+    }
+
+    .cal-legend-dot.full {
+        background: #dc2626;
+    }
+
+    .cal-legend-dot.pro-locked {
+        background: #8b5cf6;
+        box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.25);
+    }
+
+    .cal-legend-dot.past {
+        background: var(--text-muted);
+    }
 
     /* ── Pro Early Access Calendar Additions ── */
     .cal-access-banner {
@@ -1017,8 +1048,15 @@
     }
 
     @keyframes earlyModalIn {
-        from { transform: scale(0.94); opacity: 0; }
-        to { transform: scale(1); opacity: 1; }
+        from {
+            transform: scale(0.94);
+            opacity: 0;
+        }
+
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
     }
 
     .early-access-header {
@@ -1700,7 +1738,8 @@
 
     .visual-court-drawing-area {
         height: 140px;
-        background: #15803d; /* Premium Forest Green outer court */
+        background: #15803d;
+        /* Premium Forest Green outer court */
         position: relative;
         overflow: hidden;
         display: flex;
@@ -1720,7 +1759,8 @@
         width: 80%;
         height: 75%;
         border: 1.5px solid rgba(255, 255, 255, 0.95);
-        background: #1e40af; /* Premium Royal Blue inner court */
+        background: #1e40af;
+        /* Premium Royal Blue inner court */
         box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.15);
         z-index: 1;
     }
@@ -1731,7 +1771,8 @@
         right: 37%;
         top: 12.5%;
         height: 75%;
-        background: #15803d; /* Matches outer court */
+        background: #15803d;
+        /* Matches outer court */
         z-index: 2;
         border-left: 1.5px solid rgba(255, 255, 255, 0.95);
         border-right: 1.5px solid rgba(255, 255, 255, 0.95);
@@ -1764,7 +1805,7 @@
         background: rgba(255, 255, 255, 0.8);
         left: 50%;
         top: 7.5%;
-        box-shadow: 0 0 3px rgba(0,0,0,0.5);
+        box-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
         z-index: 4;
     }
 
@@ -1792,25 +1833,30 @@
 
     /* Selected Court Drawing Styling */
     .visual-court-card.selected .visual-court-drawing-area {
-        background: #c2410c; /* Forest orange outer */
+        background: #c2410c;
+        /* Forest orange outer */
     }
 
     .visual-court-card.selected .court-line-border {
-        background: #ea580c; /* Bright orange inner */
+        background: #ea580c;
+        /* Bright orange inner */
     }
 
     .visual-court-card.selected .court-kitchen-area {
-        background: #c2410c; /* Orange kitchen */
+        background: #c2410c;
+        /* Orange kitchen */
     }
 
     /* Occupied Court Drawing Styling */
     .visual-court-card.occupied .visual-court-drawing-area {
-        background: #334155 !important; /* Slate gray outer */
+        background: #334155 !important;
+        /* Slate gray outer */
         box-shadow: none;
     }
 
     .visual-court-card.occupied .court-line-border {
-        background: #475569 !important; /* Medium gray inner */
+        background: #475569 !important;
+        /* Medium gray inner */
         border-color: rgba(255, 255, 255, 0.4) !important;
         box-shadow: none;
     }
@@ -1949,9 +1995,20 @@
     }
 
     @keyframes cartDotPulse {
-        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
-        70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
-        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        0% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+        }
+
+        70% {
+            transform: scale(1);
+            box-shadow: 0 0 0 6px rgba(245, 158, 11, 0);
+        }
+
+        100% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+        }
     }
 
     .cart-btn-details {
@@ -2013,51 +2070,12 @@
 {% endblock %}
 
 {% block content %}
-{% set pending_list = (user_reservations or []) | selectattr('display_status', 'in', ['pending_payment', 'pending_verification']) | list %}
+{% set pending_list = (user_reservations or []) | selectattr('display_status', 'in', ['pending_payment',
+'pending_verification']) | list %}
 {% set confirmed_list = (user_reservations or []) | selectattr('display_status', 'equalto', 'confirmed') | list %}
 {% set declined_list = (user_reservations or []) | selectattr('display_status', 'equalto', 'cancelled') | list %}
 
 <!-- Header -->
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
-    <div>
-        <h1 class="page-title"><i class="ph ph-tennis-ball"></i> Court Reservation</h1>
-        <p style="color:var(--text-muted);font-size:.85rem;margin-top:4px;">Book a court in 3 easy steps</p>
-    </div>
-    
-    <!-- Floating Cart & Booking Tracker Header Actions -->
-    <div class="reservation-top-actions">
-        <button type="button" class="btn-res-cart" id="openCartBtn" onclick="toggleResDrawer()" aria-label="Open booking cart and tracker">
-            <div class="cart-btn-icon-wrap">
-                <i class="ph ph-shopping-bag-open"></i>
-                {% if pending_list|length > 0 %}
-                    <span class="cart-pulse-dot pending"></span>
-                {% elif confirmed_list|length > 0 %}
-                    <span class="cart-pulse-dot confirmed"></span>
-                {% endif %}
-            </div>
-            <div class="cart-btn-details">
-                <span class="cart-btn-title">My Bookings</span>
-                <span class="cart-btn-sub" id="headerCartSubtext">
-                    {% if not user_reservations or user_reservations|length == 0 %}
-                        No active bookings
-                    {% elif pending_list|length > 0 %}
-                        <span style="color:#d97706;font-weight:700;">{{ pending_list|length }} Pending</span>
-                    {% elif confirmed_list|length > 0 %}
-                        <span style="color:#16a34a;font-weight:700;">{{ confirmed_list|length }} Accepted</span>
-                    {% else %}
-                        {{ user_reservations|length }} Total
-                    {% endif %}
-                </span>
-            </div>
-            <span class="cart-badge-pill" id="cartCountBadge">{{ (user_reservations or [])|length }}</span>
-        </button>
-
-        <a href="{{ url_for('player.my_reservations') }}" class="btn-res-history-icon" title="View Full Reservations History Page">
-            <i class="ph ph-arrow-square-out"></i>
-        </a>
-    </div>
-</div>
-
 <!-- Wizard Steps -->
 <div class="wizard-steps">
     <div class="step-item active" id="si-1">
@@ -2078,26 +2096,29 @@
 
 <!-- Step 1: Choose Facility -->
 <div class="wizard-panel active glass-card" id="panel-1">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+    <div
+        style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
         <div>
-            <h3 style="font-size:1.1rem;font-weight:800;color:var(--text-primary);display:flex;align-items:center;gap:8px;margin:0;">
+            <h3
+                style="font-size:1.1rem;font-weight:800;color:var(--text-primary);display:flex;align-items:center;gap:8px;margin:0;">
                 <i class="ph ph-building" style="color:var(--primary-orange)"></i> Choose a Facility
             </h3>
-            <p style="font-size:0.75rem;color:var(--text-muted);margin:3px 0 0 0;">Select your preferred pickleball venue to check court availability and pricing.</p>
+            <p style="font-size:0.75rem;color:var(--text-muted);margin:3px 0 0 0;">Select your preferred pickleball
+                venue to check court availability and pricing.</p>
         </div>
     </div>
+
+
     {% if facilities %}
     <div class="facility-grid">
         {% for f in facilities %}
-        <div class="facility-card {% if f.is_featured_pin %}card-featured-pin{% endif %}" data-id="{{ f.id }}" data-name="{{ f.name }}"
-            data-open="{{ f.open_time or '08:00' }}" data-close="{{ f.close_time or '21:00' }}"
+        <div class="facility-card {% if f.is_featured_pin %}card-featured-pin{% endif %}" data-id="{{ f.id }}"
+            data-name="{{ f.name }}" data-open="{{ f.open_time or '08:00' }}" data-close="{{ f.close_time or '21:00' }}"
             data-open-12="{{ f.open_time_12 or '8:00 AM' }}" data-close-12="{{ f.close_time_12 or '9:00 PM' }}"
-            data-slot="{{ f.slot_duration_minutes or 60 }}"
-            data-owner-name="{{ f.owner.full_name if f.owner else '' }}"
+            data-slot="{{ f.slot_duration_minutes or 60 }}" data-owner-name="{{ f.owner.full_name if f.owner else '' }}"
             data-owner-id="{{ f.owner.id if f.owner else '' }}"
             data-staff-name="{{ f.staff_members[0].full_name if f.staff_members else '' }}"
-            data-staff-id="{{ f.staff_members[0].id if f.staff_members else '' }}"
-            onclick="selectFacility(this)">
+            data-staff-id="{{ f.staff_members[0].id if f.staff_members else '' }}" onclick="selectFacility(this)">
 
             <!-- Hero Image Banner -->
             <div class="fac-hero-wrap">
@@ -2111,16 +2132,19 @@
                 {% endif %}
 
                 <!-- Badges (Top Left Stack) -->
-                <div class="fac-badges-stack" style="position:absolute;top:10px;left:10px;display:flex;flex-direction:column;gap:5px;z-index:3;">
+                <div class="fac-badges-stack"
+                    style="position:absolute;top:10px;left:10px;display:flex;flex-direction:column;gap:5px;z-index:3;">
                     {% if f.is_featured_pin %}
-                    <div class="fac-badge-top-left badge-featured-pin" title="Elite Enterprise Featured Venue" style="background:linear-gradient(135deg, #7c3aed, #4f46e5);color:#fff;border:1px solid rgba(255,255,255,0.3);box-shadow:0 4px 12px rgba(124,58,237,0.35);font-weight:800;padding:4px 9px;border-radius:20px;font-size:0.72rem;display:inline-flex;align-items:center;gap:4px;">
+                    <div class="fac-badge-top-left badge-featured-pin" title="Elite Enterprise Featured Venue"
+                        style="background:linear-gradient(135deg, #7c3aed, #4f46e5);color:#fff;border:1px solid rgba(255,255,255,0.3);box-shadow:0 4px 12px rgba(124,58,237,0.35);font-weight:800;padding:4px 9px;border-radius:20px;font-size:0.72rem;display:inline-flex;align-items:center;gap:4px;">
                         <i class="ph-fill ph-crown"></i>
                         <span>Featured Venue</span>
                     </div>
                     {% endif %}
 
                     {% if f.is_verified_partner %}
-                    <div class="fac-badge-top-left badge-partner" title="PickleballHub Verified Partner Venue" style="background:linear-gradient(135deg, #f59e0b, #d97706);color:#fff;border:1px solid rgba(255,255,255,0.3);box-shadow:0 4px 12px rgba(245,158,11,0.3);font-weight:700;padding:4px 9px;border-radius:20px;font-size:0.72rem;display:inline-flex;align-items:center;gap:4px;">
+                    <div class="fac-badge-top-left badge-partner" title="PickleballHub Verified Partner Venue"
+                        style="background:linear-gradient(135deg, #f59e0b, #d97706);color:#fff;border:1px solid rgba(255,255,255,0.3);box-shadow:0 4px 12px rgba(245,158,11,0.3);font-weight:700;padding:4px 9px;border-radius:20px;font-size:0.72rem;display:inline-flex;align-items:center;gap:4px;">
                         <i class="ph-fill ph-seal-check"></i>
                         <span>Verified Partner</span>
                     </div>
@@ -2152,7 +2176,8 @@
                     <h4 class="fac-title" title="{{ f.name }}">{{ f.name }}</h4>
                     <div class="fac-location-row">
                         <span class="fac-location-text" title="{{ f.location or 'Location not specified' }}">
-                            <i class="ph ph-map-pin" style="color:var(--primary-orange);"></i> {{ f.location or 'Location not specified' }}
+                            <i class="ph ph-map-pin" style="color:var(--primary-orange);"></i> {{ f.location or
+                            'Location not specified' }}
                         </span>
                         {% if f.latitude and f.longitude %}
                         <button type="button" class="btn-map-chip"
@@ -2167,7 +2192,8 @@
                 <!-- Court Highlights & Features -->
                 <div class="fac-features-bar">
                     <span class="fac-feat-tag" title="Total Active Courts">
-                        <i class="ph ph-tennis-ball"></i> {{ f.courts_count or 1 }} Court{{ 's' if f.courts_count != 1 else '' }}
+                        <i class="ph ph-tennis-ball"></i> {{ f.courts_count or 1 }} Court{{ 's' if f.courts_count != 1
+                        else '' }}
                     </span>
                     <span class="fac-feat-tag" title="Court Surface / Types">
                         <i class="ph ph-squares-four"></i> {{ f.court_types_str or 'Outdoor' }}
@@ -2183,7 +2209,8 @@
                 </p>
 
                 <!-- Compact Host & Team Strip -->
-                {% set primary_contact = f.owner if (f.owner and f.owner.id) else (f.staff_members[0] if f.staff_members else none) %}
+                {% set primary_contact = f.owner if (f.owner and f.owner.id) else (f.staff_members[0] if f.staff_members
+                else none) %}
                 {% set total_team = (1 if (f.owner and f.owner.id) else 0) + (f.staff_members|length) %}
 
                 <div class="fac-host-strip" onclick="event.stopPropagation();">
@@ -2200,20 +2227,22 @@
                             </div>
                             {% endif %}
                             {% if f.staff_members %}
-                                {% for st in f.staff_members[:2] %}
-                                <div class="fac-avatar-circle staff" title="Staff: {{ st.full_name }}">
-                                    {% if st.avatar_url %}
-                                    <img src="{{ st.avatar_url }}" alt="{{ st.full_name }}">
-                                    {% else %}
-                                    {{ st.initials }}
-                                    {% endif %}
-                                </div>
-                                {% endfor %}
-                                {% if f.staff_members|length > 2 %}
-                                <div class="fac-avatar-circle" style="font-size:0.6rem;background:var(--input-bg);color:var(--text-muted);" title="+{{ f.staff_members|length - 2 }} more staff">
-                                    +{{ f.staff_members|length - 2 }}
-                                </div>
+                            {% for st in f.staff_members[:2] %}
+                            <div class="fac-avatar-circle staff" title="Staff: {{ st.full_name }}">
+                                {% if st.avatar_url %}
+                                <img src="{{ st.avatar_url }}" alt="{{ st.full_name }}">
+                                {% else %}
+                                {{ st.initials }}
                                 {% endif %}
+                            </div>
+                            {% endfor %}
+                            {% if f.staff_members|length > 2 %}
+                            <div class="fac-avatar-circle"
+                                style="font-size:0.6rem;background:var(--input-bg);color:var(--text-muted);"
+                                title="+{{ f.staff_members|length - 2 }} more staff">
+                                +{{ f.staff_members|length - 2 }}
+                            </div>
+                            {% endif %}
                             {% endif %}
                             {% if not primary_contact %}
                             <div class="fac-avatar-circle" style="background:var(--input-bg);color:var(--text-muted);">
@@ -2227,9 +2256,9 @@
                             <span class="fac-host-name">Hosted by {{ primary_contact.full_name }}</span>
                             <span class="fac-host-sub">
                                 {% if total_team > 1 %}
-                                    {{ total_team }} Management Members
+                                {{ total_team }} Management Members
                                 {% else %}
-                                    Facility Management
+                                Facility Management
                                 {% endif %}
                             </span>
                             {% else %}
@@ -2241,12 +2270,16 @@
 
                     <div class="fac-host-actions">
                         {% if total_team > 0 %}
-                        <button type="button" class="btn-team-modal" onclick="event.stopPropagation(); showFacilityTeamModal('{{ f.id }}', '{{ f.name | escape }}')" title="View Management Team & Staff">
+                        <button type="button" class="btn-team-modal"
+                            onclick="event.stopPropagation(); showFacilityTeamModal('{{ f.id }}', '{{ f.name | escape }}')"
+                            title="View Management Team & Staff">
                             <i class="ph ph-users"></i> Team
                         </button>
                         {% endif %}
                         {% if primary_contact %}
-                        <a href="{{ url_for('player.messages') }}?chat_user={{ primary_contact.id }}" class="btn-host-chat" onclick="event.stopPropagation();" title="Chat with {{ primary_contact.full_name }}">
+                        <a href="{{ url_for('player.messages') }}?chat_user={{ primary_contact.id }}"
+                            class="btn-host-chat" onclick="event.stopPropagation();"
+                            title="Chat with {{ primary_contact.full_name }}">
                             <i class="ph ph-chat-circle-dots"></i> Chat
                         </a>
                         {% endif %}
@@ -2258,43 +2291,52 @@
                     {% if f.owner and f.owner.id %}
                     <div class="modal-team-member">
                         <div class="modal-member-avatar owner">
-                            {% if f.owner.avatar_url %}<img src="{{ f.owner.avatar_url }}" alt="{{ f.owner.full_name }}">{% else %}{{ f.owner.initials }}{% endif %}
+                            {% if f.owner.avatar_url %}<img src="{{ f.owner.avatar_url }}"
+                                alt="{{ f.owner.full_name }}">{% else %}{{ f.owner.initials }}{% endif %}
                         </div>
                         <div class="modal-member-info">
                             <div class="modal-member-name">{{ f.owner.full_name }}</div>
-                            <div class="modal-member-role"><i class="ph ph-crown" style="color:#f59e0b;"></i> Facility Owner</div>
+                            <div class="modal-member-role"><i class="ph ph-crown" style="color:#f59e0b;"></i> Facility
+                                Owner</div>
                         </div>
                         <div class="modal-member-actions">
                             {% if f.owner.phone %}
-                            <a href="tel:{{ f.owner.phone }}" class="btn-modal-phone" title="Call {{ f.owner.phone }}"><i class="ph ph-phone"></i> {{ f.owner.phone }}</a>
+                            <a href="tel:{{ f.owner.phone }}" class="btn-modal-phone"
+                                title="Call {{ f.owner.phone }}"><i class="ph ph-phone"></i> {{ f.owner.phone }}</a>
                             {% endif %}
-                            <a href="{{ url_for('player.messages') }}?chat_user={{ f.owner.id }}" class="btn-modal-chat owner"><i class="ph ph-chat-circle-dots"></i> Chat</a>
+                            <a href="{{ url_for('player.messages') }}?chat_user={{ f.owner.id }}"
+                                class="btn-modal-chat owner"><i class="ph ph-chat-circle-dots"></i> Chat</a>
                         </div>
                     </div>
                     {% endif %}
                     {% if f.staff_members %}
-                        {% for st in f.staff_members %}
-                        <div class="modal-team-member">
-                            <div class="modal-member-avatar staff">
-                                {% if st.avatar_url %}<img src="{{ st.avatar_url }}" alt="{{ st.full_name }}">{% else %}{{ st.initials }}{% endif %}
-                            </div>
-                            <div class="modal-member-info">
-                                <div class="modal-member-name">{{ st.full_name }}</div>
-                                <div class="modal-member-role"><i class="ph ph-user-check" style="color:var(--btn-green);"></i> Court Manager</div>
-                            </div>
-                            <div class="modal-member-actions">
-                                {% if st.phone %}
-                                <a href="tel:{{ st.phone }}" class="btn-modal-phone" title="Call {{ st.phone }}"><i class="ph ph-phone"></i> {{ st.phone }}</a>
-                                {% endif %}
-                                <a href="{{ url_for('player.messages') }}?chat_user={{ st.id }}" class="btn-modal-chat staff"><i class="ph ph-chat-dots"></i> Chat</a>
-                            </div>
+                    {% for st in f.staff_members %}
+                    <div class="modal-team-member">
+                        <div class="modal-member-avatar staff">
+                            {% if st.avatar_url %}<img src="{{ st.avatar_url }}" alt="{{ st.full_name }}">{% else %}{{
+                            st.initials }}{% endif %}
                         </div>
-                        {% endfor %}
+                        <div class="modal-member-info">
+                            <div class="modal-member-name">{{ st.full_name }}</div>
+                            <div class="modal-member-role"><i class="ph ph-user-check"
+                                    style="color:var(--btn-green);"></i> Court Manager</div>
+                        </div>
+                        <div class="modal-member-actions">
+                            {% if st.phone %}
+                            <a href="tel:{{ st.phone }}" class="btn-modal-phone" title="Call {{ st.phone }}"><i
+                                    class="ph ph-phone"></i> {{ st.phone }}</a>
+                            {% endif %}
+                            <a href="{{ url_for('player.messages') }}?chat_user={{ st.id }}"
+                                class="btn-modal-chat staff"><i class="ph ph-chat-dots"></i> Chat</a>
+                        </div>
+                    </div>
+                    {% endfor %}
                     {% endif %}
                 </div>
 
                 <!-- Explicit Card Action Button -->
-                <button type="button" class="btn-select-fac" onclick="event.stopPropagation(); selectFacility(this.closest('.facility-card'));">
+                <button type="button" class="btn-select-fac"
+                    onclick="event.stopPropagation(); selectFacility(this.closest('.facility-card'));">
                     <span>Select Facility</span> <i class="ph ph-arrow-right"></i>
                 </button>
             </div>
@@ -2310,14 +2352,17 @@
 
 <!-- Step 2: Choose Date & Time -->
 <div class="wizard-panel" id="panel-2">
-    <div class="panel-action-row" style="background:var(--card-bg);padding:16px 20px;border-radius:14px;border:1.5px solid var(--border-color);margin-bottom:20px;box-shadow:var(--shadow-card);">
+    <div class="panel-action-row"
+        style="background:var(--card-bg);padding:16px 20px;border-radius:14px;border:1.5px solid var(--border-color);margin-bottom:20px;box-shadow:var(--shadow-card);">
         <div>
-            <h3 style="font-size:1.05rem;font-weight:800;color:var(--text-primary);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <h3
+                style="font-size:1.05rem;font-weight:800;color:var(--text-primary);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
                 <i class="ph ph-calendar-plus" style="color:var(--primary-orange)"></i> Choose Date &amp; Time
                 <span style="color:var(--text-muted);font-weight:400;font-size:0.9rem;">—</span>
                 <span id="s2-fac-name" style="color:var(--primary-orange)"></span>
             </h3>
-            <p style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">Select an available date on the calendar, then pick your preferred court time slot.</p>
+            <p style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">Select an available date on the
+                calendar, then pick your preferred court time slot.</p>
         </div>
         <button class="btn-back" onclick="goStep(1)"><i class="ph ph-arrow-left"></i> Change Facility</button>
     </div>
@@ -2344,9 +2389,12 @@
                     </button>
                 </div>
                 <div class="cal-shortcuts">
-                    <button type="button" class="cal-shortcut-chip" id="chip-today" onclick="selectQuickDate('today')">Today</button>
-                    <button type="button" class="cal-shortcut-chip" id="chip-tomorrow" onclick="selectQuickDate('tomorrow')">Tomorrow</button>
-                    <button type="button" class="cal-shortcut-chip" id="chip-weekend" onclick="selectQuickDate('weekend')">Weekend</button>
+                    <button type="button" class="cal-shortcut-chip" id="chip-today"
+                        onclick="selectQuickDate('today')">Today</button>
+                    <button type="button" class="cal-shortcut-chip" id="chip-tomorrow"
+                        onclick="selectQuickDate('tomorrow')">Tomorrow</button>
+                    <button type="button" class="cal-shortcut-chip" id="chip-weekend"
+                        onclick="selectQuickDate('weekend')">Weekend</button>
                 </div>
             </div>
 
@@ -2356,26 +2404,35 @@
                 <div class="cal-access-badge pro">
                     <div class="cal-access-badge-left">
                         <span class="cal-tier-tag pro"><i class="ph ph-crown-simple"></i> PRO PASS</span>
-                        <span><strong>14-Day Early Access Active!</strong> Enjoy ₱0 convenience fees on all bookings.</span>
+                        <span><strong>14-Day Early Access Active!</strong> Enjoy ₱0 convenience fees on all
+                            bookings.</span>
                     </div>
                 </div>
                 {% elif current_user.is_subscription_pending %}
-                <div class="cal-access-badge pending" style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.35);">
+                <div class="cal-access-badge pending"
+                    style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.35);">
                     <div class="cal-access-badge-left">
-                        <span class="cal-tier-tag" style="background: #f59e0b; color: #fff;"><i class="ph ph-clock-countdown"></i> PRO PASS PENDING</span>
-                        <span>Your Pro Pass GCash verification is under review. 14-day early access unlocks automatically once approved!</span>
+                        <span class="cal-tier-tag" style="background: #f59e0b; color: #fff;"><i
+                                class="ph ph-clock-countdown"></i> PRO PASS PENDING</span>
+                        <span>Your Pro Pass GCash verification is under review. 14-day early access unlocks
+                            automatically once approved!</span>
                     </div>
-                    <a href="{{ url_for('billing.subscription_dashboard') }}" class="btn-cal-upgrade" style="background: #f59e0b; text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem; color: #fff;">
+                    <a href="{{ url_for('billing.subscription_page') }}" class="btn-cal-upgrade"
+                        style="background: #f59e0b; text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem; color: #fff;">
                         <i class="ph ph-receipt"></i> View Status
                     </a>
                 </div>
                 {% elif current_user.is_subscription_rejected %}
-                <div class="cal-access-badge rejected" style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.35);">
+                <div class="cal-access-badge rejected"
+                    style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.35);">
                     <div class="cal-access-badge-left">
-                        <span class="cal-tier-tag" style="background: #ef4444; color: #fff;"><i class="ph ph-warning-circle"></i> VERIFICATION REJECTED</span>
-                        <span>Payment verification was rejected. Please review notes and resubmit your GCash receipt to activate Pro.</span>
+                        <span class="cal-tier-tag" style="background: #ef4444; color: #fff;"><i
+                                class="ph ph-warning-circle"></i> VERIFICATION REJECTED</span>
+                        <span>Payment verification was rejected. Please review notes and resubmit your GCash receipt to
+                            activate Pro.</span>
                     </div>
-                    <a href="{{ url_for('billing.subscription_dashboard') }}" class="btn-cal-upgrade" style="background: #ef4444; text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem; color: #fff;">
+                    <a href="{{ url_for('billing.subscription_page') }}" class="btn-cal-upgrade"
+                        style="background: #ef4444; text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem; color: #fff;">
                         <i class="ph ph-arrow-counter-clockwise"></i> Resubmit Proof
                     </a>
                 </div>
@@ -2383,7 +2440,8 @@
                 <div class="cal-access-badge free">
                     <div class="cal-access-badge-left">
                         <span class="cal-tier-tag free"><i class="ph ph-calendar-blank"></i> FREE WINDOW</span>
-                        <span>Book up to <strong>3 days in advance</strong>. Days 4–14 are reserved for <strong style="color:#7c3aed;">Pro Early Access</strong>.</span>
+                        <span>Book up to <strong>3 days in advance</strong>. Days 4–14 are reserved for <strong
+                                style="color:#7c3aed;">Pro Early Access</strong>.</span>
                     </div>
                     <button type="button" class="btn-cal-upgrade" onclick="openProEarlyAccessModal()">
                         <i class="ph ph-crown-simple"></i> Upgrade
@@ -2404,7 +2462,8 @@
                 <div class="cal-legend-item"><span class="cal-legend-dot avail"></span> Available</div>
                 <div class="cal-legend-item"><span class="cal-legend-dot limited"></span> Filling Fast</div>
                 <div class="cal-legend-item"><span class="cal-legend-dot full"></span> Full</div>
-                <div class="cal-legend-item"><span class="cal-legend-dot pro-locked"></span> Pro Early Access (4–14d)</div>
+                <div class="cal-legend-item"><span class="cal-legend-dot pro-locked"></span> Pro Early Access (4–14d)
+                </div>
                 <div class="cal-legend-item"><span class="cal-legend-dot past"></span> Past / Closed</div>
             </div>
         </div>
@@ -2416,26 +2475,32 @@
                     <div class="date-icon"><i class="ph ph-calendar-check"></i></div>
                     <div>
                         <h4 id="selectedDateDisplayTitle">Friday, September 25, 2026</h4>
-                        <p id="selectedDateAvailabilitySummary"><i class="ph ph-check-circle" style="color:#10b981;"></i> Select a start time below</p>
+                        <p id="selectedDateAvailabilitySummary"><i class="ph ph-check-circle"
+                                style="color:#10b981;"></i> Select a start time below</p>
                     </div>
                 </div>
             </div>
 
             <div class="config-selectors-row">
                 <div style="display:flex;align-items:center;gap:10px;">
-                    <span style="font-size:0.78rem;font-weight:700;color:var(--text-secondary);"><i class="ph ph-hourglass-high" style="color:var(--primary-orange);"></i> Duration:</span>
+                    <span style="font-size:0.78rem;font-weight:700;color:var(--text-secondary);"><i
+                            class="ph ph-hourglass-high" style="color:var(--primary-orange);"></i> Duration:</span>
                     <div class="duration-pill-group">
-                        <button type="button" class="duration-pill active" data-dur="1" onclick="setDuration(1)">1 hr</button>
+                        <button type="button" class="duration-pill active" data-dur="1" onclick="setDuration(1)">1
+                            hr</button>
                         <button type="button" class="duration-pill" data-dur="2" onclick="setDuration(2)">2 hrs</button>
                         <button type="button" class="duration-pill" data-dur="3" onclick="setDuration(3)">3 hrs</button>
                     </div>
                 </div>
                 <div style="display:flex;align-items:center;gap:10px;">
-                    <span style="font-size:0.78rem;font-weight:700;color:var(--text-secondary);"><i class="ph ph-users" style="color:var(--primary-orange);"></i> Players:</span>
+                    <span style="font-size:0.78rem;font-weight:700;color:var(--text-secondary);"><i class="ph ph-users"
+                            style="color:var(--primary-orange);"></i> Players:</span>
                     <div class="party-stepper">
-                        <button type="button" class="stepper-btn" onclick="stepPartySize(-1)"><i class="ph ph-minus"></i></button>
+                        <button type="button" class="stepper-btn" onclick="stepPartySize(-1)"><i
+                                class="ph ph-minus"></i></button>
                         <span class="stepper-val" id="partySizeDisplay">1</span>
-                        <button type="button" class="stepper-btn" onclick="stepPartySize(1)"><i class="ph ph-plus"></i></button>
+                        <button type="button" class="stepper-btn" onclick="stepPartySize(1)"><i
+                                class="ph ph-plus"></i></button>
                     </div>
                 </div>
             </div>
@@ -2446,7 +2511,8 @@
                     <i class="ph ph-clock-countdown"></i>
                     <div>
                         <h5>All Court Hours for Today Have Passed</h5>
-                        <p>This facility is closed for reservations today. Jump ahead to view open courts for tomorrow!</p>
+                        <p>This facility is closed for reservations today. Jump ahead to view open courts for tomorrow!
+                        </p>
                     </div>
                 </div>
                 <button type="button" class="btn-jump-tomorrow" onclick="selectQuickDate('tomorrow')">
@@ -2458,6 +2524,23 @@
             <div id="times-loading" style="display:none;text-align:center;padding:36px;color:var(--text-muted);">
                 <i class="ph ph-circle-notch" style="animation:spin .8s linear infinite;font-size:1.8rem"></i>
                 <p style="font-size:0.8rem;margin-top:8px;">Finding available court slots...</p>
+            </div>
+
+            <!-- Schedule View Mode Switcher -->
+            <div
+                style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+                <span style="font-size:0.78rem;font-weight:800;color:var(--text-secondary);"><i
+                        class="ph ph-squares-four"></i> Schedule View:</span>
+                <div class="schedule-view-switcher">
+                    <button type="button" class="switch-view-btn active" id="btnViewSlots"
+                        onclick="setScheduleViewMode('slots')">
+                        <i class="ph ph-clock"></i> Time Slots View
+                    </button>
+                    <button type="button" class="switch-view-btn" id="btnViewTimeline"
+                        onclick="setScheduleViewMode('timeline')">
+                        <i class="ph ph-chart-bar-horizontal"></i> Court Schedule Timeline
+                    </button>
+                </div>
             </div>
 
             <!-- Grouped Time Slots (Morning, Afternoon, Evening) -->
@@ -2480,6 +2563,11 @@
                     <div class="slot-period-grid" id="gridEvening"></div>
                 </div>
             </div>
+
+            <!-- Interactive Court-by-Court Schedule Timeline Matrix -->
+            <div id="courtTimelineMatrixWrap" class="court-timeline-matrix-wrap" style="display:none;">
+                <div id="courtTimelineContent"></div>
+            </div>
         </div>
     </div>
 </div>
@@ -2494,16 +2582,27 @@
                 </h3>
                 <button class="btn-back" onclick="goStep(2)"><i class="ph ph-arrow-left"></i> Back</button>
             </div>
-            
-            <div style="background: var(--input-bg); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+
+            <div
+                style="background: var(--input-bg); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
                 <div style="font-size: 0.85rem; color: var(--text-secondary);">
-                    Selected Slot: <strong id="map-selected-slot-text" style="color: var(--text-primary);">June 9, 2026 @ 10:00 AM - 11:00 AM</strong>
+                    Selected Slot: <strong id="map-selected-slot-text" style="color: var(--text-primary);">June 9, 2026
+                        @ 10:00 AM - 11:00 AM</strong>
                 </div>
                 <div class="slot-legend" style="margin-bottom: 0;">
-                    <div class="leg-item"><div class="leg-dot avail" style="background: #10b981; border: none;"></div> Available</div>
-                    <div class="leg-item"><div class="leg-dot bkd" style="background: #ef4444; border: none;"></div> Occupied</div>
-                    <div class="leg-item"><div class="leg-dot ev" style="background: #8b5cf6; border: none;"></div> Booked for Event</div>
-                    <div class="leg-item"><div class="leg-dot sel" style="background: var(--primary-orange); border: none;"></div> Selected</div>
+                    <div class="leg-item">
+                        <div class="leg-dot avail" style="background: #10b981; border: none;"></div> Available
+                    </div>
+                    <div class="leg-item">
+                        <div class="leg-dot bkd" style="background: #ef4444; border: none;"></div> Occupied
+                    </div>
+                    <div class="leg-item">
+                        <div class="leg-dot ev" style="background: #8b5cf6; border: none;"></div> Booked for Event
+                    </div>
+                    <div class="leg-item">
+                        <div class="leg-dot sel" style="background: var(--primary-orange); border: none;"></div>
+                        Selected
+                    </div>
                 </div>
             </div>
 
@@ -2513,25 +2612,32 @@
             </div>
 
             <!-- Beautiful Visual Court Grid Map -->
-            <div id="visual-court-map" style="display: none; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; padding: 10px 0;"></div>
+            <div id="visual-court-map"
+                style="display: none; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; padding: 10px 0;">
+            </div>
         </div>
 
         <!-- Summary -->
         <div class="summary-card">
             <h3><i class="ph ph-receipt" style="color:var(--primary-orange)"></i> Booking Summary</h3>
-            <div class="summary-row"><span class="s-label">Facility</span><span class="s-val" id="sum-facility">—</span></div>
-            <div class="summary-row" id="sum-row-contact" style="display:none;"><span class="s-label">Host / Manager</span><span class="s-val" id="sum-contact">—</span></div>
+            <div class="summary-row"><span class="s-label">Facility</span><span class="s-val" id="sum-facility">—</span>
+            </div>
+            <div class="summary-row" id="sum-row-contact" style="display:none;"><span class="s-label">Host /
+                    Manager</span><span class="s-val" id="sum-contact">—</span></div>
             <div class="summary-row"><span class="s-label">Court</span><span class="s-val" id="sum-court">—</span></div>
             <div class="summary-row"><span class="s-label">Date</span><span class="s-val" id="sum-date">—</span></div>
             <div class="summary-row"><span class="s-label">Time</span><span class="s-val" id="sum-time">—</span></div>
-            <div class="summary-row"><span class="s-label">Duration</span><span class="s-val" id="sum-hours">—</span></div>
+            <div class="summary-row"><span class="s-label">Duration</span><span class="s-val" id="sum-hours">—</span>
+            </div>
             <div class="summary-row"><span class="s-label">Rate</span><span class="s-val" id="sum-rate">—</span></div>
-            <div class="summary-row"><span class="s-label">Court Subtotal</span><span class="s-val" id="sum-subtotal">₱0.00</span></div>
+            <div class="summary-row"><span class="s-label">Court Subtotal</span><span class="s-val"
+                    id="sum-subtotal">₱0.00</span></div>
             <div class="summary-row">
                 <span class="s-label">Platform Fee</span>
                 <span class="s-val" id="sum-fee">
                     {% if current_user.is_pro %}
-                    <span style="color:#10b981;font-weight:700;"><i class="ph ph-crown-simple"></i> ₱0.00 (Pro Perk)</span>
+                    <span style="color:#10b981;font-weight:700;"><i class="ph ph-crown-simple"></i> ₱0.00 (Pro
+                        Perk)</span>
                     {% else %}
                     <span style="color:var(--text-muted);">₱0.00 (Free)</span>
                     {% endif %}
@@ -2555,7 +2661,8 @@
                     <i class="ph ph-lock-key-open"></i> Confirm &amp; Pay
                 </button>
             </form>
-            <p id="sum-hint" style="font-size:.72rem;color:var(--text-muted);text-align:center;margin-top:8px;">Choose an available court on the map to continue</p>
+            <p id="sum-hint" style="font-size:.72rem;color:var(--text-muted);text-align:center;margin-top:8px;">Choose
+                an available court on the map to continue</p>
         </div>
     </div>
 </div>
@@ -2599,15 +2706,15 @@
         "July", "August", "September", "October", "November", "December"
     ];
 
-    function fmt12(h, m = 0) { 
+    function fmt12(h, m = 0) {
         const hNum = parseInt(h, 10);
         const mNum = parseInt(m, 10) || 0;
         const minStr = mNum > 0 ? `:${String(mNum).padStart(2, '0')}` : ':00';
-        
+
         let ap = (hNum >= 12 && hNum < 24) ? 'PM' : 'AM';
         let h12 = hNum % 12;
         if (h12 === 0) h12 = 12;
-        return `${h12}${minStr} ${ap}`; 
+        return `${h12}${minStr} ${ap}`;
     }
 
     function formatTimeString12(timeStr) {
@@ -2644,16 +2751,16 @@
         card.classList.add('selected');
         const selBtn = card.querySelector('.btn-select-fac');
         if (selBtn) selBtn.innerHTML = '<span>Selected Facility</span> <i class="ph ph-check-circle"></i>';
-        
-        state.facility = { 
-            id: card.dataset.id, 
-            name: card.dataset.name, 
-            open: card.dataset.open || '08:00', 
+
+        state.facility = {
+            id: card.dataset.id,
+            name: card.dataset.name,
+            open: card.dataset.open || '08:00',
             close: card.dataset.close || '21:00',
             open12: card.dataset.open12 || '8:00 AM',
             close12: card.dataset.close12 || '9:00 PM'
         };
-        
+
         document.getElementById('s2-fac-name').textContent = card.dataset.name;
         document.getElementById('inp-facility-id').value = card.dataset.id;
         document.getElementById('sum-facility').textContent = card.dataset.name;
@@ -2681,7 +2788,7 @@
         // If current hour has already reached/passed facility close, default to tomorrow!
         const now = new Date();
         const todayStr = getLocalIsoDate(now);
-        
+
         let closeH = parseInt(state.facility.close.substring(0, 2), 10);
         if (isNaN(closeH) || closeH === 0) closeH = 24;
 
@@ -2926,7 +3033,7 @@
         state.selectedDate = document.getElementById('select-date').value;
         state.duration = parseInt(document.getElementById('select-duration').value) || 1;
         state.partySize = parseInt(document.getElementById('select-party-size').value) || 1;
-        
+
         // Reset selections
         state.startTime = null;
         state.endTime = null;
@@ -2944,18 +3051,24 @@
             // Fetch occupancy API
             const res = await fetch(`/player/reservation/api/facility_occupancy?facility_id=${state.facility.id}&date=${state.selectedDate}`);
             const data = await res.json();
-            
+
             state.courtsList = data.courts || [];
             state.reservationsList = data.reservations || [];
-            
+
             renderStartTimes();
+            renderCourtTimeline();
         } catch (err) {
             console.error("Error fetching facility occupancy:", err);
             const summaryEl = document.getElementById('selectedDateAvailabilitySummary');
             if (summaryEl) summaryEl.innerHTML = '<span style="color:#ef4444;"><i class="ph ph-warning-circle"></i> Failed to load time slots. Please try again.</span>';
         } finally {
             if (loadingEl) loadingEl.style.display = 'none';
-            if (groupedEl) groupedEl.style.display = 'block';
+            if (currentScheduleViewMode === 'slots') {
+                if (groupedEl) groupedEl.style.display = 'block';
+            } else {
+                const timelineEl = document.getElementById('courtTimelineMatrixWrap');
+                if (timelineEl) timelineEl.style.display = 'block';
+            }
         }
     }
 
@@ -3115,6 +3228,10 @@
         if (state.selectedDate === todayStr && allSlotsPast && alertPast) {
             alertPast.style.display = 'flex';
         }
+
+        if (currentScheduleViewMode === 'timeline') {
+            renderCourtTimeline();
+        }
     }
 
     function isOverlapping(s1, e1, s2, e2) {
@@ -3128,12 +3245,210 @@
     function selectStartTime(h) {
         state.startTime = h;
         state.endTime = h + state.duration;
-        
+
         document.querySelectorAll('.slot-time-card').forEach(c => c.classList.remove('selected'));
         const chosen = document.querySelector(`.slot-time-card[data-hour="${h}"]`);
         if (chosen) chosen.classList.add('selected');
 
         renderVisualCourtMap();
+        goStep(3);
+    }
+
+
+    /* ── Interactive Court Schedule Timeline View ── */
+    let currentScheduleViewMode = 'slots';
+    let currentTimelinePeriodFilter = 'all';
+
+    function setScheduleViewMode(mode) {
+        currentScheduleViewMode = mode;
+        const btnSlots = document.getElementById('btnViewSlots');
+        const btnTimeline = document.getElementById('btnViewTimeline');
+        const slotsEl = document.getElementById('groupedTimeSlots');
+        const timelineEl = document.getElementById('courtTimelineMatrixWrap');
+
+        if (mode === 'timeline') {
+            if (btnSlots) btnSlots.classList.remove('active');
+            if (btnTimeline) btnTimeline.classList.add('active');
+            if (slotsEl) slotsEl.style.display = 'none';
+            if (timelineEl) timelineEl.style.display = 'block';
+            renderCourtTimeline();
+        } else {
+            if (btnSlots) btnSlots.classList.add('active');
+            if (btnTimeline) btnTimeline.classList.remove('active');
+            if (slotsEl) slotsEl.style.display = 'block';
+            if (timelineEl) timelineEl.style.display = 'none';
+        }
+    }
+
+    function setTimelinePeriodFilter(filter) {
+        currentTimelinePeriodFilter = filter;
+        renderCourtTimeline();
+    }
+
+    function renderCourtTimeline() {
+        const container = document.getElementById('courtTimelineContent');
+        if (!container) return;
+
+        if (!state.courtsList || !state.courtsList.length) {
+            container.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-muted);"><i class="ph ph-warning-circle" style="font-size:1.5rem;display:block;margin-bottom:6px;"></i>No active courts found for this venue.</div>';
+            return;
+        }
+
+        let openHour = parseInt(state.facility?.open?.substring(0, 2), 10) || 8;
+        let closeHour = parseInt(state.facility?.close?.substring(0, 2), 10);
+        if (isNaN(closeHour) || closeHour === 0) closeHour = 24;
+
+        const now = new Date();
+        const todayStr = getLocalIsoDate(now);
+        const currentHour = now.getHours();
+
+        // Natural daylight periods fitting ordinary laptop screens (4-5 cols max per table)
+        const periods = [
+            {
+                id: 'morning',
+                label: 'Morning',
+                sublabel: 'Until 12:00 PM',
+                icon: 'ph-sun-horizon',
+                startHour: openHour,
+                endHour: Math.min(closeHour, 12)
+            },
+            {
+                id: 'afternoon',
+                label: 'Afternoon',
+                sublabel: '12:00 PM – 5:00 PM',
+                icon: 'ph-sun',
+                startHour: Math.max(openHour, 12),
+                endHour: Math.min(closeHour, 17)
+            },
+            {
+                id: 'evening',
+                label: 'Evening',
+                sublabel: '5:00 PM Onwards',
+                icon: 'ph-moon-stars',
+                startHour: Math.max(openHour, 17),
+                endHour: closeHour
+            }
+        ];
+
+        const validPeriods = periods.filter(p => p.startHour < p.endHour);
+        const periodsToShow = currentTimelinePeriodFilter === 'all'
+            ? validPeriods
+            : validPeriods.filter(p => p.id === currentTimelinePeriodFilter);
+
+        let html = `
+            <div class="timeline-toolbar-bar">
+                <div class="timeline-period-tabs">
+                    <button type="button" class="timeline-tab-btn ${currentTimelinePeriodFilter === 'all' ? 'active' : ''}" onclick="setTimelinePeriodFilter('all')">
+                        <i class="ph ph-squares-four"></i> All Periods
+                    </button>
+                    ${validPeriods.map(p => `
+                        <button type="button" class="timeline-tab-btn ${currentTimelinePeriodFilter === p.id ? 'active' : ''}" onclick="setTimelinePeriodFilter('${p.id}')">
+                            <i class="ph ${p.icon}"></i> ${p.label}
+                        </button>
+                    `).join('')}
+                </div>
+                <div class="timeline-legend-row">
+                    <span><span class="legend-dot" style="background:#10b981;"></span> Open</span>
+                    <span><span class="legend-dot" style="background:#ef4444;"></span> Booked</span>
+                    <span><span class="legend-dot" style="background:#8b5cf6;"></span> Event</span>
+                    <span><span class="legend-dot" style="background:#94a3b8;"></span> Past</span>
+                </div>
+            </div>
+        `;
+
+        if (!periodsToShow.length) {
+            html += '<div style="padding:24px;text-align:center;color:var(--text-muted);"><i class="ph ph-calendar-x" style="font-size:1.5rem;display:block;margin-bottom:6px;"></i>No operating court hours found in this period.</div>';
+        } else {
+            periodsToShow.forEach(p => {
+                const hours = [];
+                for (let h = p.startHour; h < p.endHour; h++) {
+                    hours.push(h);
+                }
+
+                html += `
+                    <div class="timeline-period-block">
+                        <div class="timeline-period-header">
+                            <div class="timeline-period-title">
+                                <i class="ph ${p.icon}"></i> ${p.label}
+                                <span style="font-size:0.74rem;font-weight:600;color:var(--text-muted);margin-left:4px;">(${p.sublabel})</span>
+                            </div>
+                            <div class="timeline-period-meta">${hours.length} hour slot${hours.length > 1 ? 's' : ''} &bull; Tap green slot to reserve</div>
+                        </div>
+                        <div class="court-timeline-table-wrap">
+                            <table class="court-timeline-table">
+                                <thead>
+                                    <tr>
+                                        <th class="timeline-court-header">Court</th>
+                                        ${hours.map(h => `<th>${fmt12(h)}</th>`).join('')}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${state.courtsList.map(c => `
+                                        <tr>
+                                            <td class="timeline-court-header">
+                                                <div class="timeline-court-info">
+                                                    <span class="timeline-court-name" title="${c.name}">${c.name}</span>
+                                                    <span class="timeline-court-sub">${(c.type || 'Court').toUpperCase()} &bull; ₱${parseFloat(c.hourly_rate).toFixed(0)}/hr</span>
+                                                </div>
+                                            </td>
+                                            ${hours.map(h => {
+                                                const startStr = `${String(h).padStart(2, '0')}:00`;
+                                                const endStr = `${String(h + state.duration).padStart(2, '0')}:00`;
+                                                const isPast = (state.selectedDate === todayStr && h <= currentHour);
+                                                const exceedsClose = (h + state.duration > closeHour);
+
+                                                const occupiedBooking = state.reservationsList.find(r => {
+                                                    if (r.court_id !== c.id) return false;
+                                                    return isOverlapping(r.start_time, r.end_time, startStr, endStr);
+                                                });
+
+                                                const isSelected = (state.court && state.court.id === c.id && state.startTime === h);
+
+                                                if (isPast) {
+                                                    return `<td><div class="timeline-cell-slot past" title="Past hour today"><span>Past</span></div></td>`;
+                                                } else if (exceedsClose) {
+                                                    return `<td><div class="timeline-cell-slot past" title="Selected duration exceeds venue closing hour"><span>Closed</span></div></td>`;
+                                                } else if (occupiedBooking) {
+                                                    if (occupiedBooking.type === 'event') {
+                                                        const evTitle = (occupiedBooking.title || 'Club Event').replace(/"/g, '&quot;');
+                                                        return `<td><div class="timeline-cell-slot event" title="Event: ${evTitle}"><span>Event</span></div></td>`;
+                                                    } else {
+                                                        return `<td><div class="timeline-cell-slot booked" title="Occupied reservation"><span>Booked</span></div></td>`;
+                                                    }
+                                                } else {
+                                                    const slotClass = isSelected ? 'timeline-cell-slot selected' : 'timeline-cell-slot avail';
+                                                    const cellText = isSelected ? 'Selected' : `₱${parseFloat(c.hourly_rate).toFixed(0)}`;
+                                                    return `<td><div class="${slotClass}" onclick="selectTimelineSlot('${c.id}', ${h})" title="Reserve ${c.name} at ${fmt12(h)} (${state.duration} hr${state.duration > 1 ? 's' : ''})"><span>${cellText}</span></div></td>`;
+                                                }
+                                            }).join('')}
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        container.innerHTML = html;
+    }
+
+    function selectTimelineSlot(courtId, hour) {
+        state.startTime = hour;
+        state.endTime = hour + state.duration;
+        state.targetCourtId = courtId;
+        const court = state.courtsList.find(c => c.id === courtId);
+        if (court) {
+            state.court = {
+                id: court.id,
+                name: court.name,
+                rate: parseFloat(court.hourly_rate)
+            };
+        }
+        renderCourtTimeline();
+        renderVisualCourtMap();
+        updateSummary();
         goStep(3);
     }
 
@@ -3149,7 +3464,7 @@
 
         const mapContainer = document.getElementById('visual-court-map');
         const mapLoading = document.getElementById('map-loading');
-        
+
         mapLoading.style.display = 'none';
         mapContainer.style.display = 'grid';
         mapContainer.innerHTML = '';
@@ -3223,7 +3538,7 @@
             if (!isOccupied) {
                 card.onclick = () => selectCourtMapCard(card);
             }
-            
+
             mapContainer.appendChild(card);
         });
 
@@ -3254,16 +3569,16 @@
                 badge.innerHTML = '<i class="ph ph-check-circle"></i> Available';
             }
         });
-        
+
         card.classList.add('selected');
         const badge = card.querySelector('.visual-court-status-badge');
         badge.className = 'visual-court-status-badge selected-badge';
         badge.innerHTML = '<i class="ph ph-circle-wavy-check"></i> Selected';
-        
-        state.court = { 
-            id: card.dataset.id, 
-            name: card.dataset.name, 
-            rate: parseFloat(card.dataset.rate) 
+
+        state.court = {
+            id: card.dataset.id,
+            name: card.dataset.name,
+            rate: parseFloat(card.dataset.rate)
         };
 
         updateSummary();
@@ -3271,7 +3586,7 @@
 
     function updateSummary() {
         const dateInput = document.getElementById('select-date').value;
-        
+
         if (!state.court || !state.startTime) {
             document.getElementById('sum-court').textContent = '—';
             document.getElementById('sum-date').textContent = dateInput || '—';
@@ -3300,10 +3615,10 @@
         document.getElementById('sum-time').textContent = `${fmt12(startH)} – ${fmt12(endH)}`;
         document.getElementById('sum-hours').textContent = `${totalHrs} hour${totalHrs !== 1 ? 's' : ''}`;
         document.getElementById('sum-rate').textContent = '₱' + state.court.rate.toFixed(2) + '/hr';
-        
+
         const subEl = document.getElementById('sum-subtotal');
         if (subEl) subEl.textContent = '₱' + subtotal.toFixed(2);
-        
+
         const feeEl = document.getElementById('sum-fee');
         if (feeEl) {
             if (USER_IS_PRO) {
@@ -3312,7 +3627,7 @@
                 feeEl.innerHTML = '<span style="color:var(--text-muted);">₱0.00 (Free)</span>';
             }
         }
-        
+
         document.getElementById('sum-total').textContent = '₱' + total.toFixed(2);
 
         // Fill hidden inputs
@@ -3386,7 +3701,7 @@
     function openProEarlyAccessModal(dateStr, daysAhead, isWeekend = false) {
         const modal = document.getElementById('pro-early-access-modal');
         if (!modal) return;
-        
+
         const dateTitleEl = document.getElementById('modal-early-date-str');
         const daysAheadEl = document.getElementById('modal-early-days-ahead');
         const subtitleNoteEl = document.getElementById('modal-early-subtitle-note');
@@ -3399,7 +3714,7 @@
                 const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
                 formattedDate = dateObj.toLocaleDateString('en-US', options);
                 if (dateTitleEl) dateTitleEl.textContent = formattedDate;
-            } catch(e) {
+            } catch (e) {
                 if (dateTitleEl) dateTitleEl.textContent = dateStr;
             }
         } else {
@@ -3468,7 +3783,7 @@
             if (resp.ok && data.success) {
                 USER_IS_PRO = true;
                 USER_MAX_ADVANCE_DAYS = 14;
-                
+
                 // Update banner
                 const banner = document.getElementById('calAccessBanner');
                 if (banner) {
@@ -3528,7 +3843,7 @@
     }
 
     // Close modals on Escape key
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             closeFacilityTeamModal();
             closeMapModal();
@@ -3537,7 +3852,7 @@
     });
 
     // Auto-advance if facility_id or court_id passed in URL or template
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const urlParams = new URLSearchParams(window.location.search);
         const preFacId = "{{ preselected_facility_id or '' }}" || urlParams.get('facility_id');
         const preCourtId = "{{ preselected_court_id or '' }}" || urlParams.get('court_id');
@@ -3567,24 +3882,34 @@
 </div>
 
 <!-- Facility Management & Team Modal -->
-<div class="modal-backdrop" id="facility-team-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);" onclick="if(event.target === this) closeFacilityTeamModal();">
-    <div style="max-width:500px; width:92%; background:var(--card-bg); border-radius:18px; border:1px solid var(--border-color); box-shadow:0 24px 48px rgba(0,0,0,0.35); overflow:hidden;">
-        <div style="padding:16px 20px; border-bottom:1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between;">
+<div class="modal-backdrop" id="facility-team-modal"
+    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);"
+    onclick="if(event.target === this) closeFacilityTeamModal();">
+    <div
+        style="max-width:500px; width:92%; background:var(--card-bg); border-radius:18px; border:1px solid var(--border-color); box-shadow:0 24px 48px rgba(0,0,0,0.35); overflow:hidden;">
+        <div
+            style="padding:16px 20px; border-bottom:1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between;">
             <div>
-                <h4 style="margin:0; font-size:1.05rem; font-weight:800; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
+                <h4
+                    style="margin:0; font-size:1.05rem; font-weight:800; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
                     <i class="ph ph-users-three" style="color:var(--primary-orange);"></i> Facility Management
                 </h4>
-                <p id="team-modal-facility-name" style="margin:3px 0 0 0; font-size:0.75rem; color:var(--text-muted); font-weight:600;"></p>
+                <p id="team-modal-facility-name"
+                    style="margin:3px 0 0 0; font-size:0.75rem; color:var(--text-muted); font-weight:600;"></p>
             </div>
-            <button type="button" onclick="closeFacilityTeamModal()" style="background:var(--input-bg); border:1px solid var(--border-color); color:var(--text-primary); border-radius:50%; width:32px; height:32px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">
+            <button type="button" onclick="closeFacilityTeamModal()"
+                style="background:var(--input-bg); border:1px solid var(--border-color); color:var(--text-primary); border-radius:50%; width:32px; height:32px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">
                 <i class="ph ph-x"></i>
             </button>
         </div>
-        <div id="team-modal-list" style="padding:18px 20px; max-height:380px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;">
+        <div id="team-modal-list"
+            style="padding:18px 20px; max-height:380px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;">
             <!-- Populated dynamically -->
         </div>
-        <div style="padding:12px 20px; background:var(--input-bg); border-top:1px solid var(--border-color); display:flex; justify-content:flex-end;">
-            <button type="button" onclick="closeFacilityTeamModal()" style="padding:7px 18px; border-radius:10px; border:1px solid var(--border-color); background:var(--card-bg); color:var(--text-primary); font-size:0.82rem; font-weight:700; cursor:pointer; font-family:inherit;">
+        <div
+            style="padding:12px 20px; background:var(--input-bg); border-top:1px solid var(--border-color); display:flex; justify-content:flex-end;">
+            <button type="button" onclick="closeFacilityTeamModal()"
+                style="padding:7px 18px; border-radius:10px; border:1px solid var(--border-color); background:var(--card-bg); color:var(--text-primary); font-size:0.82rem; font-weight:700; cursor:pointer; font-family:inherit;">
                 Done
             </button>
         </div>
@@ -3592,7 +3917,9 @@
 </div>
 
 <!-- Pro Early Access Upgrade Modal -->
-<div class="modal-backdrop" id="pro-early-access-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.72); z-index:99999; align-items:center; justify-content:center; backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px);" onclick="if(event.target === this) closeProEarlyAccessModal();">
+<div class="modal-backdrop" id="pro-early-access-modal"
+    style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.72); z-index:99999; align-items:center; justify-content:center; backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px);"
+    onclick="if(event.target === this) closeProEarlyAccessModal();">
     <div class="early-access-modal-card">
         <div class="early-access-header">
             <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
@@ -3600,10 +3927,13 @@
                     <span class="early-access-pill"><i class="ph ph-crown-simple"></i> PRO EARLY ACCESS</span>
                     <h4 class="early-access-title" id="modal-early-title">Lock In Peak Dates Early</h4>
                     <p class="early-access-desc" id="modal-early-subtitle-note">
-                        Booking for <strong id="modal-early-date-str">Selected Date</strong> is <strong id="modal-early-days-ahead">4</strong> days ahead. Free players can reserve up to 3 days in advance. Upgrade to Pro Player Pass to unlock 14-day early access!
+                        Booking for <strong id="modal-early-date-str">Selected Date</strong> is <strong
+                            id="modal-early-days-ahead">4</strong> days ahead. Free players can reserve up to 3 days in
+                        advance. Upgrade to Pro Player Pass to unlock 14-day early access!
                     </p>
                 </div>
-                <button type="button" onclick="closeProEarlyAccessModal()" style="background:var(--input-bg); border:1px solid var(--border-color); color:var(--text-primary); border-radius:50%; width:32px; height:32px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s; flex-shrink:0;">
+                <button type="button" onclick="closeProEarlyAccessModal()"
+                    style="background:var(--input-bg); border:1px solid var(--border-color); color:var(--text-primary); border-radius:50%; width:32px; height:32px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s; flex-shrink:0;">
                     <i class="ph ph-x"></i>
                 </button>
             </div>
@@ -3618,21 +3948,24 @@
                 </div>
             </div>
             <div class="early-perk-item">
-                <div class="early-perk-icon" style="background:rgba(16,185,129,0.12); color:#10b981;"><i class="ph ph-tag"></i></div>
+                <div class="early-perk-icon" style="background:rgba(16,185,129,0.12); color:#10b981;"><i
+                        class="ph ph-tag"></i></div>
                 <div class="early-perk-text">
                     <h5>₱0 Platform Convenience Fees</h5>
                     <p>Save ₱25 on every single booking with unlimited active reservations.</p>
                 </div>
             </div>
             <div class="early-perk-item">
-                <div class="early-perk-icon" style="background:rgba(255,87,34,0.12); color:var(--primary-orange);"><i class="ph ph-lightning"></i></div>
+                <div class="early-perk-icon" style="background:rgba(255,87,34,0.12); color:var(--primary-orange);"><i
+                        class="ph ph-lightning"></i></div>
                 <div class="early-perk-text">
                     <h5>Priority Matchmaker Queue</h5>
                     <p>Skip open play waitlists and get paired into skill-balanced matches faster.</p>
                 </div>
             </div>
             <div class="early-perk-item">
-                <div class="early-perk-icon" style="background:rgba(245,158,11,0.12); color:#d97706;"><i class="ph ph-medal"></i></div>
+                <div class="early-perk-icon" style="background:rgba(245,158,11,0.12); color:#d97706;"><i
+                        class="ph ph-medal"></i></div>
                 <div class="early-perk-text">
                     <h5>Verified Gold "PRO" Badge</h5>
                     <p>Exclusive athlete badge displayed across leaderboards, chats, and club rosters.</p>
@@ -3640,8 +3973,10 @@
             </div>
         </div>
 
-        {% set player_pro_m = (tier_pricing.player.pro.price_monthly if tier_pricing and tier_pricing.player and tier_pricing.player.pro else 199) %}
-        {% set player_pro_a = (tier_pricing.player.pro.price_annual if tier_pricing and tier_pricing.player and tier_pricing.player.pro else 149) %}
+        {% set player_pro_m = (tier_pricing.player.pro.price_monthly if tier_pricing and tier_pricing.player and
+        tier_pricing.player.pro else 199) %}
+        {% set player_pro_a = (tier_pricing.player.pro.price_annual if tier_pricing and tier_pricing.player and
+        tier_pricing.player.pro else 149) %}
         <div class="early-pricing-callout">
             <div>
                 <div class="price-tag">₱{{ "{:,.0f}".format(player_pro_m) }} <span>/ month</span></div>
@@ -3654,20 +3989,24 @@
 
         <div class="early-modal-actions">
             {% if current_user.is_subscription_pending %}
-            <a href="{{ url_for('billing.subscription_dashboard') }}" class="btn-upgrade-pro-action" style="text-decoration:none; background:#f59e0b;">
+            <a href="{{ url_for('billing.subscription_page') }}" class="btn-upgrade-pro-action"
+                style="text-decoration:none; background:#f59e0b;">
                 <i class="ph ph-clock-countdown"></i> Pro Verification Under Review (Check Status)
             </a>
             {% elif current_user.is_subscription_rejected %}
-            <a href="{{ url_for('billing.subscription_dashboard') }}" class="btn-upgrade-pro-action" style="text-decoration:none; background:#ef4444;">
+            <a href="{{ url_for('billing.subscription_page') }}" class="btn-upgrade-pro-action"
+                style="text-decoration:none; background:#ef4444;">
                 <i class="ph ph-arrow-counter-clockwise"></i> Resubmit GCash Payment Proof
             </a>
             {% else %}
-            <a href="{{ url_for('billing.checkout_page', plan='pro', cycle='monthly', return_to=url_for('player.reservation')) }}" class="btn-upgrade-pro-action" style="text-decoration:none;">
+            <a href="{{ url_for('billing.checkout_page', plan='pro', cycle='monthly', return_to=url_for('player.reservation')) }}"
+                class="btn-upgrade-pro-action" style="text-decoration:none;">
                 <i class="ph ph-credit-card"></i> Upgrade with GCash (₱{{ "{:,.0f}".format(player_pro_m) }}/mo)
             </a>
             {% endif %}
             <div style="display:flex; gap:8px;">
-                <button type="button" class="btn-pick-valid-date" style="flex:1;" id="btnUpgradeProSubmit" onclick="handleUpgradeToPro()" title="Quick 1-click Pro instant activation">
+                <button type="button" class="btn-pick-valid-date" style="flex:1;" id="btnUpgradeProSubmit"
+                    onclick="handleUpgradeToPro()" title="Quick 1-click Pro instant activation">
                     <i class="ph ph-lightning"></i> 1-Click Instant Upgrade
                 </button>
                 <button type="button" class="btn-pick-valid-date" style="flex:1;" onclick="pickNearestAvailableDate()">

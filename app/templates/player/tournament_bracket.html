@@ -497,6 +497,45 @@
         to { stroke-dashoffset: -18; }
     }
 
+    /* Live Sync Indicator Pill */
+    .live-sync-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 6px 14px;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        letter-spacing: 0.2px;
+        transition: opacity 0.2s ease;
+    }
+    .live-sync-indicator.paused {
+        background: rgba(100, 116, 139, 0.1);
+        color: #64748b;
+        border-color: rgba(100, 116, 139, 0.3);
+    }
+    .live-pulse-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #10b981;
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        animation: pulse-green 2s infinite;
+    }
+    .live-sync-indicator.paused .live-pulse-dot {
+        background: #94a3b8;
+        animation: none;
+        box-shadow: none;
+    }
+    @keyframes pulse-green {
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+        70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
     /* ── Round Column ── */
     .bracket-round {
         display: flex;
@@ -954,6 +993,9 @@
         </div>
 
         <div class="bracket-hero-actions">
+            <span class="live-sync-indicator" id="liveSyncPill" title="Live match updates active every 10 seconds">
+                <span class="live-pulse-dot"></span> <span id="liveSyncText">Live Sync Active</span>
+            </span>
             {% if event.status == 'completed' %}
             <span class="tourn-status-badge completed">
                 <i class="ph ph-check-circle"></i> Tournament Completed
@@ -1404,5 +1446,111 @@
     if (document.getElementById('champion-banner')) {
         setTimeout(launchConfetti, 350);
     }
+
+    // ── Live Bracket Auto-Sync Engine (10s Polling) ─────────────────────────
+    const EVENT_ID = "{{ event.id }}";
+    const CURRENT_PLAYER_ID = "{{ player_id }}";
+    let pollInterval = null;
+
+    async function syncBracketData() {
+        const pill = document.getElementById('liveSyncPill');
+        const txt = document.getElementById('liveSyncText');
+
+        if (document.hidden) {
+            if (pill) pill.classList.add('paused');
+            if (txt) txt.textContent = 'Sync Paused';
+            return;
+        }
+
+        if (pill) pill.classList.remove('paused');
+        if (txt) txt.textContent = 'Live Sync Active';
+
+        try {
+            const resp = await fetch("{{ url_for('player.api_tournament_bracket', event_id=event.id) }}", {
+                headers: { 'Accept': 'application/json' }
+            });
+            if (!resp.ok) return;
+            const data = await resp.json();
+            if (!data.success || !data.matches) return;
+
+            let hasUpdates = false;
+
+            // Process match nodes
+            data.matches.forEach(m => {
+                const node = document.querySelector(`.match-node[data-match-id="${m.id}"]`);
+                if (!node) {
+                    hasUpdates = true;
+                    return;
+                }
+
+                const prevStatus = node.dataset.status;
+                if (prevStatus !== m.status) {
+                    node.dataset.status = m.status;
+                    if (m.status === 'completed') {
+                        node.classList.add('is-done');
+                    }
+                    hasUpdates = true;
+                }
+
+                const rows = node.querySelectorAll('.mp-row');
+                if (rows.length >= 2) {
+                    const p1Row = rows[0];
+                    const p2Row = rows[1];
+                    const p1ScoreEl = p1Row.querySelector('.mp-score');
+                    const p2ScoreEl = p2Row.querySelector('.mp-score');
+
+                    if (m.player1_score !== null && p1ScoreEl) {
+                        if (p1ScoreEl.textContent.trim() !== String(m.player1_score)) {
+                            p1ScoreEl.textContent = m.player1_score;
+                            hasUpdates = true;
+                        }
+                    }
+                    if (m.player2_score !== null && p2ScoreEl) {
+                        if (p2ScoreEl.textContent.trim() !== String(m.player2_score)) {
+                            p2ScoreEl.textContent = m.player2_score;
+                            hasUpdates = true;
+                        }
+                    }
+
+                    if (m.status === 'completed') {
+                        const p1Won = (m.winner_id && m.winner_id === m.player1_id) || (m.winner_guest_name && m.winner_guest_name === m.player1_guest_name);
+                        const p2Won = (m.winner_id && m.winner_id === m.player2_id) || (m.winner_guest_name && m.winner_guest_name === m.player2_guest_name);
+
+                        if (p1Won) {
+                            p1Row.classList.add('is-winner');
+                            p1Row.classList.remove('is-loser');
+                            p2Row.classList.add('is-loser');
+                            p2Row.classList.remove('is-winner');
+                        } else if (p2Won) {
+                            p2Row.classList.add('is-winner');
+                            p2Row.classList.remove('is-loser');
+                            p1Row.classList.add('is-loser');
+                            p1Row.classList.remove('is-winner');
+                        }
+                    }
+                }
+            });
+
+            if (hasUpdates) {
+                setTimeout(drawConnectors, 60);
+
+                if (data.event && data.event.status === 'completed' && !document.getElementById('champion-banner')) {
+                    window.location.reload();
+                }
+            }
+        } catch (e) {
+            console.warn('[Bracket Sync] poll error:', e);
+        }
+    }
+
+    // Start 10s auto-polling
+    pollInterval = setInterval(syncBracketData, 10000);
+
+    // Page Visibility API listeners (pause on background tab, resume on focus)
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            syncBracketData();
+        }
+    });
 </script>
 {% endblock %}

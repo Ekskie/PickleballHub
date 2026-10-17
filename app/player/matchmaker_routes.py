@@ -1,6 +1,6 @@
 from flask import render_template, request, redirect, url_for, session, flash, jsonify
 from app.decorators import require_role
-from datetime import datetime
+from datetime import datetime, timedelta
 from app.db import get_db, get_admin_db
 from app.player import player_bp
 from app.player.routes import PH_TZ
@@ -38,6 +38,64 @@ def get_lobby_display_status(lobby_status, res_date, res_start, res_end):
         return lobby_status
 
 
+def cleanup_expired_completed_lobbies(admin_db):
+    """
+    Automatically clean up / delete matchmaking lobbies that have been completed for at least a day (24 hours).
+    Keeps the active Open Play Matchmaker board clean, minimal, and free of stale matches.
+    """
+    if not admin_db:
+        return
+    try:
+        now = datetime.now(PH_TZ)
+        resp = admin_db.table('matchmaker_lobbies').select(
+            'id, status, created_at, reservation:court_reservations(date, start_time, end_time)'
+        ).execute()
+
+        expired_ids = []
+        for lobby in (resp.data or []):
+            status = lobby.get('status')
+            res = lobby.get('reservation') or {}
+            res_date = res.get('date')
+            res_end = res.get('end_time')
+            end_dt = None
+
+            if res_date and res_end:
+                try:
+                    end_str = f"{res_date} {str(res_end)[:5]}"
+                    end_dt = datetime.strptime(end_str, '%Y-%m-%d %H:%M').replace(tzinfo=PH_TZ)
+                except Exception:
+                    pass
+
+            # Determine whether the lobby is completed (either explicitly marked completed, or its court reservation has passed)
+            is_completed = (status == 'completed')
+            if not is_completed and end_dt and now > end_dt and status in ['open', 'full']:
+                is_completed = True
+
+            # If completed or cancelled, check if at least 1 day (24 hours) has elapsed since match end
+            if is_completed or status == 'cancelled':
+                ref_dt = end_dt
+                if not ref_dt and lobby.get('created_at'):
+                    try:
+                        ref_dt = datetime.fromisoformat(lobby['created_at'].replace('Z', '+00:00')).astimezone(PH_TZ)
+                    except Exception:
+                        pass
+
+                if ref_dt and (now - ref_dt) >= timedelta(days=1):
+                    expired_ids.append(lobby['id'])
+
+        for eid in expired_ids:
+            try:
+                admin_db.table('matchmaker_lobbies').delete().eq('id', eid).execute()
+            except Exception as del_err:
+                print(f"[cleanup_expired_completed_lobbies] Error deleting lobby {eid}: {del_err}")
+
+        if expired_ids:
+            print(f"[cleanup_expired_completed_lobbies] Successfully auto-deleted {len(expired_ids)} expired lobbies (>1 day old).")
+
+    except Exception as e:
+        print(f"[cleanup_expired_completed_lobbies] Auto-cleanup check failed: {e}")
+
+
 def format_time_12h(time_str):
     if not time_str:
         return ''
@@ -70,6 +128,10 @@ def matchmaker():
     player_id = session.get('user_id')
     db = get_db()
     admin_db = get_admin_db()
+
+    # Automatically purge lobbies that have been completed for at least 1 day
+    cleanup_expired_completed_lobbies(admin_db)
+
     lobbies = []
     reservations = []
     search_query = request.args.get('search', '').strip()
@@ -1007,6 +1069,19 @@ def matchmaker_report(lobby_id):
             # Trigger rating updates
             update_matchmaker_ratings(admin_db, lobby_id)
             
+            # Notify all players that the dispute has been officially resolved
+            try:
+                for pid in joined_player_ids:
+                    admin_db.table('notifications').insert({
+                        'user_id': pid,
+                        'title': '⚖️ Match Dispute Resolved',
+                        'message': f"Facility staff on duty has reviewed the dispute for '{lobby.get('title', 'Match')}' and recorded the official final score: {score}. Ratings have been updated.",
+                        'type': 'info',
+                        'link': f"/player/matchmaker/{lobby_id}"
+                    }).execute()
+            except Exception as notif_err:
+                print(f"Error sending mediation resolution notifications: {notif_err}")
+
             flash("Match score finalized and ratings updated by staff!", "success")
             return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
 

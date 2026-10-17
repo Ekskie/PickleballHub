@@ -563,18 +563,18 @@
 
     <!-- Filter Tabs -->
     <div class="res-drawer-tabs">
-        <button type="button" class="drawer-tab active" data-filter="all" onclick="filterDrawerBookings('all', this)">
+        <button type="button" class="drawer-tab" data-filter="all" onclick="filterDrawerBookings('all', this, true)">
             All <span class="drawer-tab-count" id="count-all">0</span>
         </button>
-        <button type="button" class="drawer-tab" data-filter="pending" onclick="filterDrawerBookings('pending', this)">
+        <button type="button" class="drawer-tab" data-filter="pending" onclick="filterDrawerBookings('pending', this, true)">
             <i class="ph ph-hourglass-medium" style="color:#f59e0b;"></i> Pending
             <span class="drawer-tab-count" id="count-pending">0</span>
         </button>
-        <button type="button" class="drawer-tab" data-filter="confirmed" onclick="filterDrawerBookings('confirmed', this)">
+        <button type="button" class="drawer-tab" data-filter="confirmed" onclick="filterDrawerBookings('confirmed', this, true)">
             <i class="ph ph-check-circle" style="color:#16a34a;"></i> Accepted
             <span class="drawer-tab-count" id="count-confirmed">0</span>
         </button>
-        <button type="button" class="drawer-tab" data-filter="cancelled" onclick="filterDrawerBookings('cancelled', this)">
+        <button type="button" class="drawer-tab" data-filter="cancelled" onclick="filterDrawerBookings('cancelled', this, true)">
             <i class="ph ph-x-circle" style="color:#dc2626;"></i> Declined
             <span class="drawer-tab-count" id="count-cancelled">0</span>
         </button>
@@ -601,6 +601,7 @@
 <script>
     (function() {
         let currentDrawerFilter = 'all';
+        let userHasManuallySelectedFilter = false;
 
         function getCsrfToken() {
             const meta = document.querySelector('meta[name="csrf-token"]');
@@ -634,8 +635,11 @@
             if (e.key === 'Escape') window.closeResDrawer();
         });
 
-        window.filterDrawerBookings = function(filter, btn) {
+        window.filterDrawerBookings = function(filter, btn, isManual) {
             currentDrawerFilter = filter;
+            if (isManual) {
+                userHasManuallySelectedFilter = true;
+            }
             document.querySelectorAll('.drawer-tab').forEach(t => t.classList.remove('active'));
             if (btn) btn.classList.add('active');
 
@@ -861,8 +865,21 @@
                 `;
             });
 
+            // Priority detection: If user hasn't manually selected a filter,
+            // prioritize ongoing/actionable bookings (pending, then confirmed) before 'all'
+            if (!userHasManuallySelectedFilter) {
+                if (pendingCount > 0) {
+                    currentDrawerFilter = 'pending';
+                } else if (confirmedCount > 0) {
+                    currentDrawerFilter = 'confirmed';
+                } else {
+                    currentDrawerFilter = 'all';
+                }
+            }
+
             container.innerHTML = html;
-            window.filterDrawerBookings(currentDrawerFilter, document.querySelector(`.drawer-tab[data-filter="${currentDrawerFilter}"]`));
+            const targetTab = document.querySelector(`.drawer-tab[data-filter="${currentDrawerFilter}"]`) || document.querySelector('.drawer-tab[data-filter="all"]');
+            window.filterDrawerBookings(currentDrawerFilter, targetTab, false);
         };
 
         // Initialize on DOM load
