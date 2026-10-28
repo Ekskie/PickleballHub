@@ -1,154 +1,828 @@
 {% extends "player/base_player.html" %}
-{% block title %}Pay via GCash{% endblock %}
+{% block title %}Pay via GCash — Tournament Registration{% endblock %}
 
 {% block extra_head %}
 <style>
-.pay-wrap { max-width:520px;margin:0 auto; }
-.pay-header { text-align:center;margin-bottom:28px; }
-.pay-header h1 { font-size:1.4rem;font-weight:800;margin-bottom:6px; }
-.pay-header p { color:var(--text-muted);font-size:.875rem; }
+/* ==========================================================================
+   HIGH-END VISUAL DESIGN: TOURNAMENT GCASH DIGITAL CHECKOUT
+   Awwwards-Tier Micro-Aesthetics & Double-Bezel Hardware Architecture
+   ========================================================================== */
 
-/* Booking Summary at top */
-.pay-summary { background:var(--card-bg);border:1px solid var(--card-border);border-radius:14px;padding:20px;margin-bottom:20px;box-shadow:var(--shadow-card); }
-.pay-summary-title { font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:14px; }
-.pay-row { display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:8px; }
-.pay-row .pl { color:var(--text-muted); }
-.pay-row .pv { font-weight:600; }
-.pay-total { display:flex;justify-content:space-between;padding-top:14px;border-top:2px solid var(--border-color);margin-top:6px; }
-.pay-total .pl { font-weight:700; }
-.pay-total .pv { font-size:1.3rem;font-weight:800;color:var(--primary-orange); }
+:root {
+    --ease-vanguard: cubic-bezier(0.32, 0.72, 0, 1);
+    --bezel-outer-bg: rgba(15, 23, 42, 0.03);
+    --bezel-outer-border: rgba(15, 23, 42, 0.07);
+    --bezel-inner-bg: var(--card-bg, #ffffff);
+    --bezel-inner-border: rgba(226, 232, 240, 0.85);
+    --bezel-inner-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 14px 34px -10px rgba(15, 23, 42, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    --accent-glow: rgba(230, 74, 25, 0.15);
+}
 
-/* GCash QR Card */
-.gcash-card { background:linear-gradient(135deg,#0070BA,#00AAE4);border-radius:16px;padding:24px;text-align:center;margin-bottom:20px;position:relative;overflow:hidden; }
-.gcash-card::before { content:'';position:absolute;top:-40px;right:-40px;width:150px;height:150px;background:rgba(255,255,255,.08);border-radius:50%; }
-.gcash-card::after  { content:'';position:absolute;bottom:-30px;left:-30px;width:100px;height:100px;background:rgba(255,255,255,.06);border-radius:50%; }
-.gcash-logo { font-size:1.5rem;font-weight:900;color:#fff;letter-spacing:-1px;margin-bottom:4px; }
-.gcash-logo span { color:#FFD700; }
-.gcash-tagline { font-size:.72rem;color:rgba(255,255,255,.7);margin-bottom:16px; }
-.gcash-qr { width:150px;height:150px;background:#fff;border-radius:12px;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;padding:10px;position:relative;z-index:1; }
-.gcash-qr svg { width:100%;height:100%; }
-.gcash-number { font-size:1.1rem;font-weight:800;color:#fff;letter-spacing:1px;margin-bottom:4px;position:relative;z-index:1; }
-.gcash-name { font-size:.78rem;color:rgba(255,255,255,.8);position:relative;z-index:1; }
-.gcash-amount-chip { background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:.85rem;font-weight:700;padding:6px 20px;border-radius:20px;display:inline-block;margin-top:12px;position:relative;z-index:1; }
+.dark-mode, [data-theme="dark"] {
+    --bezel-outer-bg: rgba(255, 255, 255, 0.025);
+    --bezel-outer-border: rgba(255, 255, 255, 0.08);
+    --bezel-inner-bg: rgba(21, 24, 33, 0.95);
+    --bezel-inner-border: rgba(255, 255, 255, 0.08);
+    --bezel-inner-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 20px 40px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    --accent-glow: rgba(249, 115, 22, 0.2);
+}
 
-/* Instructions */
-.steps-list { list-style:none;margin-bottom:20px; }
-.steps-list li { display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;font-size:.85rem;color:var(--text-secondary); }
-.steps-list li .step-n { width:24px;height:24px;border-radius:50%;background:var(--primary-orange);color:#fff;font-size:.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px; }
+.pay-page-wrap {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 24px 20px 80px;
+    animation: vanguardFadeUp 0.65s var(--ease-vanguard) forwards;
+}
 
-/* Ref input */
-.ref-card { background:var(--card-bg);border:1px solid var(--card-border);border-radius:14px;padding:20px;box-shadow:var(--shadow-card); }
-.ref-card label { display:block;font-size:.85rem;font-weight:700;margin-bottom:8px;color:var(--text-primary); }
-.ref-input { width:100%;padding:12px 16px;border:1.5px solid var(--border-color);border-radius:10px;background:var(--input-bg);color:var(--text-primary);font-size:.95rem;font-family:inherit;outline:none;transition:border-color .2s; }
-.ref-input:focus { border-color:var(--primary-orange);box-shadow:0 0 0 3px rgba(225,86,35,.1); }
-.ref-input::placeholder { color:var(--text-muted); }
-.btn-submit-pay { width:100%;padding:14px;background:var(--primary-orange);color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:800;cursor:pointer;font-family:inherit;margin-top:14px;transition:background .2s,transform .15s;display:flex;align-items:center;justify-content:center;gap:8px; }
-.btn-submit-pay:hover { background:var(--primary-orange-hover);transform:translateY(-1px); }
-.btn-back-link { display:flex;align-items:center;justify-content:center;gap:6px;margin-top:14px;color:var(--text-muted);font-size:.82rem;text-decoration:none;transition:color .2s; }
-.btn-back-link:hover { color:var(--primary-orange); }
-.notice-box { background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.35);color:#d97706;border-radius:10px;padding:12px 16px;font-size:.8rem;margin-bottom:20px;display:flex;gap:8px;align-items:flex-start; }
+@keyframes vanguardFadeUp {
+    0% {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.pay-header-banner {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.pay-eyebrow-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(0, 112, 186, 0.08);
+    color: #0070BA;
+    border: 1px solid rgba(0, 112, 186, 0.22);
+    padding: 4px 14px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    margin-bottom: 12px;
+    backdrop-filter: blur(8px);
+}
+
+.pay-header-banner h1 {
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 8px;
+    letter-spacing: -0.025em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.pay-header-banner p {
+    color: var(--text-secondary);
+    font-size: 0.92rem;
+    max-width: 580px;
+    margin: 0 auto;
+    line-height: 1.5;
+}
+
+.pay-grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1.08fr;
+    gap: 28px;
+    align-items: start;
+}
+
+@media (max-width: 860px) {
+    .pay-grid-2col {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+    .pay-page-wrap {
+        padding: 16px 14px 60px;
+    }
+}
+
+.pay-col {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+/* Double-Bezel Architecture */
+.bezel-card-outer {
+    background: var(--bezel-outer-bg);
+    border: 1px solid var(--bezel-outer-border);
+    border-radius: 24px;
+    padding: 6px;
+    transition: transform 0.4s var(--ease-vanguard), box-shadow 0.4s var(--ease-vanguard);
+}
+
+.bezel-card-outer:hover {
+    box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.08);
+}
+
+.bezel-card-inner {
+    background: var(--bezel-inner-bg);
+    border: 1px solid var(--bezel-inner-border);
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: var(--bezel-inner-shadow);
+}
+
+.pay-card-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.06));
+}
+
+.pay-card-header-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 0.82rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-secondary);
+}
+
+.pay-card-header-title i {
+    font-size: 1.15rem;
+    color: var(--primary-orange);
+}
+
+.pay-secure-tag {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    padding: 2px 8px;
+    border-radius: 9999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.pay-line-items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.pay-spec-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.88rem;
+    padding: 4px 0;
+}
+
+.pay-spec-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.pay-spec-value {
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: right;
+}
+
+.pay-fee-waived-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #10b981;
+    font-weight: 700;
+    background: rgba(16, 185, 129, 0.1);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+}
+
+.pay-grand-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-top: 16px;
+    margin-top: 14px;
+    border-top: 1.5px dashed var(--border-color, rgba(0, 0, 0, 0.12));
+}
+
+.pay-grand-total .total-label {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+}
+
+.pay-grand-total .total-val {
+    font-size: 1.65rem;
+    font-weight: 900;
+    color: var(--primary-orange);
+    letter-spacing: -0.03em;
+    font-feature-settings: "tnum" on, "lnum" on;
+}
+
+/* Verification Shield Callout */
+.bezel-verification-outer {
+    background: rgba(16, 185, 129, 0.04);
+    border: 1px solid rgba(16, 185, 129, 0.18);
+    border-radius: 20px;
+    padding: 5px;
+}
+
+.bezel-verification-inner {
+    background: rgba(16, 185, 129, 0.06);
+    border: 1px solid rgba(16, 185, 129, 0.22);
+    border-radius: 15px;
+    padding: 16px 18px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+}
+
+.bezel-verification-inner i {
+    font-size: 1.4rem;
+    color: #10b981;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.verification-content strong {
+    display: block;
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 3px;
+    letter-spacing: -0.01em;
+}
+
+.verification-content p {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.pay-steps-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.pay-step-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+}
+
+.pay-step-index {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-orange), #c2410c);
+    color: #ffffff;
+    font-size: 0.72rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    box-shadow: 0 2px 6px rgba(230, 74, 25, 0.3);
+}
+
+.pay-step-desc {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.45;
+}
+
+.pay-step-desc strong {
+    color: var(--text-primary);
+}
+
+/* GCash Digital Hardware Terminal */
+.bezel-gcash-outer {
+    background: rgba(0, 112, 186, 0.08);
+    border: 1px solid rgba(0, 112, 186, 0.22);
+    border-radius: 26px;
+    padding: 7px;
+    box-shadow: 0 16px 40px -12px rgba(0, 112, 186, 0.28);
+}
+
+.bezel-gcash-inner {
+    background: linear-gradient(145deg, #004b87 0%, #0070BA 48%, #00aae4 100%);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 19px;
+    padding: 24px 20px;
+    color: #ffffff;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.45);
+}
+
+.bezel-gcash-inner::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 160px;
+    height: 160px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.gcash-brand-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    margin-bottom: 16px;
+}
+
+.gcash-brand-title {
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: -0.04em;
+    line-height: 1;
+}
+
+.gcash-brand-title span {
+    color: #FFD700;
+}
+
+.gcash-terminal-pill {
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 3px 9px;
+    border-radius: 9999px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.gcash-qr-pedestal {
+    width: 148px;
+    height: 148px;
+    background: #ffffff;
+    border-radius: 14px;
+    margin: 0 auto 16px;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22), inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+    position: relative;
+    z-index: 1;
+}
+
+.gcash-qr-pedestal svg {
+    width: 100%;
+    height: 100%;
+}
+
+.gcash-info-stack {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 9px;
+}
+
+.gcash-number-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    background: rgba(0, 0, 0, 0.22);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    padding: 5px 6px 5px 14px;
+    border-radius: 9999px;
+    backdrop-filter: blur(8px);
+}
+
+.gcash-number-val {
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    font-feature-settings: "tnum" on;
+}
+
+.btn-haptic-copy {
+    background: #ffffff;
+    color: #0070BA;
+    border: none;
+    border-radius: 9999px;
+    padding: 5px 12px;
+    font-size: 0.74rem;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: transform 0.25s var(--ease-vanguard), background 0.25s var(--ease-vanguard), color 0.25s var(--ease-vanguard);
+}
+
+.btn-haptic-copy:hover {
+    background: #FFD700;
+    color: #0f172a;
+    transform: scale(1.04);
+}
+
+.btn-haptic-copy:active {
+    transform: scale(0.96);
+}
+
+.gcash-account-sub {
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+}
+
+.gcash-amount-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.32);
+    padding: 5px 16px;
+    border-radius: 9999px;
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin-top: 3px;
+    letter-spacing: 0.02em;
+}
+
+/* Form Controls */
+.form-field-group {
+    margin-bottom: 18px;
+}
+
+.form-field-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.84rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+}
+
+.form-field-label i {
+    color: var(--primary-orange);
+    font-size: 1rem;
+}
+
+.form-text-input {
+    width: 100%;
+    padding: 13px 16px;
+    border: 1.5px solid var(--border-color, #cbd5e1);
+    border-radius: 12px;
+    background: var(--input-bg, #ffffff);
+    color: var(--text-primary, #0f172a);
+    font-size: 0.95rem;
+    font-family: inherit;
+    font-feature-settings: "tnum" on;
+    outline: none;
+    transition: all 0.25s var(--ease-vanguard);
+    box-sizing: border-box;
+}
+
+.form-text-input:focus {
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 0 4px var(--accent-glow);
+}
+
+/* Button-in-Button Primary Action */
+.btn-vanguard-submit {
+    width: 100%;
+    padding: 8px 10px 8px 24px;
+    background: linear-gradient(135deg, var(--primary-orange, #e64a19) 0%, #c2410c 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 9999px;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.35s var(--ease-vanguard);
+    box-shadow: 0 6px 20px rgba(230, 74, 25, 0.35);
+    margin-top: 20px;
+}
+
+.btn-vanguard-submit:hover {
+    background: linear-gradient(135deg, #f0541e 0%, #d8450f 100%);
+    box-shadow: 0 8px 26px rgba(230, 74, 25, 0.45);
+    transform: translateY(-1.5px);
+}
+
+.btn-vanguard-submit:active {
+    transform: scale(0.985);
+}
+
+.btn-icon-capsule {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    transition: transform 0.3s var(--ease-vanguard);
+}
+
+.btn-vanguard-submit:hover .btn-icon-capsule {
+    transform: scale(1.08) rotate(5deg);
+    background: rgba(255, 255, 255, 0.32);
+}
+
+.btn-back-minimal {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--text-secondary);
+    font-size: 0.86rem;
+    font-weight: 700;
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: 9999px;
+    transition: all 0.25s var(--ease-vanguard);
+}
+
+.btn-back-minimal:hover {
+    color: var(--primary-orange);
+    background: rgba(230, 74, 25, 0.06);
+    transform: translateX(-2px);
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="pay-wrap">
-    <!-- Header -->
-    <div class="pay-header">
-        <h1 class="page-title"><i class="ph ph-device-mobile-camera" style="color:#0070BA"></i> Pay via GCash</h1>
-        <p>Scan the QR code or send to the number below, then enter your reference number.</p>
-    </div>
-
-    <!-- Booking Summary -->
-    <div class="pay-summary">
-        <div class="pay-summary-title"><i class="ph ph-receipt"></i> Tournament Entry Details</div>
-        <div class="pay-row"><span class="pl">Event</span><span class="pv">{{ event.title }}</span></div>
-        <div class="pay-total">
-            <span class="pl">Total Amount</span>
-            <span class="pv">₱{{ '%.2f'|format(event.entry_fee) }}</span>
+<div class="pay-page-wrap">
+    
+    <!-- Top Header & Eyebrow Badge -->
+    <header class="pay-header-banner">
+        <div class="pay-eyebrow-tag">
+            <i class="ph ph-shield-check"></i> Tournament Entry Checkout
         </div>
-    </div>
+        <h1><i class="ph ph-device-mobile"></i> Pay via GCash</h1>
+        <p>Send your entry fee via GCash, then enter your 13-digit reference number below to secure your tournament bracket placement.</p>
+    </header>
 
-    <!-- Notice -->
-    <div class="notice-box">
-        <i class="ph ph-warning" style="font-size:1.1rem;flex-shrink:0;margin-top:1px;"></i>
-        <span>This is a <strong>demo mockup</strong>. No real money will be charged. Enter any 13-digit reference number to confirm.</span>
-    </div>
+    <!-- 2-Column Responsive Layout -->
+    <div class="pay-grid-2col">
+        
+        <!-- ==================== LEFT COLUMN: SUMMARY & INSTRUCTIONS ==================== -->
+        <div class="pay-col">
+            
+            <!-- Tournament Summary Card -->
+            <div class="bezel-card-outer">
+                <div class="bezel-card-inner">
+                    <div class="pay-card-header-row">
+                        <div class="pay-card-header-title">
+                            <i class="ph ph-trophy"></i>
+                            <span>Tournament Entry Summary</span>
+                        </div>
+                        <span class="pay-secure-tag"><i class="ph ph-lock-key"></i> Official Event</span>
+                    </div>
+                    
+                    <div class="pay-line-items">
+                        <div class="pay-spec-row">
+                            <span class="pay-spec-label">Tournament Event</span>
+                            <span class="pay-spec-value">{{ event.title }}</span>
+                        </div>
+                        {% if event.event_date %}
+                        <div class="pay-spec-row">
+                            <span class="pay-spec-label">Event Date</span>
+                            <span class="pay-spec-value">{{ event.event_date }}</span>
+                        </div>
+                        {% endif %}
+                        {% if event.location %}
+                        <div class="pay-spec-row">
+                            <span class="pay-spec-label">Venue Location</span>
+                            <span class="pay-spec-value">{{ event.location }}</span>
+                        </div>
+                        {% endif %}
+                        <div class="pay-spec-row">
+                            <span class="pay-spec-label">Platform Processing</span>
+                            <span class="pay-spec-value">
+                                <span class="pay-fee-waived-pill"><i class="ph ph-check-circle"></i> ₱0.00 (Free)</span>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="pay-grand-total">
+                        <span class="total-label">Total Entry Fee</span>
+                        <span class="total-val">₱{{ '%.2f'|format(event.entry_fee) }}</span>
+                    </div>
+                </div>
+            </div>
 
-    <!-- GCash QR Card -->
-    <div class="gcash-card">
-        <div class="gcash-logo">G<span>Cash</span></div>
-        <div class="gcash-tagline">Scan to Pay</div>
-        <div class="gcash-qr">
-            <!-- Simple SVG QR mockup -->
-            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <rect width="100" height="100" fill="white"/>
-                <!-- TL finder -->
-                <rect x="5" y="5" width="30" height="30" rx="3" fill="#0070BA"/>
-                <rect x="10" y="10" width="20" height="20" rx="2" fill="white"/>
-                <rect x="14" y="14" width="12" height="12" rx="1" fill="#0070BA"/>
-                <!-- TR finder -->
-                <rect x="65" y="5" width="30" height="30" rx="3" fill="#0070BA"/>
-                <rect x="70" y="10" width="20" height="20" rx="2" fill="white"/>
-                <rect x="74" y="14" width="12" height="12" rx="1" fill="#0070BA"/>
-                <!-- BL finder -->
-                <rect x="5" y="65" width="30" height="30" rx="3" fill="#0070BA"/>
-                <rect x="10" y="70" width="20" height="20" rx="2" fill="white"/>
-                <rect x="14" y="74" width="12" height="12" rx="1" fill="#0070BA"/>
-                <!-- Data dots -->
-                <rect x="42" y="5"  width="5" height="5" fill="#0070BA"/>
-                <rect x="50" y="5"  width="5" height="5" fill="#0070BA"/>
-                <rect x="42" y="13" width="5" height="5" fill="#0070BA"/>
-                <rect x="55" y="13" width="5" height="5" fill="#0070BA"/>
-                <rect x="42" y="42" width="5" height="5" fill="#0070BA"/>
-                <rect x="50" y="42" width="5" height="5" fill="#0070BA"/>
-                <rect x="58" y="42" width="5" height="5" fill="#0070BA"/>
-                <rect x="42" y="50" width="5" height="5" fill="#0070BA"/>
-                <rect x="58" y="50" width="5" height="5" fill="#0070BA"/>
-                <rect x="42" y="58" width="5" height="5" fill="#0070BA"/>
-                <rect x="50" y="58" width="5" height="5" fill="#0070BA"/>
-                <rect x="65" y="42" width="5" height="5" fill="#0070BA"/>
-                <rect x="75" y="42" width="5" height="5" fill="#0070BA"/>
-                <rect x="85" y="42" width="5" height="5" fill="#0070BA"/>
-                <rect x="65" y="50" width="5" height="5" fill="#0070BA"/>
-                <rect x="75" y="58" width="5" height="5" fill="#0070BA"/>
-                <rect x="85" y="50" width="5" height="5" fill="#0070BA"/>
-                <rect x="5"  y="42" width="5" height="5" fill="#0070BA"/>
-                <rect x="13" y="42" width="5" height="5" fill="#0070BA"/>
-                <rect x="5"  y="50" width="5" height="5" fill="#0070BA"/>
-                <rect x="21" y="50" width="5" height="5" fill="#0070BA"/>
-                <rect x="5"  y="58" width="5" height="5" fill="#0070BA"/>
-                <rect x="13" y="58" width="5" height="5" fill="#0070BA"/>
-                <rect x="21" y="42" width="5" height="5" fill="#0070BA"/>
-            </svg>
+            <!-- Organizer Verification Notice -->
+            <div class="bezel-verification-outer">
+                <div class="bezel-verification-inner">
+                    <i class="ph ph-shield-check"></i>
+                    <div class="verification-content">
+                        <strong>Organizer Verification</strong>
+                        <p>Send the exact total using your GCash app. Once submitted, tournament organizers will verify your reference number and confirm your bracket placement.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Double-Bezel 4-Step Instructions -->
+            <div class="bezel-card-outer">
+                <div class="bezel-card-inner">
+                    <div class="pay-card-header-row">
+                        <div class="pay-card-header-title">
+                            <i class="ph ph-list-numbers"></i>
+                            <span>How to Complete Payment</span>
+                        </div>
+                    </div>
+                    
+                    <div class="pay-steps-grid">
+                        <div class="pay-step-item">
+                            <div class="pay-step-index">1</div>
+                            <div class="pay-step-desc">Open your <strong>GCash app</strong> and tap <strong>Send Money</strong> or scan the QR code.</div>
+                        </div>
+                        <div class="pay-step-item">
+                            <div class="pay-step-index">2</div>
+                            <div class="pay-step-desc">Enter the exact entry fee: <strong>₱{{ '%.2f'|format(event.entry_fee) }}</strong>.</div>
+                        </div>
+                        <div class="pay-step-item">
+                            <div class="pay-step-index">3</div>
+                            <div class="pay-step-desc">Copy the <strong>13-digit reference number</strong> from your GCash receipt.</div>
+                        </div>
+                        <div class="pay-step-item">
+                            <div class="pay-step-index">4</div>
+                            <div class="pay-step-desc">Paste the reference number below and click <strong>Confirm Payment</strong>.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <a href="{{ url_for('player.event_detail', event_id=event_id) }}" class="btn-back-minimal">
+                    <i class="ph ph-arrow-left"></i> Back to Tournament Details
+                </a>
+            </div>
+
         </div>
-        <div class="gcash-number">0917 123 4567</div>
-        <div class="gcash-name">PickleballHub Inc.</div>
-        <div class="gcash-amount-chip">₱{{ '%.2f'|format(event.entry_fee) }}</div>
+
+        <!-- ==================== RIGHT COLUMN: GCASH CARD & FORM SUBMISSION ==================== -->
+        <div class="pay-col">
+            
+            <!-- Modern Hardware GCash Terminal Card -->
+            <div class="bezel-gcash-outer">
+                <div class="bezel-gcash-inner">
+                    <div class="gcash-brand-banner">
+                        <div class="gcash-brand-title">G<span>Cash</span></div>
+                        <span class="gcash-terminal-pill"><i class="ph ph-check"></i> Tournament Merchant</span>
+                    </div>
+                    
+                    <div class="gcash-qr-pedestal">
+                        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="5" y="5" width="30" height="30" rx="3" fill="#0070BA"/>
+                            <rect x="10" y="10" width="20" height="20" rx="2" fill="white"/>
+                            <rect x="14" y="14" width="12" height="12" rx="1" fill="#0070BA"/>
+                            <rect x="65" y="5" width="30" height="30" rx="3" fill="#0070BA"/>
+                            <rect x="70" y="10" width="20" height="20" rx="2" fill="white"/>
+                            <rect x="74" y="14" width="12" height="12" rx="1" fill="#0070BA"/>
+                            <rect x="5" y="65" width="30" height="30" rx="3" fill="#0070BA"/>
+                            <rect x="10" y="70" width="20" height="20" rx="2" fill="white"/>
+                            <rect x="14" y="74" width="12" height="12" rx="1" fill="#0070BA"/>
+                            <rect x="42" y="5"  width="5" height="5" fill="#0070BA"/>
+                            <rect x="50" y="5"  width="5" height="5" fill="#0070BA"/>
+                            <rect x="42" y="13" width="5" height="5" fill="#0070BA"/>
+                            <rect x="55" y="13" width="5" height="5" fill="#0070BA"/>
+                            <rect x="42" y="42" width="5" height="5" fill="#0070BA"/>
+                            <rect x="50" y="42" width="5" height="5" fill="#0070BA"/>
+                            <rect x="58" y="42" width="5" height="5" fill="#0070BA"/>
+                            <rect x="42" y="50" width="5" height="5" fill="#0070BA"/>
+                            <rect x="58" y="50" width="5" height="5" fill="#0070BA"/>
+                            <rect x="42" y="58" width="5" height="5" fill="#0070BA"/>
+                            <rect x="50" y="58" width="5" height="5" fill="#0070BA"/>
+                            <rect x="65" y="42" width="5" height="5" fill="#0070BA"/>
+                            <rect x="75" y="42" width="5" height="5" fill="#0070BA"/>
+                            <rect x="85" y="42" width="5" height="5" fill="#0070BA"/>
+                            <rect x="65" y="50" width="5" height="5" fill="#0070BA"/>
+                            <rect x="75" y="58" width="5" height="5" fill="#0070BA"/>
+                            <rect x="85" y="50" width="5" height="5" fill="#0070BA"/>
+                            <rect x="5"  y="42" width="5" height="5" fill="#0070BA"/>
+                            <rect x="13" y="42" width="5" height="5" fill="#0070BA"/>
+                            <rect x="5"  y="50" width="5" height="5" fill="#0070BA"/>
+                            <rect x="21" y="50" width="5" height="5" fill="#0070BA"/>
+                            <rect x="5"  y="58" width="5" height="5" fill="#0070BA"/>
+                            <rect x="13" y="58" width="5" height="5" fill="#0070BA"/>
+                            <rect x="21" y="42" width="5" height="5" fill="#0070BA"/>
+                        </svg>
+                    </div>
+
+                    <div class="gcash-info-stack">
+                        <div class="gcash-number-chip">
+                            <span class="gcash-number-val" id="gcashNumberVal">0917 123 4567</span>
+                            <button type="button" class="btn-haptic-copy" id="btnCopyGcash" onclick="copyGcashNumber('09171234567')" title="Copy GCash Number">
+                                <i class="ph ph-copy"></i> <span id="copyBtnText">Copy</span>
+                            </button>
+                        </div>
+                        <div class="gcash-account-sub">Account Name: <strong>PickleballHub Inc.</strong></div>
+                        <div class="gcash-amount-pill">
+                            <i class="ph ph-currency-circle-dollar"></i> Entry Fee: ₱{{ '%.2f'|format(event.entry_fee) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Double-Bezel Payment Proof Form -->
+            <div class="bezel-card-outer">
+                <div class="bezel-card-inner">
+                    <div class="pay-card-header-row">
+                        <div class="pay-card-header-title">
+                            <i class="ph ph-receipt"></i>
+                            <span>Submit Payment Proof</span>
+                        </div>
+                    </div>
+
+                    <form method="POST" action="{{ url_for('player.tournament_payment', event_id=event_id) }}" id="paymentForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+                        <div class="form-field-group">
+                            <label for="gcash_ref" class="form-field-label">
+                                <i class="ph ph-hash"></i> GCash Reference Number
+                            </label>
+                            <input type="text" name="gcash_ref" id="gcash_ref" class="form-text-input"
+                                   placeholder="e.g. 1234567890123" maxlength="20" required
+                                   pattern="[0-9]{10,20}" title="Enter your 10 to 20-digit GCash reference number">
+                        </div>
+
+                        <!-- Button-in-Button Primary Action -->
+                        <button type="submit" class="btn-vanguard-submit" id="btnSubmitPayment">
+                            <span>Confirm Payment</span>
+                            <div class="btn-icon-capsule">
+                                <i class="ph ph-arrow-right"></i>
+                            </div>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
     </div>
 
-    <!-- Steps -->
-    <ul class="steps-list">
-        <li><div class="step-n">1</div>Open your GCash app and tap <strong>Send Money</strong> or scan the QR.</li>
-        <li><div class="step-n">2</div>Enter amount: <strong>₱{{ '%.2f'|format(event.entry_fee) }}</strong></li>
-        <li><div class="step-n">3</div>Copy the 13-digit <strong>reference number</strong> from your GCash receipt.</li>
-        <li><div class="step-n">4</div>Paste it below and click <strong>Confirm Payment</strong>.</li>
-    </ul>
-
-    <!-- Reference Number Form -->
-    <div class="ref-card">
-        <form method="POST" action="{{ url_for('player.tournament_payment', event_id=event_id) }}">
-            <label for="gcash_ref"><i class="ph ph-hash"></i> GCash Reference Number</label>
-            <input type="text" name="gcash_ref" id="gcash_ref" class="ref-input"
-                   placeholder="e.g. 1234567890123" maxlength="20" required
-                   pattern="[0-9]{10,20}" title="Enter your GCash reference number (10–20 digits)">
-            <button type="submit" class="btn-submit-pay">
-                <i class="ph ph-check-circle"></i> Confirm Payment
-            </button>
-        </form>
-    </div>
-
-    <a href="{{ url_for('player.event_detail', event_id=event_id) }}" class="btn-back-link">
-        <i class="ph ph-arrow-left"></i> Back to Event Details
-    </a>
 </div>
+
+<script>
+function copyGcashNumber(num) {
+    if (!navigator.clipboard) {
+        const textarea = document.createElement('textarea');
+        textarea.value = num;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showCopyFeedback();
+        return;
+    }
+    navigator.clipboard.writeText(num).then(() => {
+        showCopyFeedback();
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+    });
+}
+
+function showCopyFeedback() {
+    const btnText = document.getElementById('copyBtnText');
+    const copyBtn = document.getElementById('btnCopyGcash');
+    if (btnText && copyBtn) {
+        const originalText = btnText.textContent;
+        btnText.textContent = 'Copied! ✓';
+        copyBtn.style.background = '#FFD700';
+        copyBtn.style.color = '#0f172a';
+        setTimeout(() => {
+            btnText.textContent = originalText;
+            copyBtn.style.background = '#ffffff';
+            copyBtn.style.color = '#0070BA';
+        }, 2200);
+    }
+}
+</script>
 {% endblock %}

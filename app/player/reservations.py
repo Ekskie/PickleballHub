@@ -855,57 +855,9 @@ def confirm_payment(reservation_id):
 @player_bp.route('/reservation/api/upgrade-pro', methods=['POST'])
 @require_role('player')
 def api_upgrade_pro():
-    """Allow logged in players to upgrade directly to Pro Player Pass."""
-    player_id = session.get('user_id')
-    if not player_id:
-        return jsonify({'error': 'Unauthorized'}), 401
-    
-    admin_db = get_admin_db()
-    try:
-        now_utc = datetime.now(timezone.utc)
-        expires_at = (now_utc + timedelta(days=30)).isoformat()
-        
-        # 1. Update profiles table
-        admin_db.table('profiles').update({
-            'subscription_tier': 'pro',
-            'subscription_status': 'active',
-            'subscription_expires_at': expires_at,
-        }).eq('id', player_id).execute()
-        
-        # 2. Record in subscriptions table
-        try:
-            admin_db.table('subscriptions').insert({
-                'user_id': player_id,
-                'tier': 'pro',
-                'role': 'player',
-                'billing_cycle': 'monthly',
-                'amount': 199.00,
-                'status': 'active',
-                'payment_method': 'card_or_gcash',
-                'starts_at': now_utc.isoformat(),
-                'expires_at': expires_at,
-            }).execute()
-        except Exception as se:
-            print(f"[api_upgrade_pro] Subscriptions log notice: {se}")
-
-        # 3. Update session & cached profile
-        session['subscription_tier'] = 'pro'
-        session['subscription_status'] = 'active'
-        session['subscription_expires_at'] = expires_at
-        session.pop('last_integrity_check', None)
-        if session.get('cached_profile'):
-            session['cached_profile']['subscription_tier'] = 'pro'
-            session['cached_profile']['subscription_status'] = 'active'
-            session['cached_profile']['subscription_expires_at'] = expires_at
-        if hasattr(g, 'current_profile') and g.current_profile:
-            g.current_profile['subscription_tier'] = 'pro'
-            g.current_profile['subscription_status'] = 'active'
-            g.current_profile['subscription_expires_at'] = expires_at
-
-        return jsonify({
-            'success': True,
-            'message': 'Congratulations! You are now upgraded to Pickleball Pro Pass. 14-day early access booking is now active!'
-        })
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    """All players have full platform benefits permanently unlocked for free."""
+    return jsonify({
+        'success': True,
+        'message': 'All player accounts already enjoy 14-day advance booking, ₱0 convenience fees, and full ratings tracking for free!'
+    })
 

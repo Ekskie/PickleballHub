@@ -1036,7 +1036,7 @@
                     <span class="filter-pill-badge">{{ joined_count }}</span>
                 </button>
                 <button type="button" class="filter-pill-btn" data-filter="free" onclick="setClubFilter('free')" role="tab">
-                    <i class="ph ph-sparkle"></i>
+                    <i class="ph ph-check-circle"></i>
                     <span>Free</span>
                     <span class="filter-pill-badge">{{ free_count }}</span>
                 </button>
@@ -1104,7 +1104,7 @@
                         <!-- Fee Badge -->
                         {% if club.membership_type == 'free' %}
                         <span class="badge-fee-pill free" title="Free Membership">
-                            <i class="ph ph-sparkle"></i> Free to Join
+                            <i class="ph ph-check-circle"></i> Free to Join
                         </span>
                         {% else %}
                         <span class="badge-fee-pill paid" title="Membership Fee">

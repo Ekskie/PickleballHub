@@ -37,8 +37,8 @@ DEFAULT_TIER_CONFIG = {
         },
         'pro': {
             'label': 'Pro Facility Pass',
-            'price_monthly': 1299,
-            'price_annual': 1049,  # ₱12,588/yr
+            'price_monthly': 999,
+            'price_annual': 799,  # ₱12,588/yr
             'max_facilities': 3,
             'max_courts_per_facility': 8,
             'booking_commission_pct': 0.03,  # Low 3% platform fee
@@ -51,8 +51,8 @@ DEFAULT_TIER_CONFIG = {
         },
         'elite': {
             'label': 'Elite Enterprise',
-            'price_monthly': 2999,
-            'price_annual': 2399,  # ₱28,788/yr
+            'price_monthly': 2249,
+            'price_annual': 1799,  # ₱28,788/yr
             'max_facilities': 999,
             'max_courts_per_facility': 999,
             'booking_commission_pct': 0.00,  # 0% fee (keep 100%)
@@ -81,8 +81,8 @@ DEFAULT_TIER_CONFIG = {
         },
         'pro': {
             'label': 'Pro Club Pass',
-            'price_monthly': 599,
-            'price_annual': 479,  # ₱5,748/yr
+            'price_monthly': 449,
+            'price_annual': 359,  # ₱5,748/yr
             'max_clubs': 1,
             'max_members_per_club': 999999,
             'max_tournament_bracket': 64,
@@ -99,27 +99,14 @@ DEFAULT_TIER_CONFIG = {
             'label': 'Player Membership',
             'price_monthly': 0,
             'price_annual': 0,
-            'advance_booking_days': 3,
-            'max_active_bookings': 2,
-            'convenience_fee_waived': False,  # Standard ₱25 fee
-            'convenience_fee_amount': 25.00,
-            'priority_queue': False,
-            'pro_badge': False,
-            'pro_analytics': False,
-            'tournament_discount_pct': 0.00,
-        },
-        'pro': {
-            'label': 'Pickleball Pro Pass',
-            'price_monthly': 199,
-            'price_annual': 149,  # ₱1,788/yr
             'advance_booking_days': 14,
             'max_active_bookings': 999,
-            'convenience_fee_waived': True,  # ₱0 fee
+            'convenience_fee_waived': True,  # ₱0 fee for all players
             'convenience_fee_amount': 0.00,
             'priority_queue': True,
-            'pro_badge': True,  # Gold PRO paddle badge
+            'pro_badge': True,  # Verified player paddle badge
             'pro_analytics': True,
-            'tournament_discount_pct': 0.10,  # 10% off tournaments
+            'tournament_discount_pct': 0.10,
         }
     }
 }
@@ -132,7 +119,7 @@ TIER_CONFIG = DEFAULT_TIER_CONFIG
 # ─────────────────────────────────────────────────────────────────────────────
 _cached_tier_config = None
 _tier_cache_time = 0.0
-TIER_CACHE_TTL = 30.0  # cache dynamic pricing in memory for 30s
+TIER_CACHE_TTL = 600.0  # cache dynamic pricing in memory for 10 minutes
 
 def clear_tier_pricing_cache():
     """Invalidates the in-memory tier pricing cache."""
@@ -406,8 +393,7 @@ def check_feature_limit(user_id_or_profile, role: str, feature_name: str,
                     result['allowed'] = False
                     result['message'] = (
                         f"Booking for {target_date} is {days_ahead} days ahead. "
-                        f"Free players can reserve up to {max_days} days in advance. "
-                        "Upgrade to Pro Player Pass to unlock 14-day early access booking!"
+                        f"Reservations can be made up to {max_days} days in advance."
                     )
                     return result
             except Exception as e:
@@ -419,8 +405,7 @@ def check_feature_limit(user_id_or_profile, role: str, feature_name: str,
             if current_count >= limit_val:
                 result['allowed'] = False
                 result['message'] = (
-                    f"You have reached the maximum of {limit_val} active upcoming bookings on the Free plan. "
-                    "Upgrade to Pro Player Pass for unlimited concurrent reservations!"
+                    f"You have reached the maximum of {limit_val} active upcoming bookings."
                 )
                 return result
 

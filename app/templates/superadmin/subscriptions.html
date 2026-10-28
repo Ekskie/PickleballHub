@@ -1155,28 +1155,16 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- 1. Athlete / Player Membership -->
+                        <!-- 1. Athlete / Player Membership (100% Free Policy) -->
                         <tr>
                             <td>
-                                <div class="plan-cell-title">Athlete Membership</div>
-                                <div class="plan-cell-meta">Pro Pass · Personal player benefits</div>
+                                <div class="plan-cell-title">Athlete / Player Membership</div>
+                                <div class="plan-cell-meta">Standard Platform Access · 14-day booking, ₱0 convenience fees</div>
                             </td>
-                            <td>
-                                <div class="price-input-group">
-                                    <span class="currency-sign">₱</span>
-                                    <input type="number" step="any" min="1" max="99999" name="player_pro_monthly" id="p_player_pro_m"
-                                           value="{{ current_pricing.player.pro.price_monthly if current_pricing else 199 }}" required class="price-input"
-                                           oninput="updateAnnualCalc('p_player_pro_a', 'p_player_pro_m', 'calc_badge_player')">
+                            <td colspan="2">
+                                <div style="display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.25); border-radius: 8px; color: #16a34a; font-weight: 700; font-size: 0.86rem;">
+                                    <i class="ph ph-check-circle" style="font-size: 1.15rem;"></i> 100% Free Platform Access (No Paid Subscription)
                                 </div>
-                            </td>
-                            <td>
-                                <div class="price-input-group">
-                                    <span class="currency-sign">₱</span>
-                                    <input type="number" step="any" min="1" max="99999" name="player_pro_annual" id="p_player_pro_a"
-                                           value="{{ current_pricing.player.pro.price_annual if current_pricing else 149 }}" required class="price-input"
-                                           oninput="updateAnnualCalc('p_player_pro_a', 'p_player_pro_m', 'calc_badge_player')">
-                                </div>
-                                <div class="plan-calc-note" id="calc_badge_player">₱{{ "{:,.0f}".format((current_pricing.player.pro.price_annual if current_pricing else 149) * 12) }}/yr</div>
                             </td>
                         </tr>
 
@@ -1190,7 +1178,7 @@
                                 <div class="price-input-group">
                                     <span class="currency-sign">₱</span>
                                     <input type="number" step="any" min="1" max="99999" name="clubadmin_pro_monthly" id="p_club_pro_m"
-                                           value="{{ current_pricing.clubadmin.pro.price_monthly if current_pricing else 599 }}" required class="price-input"
+                                           value="{{ current_pricing.clubadmin.pro.price_monthly if current_pricing else 449 }}" required class="price-input"
                                            oninput="updateAnnualCalc('p_club_pro_a', 'p_club_pro_m', 'calc_badge_club')">
                                 </div>
                             </td>
@@ -1198,10 +1186,10 @@
                                 <div class="price-input-group">
                                     <span class="currency-sign">₱</span>
                                     <input type="number" step="any" min="1" max="99999" name="clubadmin_pro_annual" id="p_club_pro_a"
-                                           value="{{ current_pricing.clubadmin.pro.price_annual if current_pricing else 479 }}" required class="price-input"
+                                           value="{{ current_pricing.clubadmin.pro.price_annual if current_pricing else 359 }}" required class="price-input"
                                            oninput="updateAnnualCalc('p_club_pro_a', 'p_club_pro_m', 'calc_badge_club')">
                                 </div>
-                                <div class="plan-calc-note" id="calc_badge_club">₱{{ "{:,.0f}".format((current_pricing.clubadmin.pro.price_annual if current_pricing else 479) * 12) }}/yr</div>
+                                <div class="plan-calc-note" id="calc_badge_club">₱{{ "{:,.0f}".format((current_pricing.clubadmin.pro.price_annual if current_pricing else 359) * 12) }}/yr</div>
                             </td>
                         </tr>
 
@@ -1215,7 +1203,7 @@
                                 <div class="price-input-group">
                                     <span class="currency-sign">₱</span>
                                     <input type="number" step="any" min="1" max="99999" name="owner_pro_monthly" id="p_owner_pro_m"
-                                           value="{{ current_pricing.owner.pro.price_monthly if current_pricing else 1299 }}" required class="price-input"
+                                           value="{{ current_pricing.owner.pro.price_monthly if current_pricing else 999 }}" required class="price-input"
                                            oninput="updateAnnualCalc('p_owner_pro_a', 'p_owner_pro_m', 'calc_badge_owner_pro')">
                                 </div>
                             </td>
@@ -1223,10 +1211,10 @@
                                 <div class="price-input-group">
                                     <span class="currency-sign">₱</span>
                                     <input type="number" step="any" min="1" max="99999" name="owner_pro_annual" id="p_owner_pro_a"
-                                           value="{{ current_pricing.owner.pro.price_annual if current_pricing else 1049 }}" required class="price-input"
+                                           value="{{ current_pricing.owner.pro.price_annual if current_pricing else 799 }}" required class="price-input"
                                            oninput="updateAnnualCalc('p_owner_pro_a', 'p_owner_pro_m', 'calc_badge_owner_pro')">
                                 </div>
-                                <div class="plan-calc-note" id="calc_badge_owner_pro">₱{{ "{:,.0f}".format((current_pricing.owner.pro.price_annual if current_pricing else 1049) * 12) }}/yr</div>
+                                <div class="plan-calc-note" id="calc_badge_owner_pro">₱{{ "{:,.0f}".format((current_pricing.owner.pro.price_annual if current_pricing else 799) * 12) }}/yr</div>
                             </td>
                         </tr>
 
@@ -1240,7 +1228,7 @@
                                 <div class="price-input-group">
                                     <span class="currency-sign">₱</span>
                                     <input type="number" step="any" min="1" max="99999" name="owner_elite_monthly" id="p_owner_elite_m"
-                                           value="{{ current_pricing.owner.elite.price_monthly if current_pricing else 2999 }}" required class="price-input"
+                                           value="{{ current_pricing.owner.elite.price_monthly if current_pricing else 2249 }}" required class="price-input"
                                            oninput="updateAnnualCalc('p_owner_elite_a', 'p_owner_elite_m', 'calc_badge_owner_elite')">
                                 </div>
                             </td>
@@ -1248,10 +1236,10 @@
                                 <div class="price-input-group">
                                     <span class="currency-sign">₱</span>
                                     <input type="number" step="any" min="1" max="99999" name="owner_elite_annual" id="p_owner_elite_a"
-                                           value="{{ current_pricing.owner.elite.price_annual if current_pricing else 2399 }}" required class="price-input"
+                                           value="{{ current_pricing.owner.elite.price_annual if current_pricing else 1799 }}" required class="price-input"
                                            oninput="updateAnnualCalc('p_owner_elite_a', 'p_owner_elite_m', 'calc_badge_owner_elite')">
                                 </div>
-                                <div class="plan-calc-note" id="calc_badge_owner_elite">₱{{ "{:,.0f}".format((current_pricing.owner.elite.price_annual if current_pricing else 2399) * 12) }}/yr</div>
+                                <div class="plan-calc-note" id="calc_badge_owner_elite">₱{{ "{:,.0f}".format((current_pricing.owner.elite.price_annual if current_pricing else 1799) * 12) }}/yr</div>
                             </td>
                         </tr>
                     </tbody>
@@ -1280,7 +1268,6 @@
 {% block extra_scripts %}
 <script>
     function openPricingModal() {
-        updateAnnualCalc('p_player_pro_a', 'p_player_pro_m', 'calc_badge_player');
         updateAnnualCalc('p_club_pro_a', 'p_club_pro_m', 'calc_badge_club');
         updateAnnualCalc('p_owner_pro_a', 'p_owner_pro_m', 'calc_badge_owner_pro');
         updateAnnualCalc('p_owner_elite_a', 'p_owner_elite_m', 'calc_badge_owner_elite');

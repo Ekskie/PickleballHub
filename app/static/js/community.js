@@ -329,7 +329,7 @@ function initCommunity() {
 
         card.innerHTML = `
             ${isAnnouncement ? `<div class="post-announcement-ribbon"><i class="ph-fill ph-megaphone"></i> Official Announcement</div>` : ''}
-            ${featured && !isAnnouncement ? `<div class="featured-badge"><i class="ph ph-sparkle"></i> New for you</div>` : ''}
+            ${featured && !isAnnouncement ? `<div class="featured-badge"><i class="ph ph-star"></i> New for you</div>` : ''}
             <div class="feed-post-header">
                 ${feedAvatarHtml}
                 <div class="feed-post-meta">

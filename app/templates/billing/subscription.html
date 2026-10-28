@@ -26,7 +26,7 @@
     {% set pending_sub = (subscriptions_history|selectattr('status', 'equalto', 'pending_approval')|list)[0] if subscriptions_history else none %}
     {% set rejected_sub = (subscriptions_history|selectattr('status', 'equalto', 'rejected')|list)[0] if (profile.subscription_status == 'rejected' and subscriptions_history) else none %}
 
-    {% if pending_sub %}
+    {% if role != 'player' and pending_sub %}
     <!-- ── Verification In Progress Alert Card ── -->
     <div class="sub-pending-card animate-entry" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(217, 119, 6, 0.06)); border: 1.5px solid rgba(245, 158, 11, 0.35); border-radius: 16px; padding: 22px 26px; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(245, 158, 11, 0.08);">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
@@ -67,7 +67,7 @@
             </div>
         </div>
     </div>
-    {% elif rejected_sub %}
+    {% elif role != 'player' and rejected_sub %}
     <!-- ── Rejection Notice Card ── -->
     <div class="sub-rejected-card animate-entry" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(220, 38, 38, 0.06)); border: 1.5px solid rgba(239, 68, 68, 0.35); border-radius: 16px; padding: 22px 26px; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(239, 68, 68, 0.08);">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
@@ -104,14 +104,14 @@
     <!-- Active Membership Snapshot -->
     <div class="sub-current-card">
         <div class="current-card-left">
-            <div class="current-badge-avatar {% if current_tier != 'free' %}pro{% endif %}">
-                <i class="ph {% if current_tier == 'elite' %}ph-lightning{% elif current_tier == 'pro' %}ph-crown-simple{% else %}ph-user{% endif %}"></i>
+            <div class="current-badge-avatar {% if role == 'player' or current_tier != 'free' %}pro{% endif %}">
+                <i class="ph {% if role == 'player' %}ph-user{% elif current_tier == 'elite' %}ph-lightning{% elif current_tier == 'pro' %}ph-crown-simple{% else %}ph-user{% endif %}"></i>
             </div>
             <div>
                 <span class="status-sub-label">Current Plan</span>
                 <h3>
                     {% if role == 'player' %}
-                        {{ 'Pickleball Pro Pass' if current_tier == 'pro' else 'Free Player Membership' }}
+                        Player Membership
                     {% elif role == 'owner' %}
                         {{ 'Elite Enterprise' if current_tier == 'elite' else ('Pro Facility Pass' if current_tier == 'pro' else 'Starter Operator') }}
                     {% elif role == 'clubadmin' %}
@@ -122,11 +122,7 @@
                 </h3>
                 <p class="current-desc">
                     {% if role == 'player' %}
-                        {% if current_tier == 'pro' %}
-                            Unlocked 14-day early access booking, unlimited active bookings, priority matchmaking, and verified gold badge.
-                        {% else %}
-                            Standard free access. 3-day advance booking window and up to 2 active bookings.
-                        {% endif %}
+                        100% Free Forever with all athlete benefits unlocked: 14-day advance booking, ₱0 convenience fees, unlimited active bookings, verified paddle badge, and comprehensive performance analytics.
                     {% elif role == 'owner' %}
                         {% if current_tier == 'elite' %}
                             Unlocked unlimited facilities &amp; courts, unlimited staff delegations, payment ledger CSV export, dynamic pricing, and homepage featured pin.
@@ -148,9 +144,15 @@
             </div>
         </div>
         <div class="current-card-right">
-            {% if current_tier == 'free' %}
+            {% if role == 'player' %}
+            <div class="expiry-callout" style="border-color: rgba(16,185,129,0.3); background: rgba(16,185,129,0.06);">
+                <span class="expiry-label">Membership Status</span>
+                <span class="expiry-val" style="color: #10b981;">Permanent Free Access</span>
+                <span style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px;">All athlete perks active</span>
+            </div>
+            {% elif current_tier == 'free' %}
             <a href="{{ url_for('billing.checkout_page', plan='pro', cycle='monthly') }}" class="btn-sub-upgrade-now">
-                <i class="ph ph-sparkle"></i> Upgrade to Pro Pass
+                <i class="ph ph-arrow-up-right"></i> Upgrade to Pro Pass
             </a>
             {% else %}
             <div class="expiry-callout">
@@ -164,6 +166,75 @@
         </div>
     </div>
 
+    {% if role == 'player' %}
+    <!-- Player Benefits & Capabilities Overview -->
+    <div class="player-benefits-overview-card" style="background: var(--card-bg); border: 1.5px solid rgba(16,185,129,0.35); border-radius: 16px; padding: 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); margin-bottom: 30px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(16,185,129,0.15); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+                    <i class="ph ph-crown-simple"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.3rem; color: var(--text-primary);">All Player Features Included</h3>
+                    <p style="margin: 3px 0 0; font-size: 0.88rem; color: var(--text-secondary);">Your player account gives you full, unrestricted access to the PickleballHub sports platform.</p>
+                </div>
+            </div>
+            <span style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16,185,129,0.12); color: #10b981; border: 1px solid rgba(16,185,129,0.3); font-size: 0.82rem; font-weight: 800; padding: 6px 14px; border-radius: 999px;">
+                <i class="ph ph-check-circle"></i> ALL PERKS ACTIVE
+            </span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+            <div style="display: flex; gap: 14px; padding: 16px; background: var(--bg-surface); border-radius: 12px; border: 1px solid var(--border-color);">
+                <i class="ph ph-calendar-check" style="font-size: 1.6rem; color: #10b981; flex-shrink: 0; margin-top: 2px;"></i>
+                <div>
+                    <strong style="display: block; font-size: 0.95rem; color: var(--text-primary); margin-bottom: 4px;">14-Day Advance Court Booking</strong>
+                    <span style="font-size: 0.84rem; color: var(--text-secondary);">Reserve peak slot court times up to two full weeks ahead at verified partner venues.</span>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 14px; padding: 16px; background: var(--bg-surface); border-radius: 12px; border: 1px solid var(--border-color);">
+                <i class="ph ph-currency-circle-dollar" style="font-size: 1.6rem; color: #10b981; flex-shrink: 0; margin-top: 2px;"></i>
+                <div>
+                    <strong style="display: block; font-size: 0.95rem; color: var(--text-primary); margin-bottom: 4px;">₱0 Platform Booking Fees</strong>
+                    <span style="font-size: 0.84rem; color: var(--text-secondary);">Zero platform convenience fees on all court reservations. Only pay the venue's hourly court rate.</span>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 14px; padding: 16px; background: var(--bg-surface); border-radius: 12px; border: 1px solid var(--border-color);">
+                <i class="ph ph-squares-four" style="font-size: 1.6rem; color: #10b981; flex-shrink: 0; margin-top: 2px;"></i>
+                <div>
+                    <strong style="display: block; font-size: 0.95rem; color: var(--text-primary); margin-bottom: 4px;">Unlimited Active Bookings</strong>
+                    <span style="font-size: 0.84rem; color: var(--text-secondary);">Schedule multiple recurring training sessions and open matches simultaneously without caps.</span>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 14px; padding: 16px; background: var(--bg-surface); border-radius: 12px; border: 1px solid var(--border-color);">
+                <i class="ph ph-medal" style="font-size: 1.6rem; color: #10b981; flex-shrink: 0; margin-top: 2px;"></i>
+                <div>
+                    <strong style="display: block; font-size: 0.95rem; color: var(--text-primary); margin-bottom: 4px;">DUPR &amp; ELO Rating Engine</strong>
+                    <span style="font-size: 0.84rem; color: var(--text-secondary);">Track real-time dynamic ratings, match histories, win rates, and ranking progression.</span>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 14px; padding: 16px; background: var(--bg-surface); border-radius: 12px; border: 1px solid var(--border-color);">
+                <i class="ph ph-lightning" style="font-size: 1.6rem; color: #10b981; flex-shrink: 0; margin-top: 2px;"></i>
+                <div>
+                    <strong style="display: block; font-size: 0.95rem; color: var(--text-primary); margin-bottom: 4px;">Priority Matchmaker Lobbies</strong>
+                    <span style="font-size: 0.84rem; color: var(--text-secondary);">Create or join singles and doubles public pairing lobbies with fast auto-matchmaking.</span>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 14px; padding: 16px; background: var(--bg-surface); border-radius: 12px; border: 1px solid var(--border-color);">
+                <i class="ph ph-trophy" style="font-size: 1.6rem; color: #10b981; flex-shrink: 0; margin-top: 2px;"></i>
+                <div>
+                    <strong style="display: block; font-size: 0.95rem; color: var(--text-primary); margin-bottom: 4px;">Community Clubs &amp; Tournaments</strong>
+                    <span style="font-size: 0.84rem; color: var(--text-secondary);">Join local neighborhood clubs, participate in open forums, and enter competitive brackets.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
     <!-- Pricing Switcher Section -->
     <div class="pricing-switcher-wrapper">
         <span class="switcher-label">Monthly</span>
@@ -175,87 +246,7 @@
 
     <!-- Subscription Plans Grid -->
     <div class="plans-grid-row">
-        {% if role == 'player' %}
-            <!-- Free Player Pass -->
-            <div class="plan-card {% if current_tier == 'free' %}current-plan{% endif %}">
-                {% if current_tier == 'free' %}
-                <span class="plan-status-flag current">Current Plan</span>
-                {% endif %}
-                <div class="plan-head">
-                    <span class="plan-type-pill">STANDARD</span>
-                    <h4>Player Membership</h4>
-                    <p>Standard account for casual matches and community play.</p>
-                </div>
-                <div class="plan-price-wrap">
-                    <div class="plan-price">₱0 <span class="period">/ mo</span></div>
-                    <span class="plan-price-note">Free forever</span>
-                </div>
-                <ul class="plan-perks-list">
-                    <li><i class="ph ph-check-circle"></i> <span>3-Day advance court reservation</span></li>
-                    <li><i class="ph ph-check-circle"></i> <span>Up to 2 active bookings at a time</span></li>
-                    <li><i class="ph ph-check-circle"></i> <span>Open play community matchmaker</span></li>
-                    <li><i class="ph ph-check-circle"></i> <span>DUPR &amp; ELO rating tracking</span></li>
-                    <li class="disabled"><i class="ph ph-x-circle"></i> <span>14-day early access peak slot booking</span></li>
-                    <li class="disabled"><i class="ph ph-x-circle"></i> <span>Unlimited active bookings simultaneously</span></li>
-                    <li class="disabled"><i class="ph ph-x-circle"></i> <span>Priority open play matchmaker queue</span></li>
-                    <li class="disabled"><i class="ph ph-x-circle"></i> <span>Verified Gold "PRO" athlete badge</span></li>
-                </ul>
-                <div class="plan-footer">
-                    {% if current_tier == 'free' %}
-                    <button type="button" class="btn-plan-action outline" disabled><i class="ph ph-check"></i> Current Plan Active</button>
-                    {% else %}
-                    <span class="sub-downgrade-note">Free standard tier</span>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Pro Player Pass -->
-            <div class="plan-card featured {% if current_tier == 'pro' %}current-plan{% endif %}">
-                {% if current_tier == 'pro' %}
-                <span class="plan-status-flag current">Current Plan</span>
-                {% else %}
-                <span class="plan-status-flag popular">Recommended</span>
-                {% endif %}
-                <div class="plan-head">
-                    <span class="plan-type-pill pro"><i class="ph ph-crown-simple"></i> PRO ATHLETE</span>
-                    <h4>Pickleball Pro Pass</h4>
-                    <p>For active athletes who play regularly and want prime court access.</p>
-                </div>
-                {% set p_m = (all_role_tiers.pro.price_monthly if all_role_tiers and all_role_tiers.pro else tier_pricing.player.pro.price_monthly) %}
-                {% set p_a = (all_role_tiers.pro.price_annual if all_role_tiers and all_role_tiers.pro else tier_pricing.player.pro.price_annual) %}
-                {% set p_yr = (p_a * 12)|int %}
-                {% set p_save = ((p_m * 12) - p_yr)|int %}
-                <div class="plan-price-wrap">
-                    <div class="plan-price">
-                        <span class="plan-val" data-monthly="{{ '{:,.0f}'.format(p_m) }}" data-annual="{{ '{:,.0f}'.format(p_a) }}">₱{{ "{:,.0f}".format(p_m) }}</span>
-                        <span class="period">/ mo</span>
-                    </div>
-                    <span class="plan-price-note" data-monthly="Billed monthly" data-annual="₱{{ '{:,.0f}'.format(p_yr) }} billed annually{% if p_save > 0 %} (Save ₱{{ '{:,.0f}'.format(p_save) }}){% endif %}">Billed monthly</span>
-                </div>
-                <ul class="plan-perks-list">
-                    <li><i class="ph ph-check-circle"></i> <span><strong>14-Day Early Access Booking</strong> (lock peak weekend slots)</span></li>
-                    <li><i class="ph ph-check-circle"></i> <span><strong>Unlimited Active Bookings</strong> simultaneously</span></li>
-                    <li><i class="ph ph-check-circle"></i> <span><strong>Priority Matchmaker Queue</strong> (Instant lobby pairing)</span></li>
-                    <li><i class="ph ph-check-circle"></i> <span><strong>Verified Gold "PRO" Badge</strong> on profile &amp; rosters</span></li>
-                    <li><i class="ph ph-check-circle"></i> <span><strong>Pro Rating Analytics</strong> &amp; win rate charts</span></li>
-                    <li><i class="ph ph-check-circle"></i> <span><strong>10% Discount</strong> on official tournament entry fees</span></li>
-                </ul>
-                <div class="plan-footer">
-                    {% if current_tier == 'pro' %}
-                    <button type="button" class="btn-plan-action outline" disabled><i class="ph ph-check"></i> Current Plan Active</button>
-                    {% elif pending_sub and pending_sub.tier == 'pro' %}
-                    <button type="button" class="btn-plan-action outline" style="border-color: #f59e0b; color: #f59e0b; background: rgba(245,158,11,0.08); cursor: default;" disabled>
-                        <i class="ph ph-clock"></i> Verification in Progress
-                    </button>
-                    {% else %}
-                    <a href="{{ url_for('billing.checkout_page', plan='pro', cycle='monthly') }}" class="btn-plan-action primary" id="btnProSelect" data-plan="pro">
-                        <i class="ph ph-credit-card"></i> Subscribe with GCash
-                    </a>
-                    {% endif %}
-                </div>
-            </div>
-
-        {% elif role == 'owner' %}
+        {% if role == 'owner' %}
             <!-- Facility Owner Plans: Starter, Pro, Elite -->
             <div class="plan-card {% if current_tier == 'free' %}current-plan{% endif %}">
                 {% if current_tier == 'free' %}
@@ -444,6 +435,7 @@
             </div>
         {% endif %}
     </div>
+    {% endif %}
 
     <!-- Subscription Billing Ledger History -->
     <div class="sub-history-card">

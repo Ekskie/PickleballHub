@@ -1,42 +1,18 @@
 import time
 import os
 import sys
-import httpx
-from supabase import create_client, ClientOptions
+from app.db import get_admin_db
 
 _cached_settings = None
 _settings_cache_time = 0.0
-SETTINGS_CACHE_TTL = 30.0  # cache settings for 30 seconds
+SETTINGS_CACHE_TTL = 600.0  # Cache settings for 10 minutes in memory
 
 def get_db_client():
-    """Returns a Supabase client for querying platform_settings.
-    Prefers the request-scoped admin client from app.db to avoid
-    creating a new HTTP client on every cache miss.
-    Falls back to creating a standalone client only when called
-    outside of a Flask request context (e.g., during app startup).
-    """
-    # 1. Prefer the request-scoped client (no new connections)
+    """Returns a Supabase admin client for querying platform_settings."""
     try:
-        from flask import has_request_context
-        if has_request_context():
-            from app.db import get_admin_db
-            client = get_admin_db()
-            if client:
-                return client
-    except Exception:
-        pass
-
-    # 2. Fallback: create a standalone client (outside request context)
-    url = os.environ.get('SUPABASE_URL')
-    key = os.environ.get('SERVICE_ROLE_KEY') or os.environ.get('SUPABASE_KEY')
-    if not url or not key:
-        return None
-    try:
-        http_client = httpx.Client(http2=False, limits=httpx.Limits(keepalive_expiry=10.0), timeout=30.0)
-        options = ClientOptions(httpx_client=http_client)
-        return create_client(url, key, options=options)
+        return get_admin_db()
     except Exception as e:
-        print(f"[get_db_client] Error initializing supabase client: {e}", file=sys.stderr)
+        print(f"[get_db_client] Error obtaining db client: {e}", file=sys.stderr)
         return None
 
 def load_platform_settings(force_refresh=False):

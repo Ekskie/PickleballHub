@@ -170,6 +170,38 @@
             text-decoration: underline;
             margin-left: 6px;
         }
+
+        /* ── Player Free Subtle Note ── */
+        .player-free-subtle-hint {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: rgba(34, 197, 94, 0.08);
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            padding: 7px 18px;
+            border-radius: 999px;
+            font-size: 0.86rem;
+            color: var(--text-secondary);
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .player-free-subtle-hint i {
+            color: #16a34a;
+            font-size: 1.05rem;
+        }
+        .player-free-subtle-hint strong {
+            color: #16a34a;
+        }
+        .player-free-subtle-hint a {
+            color: var(--primary-orange);
+            font-weight: 700;
+            text-decoration: none;
+            margin-left: 4px;
+        }
+        .player-free-subtle-hint a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 
@@ -189,15 +221,20 @@
             <span class="memberships-kicker"><i class="ph ph-crown-simple"></i> CIRCULATION &amp; MEMBERSHIP TIERS</span>
             <h1 class="memberships-title">Choose Your Circulation Plan</h1>
             <p class="memberships-lead">
-                Transparent membership models tailored for facility operators, tournament organizers, and competitive athletes. 
+                Transparent membership models tailored for facility operators and tournament organizers. 
                 Pick a tier to launch your customized registration.
             </p>
+            <div class="player-free-subtle-hint">
+                <i class="ph-fill ph-check-circle"></i>
+                <span>Looking to play? Athlete accounts are <strong>100% Free Forever</strong> with full court booking &amp; rating privileges.</span>
+                <a href="{{ url_for('auth.signup', role='player') }}">Sign Up Free as Player &rarr;</a>
+            </div>
         </header>
 
-        <!-- 1. Interactive Persona Switcher -->
+        <!-- 1. Interactive Persona Switcher (Commercial Court & League Operators) -->
         <div class="pricing-persona-switcher" role="tablist">
-            <button type="button" class="persona-tab {% if active_role == 'owner' or not active_role %}active{% endif %}" id="tab-owner" onclick="switchPricingPersona('owner')"
-                role="tab" aria-selected="{% if active_role == 'owner' or not active_role %}true{% else %}false{% endif %}">
+            <button type="button" class="persona-tab {% if active_role == 'owner' or not active_role or active_role == 'player' %}active{% endif %}" id="tab-owner" onclick="switchPricingPersona('owner')"
+                role="tab" aria-selected="{% if active_role == 'owner' or not active_role or active_role == 'player' %}true{% else %}false{% endif %}">
                 <i class="ph ph-buildings"></i>
                 <span>Facility Owners</span>
                 <span class="persona-tag">B2B SaaS</span>
@@ -207,12 +244,6 @@
                 <i class="ph ph-shield-check"></i>
                 <span>Club Organizers</span>
                 <span class="persona-tag">League Pass</span>
-            </button>
-            <button type="button" class="persona-tab {% if active_role == 'player' %}active{% endif %}" id="tab-player" onclick="switchPricingPersona('player')"
-                role="tab" aria-selected="{% if active_role == 'player' %}true{% else %}false{% endif %}">
-                <i class="ph ph-user"></i>
-                <span>Players</span>
-                <span class="persona-tag">Pro Pass</span>
             </button>
         </div>
 
@@ -260,8 +291,8 @@
                     <span class="sub-card-tag" style="color: var(--primary-orange);">Pro Commercial</span>
                     <h3>Pro Facility Pass</h3>
                     <p>For growing pickleball clubs seeking multi-court capacity, staff delegation, and financial reports.</p>
-                    {% set o_p_m = (tier_pricing.owner.pro.price_monthly if tier_pricing and tier_pricing.owner and tier_pricing.owner.pro else 1299) %}
-                    {% set o_p_a = (tier_pricing.owner.pro.price_annual if tier_pricing and tier_pricing.owner and tier_pricing.owner.pro else 1049) %}
+                    {% set o_p_m = (tier_pricing.owner.pro.price_monthly if tier_pricing and tier_pricing.owner and tier_pricing.owner.pro else 999) %}
+                    {% set o_p_a = (tier_pricing.owner.pro.price_annual if tier_pricing and tier_pricing.owner and tier_pricing.owner.pro else 799) %}
                     {% set o_p_yr = (o_p_a * 12)|int %}
                     {% set o_p_save = ((o_p_m * 12) - o_p_yr)|int %}
                     <div class="sub-price-wrap">
@@ -288,8 +319,8 @@
                     <span class="sub-card-tag" style="color: #6366f1;">Enterprise Scale</span>
                     <h3>Elite Enterprise</h3>
                     <p>Flagship package for commercial sports arenas, municipal facilities, and multi-venue franchises.</p>
-                    {% set o_e_m = (tier_pricing.owner.elite.price_monthly if tier_pricing and tier_pricing.owner and tier_pricing.owner.elite else 2999) %}
-                    {% set o_e_a = (tier_pricing.owner.elite.price_annual if tier_pricing and tier_pricing.owner and tier_pricing.owner.elite else 2399) %}
+                    {% set o_e_m = (tier_pricing.owner.elite.price_monthly if tier_pricing and tier_pricing.owner and tier_pricing.owner.elite else 2249) %}
+                    {% set o_e_a = (tier_pricing.owner.elite.price_annual if tier_pricing and tier_pricing.owner and tier_pricing.owner.elite else 1799) %}
                     {% set o_e_yr = (o_e_a * 12)|int %}
                     {% set o_e_save = ((o_e_m * 12) - o_e_yr)|int %}
                     <div class="sub-price-wrap">
@@ -345,8 +376,8 @@
                     <span class="sub-card-tag" style="color: var(--primary-orange);">League Builder</span>
                     <h3>Pro Club Pass</h3>
                     <p>For serious tournament directors, circuit coordinators, and sanctioned club networks.</p>
-                    {% set c_p_m = (tier_pricing.clubadmin.pro.price_monthly if tier_pricing and tier_pricing.clubadmin and tier_pricing.clubadmin.pro else 599) %}
-                    {% set c_p_a = (tier_pricing.clubadmin.pro.price_annual if tier_pricing and tier_pricing.clubadmin and tier_pricing.clubadmin.pro else 479) %}
+                    {% set c_p_m = (tier_pricing.clubadmin.pro.price_monthly if tier_pricing and tier_pricing.clubadmin and tier_pricing.clubadmin.pro else 449) %}
+                    {% set c_p_a = (tier_pricing.clubadmin.pro.price_annual if tier_pricing and tier_pricing.clubadmin and tier_pricing.clubadmin.pro else 359) %}
                     {% set c_p_yr = (c_p_a * 12)|int %}
                     {% set c_p_save = ((c_p_m * 12) - c_p_yr)|int %}
                     <div class="sub-price-wrap">
@@ -366,63 +397,6 @@
                         <li><i class="ph ph-check-circle"></i> <span>Priority tournament listing on platform feed</span></li>
                     </ul>
                     <a href="{{ url_for('auth.signup') }}?role=clubadmin&tier=pro&cycle=monthly" class="sub-btn plan-cta-btn" data-role="clubadmin" data-tier="pro">Start Pro Club Pass</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- ═══════════════════════════════════════════════════════════
-             PANE 3: PLAYERS (Athletes & Community Members)
-             ═══════════════════════════════════════════════════════════ -->
-        <div class="pricing-pane {% if active_role == 'player' %}active{% endif %}" id="pane-player">
-            <div class="subscription-grid two-cols">
-                <!-- Free Player Pass -->
-                <div class="sub-card">
-                    <span class="sub-card-tag">Standard Access</span>
-                    <h3>Player Membership</h3>
-                    <p>Standard profile to reserve courts, join open play queues, and find local matches.</p>
-                    <div class="sub-price-wrap">
-                        <div class="sub-price">₱0 <span class="period">/ month</span></div>
-                        <span class="sub-annual-note">Free standard play</span>
-                    </div>
-                    <ul class="sub-features">
-                        <li><i class="ph ph-check-circle"></i> <span>Reserve verified courts online (3 days ahead)</span></li>
-                        <li><i class="ph ph-check-circle"></i> <span>Max <strong>2 Active Bookings</strong> simultaneously</span></li>
-                        <li><i class="ph ph-check-circle"></i> <span>Standard ELO &amp; DUPR rating tracking</span></li>
-                        <li><i class="ph ph-check-circle"></i> <span>Join public community matchmaker lobbies</span></li>
-                        <li class="disabled"><i class="ph ph-x-circle"></i> <span>14-day early access peak slot booking</span></li>
-                        <li class="disabled"><i class="ph ph-x-circle"></i> <span>Unlimited simultaneous active bookings</span></li>
-                        <li class="disabled"><i class="ph ph-x-circle"></i> <span>Gold "PRO" Paddle Profile Badge</span></li>
-                        <li class="disabled"><i class="ph ph-x-circle"></i> <span>Priority matchmaker queue speed</span></li>
-                    </ul>
-                    <a href="{{ url_for('auth.signup') }}?role=player&tier=free" class="sub-btn outline plan-cta-btn" data-base-href="{{ url_for('auth.signup') }}?role=player&tier=free">Create Player Profile</a>
-                </div>
-
-                <!-- Pro Player Pass (Popular) -->
-                <div class="sub-card popular">
-                    <span class="sub-popular-badge">Competitive Edge</span>
-                    <span class="sub-card-tag" style="color: var(--primary-orange);">Pro Athlete</span>
-                    <h3>Pickleball Pro Pass</h3>
-                    <p>For active athletes who play multiple times a week and want peak court slots before anyone else.</p>
-                    {% set p_m = (tier_pricing.player.pro.price_monthly if tier_pricing and tier_pricing.player and tier_pricing.player.pro else 199) %}
-                    {% set p_a = (tier_pricing.player.pro.price_annual if tier_pricing and tier_pricing.player and tier_pricing.player.pro else 149) %}
-                    {% set p_yr = (p_a * 12)|int %}
-                    {% set p_save = ((p_m * 12) - p_yr)|int %}
-                    <div class="sub-price-wrap">
-                        <div class="sub-price">
-                            <span class="val-price" data-monthly="{{ p_m }}" data-annual="{{ p_a }}">₱{{ "{:,.0f}".format(p_m) }}</span>
-                            <span class="period">/ mo</span>
-                        </div>
-                        <span class="sub-annual-note" data-monthly="" data-annual="Billed ₱{{ '{:,.0f}'.format(p_yr) }}/yr{% if p_save > 0 %} (Save ₱{{ '{:,.0f}'.format(p_save) }}){% endif %}"></span>
-                    </div>
-                    <ul class="sub-features">
-                        <li><i class="ph ph-check-circle"></i> <span><strong>14-Day Advance Court Booking</strong> window</span></li>
-                        <li><i class="ph ph-check-circle"></i> <span><strong>Unlimited Active Simultaneous Bookings</strong></span></li>
-                        <li><i class="ph ph-check-circle"></i> <span><strong>Gold "PRO" Paddle Badge</strong> displayed on profile &amp; leaderboard</span></li>
-                        <li><i class="ph ph-check-circle"></i> <span><strong>Priority Matchmaker Queue</strong> speed</span></li>
-                        <li><i class="ph ph-check-circle"></i> <span>Deep performance analytics &amp; win/loss charts</span></li>
-                        <li><i class="ph ph-check-circle"></i> <span>Direct invite access to private club brackets</span></li>
-                    </ul>
-                    <a href="{{ url_for('auth.signup') }}?role=player&tier=pro&cycle=monthly" class="sub-btn plan-cta-btn" data-role="player" data-tier="pro">Upgrade to Pro Player</a>
                 </div>
             </div>
         </div>

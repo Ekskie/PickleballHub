@@ -17,9 +17,9 @@
     <!-- Landing Page CSS (Reusing your landing page style variables) -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/landing/landing.css') }}">
     <!-- GSAP for page animations -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
     <!-- Phosphor Icons -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web" defer></script>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
 </head>
 
@@ -48,7 +48,7 @@
             <div class="editorial-slide {% if loop.first %}active{% endif %}">
                 <div class="slide-img-wrapper">
                     <span class="slide-category">{{ story.category }}</span>
-                    <img src="{{ st_img }}" alt="{{ story.title }}">
+                    <img src="{{ st_img }}" alt="{{ story.title }}" {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}>
                 </div>
                 <div class="slide-content">
                     <a href="{{ story.link or url_for('main.courts_listing') }}" class="slide-title">{{ story.title
@@ -447,16 +447,20 @@
 
     <section class="subscription-section" id="subscription-pricing">
         <div class="subscription-container">
-            <div class="section-title" style="margin-bottom: 24px;">
+            <div class="section-title" style="margin-bottom: 28px; text-align: center;">
                 <h2 class="editorial-section-title" style="text-align: center;">Choose Your Circulation Plan</h2>
                 <p class="editorial-section-subtitle"
-                    style="text-align: center; max-width: 680px; margin: 0 auto 28px;">
-                    Transparent membership models tailored for facility operators, tournament organizers, and
-                    competitive athletes. Start free or unlock commercial-grade platform tools.
+                    style="text-align: center; max-width: 680px; margin: 0 auto 14px;">
+                    Transparent membership models tailored for facility operators and tournament organizers. Start free or unlock commercial-grade platform tools.
                 </p>
+                <div class="player-free-subtle-hint">
+                    <i class="ph-fill ph-check-circle"></i>
+                    <span>Looking to play? Athlete accounts are <strong>100% Free Forever</strong> with full court booking &amp; rating privileges.</span>
+                    <a href="{{ url_for('auth.signup', role='player') }}">Sign Up Free as Player &rarr;</a>
+                </div>
             </div>
 
-            <!-- 1. Interactive Persona Switcher -->
+            <!-- 1. Interactive Persona Switcher (Commercial) -->
             <div class="pricing-persona-switcher" role="tablist">
                 <button type="button" class="persona-tab active" id="tab-owner" onclick="switchPricingPersona('owner')"
                     role="tab" aria-selected="true">
@@ -469,12 +473,6 @@
                     <i class="ph ph-shield-check"></i>
                     <span>Club Organizers</span>
                     <span class="persona-tag">League Pass</span>
-                </button>
-                <button type="button" class="persona-tab" id="tab-player" onclick="switchPricingPersona('player')"
-                    role="tab" aria-selected="false">
-                    <i class="ph ph-user"></i>
-                    <span>Players</span>
-                    <span class="persona-tag">Pro Pass</span>
                 </button>
             </div>
 
@@ -534,8 +532,8 @@
                         <h3>Pro Facility Pass</h3>
                         <p>For growing pickleball clubs seeking lower transaction fees, multi-court capacity, and staff
                             tools.</p>
-                        {% set o_p_m = (tier_pricing.owner.pro.price_monthly if tier_pricing and tier_pricing.owner and tier_pricing.owner.pro else 1299) %}
-                        {% set o_p_a = (tier_pricing.owner.pro.price_annual if tier_pricing and tier_pricing.owner and tier_pricing.owner.pro else 1049) %}
+                        {% set o_p_m = (tier_pricing.owner.pro.price_monthly if tier_pricing and tier_pricing.owner and tier_pricing.owner.pro else 999) %}
+                        {% set o_p_a = (tier_pricing.owner.pro.price_annual if tier_pricing and tier_pricing.owner and tier_pricing.owner.pro else 799) %}
                         {% set o_p_yr = (o_p_a * 12)|int %}
                         {% set o_p_save = ((o_p_m * 12) - o_p_yr)|int %}
                         <div class="sub-price-wrap">
@@ -575,8 +573,8 @@
                         <h3>Elite Enterprise</h3>
                         <p>Flagship package for commercial sports arenas, municipal facilities, and multi-venue
                             franchises.</p>
-                        {% set o_e_m = (tier_pricing.owner.elite.price_monthly if tier_pricing and tier_pricing.owner and tier_pricing.owner.elite else 2999) %}
-                        {% set o_e_a = (tier_pricing.owner.elite.price_annual if tier_pricing and tier_pricing.owner and tier_pricing.owner.elite else 2399) %}
+                        {% set o_e_m = (tier_pricing.owner.elite.price_monthly if tier_pricing and tier_pricing.owner and tier_pricing.owner.elite else 2249) %}
+                        {% set o_e_a = (tier_pricing.owner.elite.price_annual if tier_pricing and tier_pricing.owner and tier_pricing.owner.elite else 1799) %}
                         {% set o_e_yr = (o_e_a * 12)|int %}
                         {% set o_e_save = ((o_e_m * 12) - o_e_yr)|int %}
                         <div class="sub-price-wrap">
@@ -652,8 +650,8 @@
                         <span class="sub-card-tag" style="color: var(--primary-orange);">League Builder</span>
                         <h3>Pro Club Pass</h3>
                         <p>For serious tournament directors, circuit coordinators, and sanctioned club networks.</p>
-                        {% set c_p_m = (tier_pricing.clubadmin.pro.price_monthly if tier_pricing and tier_pricing.clubadmin and tier_pricing.clubadmin.pro else 599) %}
-                        {% set c_p_a = (tier_pricing.clubadmin.pro.price_annual if tier_pricing and tier_pricing.clubadmin and tier_pricing.clubadmin.pro else 479) %}
+                        {% set c_p_m = (tier_pricing.clubadmin.pro.price_monthly if tier_pricing and tier_pricing.clubadmin and tier_pricing.clubadmin.pro else 449) %}
+                        {% set c_p_a = (tier_pricing.clubadmin.pro.price_annual if tier_pricing and tier_pricing.clubadmin and tier_pricing.clubadmin.pro else 359) %}
                         {% set c_p_yr = (c_p_a * 12)|int %}
                         {% set c_p_save = ((c_p_m * 12) - c_p_yr)|int %}
                         <div class="sub-price-wrap">
@@ -684,88 +682,6 @@
                         </ul>
                         <a href="{{ url_for('auth.signup') }}?role=clubadmin&tier=pro&cycle=monthly" class="sub-btn plan-cta-btn" data-role="clubadmin" data-tier="pro">Start Pro Club
                             Pass</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ═══════════════════════════════════════════════════════════
-                 PANE 3: PLAYERS (Athletes & Community Members)
-                 ═══════════════════════════════════════════════════════════ -->
-            <div class="pricing-pane" id="pane-player">
-                <div class="subscription-grid"
-                    style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); max-width: 900px; margin: 0 auto;">
-                    <!-- Free Player Pass -->
-                    <div class="sub-card">
-                        <span class="sub-card-tag">Standard Access</span>
-                        <h3>Player Membership</h3>
-                        <p>Standard profile to reserve courts, join open play queues, and find local matches.</p>
-                        <div class="sub-price-wrap">
-                            <div class="sub-price">₱0 <span class="period">/ month</span></div>
-                            <span class="sub-annual-note">Free standard play</span>
-                        </div>
-                        <ul class="sub-features">
-                            <li><i class="ph ph-check-circle"></i> <span>Reserve verified courts online (3 days
-                                    ahead)</span></li>
-                            <li><i class="ph ph-check-circle"></i> <span>Max <strong>2 Active Bookings</strong>
-                                    simultaneously</span></li>
-                            <li><i class="ph ph-check-circle"></i> <span>Standard ELO &amp; DUPR rating tracking</span>
-                            </li>
-                            <li><i class="ph ph-check-circle"></i> <span>Join public community matchmaker lobbies</span>
-                            </li>
-                            <li><i class="ph ph-check-circle"></i> <span>Participate in open club discussions</span>
-                            </li>
-                            <li class="disabled"><i class="ph ph-x-circle"></i> <span>Standard ₱25 platform convenience
-                                    fee per booking</span></li>
-                            <li class="disabled"><i class="ph ph-x-circle"></i> <span>14-day early access peak slot
-                                    booking</span></li>
-                            <li class="disabled"><i class="ph ph-x-circle"></i> <span>Priority matchmaker queue
-                                    speed</span></li>
-                            <li class="disabled"><i class="ph ph-x-circle"></i> <span>Gold "PRO" Paddle Profile Badge
-                                    &amp; analytics</span></li>
-                        </ul>
-                        <a href="{{ url_for('auth.signup') }}?role=player&tier=free" class="sub-btn outline">Create Player
-                            Profile</a>
-                    </div>
-
-                    <!-- Pro Player Pass (Popular) -->
-                    <div class="sub-card popular">
-                        <span class="sub-popular-badge">Competitive Edge</span>
-                        <span class="sub-card-tag" style="color: var(--primary-orange);">Pro Athlete</span>
-                        <h3>Pickleball Pro Pass</h3>
-                        <p>For active athletes who play multiple times a week and want peak court slots before anyone
-                            else.</p>
-                        {% set p_m = (tier_pricing.player.pro.price_monthly if tier_pricing and tier_pricing.player and tier_pricing.player.pro else 199) %}
-                        {% set p_a = (tier_pricing.player.pro.price_annual if tier_pricing and tier_pricing.player and tier_pricing.player.pro else 149) %}
-                        {% set p_yr = (p_a * 12)|int %}
-                        {% set p_save = ((p_m * 12) - p_yr)|int %}
-                        <div class="sub-price-wrap">
-                            <div class="sub-price">
-                                <span class="val-price" data-monthly="{{ p_m }}" data-annual="{{ p_a }}">₱{{ "{:,.0f}".format(p_m) }}</span>
-                                <span class="period">/ mo</span>
-                            </div>
-                            <span class="sub-annual-note" data-monthly=""
-                                data-annual="Billed ₱{{ '{:,.0f}'.format(p_yr) }}/yr{% if p_save > 0 %} (Save ₱{{ '{:,.0f}'.format(p_save) }}){% endif %}"></span>
-                        </div>
-                        <ul class="sub-features">
-                            <li><i class="ph ph-check-circle"></i> <span><strong>14-Day Early Court Booking</strong>
-                                    (Lock peak weekend slots)</span></li>
-                            <li><i class="ph ph-check-circle"></i> <span><strong>₱0 Platform Convenience Fees</strong>
-                                    (Unlimited free bookings)</span></li>
-                            <li><i class="ph ph-check-circle"></i> <span><strong>Unlimited Active Bookings</strong> at
-                                    any time</span></li>
-                            <li><i class="ph ph-check-circle"></i> <span><strong>Priority Matchmaker Queue</strong>
-                                    (Instant lobby pairing)</span></li>
-                            <li><i class="ph ph-check-circle"></i> <span><strong>Gold "PRO" Paddle Badge</strong> on
-                                    profile, rosters &amp; chats</span></li>
-                            <li><i class="ph ph-check-circle"></i> <span><strong>Pro Rating Analytics</strong>
-                                    (Head-to-head records &amp; win trends)</span></li>
-                            <li><i class="ph ph-check-circle"></i> <span><strong>10% Tournament Discount</strong> on
-                                    official entry fees</span></li>
-                            <li><i class="ph ph-check-circle"></i> <span>Exclusive Pro community leaderboards</span>
-                            </li>
-                        </ul>
-                        <a href="{{ url_for('auth.signup') }}?role=player&tier=pro&cycle=monthly" class="sub-btn plan-cta-btn" data-role="player" data-tier="pro">Upgrade to Pro
-                            Player</a>
                     </div>
                 </div>
             </div>
@@ -810,10 +726,10 @@
                             <td><strong>0% Fee (Keep 100%)</strong></td>
                         </tr>
                         <tr>
-                            <td><strong>Player Advance Booking Window</strong></td>
-                            <td>3 days ahead</td>
-                            <td><strong>14 days (Early Access)</strong></td>
-                            <td>90 days (League calendar)</td>
+                            <td><strong>Facility Player Booking Window</strong></td>
+                            <td>7 days ahead</td>
+                            <td><strong>30 days ahead</strong></td>
+                            <td><strong>90 days (League calendar)</strong></td>
                         </tr>
                         <tr>
                             <td><strong>Staff Account Access</strong></td>

@@ -2399,56 +2399,6 @@
             </div>
 
             <!-- Early Access Window Status Banner -->
-            <div class="cal-access-banner" id="calAccessBanner">
-                {% if current_user.is_pro %}
-                <div class="cal-access-badge pro">
-                    <div class="cal-access-badge-left">
-                        <span class="cal-tier-tag pro"><i class="ph ph-crown-simple"></i> PRO PASS</span>
-                        <span><strong>14-Day Early Access Active!</strong> Enjoy ₱0 convenience fees on all
-                            bookings.</span>
-                    </div>
-                </div>
-                {% elif current_user.is_subscription_pending %}
-                <div class="cal-access-badge pending"
-                    style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.35);">
-                    <div class="cal-access-badge-left">
-                        <span class="cal-tier-tag" style="background: #f59e0b; color: #fff;"><i
-                                class="ph ph-clock-countdown"></i> PRO PASS PENDING</span>
-                        <span>Your Pro Pass GCash verification is under review. 14-day early access unlocks
-                            automatically once approved!</span>
-                    </div>
-                    <a href="{{ url_for('billing.subscription_page') }}" class="btn-cal-upgrade"
-                        style="background: #f59e0b; text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem; color: #fff;">
-                        <i class="ph ph-receipt"></i> View Status
-                    </a>
-                </div>
-                {% elif current_user.is_subscription_rejected %}
-                <div class="cal-access-badge rejected"
-                    style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.35);">
-                    <div class="cal-access-badge-left">
-                        <span class="cal-tier-tag" style="background: #ef4444; color: #fff;"><i
-                                class="ph ph-warning-circle"></i> VERIFICATION REJECTED</span>
-                        <span>Payment verification was rejected. Please review notes and resubmit your GCash receipt to
-                            activate Pro.</span>
-                    </div>
-                    <a href="{{ url_for('billing.subscription_page') }}" class="btn-cal-upgrade"
-                        style="background: #ef4444; text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem; color: #fff;">
-                        <i class="ph ph-arrow-counter-clockwise"></i> Resubmit Proof
-                    </a>
-                </div>
-                {% else %}
-                <div class="cal-access-badge free">
-                    <div class="cal-access-badge-left">
-                        <span class="cal-tier-tag free"><i class="ph ph-calendar-blank"></i> FREE WINDOW</span>
-                        <span>Book up to <strong>3 days in advance</strong>. Days 4–14 are reserved for <strong
-                                style="color:#7c3aed;">Pro Early Access</strong>.</span>
-                    </div>
-                    <button type="button" class="btn-cal-upgrade" onclick="openProEarlyAccessModal()">
-                        <i class="ph ph-crown-simple"></i> Upgrade
-                    </button>
-                </div>
-                {% endif %}
-            </div>
 
             <div class="cal-weekdays">
                 <span>SUN</span><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span>
@@ -2462,8 +2412,7 @@
                 <div class="cal-legend-item"><span class="cal-legend-dot avail"></span> Available</div>
                 <div class="cal-legend-item"><span class="cal-legend-dot limited"></span> Filling Fast</div>
                 <div class="cal-legend-item"><span class="cal-legend-dot full"></span> Full</div>
-                <div class="cal-legend-item"><span class="cal-legend-dot pro-locked"></span> Pro Early Access (4–14d)
-                </div>
+
                 <div class="cal-legend-item"><span class="cal-legend-dot past"></span> Past / Closed</div>
             </div>
         </div>
@@ -2636,8 +2585,7 @@
                 <span class="s-label">Platform Fee</span>
                 <span class="s-val" id="sum-fee">
                     {% if current_user.is_pro %}
-                    <span style="color:#10b981;font-weight:700;"><i class="ph ph-crown-simple"></i> ₱0.00 (Pro
-                        Perk)</span>
+                    <span style="color:#10b981;font-weight:700;"><i class="ph ph-crown-simple"></i> ₱0.00 </span>
                     {% else %}
                     <span style="color:var(--text-muted);">₱0.00 (Free)</span>
                     {% endif %}
@@ -2912,11 +2860,7 @@
                 } else {
                     const rem = dayInfo.remaining_slots;
                     const remText = (rem !== undefined && rem > 0) ? `${rem} left` : 'Avail';
-                    if (USER_IS_PRO && daysAhead > 3) {
-                        badgeHtml = `<span class="cal-day-status available" style="border:1px solid rgba(16,185,129,0.35); background:rgba(16,185,129,0.12);"><i class="ph ph-sparkle" style="color:#10b981;font-size:0.6rem;"></i> ${remText}</span>`;
-                    } else {
-                        badgeHtml = `<span class="cal-day-status available">${remText}</span>`;
-                    }
+                    badgeHtml = `<span class="cal-day-status available">${remText}</span>`;
                 }
                 cell.onclick = () => selectCalendarDate(dayStr);
             }
@@ -3622,7 +3566,7 @@
         const feeEl = document.getElementById('sum-fee');
         if (feeEl) {
             if (USER_IS_PRO) {
-                feeEl.innerHTML = '<span style="color:#10b981;font-weight:700;"><i class="ph ph-crown-simple"></i> ₱0.00 (Pro Perk)</span>';
+                feeEl.innerHTML = '<span style="color:#10b981;font-weight:700;"><i class="ph ph-crown-simple"></i> ₱0.00 </span>';
             } else {
                 feeEl.innerHTML = '<span style="color:var(--text-muted);">₱0.00 (Free)</span>';
             }
@@ -3983,7 +3927,7 @@
                 <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">Cancel or switch anytime</div>
             </div>
             <div class="save-tag">
-                <i class="ph ph-sparkle"></i> Or ₱{{ "{:,.0f}".format(player_pro_a) }}/mo Billed Annually
+                <i class="ph ph-tag"></i> Or ₱{{ "{:,.0f}".format(player_pro_a) }}/mo Billed Annually
             </div>
         </div>
 

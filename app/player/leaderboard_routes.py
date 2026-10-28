@@ -54,8 +54,8 @@ def leaderboard():
                     'wins': wins,
                     'losses': losses,
                     'win_rate': win_rate,
-                    'is_pro': (p_tier in ['pro', 'elite']),
-                    'subscription_tier': p_tier
+                    'is_pro': True,
+                    'subscription_tier': 'free'
                 })
         else:
             # Fallback dynamic mode: Count tournament matches
@@ -99,8 +99,8 @@ def leaderboard():
                     'wins': s['wins'],
                     'losses': s['losses'],
                     'win_rate': win_rate,
-                    'is_pro': (p_tier in ['pro', 'elite']),
-                    'subscription_tier': p_tier
+                    'is_pro': True,
+                    'subscription_tier': 'free'
                 })
 
         # Multi-option sorting

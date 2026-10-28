@@ -19,6 +19,8 @@ limiter = Limiter(
     default_limits=["60/minute"],
     storage_uri="memory://",
 )
+from flask_compress import Compress
+compress = Compress()
 
 
 
@@ -35,6 +37,7 @@ def create_app():
         
     csrf.init_app(app)
     limiter.init_app(app)
+    compress.init_app(app)
    
     from app.main.routes import main_bp
     from app.auth.routes import auth_bp
@@ -300,10 +303,10 @@ def create_app():
                 'subscription_status':         sub_status,
                 'subscription_expires_at':     sub_exp,
                 'subscription_billing_cycle':  sub_cycle,
-                'is_subscription_pending':     (sub_status == 'pending_approval'),
-                'is_subscription_rejected':    (sub_status == 'rejected'),
-                'is_pro':                      user_tier in ['pro', 'elite'],
-                'is_elite':                    user_tier == 'elite',
+                'is_subscription_pending':     (sub_status == 'pending_approval') if role != 'player' else False,
+                'is_subscription_rejected':    (sub_status == 'rejected') if role != 'player' else False,
+                'is_pro':                      (user_tier in ['pro', 'elite']) if role != 'player' else True,
+                'is_elite':                    (user_tier == 'elite') and (role != 'player'),
                 'tier_limits':                 tier_limits,
             }, supabase_url=supabase_url, supabase_anon_key=supabase_key)
 
@@ -346,22 +349,44 @@ def create_app():
             'subscription_status':         sub_status,
             'subscription_expires_at':     sub_exp,
             'subscription_billing_cycle':  sub_cycle,
-            'is_subscription_pending':     (sub_status == 'pending_approval'),
-            'is_subscription_rejected':    (sub_status == 'rejected'),
-            'is_pro':                      user_tier in ['pro', 'elite'],
-            'is_elite':                    user_tier == 'elite',
+            'is_subscription_pending':     (sub_status == 'pending_approval') if role != 'player' else False,
+            'is_subscription_rejected':    (sub_status == 'rejected') if role != 'player' else False,
+            'is_pro':                      (user_tier in ['pro', 'elite']) if role != 'player' else True,
+            'is_elite':                    (user_tier == 'elite') and (role != 'player'),
             'tier_limits':                 tier_limits,
         }, supabase_url=supabase_url, supabase_anon_key=supabase_key)
 
+    class _LazyLandingContent:
+        """Lazy proxy that defers DB query for landing content until actually accessed."""
+        def __init__(self):
+            self._data = None
+        def _get_data(self):
+            if self._data is None:
+                from app.landing_helper import get_landing_content
+                self._data = get_landing_content() or {}
+            return self._data
+        def __getitem__(self, item):
+            return self._get_data().get(item)
+        def __getattr__(self, item):
+            data = self._get_data()
+            if hasattr(data, item):
+                return getattr(data, item)
+            return data.get(item)
+        def __bool__(self):
+            return bool(self._get_data())
+        def __iter__(self):
+            return iter(self._get_data())
+        def get(self, key, default=None):
+            return self._get_data().get(key, default)
+
     @app.context_processor
     def inject_platform_settings():
-        """Inject platform settings (SEO, tracking, name, email), dynamic tier pricing, and landing page content into all templates."""
+        """Inject platform settings (SEO, tracking, name, email), dynamic tier pricing, and lazy landing content into all templates."""
         from app.settings_helper import load_platform_settings
-        from app.landing_helper import get_landing_content
         from app.billing.tiers import load_dynamic_tier_config
         return dict(
             platform_settings=load_platform_settings(),
-            landing_content=get_landing_content(),
+            landing_content=_LazyLandingContent(),
             tier_pricing=load_dynamic_tier_config()
         )
 

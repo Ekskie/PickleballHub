@@ -77,22 +77,7 @@
     </ul>
 </li>
 
-<!-- Membership & Pro Pass -->
-<li class="{% if request.endpoint and request.endpoint.startswith('billing.') %}active{% endif %}">
-    <a href="{{ url_for('billing.subscription_page') }}">
-        <i class="ph ph-crown-simple" style="color:#8b5cf6;"></i>
-        <span>Membership &amp; Pro Pass</span>
-        {% if current_user.is_pro %}
-        <span class="nav-tier-tag pro" style="background:#10b981; color:#fff; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:10px; margin-left:auto;">PRO</span>
-        {% elif current_user.is_subscription_pending %}
-        <span class="nav-tier-tag pending" style="background:rgba(245,158,11,0.2); color:#f59e0b; border:1px solid rgba(245,158,11,0.4); font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:10px; margin-left:auto;">PENDING</span>
-        {% elif current_user.is_subscription_rejected %}
-        <span class="nav-tier-tag rejected" style="background:rgba(239,68,68,0.2); color:#ef4444; border:1px solid rgba(239,68,68,0.4); font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:10px; margin-left:auto;">ACTION REQ</span>
-        {% else %}
-        <span class="nav-tier-tag upgrade" style="background:rgba(139,92,246,0.15); color:#8b5cf6; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:10px; margin-left:auto;">UPGRADE</span>
-        {% endif %}
-    </a>
-</li>
+
 
 <script src="{{ url_for('static', filename='js/player_common.js') }}" defer></script>
 {% endblock %}

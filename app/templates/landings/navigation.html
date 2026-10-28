@@ -40,7 +40,7 @@
                 {% else %}
                 <a href="{{ url_for('auth.login') }}" class="btn-outline"
                     style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px; margin-right: 8px;">Log In</a>
-                <a href="{{ url_for('main.memberships') }}" class="btn-solid"
+                <a href="{{ url_for('auth.signup') }}" class="btn-solid"
                     style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px; margin-right: 8px;">Sign Up</a>
                 {% endif %}
             </div>
@@ -103,7 +103,7 @@
             <a href="{{ url_for('auth.login') }}" class="btn-outline"
                 style="padding: 10px 16px; font-size: 0.95rem; border-radius: 6px; display: block; text-align: center; margin-bottom: 10px; text-decoration: none; font-weight: 600; width: 100%;">Log
                 In</a>
-            <a href="{{ url_for('main.memberships') }}" class="btn-solid"
+            <a href="{{ url_for('auth.signup') }}" class="btn-solid"
                 style="padding: 10px 16px; font-size: 0.95rem; border-radius: 6px; display: block; text-align: center; text-decoration: none; font-weight: 600; width: 100%;">Sign
                 Up</a>
             {% endif %}

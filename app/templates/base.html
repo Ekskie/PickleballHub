@@ -18,7 +18,7 @@
     <!-- Phosphor Icons -->
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
 
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web" defer></script>
     <script>
         // Init Dark Mode & Sidebar Collapse from localStorage on load to prevent flickering
         (function() {
@@ -541,7 +541,7 @@
                     onclick="document.getElementById('support-modal').style.display='flex'" title="Help & Support">
                     <i class="ph ph-headset"></i>
                 </button>
-                {% if current_user and current_user.is_logged_in and current_user.role_raw in ['player', 'owner', 'clubadmin'] %}
+                {% if current_user and current_user.is_logged_in and current_user.role_raw in ['owner', 'clubadmin'] %}
                 <a href="{{ url_for('billing.subscription_page') }}" class="header-membership-pill {% if current_user.is_pro or current_user.is_elite %}pro{% else %}upgrade{% endif %}" title="Membership & Pro Pass">
                     <i class="ph ph-crown-simple"></i>
                     {% if current_user.is_elite %}<span>ELITE</span>{% elif current_user.is_pro %}<span>PRO</span>{% else %}<span>UPGRADE</span>{% endif %}
@@ -585,7 +585,7 @@
                                 <div class="udh-name">{{ current_user.full_name }}</div>
                                 <div class="udh-role-badge">
                                     <span>{{ current_user.role }}</span>
-                                    {% if current_user.role_raw == 'player' %}
+                                    {% if current_user.role_raw != 'player' %}
                                         {% if current_user.is_elite %}
                                             <span class="udh-pro-tag elite">ELITE</span>
                                         {% elif current_user.is_pro %}
@@ -806,7 +806,7 @@
                                 </div>
                             </a>
                             {% endif %}
-                            {% if current_user.role_raw in ['player', 'owner', 'clubadmin'] %}
+                            {% if current_user.role_raw in ['owner', 'clubadmin'] %}
                             <a href="{{ url_for('billing.subscription_page') }}" class="user-dropdown-item">
                                 <span class="udi-icon gold"><i class="ph ph-crown-simple"></i></span>
                                 <div class="udi-text">

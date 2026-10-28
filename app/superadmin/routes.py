@@ -1049,26 +1049,17 @@ def update_subscription_pricing():
 
         current_cfg = load_dynamic_tier_config()
 
-        # Extract and validate values for the 3 roles
-        player_pro_monthly = _clean_price(request.form.get('player_pro_monthly'), current_cfg['player']['pro']['price_monthly'])
-        player_pro_annual = _clean_price(request.form.get('player_pro_annual'), current_cfg['player']['pro']['price_annual'])
+        # Extract and validate values for commercial roles (Owner and Club Admin)
+        club_pro_monthly = _clean_price(request.form.get('clubadmin_pro_monthly'), current_cfg.get('clubadmin', {}).get('pro', {}).get('price_monthly', 449))
+        club_pro_annual = _clean_price(request.form.get('clubadmin_pro_annual'), current_cfg.get('clubadmin', {}).get('pro', {}).get('price_annual', 359))
 
-        club_pro_monthly = _clean_price(request.form.get('clubadmin_pro_monthly'), current_cfg['clubadmin']['pro']['price_monthly'])
-        club_pro_annual = _clean_price(request.form.get('clubadmin_pro_annual'), current_cfg['clubadmin']['pro']['price_annual'])
+        owner_pro_monthly = _clean_price(request.form.get('owner_pro_monthly'), current_cfg.get('owner', {}).get('pro', {}).get('price_monthly', 999))
+        owner_pro_annual = _clean_price(request.form.get('owner_pro_annual'), current_cfg.get('owner', {}).get('pro', {}).get('price_annual', 799))
 
-        owner_pro_monthly = _clean_price(request.form.get('owner_pro_monthly'), current_cfg['owner']['pro']['price_monthly'])
-        owner_pro_annual = _clean_price(request.form.get('owner_pro_annual'), current_cfg['owner']['pro']['price_annual'])
-
-        owner_elite_monthly = _clean_price(request.form.get('owner_elite_monthly'), current_cfg['owner']['elite']['price_monthly'])
-        owner_elite_annual = _clean_price(request.form.get('owner_elite_annual'), current_cfg['owner']['elite']['price_annual'])
+        owner_elite_monthly = _clean_price(request.form.get('owner_elite_monthly'), current_cfg.get('owner', {}).get('elite', {}).get('price_monthly', 2249))
+        owner_elite_annual = _clean_price(request.form.get('owner_elite_annual'), current_cfg.get('owner', {}).get('elite', {}).get('price_annual', 1799))
 
         pricing_payload = {
-            'player': {
-                'pro': {
-                    'price_monthly': player_pro_monthly,
-                    'price_annual': player_pro_annual
-                }
-            },
             'clubadmin': {
                 'pro': {
                     'price_monthly': club_pro_monthly,
@@ -1093,7 +1084,7 @@ def update_subscription_pricing():
                 'performed_by': session.get('user_id'),
                 'pricing': pricing_payload
             })
-            flash('Subscription pricing updated successfully across all 3 roles!', 'success')
+            flash('Subscription pricing updated successfully across commercial roles!', 'success')
         else:
             flash('Failed to save subscription pricing to database.', 'error')
 

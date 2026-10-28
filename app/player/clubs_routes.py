@@ -122,7 +122,7 @@ def club_detail(club_id):
             m['avatar_url'] = prof.get('avatar_url') or None
             m_tier = (prof.get('subscription_tier') or 'free').strip().lower()
             m_sub_status = (prof.get('subscription_status') or 'active').strip().lower()
-            m['is_pro'] = (m_tier in ['pro', 'elite']) and (m_sub_status == 'active')
+            m['is_pro'] = True
             members.append(m)
         
         # 3. Fetch current user's membership details

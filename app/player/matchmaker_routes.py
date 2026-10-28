@@ -188,7 +188,7 @@ def matchmaker():
 
             c_tier = (creator.get('subscription_tier') or 'free').strip().lower()
             c_sub_status = (creator.get('subscription_status') or 'active').strip().lower()
-            is_creator_pro = (c_tier in ['pro', 'elite']) and (c_sub_status == 'active')
+            is_creator_pro = True
 
             st_raw = res.get('start_time') or '00:00'
             et_raw = res.get('end_time') or '00:00'
@@ -373,7 +373,7 @@ def matchmaker_detail(lobby_id):
 
         c_tier = (creator.get('subscription_tier') or 'free').strip().lower()
         c_sub_status = (creator.get('subscription_status') or 'active').strip().lower()
-        is_creator_pro = (c_tier in ['pro', 'elite']) and (c_sub_status == 'active')
+        is_creator_pro = True
 
         lobby = {
             'id': raw_lob['id'],
@@ -461,7 +461,7 @@ def matchmaker_detail(lobby_id):
             last = p_profile.get('last_name') or ''
             p_tier = (p_profile.get('subscription_tier') or 'free').strip().lower()
             p_sub_status = (p_profile.get('subscription_status') or 'active').strip().lower()
-            p_is_pro = (p_tier in ['pro', 'elite']) and (p_sub_status == 'active')
+            p_is_pro = True
 
             p['initials'] = (first[0] + (last[0] if last else '')).upper()
             p['name'] = f"{first} {last}".strip() or "Anonymous Player"

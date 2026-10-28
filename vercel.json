@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "regions": ["sin1"],
   "builds": [
     {
       "src": "run.py",
@@ -8,7 +9,7 @@
   ],
   "routes": [
     {
-      "src": "/app/static/(.*)",
+      "src": "/static/(.*)",
       "dest": "/app/static/$1",
       "headers": {
         "Cache-Control": "public, max-age=31536000, immutable"

@@ -292,6 +292,105 @@
             color: var(--primary-orange-hover);
         }
 
+        /* ── Role Referral Banner ── */
+        .role-referral-card {
+            background: linear-gradient(135deg, rgba(230, 74, 25, 0.06), rgba(99, 102, 241, 0.06));
+            border: 1px solid rgba(230, 74, 25, 0.25);
+            border-radius: 14px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            transition: all 0.3s ease;
+        }
+
+        .dark-mode .role-referral-card,
+        [data-theme="dark"] .role-referral-card {
+            background: linear-gradient(135deg, rgba(230, 74, 25, 0.12), rgba(99, 102, 241, 0.12));
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .role-referral-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .role-referral-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: rgba(230, 74, 25, 0.15);
+            color: var(--primary-orange);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .role-referral-text strong {
+            display: block;
+            font-size: 0.95rem;
+            color: var(--signup-title);
+        }
+
+        .role-referral-text span {
+            font-size: 0.82rem;
+            color: var(--signup-desc);
+        }
+
+        .btn-role-referral {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #ffffff;
+            background: var(--primary-orange);
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-role-referral:hover {
+            background: var(--primary-orange-hover);
+            transform: translateY(-1px);
+        }
+
+        /* ── Player Free Perk Chips ── */
+        .player-perks-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .player-perk-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: rgba(34, 197, 94, 0.1);
+            color: #16a34a;
+            border: 1px solid rgba(34, 197, 94, 0.25);
+        }
+
+        .dark-mode .player-perk-pill,
+        [data-theme="dark"] .player-perk-pill {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+            border-color: rgba(34, 197, 94, 0.35);
+        }
+
         /* ── Form Section Titles ── */
         .form-section-title {
             font-size: 1.05rem;
@@ -619,15 +718,90 @@
     <div class="signup-page-container">
         <div class="signup-form-card">
             
+            {% if role == 'player' %}
+            <!-- ── Business Referral Card (Facility Owner / Club Organizer) ── -->
+            <div class="role-referral-card">
+                <div class="role-referral-left">
+                    <div class="role-referral-icon">
+                        <i class="ph ph-buildings"></i>
+                    </div>
+                    <div class="role-referral-text">
+                        <strong>Are you a Facility Owner or Club Organizer?</strong>
+                        <span>Register your venue courts or manage leagues and tournaments with dedicated commercial tools.</span>
+                    </div>
+                </div>
+                <a href="{{ url_for('main.memberships') }}" class="btn-role-referral">
+                    View Commercial Plans <i class="ph ph-arrow-right"></i>
+                </a>
+            </div>
+            {% else %}
+            <!-- ── Player Referral Card for Commercial Signups ── -->
+            <div class="role-referral-card" style="border-color: rgba(34, 197, 94, 0.3); background: rgba(34, 197, 94, 0.05);">
+                <div class="role-referral-left">
+                    <div class="role-referral-icon" style="background: rgba(34, 197, 94, 0.15); color: #16a34a;">
+                        <i class="ph ph-user"></i>
+                    </div>
+                    <div class="role-referral-text">
+                        <strong>Looking to sign up as a Player?</strong>
+                        <span>Players join 100% Free Forever with court booking, ratings, and matchmaker access.</span>
+                    </div>
+                </div>
+                <a href="{{ url_for('auth.signup', role='player') }}" class="btn-role-referral" style="background: #16a34a;">
+                    Switch to Player Sign Up <i class="ph ph-arrow-right"></i>
+                </a>
+            </div>
+            {% endif %}
+
             <header class="signup-header">
                 <div class="signup-kicker">
-                    <i class="ph ph-user-plus"></i> PickleballHub Member Registration
+                    <i class="ph {% if role == 'owner' %}ph-buildings{% elif role == 'clubadmin' %}ph-shield-check{% else %}ph-user-plus{% endif %}"></i>
+                    PickleballHub {{ (role or 'Player')|capitalize }} Registration
                 </div>
                 <h1>Create Your Account</h1>
-                <p>Complete the registration form to join the PickleballHub community.</p>
+                <p>
+                    {% if role == 'player' %}
+                        Register your free player account to reserve courts, track official ratings, and join open community queues.
+                    {% elif role == 'owner' %}
+                        Register your venue, submit KYC compliance documents, and configure your court listing.
+                    {% elif role == 'clubadmin' %}
+                        Register your club, organize tournaments, and manage community rosters.
+                    {% else %}
+                        Complete the registration form to join the PickleballHub community.
+                    {% endif %}
+                </p>
             </header>
 
-            <!-- ── Plan Selection Ribbon ── -->
+            {% if role == 'player' %}
+            <!-- ── Player Free Access Banner ── -->
+            <div class="plan-summary-ribbon" style="border-color: rgba(34, 197, 94, 0.35); background: rgba(34, 197, 94, 0.06);">
+                <div class="plan-ribbon-left">
+                    <div class="plan-ribbon-icon" style="background: rgba(34, 197, 94, 0.15); color: #16a34a;">
+                        <i class="ph ph-sparkle"></i>
+                    </div>
+                    <div class="plan-ribbon-details">
+                        <h4>
+                            <span>Player Membership</span>
+                            <span class="plan-badge-tag" style="background: rgba(34, 197, 94, 0.15); color: #16a34a; border-color: rgba(34, 197, 94, 0.3);">100% Free Forever</span>
+                        </h4>
+                        <p>Complete athlete account with all platform features and perks fully unlocked.</p>
+                        <div class="player-perks-pills">
+                            <span class="player-perk-pill"><i class="ph ph-check"></i> 14-Day Advance Booking</span>
+                            <span class="player-perk-pill"><i class="ph ph-check"></i> ₱0 Platform Convenience Fee</span>
+                            <span class="player-perk-pill"><i class="ph ph-check"></i> Unlimited Active Bookings</span>
+                            <span class="player-perk-pill"><i class="ph ph-check"></i> DUPR &amp; ELO Ratings</span>
+                            <span class="player-perk-pill"><i class="ph ph-check"></i> Priority Matchmaker Queue</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="plan-ribbon-right">
+                    <div class="plan-price-display">
+                        <span class="plan-price-val" style="color: #16a34a;">₱0</span>
+                        <span class="plan-price-cycle">Free Forever</span>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <!-- ── Commercial Plan Selection Ribbon (Owner / Club Admin) ── -->
             {% set plan = plan_info or {} %}
             <div class="plan-summary-ribbon">
                 <div class="plan-ribbon-left">
@@ -637,7 +811,7 @@
                     <div class="plan-ribbon-details">
                         <h4>
                             <span>{{ plan.label or ((tier or 'Free')|capitalize ~ ' Tier') }}</span>
-                            <span class="plan-badge-tag {{ tier or 'free' }}">{{ (role or 'Player')|capitalize }}</span>
+                            <span class="plan-badge-tag {{ tier or 'free' }}">{{ (role or 'Owner')|capitalize }}</span>
                         </h4>
                         <p>
                             {% if (tier or 'free') == 'free' %}
@@ -653,9 +827,10 @@
                         <span class="plan-price-val">₱{{ plan.price_display or '0' }}</span>
                         <span class="plan-price-cycle">/ {{ cycle if (tier or 'free') != 'free' else 'forever' }}</span>
                     </div>
-                    <a href="{{ url_for('main.memberships', role=(role or 'player')) }}" class="btn-change-plan"><i class="ph ph-arrow-counter-clockwise"></i> Change Plan</a>
+                    <a href="{{ url_for('main.memberships', role=role) }}" class="btn-change-plan"><i class="ph ph-arrow-counter-clockwise"></i> Change Plan</a>
                 </div>
             </div>
+            {% endif %}
 
             <!-- Flash messages -->
             {% with messages = get_flashed_messages(with_categories=true) %}
@@ -902,7 +1077,7 @@
 
                     <!-- Venue Amenities -->
                     <div class="form-field-group" style="margin-top: 10px;">
-                        <label style="margin-bottom: 8px;"><i class="ph ph-sparkle" style="color: var(--primary-orange);"></i> Venue Amenities</label>
+                        <label style="margin-bottom: 8px;"><i class="ph ph-squares-four" style="color: var(--primary-orange);"></i> Venue Amenities</label>
                         <div class="amenities-chips-wrap">
                             <label class="amenity-chip">
                                 <input type="checkbox" name="amenities" value="LED Night Lights">
@@ -967,7 +1142,10 @@
                      ═══════════════════════════════════════════════════════════ -->
                 <div class="submit-btn-wrap">
                     <button type="submit" class="signup-submit-button" id="btn-submit-signup">
-                        {% if tier == 'free' %}
+                        {% if role == 'player' %}
+                            <span>Create Free Player Account</span>
+                            <i class="ph ph-arrow-right"></i>
+                        {% elif tier == 'free' %}
                             <span>Create Free Account</span>
                             <i class="ph ph-arrow-right"></i>
                         {% else %}
@@ -977,7 +1155,7 @@
                     </button>
                     
                     <p class="signup-terms-note">
-                        {% if tier != 'free' %}
+                        {% if role != 'player' and tier != 'free' %}
                             You will verify your email first, then submit your GCash payment proof on sign-in. 
                         {% endif %}
                         By signing up, you agree to our Terms of Service and Privacy Policy.

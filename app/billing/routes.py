@@ -31,6 +31,9 @@ def subscription_page():
         flash("Please log in to view subscription plans.", "info")
         return redirect(url_for('auth.login', next=request.path))
 
+    if role == 'player':
+        return redirect(url_for('player.dashboard'))
+
     admin_db = get_admin_db()
     profile = {}
     subscriptions_history = []
@@ -87,6 +90,9 @@ def checkout_page():
     if not user_id:
         flash("Please log in to proceed with subscription checkout.", "info")
         return redirect(url_for('auth.login', next=request.full_path))
+
+    if role == 'player':
+        return redirect(url_for('player.dashboard'))
 
     admin_db = get_admin_db()
     all_role_tiers = load_dynamic_tier_config(role=role)

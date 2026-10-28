@@ -6,7 +6,7 @@ from app.settings_helper import get_db_client
 
 _cached_landing = None
 _landing_cache_time = 0.0
-LANDING_CACHE_TTL = 30.0  # 30 seconds cache
+LANDING_CACHE_TTL = 600.0  # 10 minutes cache in memory
 
 DEFAULT_HERO_SLIDES = [
     {

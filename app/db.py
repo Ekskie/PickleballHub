@@ -1,12 +1,27 @@
 """
 Thread-safe, request-scoped database helper for Supabase.
 Provides separation between anon client (respecting RLS) and admin client (bypassing RLS).
+Uses connection pooling and warm singleton reuse for ultra-fast serverless performance.
 """
 
 import os
 from flask import g, session, current_app
 import httpx
 from supabase import create_client, ClientOptions, Client
+
+_shared_http_client = None
+_shared_admin_client = None
+
+def get_shared_http_client() -> httpx.Client:
+    """Returns a process-wide shared HTTP client with persistent connection pooling."""
+    global _shared_http_client
+    if _shared_http_client is None or _shared_http_client.is_closed:
+        _shared_http_client = httpx.Client(
+            http2=False,
+            limits=httpx.Limits(max_keepalive_connections=20, max_connections=50, keepalive_expiry=60.0),
+            timeout=30.0
+        )
+    return _shared_http_client
 
 def is_jwt_expired(token: str) -> bool:
     """Decodes a JWT payload locally to check if it's expired or close to it (5-minute window)."""
@@ -35,6 +50,7 @@ def get_db() -> Client:
     """
     Get a thread-safe, request-scoped Supabase client.
     Authenticated with user access token if logged in.
+    Reuses the persistent HTTP connection pool to avoid repeated SSL handshakes.
     """
     if 'db_client' not in g:
         url = os.environ.get('SUPABASE_URL')
@@ -43,9 +59,7 @@ def get_db() -> Client:
         if not url or not key:
             raise RuntimeError("SUPABASE_URL and SUPABASE_KEY must be set in environment variables.")
         
-        # Use httpx with proper timeout and limits
-        http_client = httpx.Client(http2=False, limits=httpx.Limits(keepalive_expiry=10.0), timeout=30.0)
-        options = ClientOptions(httpx_client=http_client)
+        options = ClientOptions(httpx_client=get_shared_http_client())
         client = create_client(url, key, options=options)
         
         # If user has an active session, set their session so database queries respect RLS
@@ -79,20 +93,19 @@ def get_db() -> Client:
 def get_admin_db() -> Client:
     """
     Get an admin/service-role scoped Supabase client that bypasses Row Level Security.
-    Used ONLY for administrative tasks.
+    Reuses a process-wide singleton client with persistent keepalive pooling for 0ms overhead.
     """
-    if 'admin_db_client' not in g:
+    global _shared_admin_client
+    if _shared_admin_client is None:
         url = os.environ.get('SUPABASE_URL')
-        # Admin client runs with the service role key to bypass RLS
         key = os.environ.get('SERVICE_ROLE_KEY') or os.environ.get('SUPABASE_KEY')
         if not url or not key:
             raise RuntimeError("SUPABASE_URL and SERVICE_ROLE_KEY must be set in environment variables.")
             
-        http_client = httpx.Client(http2=False, limits=httpx.Limits(keepalive_expiry=10.0), timeout=30.0)
-        options = ClientOptions(httpx_client=http_client)
-        g.admin_db_client = create_client(url, key, options=options)
+        options = ClientOptions(httpx_client=get_shared_http_client())
+        _shared_admin_client = create_client(url, key, options=options)
         
-    return g.admin_db_client
+    return _shared_admin_client
 
 def log_audit_action(action: str, target: str, details: dict = None, raise_on_error: bool = False):
     """
@@ -117,5 +130,3 @@ def log_audit_action(action: str, target: str, details: dict = None, raise_on_er
         current_app.logger.error(f"[log_audit_action] Failed to write audit log: {e}")
         if raise_on_error:
             raise RuntimeError(f"Audit log write failed. Action cancelled for security compliance. Error: {e}")
-
-

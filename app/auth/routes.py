@@ -248,13 +248,15 @@ def signup():
     if request.method == 'GET':
         role = request.args.get('role', '').strip().lower()
         if not role or role not in ['owner', 'clubadmin', 'player']:
-            # Redirect to standalone subscription plans page if no role selected
-            return redirect(url_for('main.memberships'))
+            role = 'player'
 
         tier = (request.args.get('tier') or request.args.get('plan') or 'free').strip().lower()
         cycle = request.args.get('cycle', 'monthly').strip().lower()
         if cycle not in ['monthly', 'annual']:
             cycle = 'monthly'
+
+        if role == 'player':
+            tier = 'free'
 
         role_tiers = load_dynamic_tier_config(role=role)
         if tier not in role_tiers:
@@ -278,6 +280,9 @@ def signup():
     cycle = request.form.get('cycle', 'monthly').strip().lower()
     if cycle not in ['monthly', 'annual']:
         cycle = 'monthly'
+
+    if role == 'player':
+        tier = 'free'
 
     role_tiers = load_dynamic_tier_config(role=role)
     if tier not in role_tiers:
