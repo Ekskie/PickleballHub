@@ -80,14 +80,14 @@
 <!-- Subscription & Plan -->
 <li class="{% if request.endpoint and request.endpoint.startswith('billing.') %}active{% endif %}">
     <a href="{{ url_for('billing.subscription_page') }}">
-        <i class="ph ph-crown-simple" style="color:#8b5cf6;"></i>
+        <i class="ph ph-crown-simple" style="color:#7C3AED;"></i>
         <span>Facility Subscription</span>
         {% if current_user.is_elite %}
-        <span class="nav-tier-tag elite" style="background:#1e1b4b; color:#818cf8; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:10px; margin-left:auto;">ELITE</span>
+        <span class="nav-tier-tag elite" style="background:#F3EEFF; color:#7C3AED; border:1px solid rgba(124,58,237,0.25); font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:10px; margin-left:auto;">ELITE</span>
         {% elif current_user.is_pro %}
-        <span class="nav-tier-tag pro" style="background:#10b981; color:#fff; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:10px; margin-left:auto;">PRO</span>
+        <span class="nav-tier-tag pro" style="background:#EAF8EF; color:#16A34A; border:1px solid rgba(22,163,74,0.25); font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:10px; margin-left:auto;">PRO</span>
         {% else %}
-        <span class="nav-tier-tag upgrade" style="background:rgba(139,92,246,0.15); color:#8b5cf6; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:10px; margin-left:auto;">UPGRADE</span>
+        <span class="nav-tier-tag upgrade" style="background:#EAF2FF; color:#2563EB; border:1px solid rgba(37,99,235,0.25); font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:10px; margin-left:auto;">UPGRADE</span>
         {% endif %}
     </a>
 </li>

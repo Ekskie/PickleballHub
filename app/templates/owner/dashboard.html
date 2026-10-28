@@ -51,7 +51,7 @@
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, #10b981, #0ea5e9, #ff5722);
+        background: linear-gradient(90deg, #1E3A8A 0%, #2563EB 55%, #0F766E 100%);
         z-index: 2;
     }
 
@@ -62,7 +62,7 @@
         right: -40px;
         width: 280px;
         height: 280px;
-        background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, rgba(14, 165, 233, 0.04) 60%, transparent 80%);
+        background: radial-gradient(circle, rgba(37, 99, 235, 0.09) 0%, rgba(15, 118, 110, 0.04) 60%, transparent 80%);
         border-radius: 50%;
         pointer-events: none;
     }
@@ -82,8 +82,8 @@
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.6px;
-        color: #059669;
-        background: rgba(16, 185, 129, 0.12);
+        color: #2563EB;
+        background: #EAF2FF; border: 1px solid rgba(37, 99, 235, 0.2);
         padding: 4px 12px;
         border-radius: 9999px;
         margin-bottom: 8px;
@@ -147,7 +147,7 @@
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        background: #2563EB;
         color: #ffffff;
         border: none;
         padding: 9px 18px;
@@ -156,13 +156,14 @@
         font-weight: 800;
         cursor: pointer;
         text-decoration: none;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .btn-hero-action:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        background: #1D4ED8;
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
     }
 
     /* ── 4 KPI Stats Grid ── */
@@ -193,7 +194,7 @@
     .owner-stat-card:hover {
         transform: translateY(-3px);
         box-shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
-        border-color: rgba(16, 185, 129, 0.3);
+        border-color: rgba(37, 99, 235, 0.35);
     }
 
     .stat-icon-wrap {
@@ -205,16 +206,32 @@
         justify-content: center;
         font-size: 1.65rem;
         flex-shrink: 0;
-        transition: transform 0.2s ease;
+        background: #EAF2FF;
+        color: #2563EB;
+        border: 1.5px solid rgba(37, 99, 235, 0.2);
+        transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
     }
 
     .owner-stat-card:hover .stat-icon-wrap {
         transform: scale(1.08);
+        background: #2563EB;
+        color: #FFFFFF;
+        border-color: #2563EB;
     }
 
-    .stat-icon-wrap.emerald {
-        background: rgba(16, 185, 129, 0.12);
-        color: #10b981;
+    .stat-icon-wrap.executive,
+    .stat-icon-wrap.emerald,
+    .stat-icon-wrap.amber,
+    .stat-icon-wrap.indigo,
+    .stat-icon-wrap.sky {
+        background: #EAF2FF;
+        color: #2563EB;
+        border: 1.5px solid rgba(37, 99, 235, 0.2);
+    }
+    /* Legacy override fallbacks removed */
+    .legacy-unused-rainbow {
+        background: #EAF2FF; border: 1px solid rgba(37, 99, 235, 0.2);
+        color: #16A34A;
         border: 1px solid rgba(16, 185, 129, 0.25);
     }
 
@@ -270,7 +287,7 @@
     }
 
     .stat-subtext.positive {
-        color: #10b981;
+        color: #16A34A;
     }
 
     /* ── Main Layout Grid ── */
@@ -335,14 +352,14 @@
     }
 
     .panel-title i {
-        color: #10b981;
+        color: #2563EB;
         font-size: 1.25rem;
     }
 
     .panel-action-link {
         font-size: 0.82rem;
         font-weight: 800;
-        color: #10b981;
+        color: #2563EB;
         text-decoration: none;
         display: inline-flex;
         align-items: center;
@@ -351,7 +368,7 @@
     }
 
     .panel-action-link:hover {
-        color: #059669;
+        color: #1D4ED8;
         transform: translateX(2px);
     }
 
@@ -372,9 +389,9 @@
     .weekly-total-badge {
         font-size: 0.76rem;
         font-weight: 800;
-        color: #059669;
-        background: rgba(16, 185, 129, 0.1);
-        border: 1px solid rgba(16, 185, 129, 0.2);
+        color: #2563EB;
+        background: #EAF2FF;
+        border: 1px solid rgba(37, 99, 235, 0.2);
         padding: 3px 10px;
         border-radius: 9999px;
     }
@@ -464,8 +481,8 @@
     }
 
     .btn-schedule .action-icon-circle {
-        background: rgba(16, 185, 129, 0.12);
-        color: #10b981;
+        background: #EAF2FF; border: 1px solid rgba(37, 99, 235, 0.2);
+        color: #16A34A;
     }
 
     .btn-staff .action-icon-circle {
@@ -522,7 +539,7 @@
 
     .facility-rev-amount {
         font-weight: 800;
-        color: #059669;
+        color: #2563EB;
     }
 
     .facility-progress-bar-wrap {
@@ -535,7 +552,7 @@
     .facility-progress-fill {
         height: 100%;
         border-radius: 9999px;
-        background: linear-gradient(90deg, #10b981 0%, #0ea5e9 100%);
+        background: linear-gradient(90deg, #1E3A8A 0%, #2563EB 50%, #0F766E 100%);
         transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
@@ -571,7 +588,7 @@
 
     .period-pill-btn.active {
         background: var(--card-bg, #ffffff);
-        color: #10b981;
+        color: #16A34A;
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
     }
 
@@ -611,7 +628,7 @@
     }
 
     .modern-data-table tr:hover td {
-        background: rgba(16, 185, 129, 0.03);
+        background: rgba(37, 99, 235, 0.02);
     }
 
     .player-cell {
@@ -624,7 +641,7 @@
         width: 38px;
         height: 38px;
         border-radius: 12px;
-        background: linear-gradient(135deg, #10b981, #0ea5e9);
+        background: linear-gradient(135deg, #1E3A8A, #2563EB);
         color: #ffffff;
         font-size: 0.8rem;
         font-weight: 800;
@@ -740,7 +757,7 @@
         font-weight: 800;
         text-transform: uppercase;
         background: rgba(16, 185, 129, 0.15);
-        color: #059669;
+        color: #2563EB;
         padding: 1px 5px;
         border-radius: 4px;
     }
@@ -803,8 +820,8 @@
     }
 
     .status-badge.paid {
-        background: rgba(16, 185, 129, 0.12);
-        color: #059669;
+        background: #EAF2FF; border: 1px solid rgba(37, 99, 235, 0.2);
+        color: #2563EB;
         border: 1px solid rgba(16, 185, 129, 0.25);
     }
 
@@ -823,7 +840,7 @@
     .booking-amount-text {
         font-weight: 800;
         font-size: 0.95rem;
-        color: #059669;
+        color: #2563EB;
         white-space: nowrap;
     }
 
@@ -835,7 +852,7 @@
 
     .empty-bookings-state i {
         font-size: 2.2rem;
-        color: #10b981;
+        color: #16A34A;
         opacity: 0.4;
         display: block;
         margin-bottom: 8px;
@@ -846,7 +863,7 @@
     html.dark-mode .owner-stat-card,
     html.dark-mode .owner-panel-card,
     html.dark-mode .panel-header {
-        background: #19202e;
+        background: #131B2A;
         border-color: rgba(255, 255, 255, 0.08);
     }
 
@@ -875,7 +892,7 @@
     html.dark-mode .facility-progress-bar-wrap,
     html.dark-mode .modern-data-table th,
     html.dark-mode .court-badge {
-        background: #141923;
+        background: #0E1420;
         border-color: rgba(255, 255, 255, 0.08);
     }
 
@@ -888,19 +905,37 @@
     }
 
     html.dark-mode .facility-rev-amount,
-    html.dark-mode .booking-amount-text,
+    html.dark-mode .booking-amount-text {
+        color: #F8FAFC;
+    }
+
     html.dark-mode .stat-subtext.positive {
         color: #34d399;
     }
 
     html.dark-mode .period-toggle-pills {
-        background: #141923;
+        background: #0E1420;
         border-color: rgba(255, 255, 255, 0.08);
     }
 
     html.dark-mode .period-pill-btn.active {
-        background: #1e293b;
-        color: #34d399;
+        background: #1E293B;
+        color: #60A5FA;
+    }
+
+    html.dark-mode .stat-icon-wrap,
+    html.dark-mode .stat-icon-wrap.executive,
+    html.dark-mode .action-icon-circle {
+        background: rgba(37, 99, 235, 0.16);
+        color: #60A5FA;
+        border-color: rgba(37, 99, 235, 0.3);
+    }
+
+    html.dark-mode .owner-stat-card:hover .stat-icon-wrap,
+    html.dark-mode .executive-action-btn:hover .action-icon-circle {
+        background: #2563EB;
+        color: #FFFFFF;
+        border-color: #2563EB;
     }
 
     /* ── Responsive (< 1260px, < 860px, < 640px) ── */
@@ -987,7 +1022,7 @@
 
         <!-- Stat 1: All-Time Revenue -->
         <div class="owner-stat-card">
-            <div class="stat-icon-wrap emerald">
+            <div class="stat-icon-wrap executive">
                 <i class="ph ph-wallet"></i>
             </div>
             <div class="stat-content">
@@ -1001,7 +1036,7 @@
 
         <!-- Stat 2: Today's Revenue -->
         <div class="owner-stat-card">
-            <div class="stat-icon-wrap amber">
+            <div class="stat-icon-wrap executive">
                 <i class="ph ph-sun"></i>
             </div>
             <div class="stat-content">
@@ -1015,7 +1050,7 @@
 
         <!-- Stat 3: Total Bookings -->
         <div class="owner-stat-card">
-            <div class="stat-icon-wrap indigo">
+            <div class="stat-icon-wrap executive">
                 <i class="ph ph-calendar-check"></i>
             </div>
             <div class="stat-content">
@@ -1029,7 +1064,7 @@
 
         <!-- Stat 4: Active Staff -->
         <div class="owner-stat-card">
-            <div class="stat-icon-wrap sky">
+            <div class="stat-icon-wrap executive">
                 <i class="ph ph-users-three"></i>
             </div>
             <div class="stat-content">
@@ -1073,7 +1108,7 @@
                         <i class="ph ph-calendar-star"></i> Recent Reservations
                     </h3>
                     <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
-                        <a href="{{ url_for('owner.court_schedule') }}" class="panel-action-link" style="color: #10b981; font-weight: 700;" title="Open court schedule & calendar">
+                        <a href="{{ url_for('owner.court_schedule') }}" class="panel-action-link" style="color: #2563EB; font-weight: 700;" title="Open court schedule & calendar">
                             <i class="ph ph-calendar-check"></i> Court Calendar & Schedule &rarr;
                         </a>
                         <a href="{{ url_for('owner.queue') }}" class="panel-action-link" title="Open live court queue">
@@ -1128,7 +1163,7 @@
                                 <td>
                                     <div class="court-location-cell">
                                         <span class="court-badge">
-                                            <i class="ph ph-tennis-ball" style="color:#10b981;"></i>
+                                            <i class="ph ph-tennis-ball" style="color:#2563EB;"></i>
                                             {{ b.courts.name if b.courts else 'Court' }}
                                             {% if b.courts and b.courts.type %}
                                                 <span class="court-type-pill">{{ b.courts.type | capitalize }}</span>
@@ -1309,9 +1344,9 @@ document.addEventListener('DOMContentLoaded', function () {
         return {
             textColor: isDark ? '#94a3b8' : '#475467',
             gridColor: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(16, 24, 40, 0.06)',
-            borderColor: '#10b981',
-            fillColor: isDark ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.12)',
-            pointBg: isDark ? '#10b981' : '#059669',
+            borderColor: '#2563EB',
+            fillColor: isDark ? 'rgba(37, 99, 235, 0.18)' : 'rgba(37, 99, 235, 0.12)',
+            pointBg: isDark ? '#60A5FA' : '#2563EB',
             tooltipBg: isDark ? '#1e293b' : '#0f172a',
             tooltipText: '#ffffff'
         };
@@ -1343,7 +1378,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     pointBorderWidth: 2,
                     pointRadius: 5,
                     pointHoverRadius: 7,
-                    pointHoverBackgroundColor: '#10b981',
+                    pointHoverBackgroundColor: '#1D4ED8',
                     pointHoverBorderColor: '#ffffff',
                     pointHoverBorderWidth: 3
                 }]

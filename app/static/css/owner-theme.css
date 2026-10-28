@@ -1,0 +1,348 @@
+/* ==========================================================================
+   FACILITY OWNER EXECUTIVE THEME — BLUE / TEAL / SLATE DESIGN SYSTEM
+   Strictly scoped to body.role-owner-portal to preserve all other roles intact
+   ========================================================================== */
+
+:root {
+    /* Palette Tokens from Reference System */
+    --owner-primary-blue: #2563EB;
+    --owner-dark-blue: #1E3A8A;
+    --owner-light-blue: #EAF2FF;
+    --owner-teal-accent: #0F766E;
+
+    --owner-accent-green: #16A34A;
+    --owner-light-green: #EAF8EF;
+    --owner-accent-orange: #F59E0B;
+    --owner-light-orange: #FFF7E6;
+
+    --owner-purple-accent: #7C3AED;
+    --owner-light-purple: #F3EEFF;
+
+    --owner-neutral-bg: #F8FAFC;
+    --owner-neutral-card: #FFFFFF;
+    --owner-main-text: #0F172A;
+    --owner-secondary-text: #475569;
+    --owner-border: #E2E8F0;
+
+    --owner-status-success: #22C55E;
+    --owner-status-warning: #F59E0B;
+    --owner-status-error: #DC2626;
+
+    --owner-ui-link: #3B82F6;
+    --owner-ui-focus: #EAF2FF;
+    --owner-ui-input: #F1F5F9;
+    --owner-ui-disabled: #CBD5E1;
+    --owner-ui-btn-hover: #1D4ED8;
+    --owner-ui-btn-pressed: #1E3A8A;
+}
+
+/* ── Portal Scoped Token Overrides ── */
+body.role-owner-portal {
+    --bg-color: var(--owner-neutral-bg);
+    --card-bg: var(--owner-neutral-card);
+    --card-border: var(--owner-border);
+    --border-color: var(--owner-border);
+
+    --text-primary: var(--owner-main-text);
+    --text-secondary: var(--owner-secondary-text);
+    --text-muted: #64748B;
+
+    --input-bg: var(--owner-ui-input);
+    --input-border: var(--owner-border);
+
+    /* Remap active brand accents away from default sports orange */
+    --primary-orange: var(--owner-primary-blue);
+    --primary-orange-light: var(--owner-light-blue);
+    --primary-orange-hover: var(--owner-ui-btn-hover);
+
+    background-color: var(--owner-neutral-bg);
+    color: var(--owner-main-text);
+}
+
+/* ── Sidebar Navigation Overrides for Owner ── */
+body.role-owner-portal .sidebar {
+    background: #FFFFFF;
+    border-right: 1.5px solid var(--owner-border);
+}
+
+body.role-owner-portal .sidebar-nav a {
+    color: var(--owner-secondary-text);
+    font-weight: 500;
+    transition: all 0.18s ease;
+}
+
+body.role-owner-portal .sidebar-nav a:hover {
+    background: #F1F5F9;
+    color: var(--owner-dark-blue);
+}
+
+/* Active top-level item */
+body.role-owner-portal .sidebar-nav li.active > a {
+    background: var(--owner-light-blue) !important;
+    color: var(--owner-primary-blue) !important;
+    font-weight: 700;
+    position: relative;
+}
+
+body.role-owner-portal .sidebar-nav li.active > a::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 6px;
+    bottom: 6px;
+    width: 3.5px;
+    border-radius: 0 4px 4px 0;
+    background: var(--owner-primary-blue);
+}
+
+body.role-owner-portal .sidebar-nav li.active > a i {
+    color: var(--owner-primary-blue);
+}
+
+/* Sidebar dropdown buttons */
+body.role-owner-portal .sidebar-dropdown-btn {
+    color: var(--owner-secondary-text);
+}
+
+body.role-owner-portal .sidebar-dropdown-btn:hover {
+    background: #F1F5F9;
+    color: var(--owner-main-text);
+}
+
+body.role-owner-portal .sidebar-dropdown-group.active-group .sidebar-dropdown-btn {
+    color: var(--owner-primary-blue);
+    font-weight: 700;
+}
+
+body.role-owner-portal .sidebar-dropdown-group.active-group .sidebar-dropdown-btn i.group-icon {
+    color: var(--owner-primary-blue);
+}
+
+/* Sidebar subnavigation */
+body.role-owner-portal .sidebar-subnav li a {
+    color: var(--owner-secondary-text);
+}
+
+body.role-owner-portal .sidebar-subnav li a:hover {
+    color: var(--owner-primary-blue);
+    background: #F1F5F9;
+}
+
+body.role-owner-portal .sidebar-subnav li.active > a {
+    background: var(--owner-light-blue) !important;
+    color: var(--owner-primary-blue) !important;
+    font-weight: 700;
+}
+
+body.role-owner-portal .sidebar-subnav li.active > a i {
+    color: var(--owner-primary-blue) !important;
+}
+
+/* Facility Subscription tag */
+body.role-owner-portal .nav-tier-tag.elite {
+    background: var(--owner-light-purple) !important;
+    color: var(--owner-purple-accent) !important;
+    border: 1px solid rgba(124, 58, 237, 0.25) !important;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+}
+
+body.role-owner-portal .ph-crown-simple {
+    color: var(--owner-purple-accent) !important;
+}
+
+/* Sidebar Logout link */
+body.role-owner-portal .sidebar-footer a,
+body.role-owner-portal .sidebar-logout-btn,
+body.role-owner-portal a[href*="logout"] {
+    color: var(--owner-secondary-text) !important;
+    transition: all 0.18s ease;
+}
+
+body.role-owner-portal .sidebar-footer a:hover,
+body.role-owner-portal .sidebar-logout-btn:hover,
+body.role-owner-portal a[href*="logout"]:hover {
+    color: var(--owner-status-error) !important;
+    background: rgba(220, 38, 38, 0.08) !important;
+}
+
+/* ── Top Header Bar Overrides ── */
+body.role-owner-portal .dashboard-header {
+    background: rgba(255, 255, 255, 0.92);
+    border-bottom: 1.5px solid var(--owner-border);
+    backdrop-filter: blur(12px);
+}
+
+body.role-owner-portal .header-action-btn:hover {
+    background: var(--owner-light-blue);
+    color: var(--owner-primary-blue);
+}
+
+/* ── Global Buttons & Interactive Elements in Owner Portal ── */
+body.role-owner-portal .btn-primary,
+body.role-owner-portal .btn-primary-add,
+body.role-owner-portal .btn-card-primary,
+body.role-owner-portal .btn-wizard-next,
+body.role-owner-portal .btn-wizard-submit,
+body.role-owner-portal .btn-add-action {
+    background: var(--owner-primary-blue) !important;
+    border-color: var(--owner-primary-blue) !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.22);
+}
+
+body.role-owner-portal .btn-primary:hover,
+body.role-owner-portal .btn-primary-add:hover,
+body.role-owner-portal .btn-card-primary:hover,
+body.role-owner-portal .btn-wizard-next:hover,
+body.role-owner-portal .btn-wizard-submit:hover,
+body.role-owner-portal .btn-add-action:hover {
+    background: var(--owner-ui-btn-hover) !important;
+    border-color: var(--owner-ui-btn-hover) !important;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.32);
+}
+
+body.role-owner-portal .facility-card:hover {
+    border-color: rgba(37, 99, 235, 0.35) !important;
+}
+
+body.role-owner-portal .btn-primary:active {
+    background: var(--owner-ui-btn-pressed) !important;
+}
+
+body.role-owner-portal a.table-action-link,
+body.role-owner-portal a.link-accent {
+    color: var(--owner-ui-link);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+body.role-owner-portal a.table-action-link:hover,
+body.role-owner-portal a.link-accent:hover {
+    color: var(--owner-primary-blue);
+    text-decoration: underline;
+}
+
+/* ── Data Tables in Owner Portal ── */
+body.role-owner-portal table th {
+    background: var(--owner-neutral-bg);
+    color: var(--owner-secondary-text);
+    border-bottom: 1.5px solid var(--owner-border);
+}
+
+body.role-owner-portal table td {
+    border-bottom: 1px solid var(--owner-border);
+}
+
+body.role-owner-portal table tr:hover td {
+    background: rgba(37, 99, 235, 0.02);
+}
+
+/* Status Badges */
+body.role-owner-portal .status-badge.paid,
+body.role-owner-portal .badge-success {
+    background: var(--owner-light-green) !important;
+    color: var(--owner-accent-green) !important;
+    border: 1px solid rgba(22, 163, 74, 0.25) !important;
+}
+
+body.role-owner-portal .status-badge.pending,
+body.role-owner-portal .badge-warning {
+    background: var(--owner-light-orange) !important;
+    color: var(--owner-accent-orange) !important;
+    border: 1px solid rgba(245, 158, 11, 0.25) !important;
+}
+
+body.role-owner-portal .status-badge.cancelled,
+body.role-owner-portal .badge-danger {
+    background: rgba(220, 38, 38, 0.1) !important;
+    color: var(--owner-status-error) !important;
+    border: 1px solid rgba(220, 38, 38, 0.25) !important;
+}
+
+/* ==========================================================================
+   FACILITY OWNER EXECUTIVE THEME — DARK MODE
+   ========================================================================== */
+html.dark-mode body.role-owner-portal {
+    --owner-neutral-bg: #0B0F17;
+    --owner-neutral-card: #131B2A;
+    --owner-main-text: #F8FAFC;
+    --owner-secondary-text: #94A3B8;
+    --owner-border: rgba(255, 255, 255, 0.08);
+
+    --bg-color: #0B0F17;
+    --card-bg: #131B2A;
+    --card-border: rgba(255, 255, 255, 0.08);
+    --border-color: rgba(255, 255, 255, 0.08);
+
+    --text-primary: #F8FAFC;
+    --text-secondary: #94A3B8;
+    --text-muted: #64748B;
+
+    --input-bg: #0E1420;
+    --input-border: rgba(255, 255, 255, 0.12);
+
+    background-color: #0B0F17;
+    color: #F8FAFC;
+}
+
+html.dark-mode body.role-owner-portal .sidebar {
+    background: #0E1420;
+    border-right-color: rgba(255, 255, 255, 0.08);
+}
+
+html.dark-mode body.role-owner-portal .sidebar-nav a {
+    color: #94A3B8;
+}
+
+html.dark-mode body.role-owner-portal .sidebar-nav a:hover {
+    background: rgba(255, 255, 255, 0.04);
+    color: #F8FAFC;
+}
+
+html.dark-mode body.role-owner-portal .sidebar-nav li.active > a {
+    background: rgba(37, 99, 235, 0.18) !important;
+    color: #60A5FA !important;
+}
+
+html.dark-mode body.role-owner-portal .sidebar-nav li.active > a i {
+    color: #60A5FA !important;
+}
+
+html.dark-mode body.role-owner-portal .sidebar-nav li.active > a::before {
+    background: #3B82F6;
+}
+
+html.dark-mode body.role-owner-portal .sidebar-dropdown-group.active-group .sidebar-dropdown-btn {
+    color: #60A5FA;
+}
+
+html.dark-mode body.role-owner-portal .sidebar-subnav li.active > a {
+    background: rgba(37, 99, 235, 0.18) !important;
+    color: #60A5FA !important;
+}
+
+html.dark-mode body.role-owner-portal .nav-tier-tag.elite {
+    background: rgba(124, 58, 237, 0.2) !important;
+    color: #A78BFA !important;
+    border-color: rgba(124, 58, 237, 0.4) !important;
+}
+
+html.dark-mode body.role-owner-portal .dashboard-header {
+    background: rgba(14, 20, 32, 0.92);
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+html.dark-mode body.role-owner-portal table th {
+    background: #0E1420;
+    color: #94A3B8;
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+html.dark-mode body.role-owner-portal table td {
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+html.dark-mode body.role-owner-portal table tr:hover td {
+    background: rgba(255, 255, 255, 0.02);
+}
