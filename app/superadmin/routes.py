@@ -516,6 +516,19 @@ def landing_page():
             if action_type in ('hero', 'all'):
                 settings_to_save['masthead_location'] = request.form.get('masthead_location', 'LAGUNA, PHILIPPINES').strip()
                 
+                # Auth / Sign In Page Background Image
+                signin_img_url = request.form.get('signin_bg_image', '').strip()
+                signin_file = request.files.get('signin_bg_file')
+                if signin_file and signin_file.filename:
+                    uploaded_url, err = validate_and_upload(
+                        admin_db, signin_file, bucket='platform-assets',
+                        prefix='signin_hero_bg', owner_id=session.get('user_id')
+                    )
+                    if uploaded_url:
+                        signin_img_url = uploaded_url
+                if signin_img_url:
+                    settings_to_save['signin_bg_image'] = signin_img_url
+                
                 hero_slides = []
                 slide_count = int(request.form.get('hero_slides_count', 3))
                 for i in range(slide_count):

@@ -269,6 +269,7 @@ def get_landing_content(force_refresh=False):
         content = {
             # Masthead
             "masthead_location": "LAGUNA, PHILIPPINES",
+            "signin_bg_image": "/static/images/hero-action.png",
             
             # Hero slideshow (top header)
             "hero_slides": [dict(s) for s in DEFAULT_HERO_SLIDES],

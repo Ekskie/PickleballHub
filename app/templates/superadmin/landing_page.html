@@ -858,6 +858,58 @@
                 </div>
             </div>
 
+            <!-- Sign In & Auth Page Hero Background Card -->
+            <div class="item-card">
+                <div class="item-card-header">
+                    <span class="item-badge" style="background: rgba(230, 81, 0, 0.15); color: #ff9800; border: 1px solid rgba(255, 152, 0, 0.3);">Sign In &amp; Auth Pages</span>
+                    <span style="font-size: 0.8rem; color: var(--text-secondary);">Authentication Hero Background Image</span>
+                </div>
+                <div class="field-group">
+                    <label class="field-label">Sign In / Auth Hero Background Image</label>
+                    <span class="field-hint" style="margin-bottom: 12px; display: block;">Displays as the hero banner background on the Sign In (/login), Forgot Password, and Reset Password screens.</span>
+                    {% set signin_img = landing_content.signin_bg_image or '/static/images/hero-action.png' %}
+                    {% set signin_preview_url = signin_img if (signin_img.startswith('http') or signin_img.startswith('/')) else url_for('static', filename='images/' + signin_img) %}
+                    <div class="cms-media-uploader">
+                        <div class="media-preview-wrapper">
+                            <div class="preview-badge-status" id="signin_bg_badge">
+                                {% if signin_img and 'supabase.co' in signin_img %}
+                                    <span class="badge-online"><i class="ph ph-cloud-check"></i> Supabase Cloud</span>
+                                {% elif signin_img and signin_img.startswith('http') %}
+                                    <span class="badge-remote"><i class="ph ph-globe"></i> Online CDN</span>
+                                {% else %}
+                                    <span class="badge-local"><i class="ph ph-hard-drive"></i> Local / Default</span>
+                                {% endif %}
+                            </div>
+                            <img src="{{ signin_preview_url }}" id="signin_bg_thumb" class="media-preview-img" alt="Sign In Hero Preview">
+                        </div>
+                        <div class="media-upload-controls">
+                            <div class="file-dropzone" onclick="document.getElementById('signin_bg_file_input').click()">
+                                <input type="file" name="signin_bg_file" id="signin_bg_file_input" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none;" onchange="handleImageSelection(this, 'signin_bg_thumb', 'signin_bg_badge', 'signin_bg_file_name')">
+                                <div class="dropzone-content">
+                                    <div class="dropzone-left">
+                                        <i class="ph ph-cloud-arrow-up dropzone-icon"></i>
+                                        <div>
+                                            <span class="dropzone-primary">Click to upload image to Supabase Cloud</span>
+                                            <span class="dropzone-secondary">PNG, JPG, WebP up to 5MB • Live Online Storage</span>
+                                        </div>
+                                    </div>
+                                    <span class="btn-dropzone-pick"><i class="ph ph-folder-open"></i> Browse</span>
+                                </div>
+                                <div class="selected-file-indicator" id="signin_bg_file_name" style="display: none;"></div>
+                            </div>
+                            <div class="url-input-toggle">
+                                <details>
+                                    <summary><i class="ph ph-link"></i> Or specify image URL manually</summary>
+                                    <div style="margin-top: 8px;">
+                                        <input type="text" name="signin_bg_image" id="signin_bg_img_input" value="{{ landing_content.signin_bg_image or '/static/images/hero-action.png' }}" class="cms-input" placeholder="https://... or /static/images/..." oninput="updateUrlPreview(this.value, 'signin_bg_thumb', 'signin_bg_badge')">
+                                    </div>
+                                </details>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {% for slide in landing_content.hero_slides %}
             <div class="item-card">
                 <div class="item-card-header">
