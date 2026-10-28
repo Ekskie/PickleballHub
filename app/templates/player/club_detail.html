@@ -218,7 +218,7 @@
     /* ── Quick Action Hub ── */
     .club-quick-actions-bar {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(3, 1fr);
         gap: 14px;
     }
 
@@ -465,6 +465,344 @@
         color: var(--sports-text-main, #0f172a);
         line-height: 1.5;
         margin: 0;
+    }
+
+    /* ── Dedicated Club Group Chat ── */
+    .club-chat-card {
+        padding: 0 !important;
+        display: flex;
+        flex-direction: column;
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        background: var(--sports-card-bg, #ffffff);
+        box-shadow: 0 4px 20px -2px rgba(16, 24, 40, 0.05);
+    }
+
+    .club-chat-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        border-bottom: 1.5px solid var(--sports-border, #eaecf0);
+        background: linear-gradient(180deg, rgba(248, 250, 252, 0.8), rgba(241, 245, 249, 0.5));
+    }
+
+    html.dark-mode .club-chat-header,
+    [data-theme="dark"] .club-chat-header {
+        background: rgba(30, 41, 59, 0.7);
+    }
+
+    .chat-header-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .chat-channel-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: rgba(225, 86, 35, 0.12);
+        color: var(--primary-orange, #e15623);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    .chat-channel-name {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--sports-text-main, #0f172a);
+        letter-spacing: -0.2px;
+    }
+
+    .chat-channel-status {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.76rem;
+        color: var(--sports-text-muted, #64748b);
+        margin-top: 2px;
+    }
+
+    .status-pulse-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        animation: pulseDot 2s infinite;
+    }
+
+    @keyframes pulseDot {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(0.9); }
+    }
+
+    .btn-chat-refresh {
+        background: transparent;
+        border: 1px solid var(--sports-border, #eaecf0);
+        border-radius: 8px;
+        padding: 6px 10px;
+        color: var(--sports-text-muted, #64748b);
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 1rem;
+    }
+
+    .btn-chat-refresh:hover {
+        background: rgba(225, 86, 35, 0.08);
+        color: var(--primary-orange);
+        border-color: rgba(225, 86, 35, 0.3);
+    }
+
+    .spin-anim {
+        animation: spinRefresh 0.6s linear;
+    }
+
+    @keyframes spinRefresh {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .club-chat-messages {
+        height: 420px;
+        overflow-y: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        background: var(--sports-card-bg, #ffffff);
+        scroll-behavior: smooth;
+    }
+
+    .club-chat-empty {
+        margin: auto;
+        text-align: center;
+        max-width: 360px;
+        padding: 30px 16px;
+        color: var(--sports-text-muted, #64748b);
+    }
+
+    .empty-chat-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: rgba(225, 86, 35, 0.1);
+        color: var(--primary-orange);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        margin: 0 auto 12px;
+    }
+
+    .club-chat-empty h4 {
+        margin: 0 0 6px 0;
+        font-size: 1.05rem;
+        color: var(--sports-text-main, #0f172a);
+        font-weight: 800;
+    }
+
+    .club-chat-empty p {
+        margin: 0;
+        font-size: 0.84rem;
+        line-height: 1.5;
+    }
+
+    .club-chat-msg-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        max-width: 82%;
+    }
+
+    .club-chat-msg-row.is-me {
+        align-self: flex-end;
+        flex-direction: row-reverse;
+    }
+
+    .club-chat-msg-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #e15623, #f59e0b);
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        overflow: hidden;
+        border: 1.5px solid #ffffff;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+    }
+
+    .club-chat-msg-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .club-chat-msg-body {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .club-chat-msg-row.is-me .club-chat-msg-body {
+        align-items: flex-end;
+    }
+
+    .club-chat-msg-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.76rem;
+    }
+
+    .msg-sender-name {
+        font-weight: 700;
+        color: var(--sports-text-main, #0f172a);
+    }
+
+    .chat-captain-badge {
+        font-size: 0.62rem;
+        font-weight: 800;
+        background: rgba(225, 86, 35, 0.15);
+        color: var(--primary-orange);
+        padding: 1px 6px;
+        border-radius: 6px;
+        letter-spacing: 0.4px;
+    }
+
+    .chat-you-badge {
+        font-size: 0.62rem;
+        font-weight: 800;
+        background: rgba(59, 130, 246, 0.15);
+        color: #2563eb;
+        padding: 1px 6px;
+        border-radius: 6px;
+    }
+
+    .msg-time {
+        color: var(--sports-text-muted, #94a3b8);
+        font-size: 0.72rem;
+    }
+
+    .club-chat-bubble {
+        background: #f1f5f9;
+        color: var(--sports-text-main, #0f172a);
+        padding: 10px 14px;
+        border-radius: 14px;
+        border-top-left-radius: 4px;
+        font-size: 0.88rem;
+        line-height: 1.45;
+        word-break: break-word;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    html.dark-mode .club-chat-bubble,
+    [data-theme="dark"] .club-chat-bubble {
+        background: #334155;
+        color: #f8fafc;
+    }
+
+    .club-chat-bubble.is-me {
+        background: linear-gradient(135deg, var(--primary-orange, #e15623), #ea580c);
+        color: #ffffff;
+        border-radius: 14px;
+        border-top-right-radius: 4px;
+    }
+
+    .club-chat-input-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 18px;
+        border-top: 1.5px solid var(--sports-border, #eaecf0);
+        background: var(--sports-card-bg, #ffffff);
+    }
+
+    .club-chat-input {
+        flex: 1;
+        border: 1.5px solid var(--sports-border, #eaecf0);
+        border-radius: 24px;
+        padding: 10px 18px;
+        font-size: 0.9rem;
+        color: var(--sports-text-main, #0f172a);
+        background: rgba(248, 250, 252, 0.6);
+        outline: none;
+        transition: all 0.2s;
+    }
+
+    html.dark-mode .club-chat-input,
+    [data-theme="dark"] .club-chat-input {
+        background: rgba(15, 23, 42, 0.6);
+        color: #f8fafc;
+    }
+
+    .club-chat-input:focus {
+        border-color: var(--primary-orange, #e15623);
+        background: #ffffff;
+        box-shadow: 0 0 0 3px rgba(225, 86, 35, 0.12);
+    }
+
+    html.dark-mode .club-chat-input:focus,
+    [data-theme="dark"] .club-chat-input:focus {
+        background: #1e293b;
+    }
+
+    .btn-chat-send {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: var(--primary-orange, #e15623);
+        color: #ffffff;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        flex-shrink: 0;
+    }
+
+    .btn-chat-send:hover {
+        transform: translateY(-1px) scale(1.05);
+        background: #ea580c;
+        box-shadow: 0 4px 12px rgba(225, 86, 35, 0.3);
+    }
+
+    .btn-chat-send:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .club-chat-locked-card {
+        text-align: center;
+        padding: 48px 24px !important;
+    }
+
+    .chat-locked-icon {
+        width: 68px;
+        height: 68px;
+        border-radius: 50%;
+        background: rgba(245, 158, 11, 0.12);
+        color: #d97706;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2rem;
+        margin: 0 auto 16px;
     }
 
     /* Members Directory Tab */
@@ -1248,7 +1586,7 @@
     </header>
 
     <!-- ── 3. MEMBER ACTION HUB (WHAT PLAYERS CAN DO) ── -->
-    {% if my_membership and my_membership.status == 'active' %}
+    {% if (my_membership and my_membership.status == 'active') or (current_user.id == club.admin_id) %}
     <section class="club-quick-actions-bar" aria-label="Club Quick Actions">
         <a href="{{ url_for('player.matchmaker') }}" class="club-action-tile" title="Find open play matchmaker lobbies">
             <div class="action-tile-icon green">
@@ -1260,37 +1598,15 @@
             </div>
         </a>
 
-        <a href="{{ url_for('player.reservation') }}" class="club-action-tile" title="Reserve a court for club play">
-            <div class="action-tile-icon orange">
-                <i class="ph ph-calendar-plus"></i>
-            </div>
-            <div class="action-tile-text">
-                <span class="action-tile-title">Book Court</span>
-                <span class="action-tile-sub">Reserve home courts</span>
-            </div>
-        </a>
-
-        {% if current_user.id != club.admin_id %}
-        <a href="{{ url_for('player.player_chat', target_id=club.admin_id) }}" class="club-action-tile" title="Message club organizer">
+        <div class="club-action-tile" onclick="switchClubTab('chat', true)" title="Open club member group chat">
             <div class="action-tile-icon blue">
-                <i class="ph ph-chat-circle-dots"></i>
+                <i class="ph ph-chats"></i>
             </div>
             <div class="action-tile-text">
-                <span class="action-tile-title">Message Captain</span>
-                <span class="action-tile-sub">Captain {{ club.profiles.first_name if club.profiles else 'Organizer' }}</span>
-            </div>
-        </a>
-        {% else %}
-        <div class="club-action-tile" onclick="switchClubTab('members')" title="Review club roster">
-            <div class="action-tile-icon blue">
-                <i class="ph ph-address-book"></i>
-            </div>
-            <div class="action-tile-text">
-                <span class="action-tile-title">Club Roster</span>
-                <span class="action-tile-sub">{{ members|length }} Active Players</span>
+                <span class="action-tile-title">Club Group Chat</span>
+                <span class="action-tile-sub">All-member discussion</span>
             </div>
         </div>
-        {% endif %}
 
         <div class="club-action-tile" onclick="openDigitalPassModal()" title="View your digital club membership badge">
             <div class="action-tile-icon purple">
@@ -1307,7 +1623,10 @@
     <!-- ── 4. TABS NAVIGATION ── -->
     <nav class="club-tabs-nav" role="tablist">
         <button type="button" class="club-tab-btn active" id="tabBtn-overview" onclick="switchClubTab('overview')">
-            <i class="ph ph-info"></i> Overview & Perks
+            <i class="ph ph-info"></i> Overview
+        </button>
+        <button type="button" class="club-tab-btn" id="tabBtn-chat" onclick="switchClubTab('chat')">
+            <i class="ph ph-chats"></i> Club Chat
         </button>
         <button type="button" class="club-tab-btn" id="tabBtn-members" onclick="switchClubTab('members')">
             <i class="ph ph-users-three"></i> Roster & Members
@@ -1328,54 +1647,15 @@
         <!-- Left Column: Tab Panes -->
         <div class="club-left-col">
 
-            <!-- TAB 1: OVERVIEW & PERKS -->
+            <!-- TAB 1: OVERVIEW -->
             <div id="tabPane-overview" class="club-tab-content">
-                <!-- About Description -->
                 <div class="club-card-pro">
                     <h3 class="club-card-title">
-                        <i class="ph ph-article" style="color: var(--primary-orange);"></i> About the Club
+                        <i class="ph ph-megaphone" style="color: var(--primary-orange);"></i> Club Notice Board
                     </h3>
-                    <p style="font-size: 0.92rem; color: var(--sports-text-muted, #334155); line-height: 1.6; margin: 0;">
-                        {{ club.description or 'A welcoming pickleball community dedicated to fun, sportsmanship, and skill progression. All players are encouraged to join and practice together.' }}
-                    </p>
-
-                    <!-- Member Perks -->
-                    <h4 style="font-size: 0.92rem; font-weight: 800; color: var(--sports-text-main, #0f172a); margin-top: 20px;">
-                        Member Privileges & Activities
-                    </h4>
-                    <div class="perks-grid">
-                        <div class="perk-pill">
-                            <i class="ph ph-check-circle-fill"></i>
-                            <div>
-                                <div class="perk-text-title">Club Tournaments & Scrimmages</div>
-                                <div class="perk-text-sub">Exclusive access to club brackets & open play</div>
-                            </div>
-                        </div>
-                        <div class="perk-pill">
-                            <i class="ph ph-check-circle-fill"></i>
-                            <div>
-                                <div class="perk-text-title">Internal Ladder Leaderboard</div>
-                                <div class="perk-text-sub">Compete for #1 ranking within the club</div>
-                            </div>
-                        </div>
-                        <div class="perk-pill">
-                            <i class="ph ph-check-circle-fill"></i>
-                            <div>
-                                <div class="perk-text-title">Direct Player Messaging</div>
-                                <div class="perk-text-sub">Chat & organize pickup games with fellow members</div>
-                            </div>
-                        </div>
-                        <div class="perk-pill">
-                            <i class="ph ph-check-circle-fill"></i>
-                            <div>
-                                <div class="perk-text-title">Digital Membership Badge</div>
-                                <div class="perk-text-sub">Verified pass for local facility club hours</div>
-                            </div>
-                        </div>
-                    </div>
 
                     <!-- Club Announcements / Notice Board -->
-                    <div class="club-announcement-box">
+                    <div class="club-announcement-box" style="margin-top: 12px;">
                         <div class="announcement-icon-ring">
                             <i class="ph ph-megaphone"></i>
                         </div>
@@ -1392,7 +1672,110 @@
                 </div>
             </div>
 
-            <!-- TAB 2: MEMBERS DIRECTORY -->
+            <!-- TAB 2: CLUB GROUP CHAT CHANNEL -->
+            <div id="tabPane-chat" class="club-tab-content" style="display: none;">
+                {% if can_access_chat %}
+                <div class="club-card-pro club-chat-card">
+                    <!-- Chat Header -->
+                    <div class="club-chat-header">
+                        <div class="chat-header-info">
+                            <div class="chat-channel-icon">
+                                <i class="ph ph-hash"></i>
+                            </div>
+                            <div>
+                                <h3 class="chat-channel-name">{{ club.name }} Member Lounge</h3>
+                                <div class="chat-channel-status">
+                                    <span class="status-pulse-dot"></span>
+                                    <span>Dedicated Member Channel</span>
+                                    <span>•</span>
+                                    <span>{{ members|length + 1 }} Members</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-chat-refresh" onclick="fetchClubMessages()" title="Refresh messages">
+                            <i class="ph ph-arrows-clockwise" id="chatRefreshIcon"></i>
+                        </button>
+                    </div>
+
+                    <!-- Messages Stream -->
+                    <div class="club-chat-messages" id="clubChatStream">
+                        {% if chat_messages %}
+                            {% for m in chat_messages %}
+                            <div class="club-chat-msg-row {% if m.is_me %}is-me{% endif %}" data-msg-id="{{ m.id }}">
+                                <div class="club-chat-msg-avatar" title="{{ m.sender_name }}">
+                                    {% if m.sender_avatar_url %}
+                                        <img src="{{ m.sender_avatar_url }}" alt="{{ m.sender_name }}">
+                                    {% else %}
+                                        {{ m.sender_initials }}
+                                    {% endif %}
+                                </div>
+                                <div class="club-chat-msg-body">
+                                    <div class="club-chat-msg-header">
+                                        <span class="msg-sender-name">{{ m.sender_name }}</span>
+                                        {% if m.is_captain %}
+                                            <span class="chat-captain-badge">CAPTAIN</span>
+                                        {% endif %}
+                                        {% if m.is_me %}
+                                            <span class="chat-you-badge">YOU</span>
+                                        {% endif %}
+                                        <span class="msg-time">{{ m.formatted_time }}</span>
+                                    </div>
+                                    <div class="club-chat-bubble {% if m.is_me %}is-me{% endif %}">
+                                        {{ m.content }}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="club-chat-empty" id="clubChatEmpty">
+                                <div class="empty-chat-icon"><i class="ph ph-chat-centered-text"></i></div>
+                                <h4>Welcome to the {{ club.name }} Channel!</h4>
+                                <p>Start the conversation with your fellow club members and captain. Coordinate practice sessions, discuss matches, or say hello!</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Chat Input Bar -->
+                    <form id="clubChatForm" class="club-chat-input-bar" onsubmit="handleSendClubMessage(event)">
+                        <input type="text" id="clubChatInput" class="club-chat-input" placeholder="Message #{{ club.name }}..." autocomplete="off" required>
+                        <button type="submit" id="clubChatSendBtn" class="btn-chat-send" title="Send message">
+                            <i class="ph-fill ph-paper-plane-tilt"></i>
+                        </button>
+                    </form>
+                </div>
+                {% else %}
+                <div class="club-card-pro club-chat-locked-card">
+                    <div class="chat-locked-icon">
+                        <i class="ph-fill ph-lock-key"></i>
+                    </div>
+                    <h3>Members-Only Club Channel</h3>
+                    <p style="color: var(--sports-text-muted); max-width: 520px; margin: 0 auto 20px; line-height: 1.6;">
+                        The <strong>{{ club.name }}</strong> group chat is an exclusive dedicated channel for verified active club members to coordinate matches, discuss tournaments, and chat with team captains.
+                    </p>
+                    <div>
+                        {% if not my_membership %}
+                            {% if club.membership_type == 'free' %}
+                            <form action="{{ url_for('player.join_club', club_id=club.id) }}" method="POST">
+                                <button type="submit" class="sports-pill-btn primary" style="padding: 10px 24px;">
+                                    <i class="ph ph-user-plus"></i> Join {{ club.name }} (Free)
+                                </button>
+                            </form>
+                            {% else %}
+                            <a href="{{ url_for('player.club_payment', club_id=club.id) }}" class="sports-pill-btn primary" style="padding: 10px 24px; text-decoration: none; display: inline-flex;">
+                                <i class="ph ph-credit-card"></i> Join Club (₱{{ "%.2f"|format(club.membership_fee or 0) }})
+                            </a>
+                            {% endif %}
+                        {% elif my_membership.status == 'pending' %}
+                            <span class="pass-status-pill pending" style="padding: 8px 16px; font-size: 0.9rem;">
+                                <i class="ph ph-clock-countdown"></i> Membership Pending Approval
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- TAB 3: MEMBERS DIRECTORY -->
             <div id="tabPane-members" class="club-tab-content" style="display: none;">
                 <div class="club-card-pro">
                     <h3 class="club-card-title">
@@ -1742,8 +2125,12 @@
 
 <!-- ── JAVASCRIPT LOGIC ── -->
 <script>
+    let clubChatPollTimer = null;
+    const CLUB_ID = "{{ club.id }}";
+    const CAN_ACCESS_CHAT = {{ 'true' if can_access_chat else 'false' }};
+
     // Tab switching
-    function switchClubTab(tabName) {
+    function switchClubTab(tabName, scrollIntoView = false) {
         document.querySelectorAll('.club-tab-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('.club-tab-content').forEach(pane => pane.style.display = 'none');
 
@@ -1752,7 +2139,172 @@
 
         if (activeBtn) activeBtn.classList.add('active');
         if (activePane) activePane.style.display = 'block';
+
+        if (tabName === 'chat') {
+            scrollChatToBottom();
+            startChatPolling();
+            setTimeout(() => {
+                const input = document.getElementById('clubChatInput');
+                if (input) input.focus();
+            }, 100);
+        } else {
+            stopChatPolling();
+        }
+
+        if (scrollIntoView) {
+            const tabsNav = document.querySelector('.club-tabs-nav');
+            if (tabsNav) {
+                tabsNav.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
     }
+
+    function scrollChatToBottom() {
+        const stream = document.getElementById('clubChatStream');
+        if (stream) {
+            stream.scrollTop = stream.scrollHeight;
+        }
+    }
+
+    function startChatPolling() {
+        if (!CAN_ACCESS_CHAT || clubChatPollTimer) return;
+        clubChatPollTimer = setInterval(fetchClubMessages, 3500);
+    }
+
+    function stopChatPolling() {
+        if (clubChatPollTimer) {
+            clearInterval(clubChatPollTimer);
+            clubChatPollTimer = null;
+        }
+    }
+
+    async function fetchClubMessages() {
+        if (!CAN_ACCESS_CHAT) return;
+        const icon = document.getElementById('chatRefreshIcon');
+        if (icon) icon.classList.add('spin-anim');
+
+        try {
+            const resp = await fetch(`/clubs/${CLUB_ID}/messages`);
+            if (resp.ok) {
+                const data = await resp.json();
+                if (data.success && Array.isArray(data.messages)) {
+                    renderMessagesStream(data.messages);
+                }
+            }
+        } catch (err) {
+            console.warn('[ClubChat] Error polling messages:', err);
+        } finally {
+            if (icon) {
+                setTimeout(() => icon.classList.remove('spin-anim'), 400);
+            }
+        }
+    }
+
+    function renderMessagesStream(messages) {
+        const stream = document.getElementById('clubChatStream');
+        if (!stream) return;
+
+        if (messages.length === 0) return;
+
+        const emptyPlaceholder = document.getElementById('clubChatEmpty');
+        if (emptyPlaceholder) emptyPlaceholder.style.display = 'none';
+
+        const isNearBottom = (stream.scrollHeight - stream.scrollTop - stream.clientHeight) < 80;
+
+        const existingIds = new Set();
+        stream.querySelectorAll('.club-chat-msg-row').forEach(el => {
+            const id = el.getAttribute('data-msg-id');
+            if (id) existingIds.add(id);
+        });
+
+        let newAppended = false;
+        messages.forEach(m => {
+            if (existingIds.has(m.id)) return;
+            newAppended = true;
+
+            const row = document.createElement('div');
+            row.className = `club-chat-msg-row ${m.is_me ? 'is-me' : ''}`;
+            row.setAttribute('data-msg-id', m.id);
+
+            const avatarHtml = m.sender_avatar_url 
+                ? `<img src="${esc(m.sender_avatar_url)}" alt="${esc(m.sender_name)}">`
+                : `${esc(m.sender_initials)}`;
+
+            row.innerHTML = `
+                <div class="club-chat-msg-avatar" title="${esc(m.sender_name)}">
+                    ${avatarHtml}
+                </div>
+                <div class="club-chat-msg-body">
+                    <div class="club-chat-msg-header">
+                        <span class="msg-sender-name">${esc(m.sender_name)}</span>
+                        ${m.is_captain ? '<span class="chat-captain-badge">CAPTAIN</span>' : ''}
+                        ${m.is_me ? '<span class="chat-you-badge">YOU</span>' : ''}
+                        <span class="msg-time">${esc(m.formatted_time)}</span>
+                    </div>
+                    <div class="club-chat-bubble ${m.is_me ? 'is-me' : ''}">
+                        ${esc(m.content)}
+                    </div>
+                </div>
+            `;
+            stream.appendChild(row);
+        });
+
+        if (newAppended && (isNearBottom || messages.length === 1)) {
+            scrollChatToBottom();
+        }
+    }
+
+    async function handleSendClubMessage(event) {
+        event.preventDefault();
+        const input = document.getElementById('clubChatInput');
+        const sendBtn = document.getElementById('clubChatSendBtn');
+        if (!input) return;
+
+        const content = input.value.trim();
+        if (!content) return;
+
+        input.disabled = true;
+        if (sendBtn) sendBtn.disabled = true;
+
+        try {
+            const resp = await fetch(`/clubs/${CLUB_ID}/message`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ content: content })
+            });
+
+            const data = await resp.json();
+            if (resp.ok && data.success && data.message) {
+                input.value = '';
+                renderMessagesStream([data.message]);
+                scrollChatToBottom();
+            } else {
+                alert(data.error || 'Failed to send message.');
+            }
+        } catch (err) {
+            console.error('[ClubChat] Send error:', err);
+            alert('Failed to deliver message. Please check connection and try again.');
+        } finally {
+            input.disabled = false;
+            if (sendBtn) sendBtn.disabled = false;
+            input.focus();
+        }
+    }
+
+    function esc(str) {
+        if (!str) return '';
+        const d = document.createElement('div');
+        d.textContent = str;
+        return d.innerHTML;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if (window.location.hash === '#chat') {
+            switchClubTab('chat', true);
+        }
+    });
 
     // Member Roster live search
     function filterRosterMembers() {

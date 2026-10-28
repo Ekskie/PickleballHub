@@ -738,7 +738,7 @@ def supabase_token():
 
 @auth_bp.route('/auth/lobby-ids')
 def get_lobby_ids():
-    """Return all matchmaker lobby IDs to separate lobby discussions from private direct messages."""
+    """Return all matchmaker lobby IDs and club IDs to separate group channels from private direct messages."""
     user_id = session.get('user_id')
     if not user_id:
         return jsonify({'lobby_ids': []}), 401
@@ -746,7 +746,9 @@ def get_lobby_ids():
         admin_db = get_admin_db()
         lobbies = admin_db.table('matchmaker_lobbies').select('id').execute()
         lobby_ids = [l['id'] for l in (lobbies.data or [])]
-        return jsonify({'lobby_ids': lobby_ids})
+        clubs = admin_db.table('clubs').select('id').execute()
+        club_ids = [c['id'] for c in (clubs.data or [])]
+        return jsonify({'lobby_ids': lobby_ids + club_ids})
     except Exception as e:
         return jsonify({'lobby_ids': []})
 

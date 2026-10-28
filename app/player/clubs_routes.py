@@ -1,9 +1,9 @@
-from flask import render_template, request, redirect, url_for, session, flash
+from flask import render_template, request, redirect, url_for, session, flash, jsonify
 from app.decorators import require_role
 from datetime import datetime, timezone
 from app.db import get_db
 from app.player import player_bp
-from app.player.routes import check_player_memberships_expiry
+from app.player.routes import check_player_memberships_expiry, PH_TZ
 
 @player_bp.route('/clubs')
 @require_role('player')
@@ -70,6 +70,35 @@ def clubs():
         free_count=free_count,
         paid_count=paid_count
     )
+
+
+def format_club_message(m, club_admin_id, current_user_id):
+    sender_id = m.get('sender_id')
+    prof = m.get('profiles') or {}
+    first = prof.get('first_name') or 'Player'
+    last = prof.get('last_name') or ''
+    initials = (first[0] + (last[0] if last else '')).upper()
+
+    formatted_time = ''
+    if m.get('created_at'):
+        try:
+            dt = datetime.fromisoformat(m['created_at'].replace('Z', '+00:00'))
+            formatted_time = dt.astimezone(PH_TZ).strftime('%I:%M %p')
+        except Exception:
+            formatted_time = ''
+
+    return {
+        'id': m.get('id'),
+        'content': m.get('content', ''),
+        'created_at': m.get('created_at'),
+        'formatted_time': formatted_time,
+        'sender_id': sender_id,
+        'sender_name': f"{first} {last}".strip(),
+        'sender_initials': initials,
+        'sender_avatar_url': prof.get('avatar_url') or None,
+        'is_captain': (str(sender_id) == str(club_admin_id)),
+        'is_me': (str(sender_id) == str(current_user_id))
+    }
 
 
 @player_bp.route('/clubs/<club_id>')
@@ -157,6 +186,24 @@ def club_detail(club_id):
             ),
             reverse=True
         )
+
+        # 6. Fetch initial club chat messages if user is member or captain
+        chat_messages = []
+        is_club_admin = (str(player_id) == str(club['admin_id']))
+        is_member = bool(my_membership and my_membership.get('status') == 'active')
+        can_access_chat = is_club_admin or is_member
+
+        if can_access_chat:
+            try:
+                from app.db import get_admin_db
+                admin_db = get_admin_db() or db
+                msgs_resp = admin_db.table('messages').select(
+                    'id, sender_id, content, created_at, profiles!sender_id(id, first_name, last_name, avatar_url)'
+                ).eq('conversation_id', club_id).order('created_at', desc=False).limit(100).execute()
+                for m in (msgs_resp.data or []):
+                    chat_messages.append(format_club_message(m, club['admin_id'], player_id))
+            except Exception as chat_err:
+                print(f"[club_detail] Error loading initial chat messages: {chat_err}")
         
     except Exception as e:
         flash('An error occurred. Please try again.', 'error')
@@ -169,8 +216,105 @@ def club_detail(club_id):
         top_members=top_members,
         avg_dupr=avg_dupr,
         my_membership=my_membership,
-        events=events_list
+        events=events_list,
+        chat_messages=chat_messages,
+        can_access_chat=can_access_chat
     )
+
+
+@player_bp.route('/clubs/<club_id>/messages')
+@require_role('player')
+def club_chat_messages(club_id):
+    """Fetch recent messages for club group chat live updates."""
+    player_id = session.get('user_id')
+    db = get_db()
+    from app.db import get_admin_db
+    admin_db = get_admin_db() or db
+
+    try:
+        club_resp = admin_db.table('clubs').select('id, admin_id').eq('id', club_id).eq('status', 'active').single().execute()
+        if not club_resp.data:
+            return jsonify({'success': False, 'error': 'Club not found'}), 404
+        club = club_resp.data
+
+        is_admin = (str(player_id) == str(club['admin_id']))
+        if not is_admin:
+            mem_resp = admin_db.table('club_memberships').select('id').eq('club_id', club_id).eq('player_id', player_id).eq('status', 'active').execute()
+            if not mem_resp.data:
+                return jsonify({'success': False, 'error': 'Unauthorized', 'locked': True}), 403
+
+        msgs_resp = admin_db.table('messages').select(
+            'id, sender_id, content, created_at, profiles!sender_id(id, first_name, last_name, avatar_url)'
+        ).eq('conversation_id', club_id).order('created_at', desc=False).limit(100).execute()
+
+        raw_msgs = msgs_resp.data or []
+        formatted = [format_club_message(m, club['admin_id'], player_id) for m in raw_msgs]
+        return jsonify({'success': True, 'messages': formatted})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e), 'messages': []}), 500
+
+
+@player_bp.route('/clubs/<club_id>/message', methods=['POST'])
+@require_role('player')
+def club_chat_send_message(club_id):
+    """Send a message to the club group chat channel."""
+    player_id = session.get('user_id')
+    db = get_db()
+    from app.db import get_admin_db
+    admin_db = get_admin_db() or db
+
+    try:
+        club_resp = admin_db.table('clubs').select('id, admin_id').eq('id', club_id).eq('status', 'active').single().execute()
+        if not club_resp.data:
+            return jsonify({'success': False, 'error': 'Club not found'}), 404
+        club = club_resp.data
+
+        is_admin = (str(player_id) == str(club['admin_id']))
+        if not is_admin:
+            mem_resp = admin_db.table('club_memberships').select('id').eq('club_id', club_id).eq('player_id', player_id).eq('status', 'active').execute()
+            if not mem_resp.data:
+                return jsonify({'success': False, 'error': 'You must be an active club member to post.'}), 403
+
+        data = request.get_json(silent=True) or request.form
+        content = (data.get('content') or '').strip()
+        if not content:
+            return jsonify({'success': False, 'error': 'Message content cannot be empty.'}), 400
+
+        # Ensure conversation row exists for club
+        try:
+            admin_db.table('conversations').upsert({'id': club_id}, on_conflict='id').execute()
+        except Exception:
+            pass
+
+        # Ensure participant row exists
+        try:
+            admin_db.table('conversation_participants').upsert({
+                'conversation_id': club_id,
+                'profile_id': player_id
+            }, on_conflict='conversation_id,profile_id').execute()
+        except Exception:
+            pass
+
+        now_iso = datetime.now(timezone.utc).isoformat()
+        msg_resp = admin_db.table('messages').insert({
+            'conversation_id': club_id,
+            'sender_id': player_id,
+            'content': content,
+            'created_at': now_iso
+        }).execute()
+
+        if not msg_resp.data:
+            return jsonify({'success': False, 'error': 'Failed to save message.'}), 500
+
+        msg_row = msg_resp.data[0]
+        prof_resp = admin_db.table('profiles').select('id, first_name, last_name, avatar_url').eq('id', player_id).single().execute()
+        msg_row['profiles'] = prof_resp.data or {}
+
+        formatted_msg = format_club_message(msg_row, club['admin_id'], player_id)
+        return jsonify({'success': True, 'message': formatted_msg})
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @player_bp.route('/my-clubs')

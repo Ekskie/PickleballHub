@@ -1,17 +1,17 @@
 # Graph Report - PickleballHub  (2026-10-28)
 
 ## Corpus Check
-- 197 files · ~966,726 words
+- 197 files · ~968,577 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 27 file(s) not represented in the graph (top: .css 10, .jfif 8, .toml 4)
 
 ## Summary
-- 2826 nodes · 5929 edges · 205 communities (151 shown, 54 thin omitted)
+- 2831 nodes · 5945 edges · 206 communities (152 shown, 54 thin omitted)
 - Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 145 edges (avg confidence: 0.86)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `444943c7`
+- Built from commit: `7deed2c5`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -83,7 +83,7 @@
 - player/routes.py
 - renderDesignVisual
 - modern-screenshot.umd.js
-- initPageChat
+- syncPageChatFocus
 - brandkit/SKILL.md
 - draw.mjs
 - showToast
@@ -100,7 +100,7 @@
 - assets.mjs
 - getOne
 - onboard.md
-- scheduleAcceptCleanup
+- mountSvelteComponentVariant
 - text
 - Multi-Role Dashboard Pattern (6 Roles)
 - impeccable/SKILL.md
@@ -117,9 +117,9 @@
 - createLiveBrowserSessionState
 - matchmaker_routes.py
 - The run
-- onAnnotDown
+- documentRefForElement
 - SKILL: Industrial Brutalism & Tactical Telemetry UI
-- owner/routes.py
+- validate_and_upload
 - animate.md
 - HTMX Partial Queue Refresh Pattern
 - Handle `generate`
@@ -215,14 +215,15 @@
 - 15. DEFAULT SITE PACKS
 - 20. EXAMPLE INTERPRETATIONS
 - Persuade and Experience
+- doctor.md
+- social_routes.py
 - imagegen-frontend-web/SKILL.md
 - create_app
-- Read
 
 ## God Nodes (most connected - your core abstractions)
-1. `require_role()` - 231 edges
-2. `get_db()` - 170 edges
-3. `get_admin_db()` - 151 edges
+1. `require_role()` - 233 edges
+2. `get_db()` - 172 edges
+3. `get_admin_db()` - 153 edges
 4. `CORE DIRECTIVE: IMAGE-FIRST WEBSITE DESIGN TO CODE` - 39 edges
 5. `CORE DIRECTIVE: PREMIUM MOBILE APP IMAGE DIRECTION` - 39 edges
 6. `connectSSE()` - 34 edges
@@ -249,19 +250,19 @@
 - 4-file cycle: `app/__init__.py -> app/player/__init__.py -> app/player/queue_routes.py -> app/player/routes.py -> app/__init__.py`
 - 4-file cycle: `app/__init__.py -> app/player/__init__.py -> app/player/reservations.py -> app/player/routes.py -> app/__init__.py`
 
-## Communities (205 total, 54 thin omitted)
+## Communities (206 total, 54 thin omitted)
 
 ### Community 0 - "superadmin/routes.py"
-Cohesion: 0.05
-Nodes (75): clear_tier_pricing_cache(), load_dynamic_tier_config(), app/billing/tiers.py PickleballHub Centralized Subscription & Tier Limits…, Invalidates the in-memory tier pricing cache., Returns the complete tier configuration merged with dynamic pricing overrides…, Saves new pricing into platform_settings under 'subscription_pricing' key and…, Resets pricing to system defaults by deleting 'subscription_pricing' from…, Decorator to protect routes that require a specific minimum subscription tier.… (+67 more)
+Cohesion: 0.06
+Nodes (70): clear_tier_pricing_cache(), load_dynamic_tier_config(), app/billing/tiers.py PickleballHub Centralized Subscription & Tier Limits…, Invalidates the in-memory tier pricing cache., Returns the complete tier configuration merged with dynamic pricing overrides…, Saves new pricing into platform_settings under 'subscription_pricing' key and…, Resets pricing to system defaults by deleting 'subscription_pricing' from…, Decorator to protect routes that require a specific minimum subscription tier.… (+62 more)
 
 ### Community 1 - "clubadmin/routes.py"
 Cohesion: 0.09
-Nodes (41): get_facility_court_timeline(), Get all courts in facility along with their occupied time blocks on the…, api_courts_by_facility(), club_setup(), community(), dashboard(), log_casual_match(), mark_notifications_read() (+33 more)
+Nodes (39): get_facility_court_timeline(), Get all courts in facility along with their occupied time blocks on the…, api_courts_by_facility(), club_setup(), community(), dashboard(), log_casual_match(), mark_notifications_read() (+31 more)
 
 ### Community 2 - "main/routes.py"
-Cohesion: 0.08
-Nodes (41): about_us(), api_courts_search(), api_tutorials_delete(), api_tutorials_list(), api_tutorials_save(), api_tutorials_sign_upload(), api_tutorials_upload(), clinics() (+33 more)
+Cohesion: 0.07
+Nodes (43): get_article_by_id(), Fetch a single article by ID., about_us(), api_courts_search(), api_tutorials_delete(), api_tutorials_list(), api_tutorials_save(), api_tutorials_sign_upload() (+35 more)
 
 ### Community 3 - "initMessages"
 Cohesion: 0.16
@@ -281,7 +282,7 @@ Nodes (6): Centralized Collection Multi-Vendor Pattern, PayMongo Checkout Sessio
 
 ### Community 8 - "live-browser.js"
 Cohesion: 0.03
-Nodes (129): addManualContextText(), agentHasWorkInFlight(), applyGlobalBarLabelState(), applyPlaceholderSizingStyles(), averageRgb01(), bindEditBadgeProxy(), bufferToBase64(), buildColorModels() (+121 more)
+Nodes (130): agentHasWorkInFlight(), applyGlobalBarLabelState(), applyLiveBarPreference(), applyOriginalAttrsToSvelteAnchor(), applyParamValue(), applyPlaceholderSizingStyles(), averageRgb01(), beginEditPin() (+122 more)
 
 ### Community 9 - "auth/routes.py"
 Cohesion: 0.13
@@ -300,8 +301,8 @@ Cohesion: 0.17
 Nodes (23): initTutorials(), closeAddModal(), deleteTutorial(), directUploadToSignedUrl(), esc(), extractYoutubeId(), formatFileSize(), getCsrfToken() (+15 more)
 
 ### Community 13 - "get_user_tier"
-Cohesion: 0.07
-Nodes (48): checkout_page(), _get_logged_in_user(), route, Main subscription and membership dashboard for logged in users., Legitimate GCash payment checkout page for subscriptions., subscription_page(), check_feature_limit(), get_tier_limits() (+40 more)
+Cohesion: 0.09
+Nodes (39): check_feature_limit(), get_tier_limits(), get_user_tier(), Returns the active subscription tier string ('free', 'pro', 'elite') for a…, Return the dictionary of limits for the given role and tier., Checks if a user has permission to perform an action or if they have hit a…, decorator(), decorated_function() (+31 more)
 
 ### Community 17 - "vercel.json"
 Cohesion: 0.33
@@ -316,36 +317,36 @@ Cohesion: 0.12
 Nodes (16): logo.png (PickleballHub Logo), Architecture, Authentication Flow, code:block1 (PickleballHub/), code:bash (# Install dependencies), Commands, Dependencies, Environment Variables (+8 more)
 
 ### Community 32 - "el"
-Cohesion: 0.06
-Nodes (57): actionLabel(), applyConfigureBarChrome(), bindConfigureCountPillTooltip(), bindConfigureInlineControlHover(), bindConfigureModifierPillHover(), buildConfigureActionControl(), buildConfigureCountControl(), buildConfigureRow() (+49 more)
+Cohesion: 0.07
+Nodes (56): actionLabel(), applyConfigureBarChrome(), bindConfigureCountPillTooltip(), bindConfigureInlineControlHover(), bindConfigureModifierPillHover(), buildConfigureActionControl(), buildConfigureCountControl(), buildConfigureRow() (+48 more)
 
 ### Community 63 - "connectSSE"
-Cohesion: 0.07
-Nodes (81): applyParamDefaults(), applyParamValue(), applySavedSessionMeta(), buildParamsPanel(), checkpointPayload(), clearSession(), closedClipPath(), completeParameterGenerationIfReady() (+73 more)
+Cohesion: 0.06
+Nodes (78): abortSvelteComponentInjection(), applyParamDefaults(), applyPlaceholderDimensions(), applySavedSessionMeta(), clampVariantIndex(), clearHandled(), clearSession(), closedClipPath() (+70 more)
 
 ### Community 64 - "reservations.py"
 Cohesion: 0.09
 Nodes (38): check_court_conflict(), normalize_time_str(), notify_facility_staff_and_owner(), Check if interval [s1, e1) overlaps interval [s2, e2)., Sends in-app notifications to the facility owner and all assigned facility…, Check if a court is already booked or reserved on the given date and time…, Normalize time string to HH:MM:SS for safe lexical and logical comparison., times_overlap() (+30 more)
 
 ### Community 65 - "setLiveState"
-Cohesion: 0.09
-Nodes (62): applyEditing(), beginNewLiveConfiguration(), buildInsertPlaceholderSnapshotFromDom(), buildLocatorForLeaf(), buildPickedAnchorSnapshot(), cancelEditing(), cancelEditingToPicking(), cancelInsertConfigure() (+54 more)
+Cohesion: 0.10
+Nodes (60): applyEditing(), beginNewLiveConfiguration(), buildInsertPlaceholderSnapshotFromDom(), buildPickedAnchorSnapshot(), cancelEditing(), cancelEditingToPicking(), cancelInsertConfigure(), cleanup() (+52 more)
 
 ### Community 66 - "player/routes.py"
-Cohesion: 0.12
-Nodes (25): Uploads an avatar file to Supabase storage and returns public URL, or None.…, upload_avatar(), club_detail(), club_payment(), clubs(), join_club(), leave_club(), my_clubs() (+17 more)
+Cohesion: 0.14
+Nodes (21): get_processed_queues(), route, queue(), queue_partial(), Fetch queues for today, process wait times, and auto-complete games 15 mins…, change_password(), compute_player_sports_data(), dashboard() (+13 more)
 
 ### Community 67 - "renderDesignVisual"
-Cohesion: 0.09
-Nodes (36): buildCollapsible(), buildDesignHeader(), buildListHtml(), buildRadiiModels(), cssSafe(), designEmptyMessage(), designPanelCss(), escapeHtml() (+28 more)
+Cohesion: 0.07
+Nodes (42): buildCollapsible(), buildColorModels(), buildDesignHeader(), buildListHtml(), buildRadiiModels(), buildTypographyModels(), cssSafe(), designEmptyMessage() (+34 more)
 
 ### Community 68 - "modern-screenshot.umd.js"
 Cohesion: 0.07
 Nodes (62): ae(), be(), bt(), Ce(), s(), Ct(), de(), dt() (+54 more)
 
-### Community 69 - "initPageChat"
-Cohesion: 0.09
-Nodes (47): armPageChatForTyping(), attachSteerFocusDebug(), attachSteerFocusGuard(), buildSteerProcessingDots(), clearSteerAwaitTimer(), clearSteerFocusRecoverTimer(), collapsePageChat(), expandPageChat() (+39 more)
+### Community 69 - "syncPageChatFocus"
+Cohesion: 0.10
+Nodes (46): armPageChatForTyping(), attachSteerFocusDebug(), attachSteerFocusGuard(), buildSteerProcessingDots(), clearSteerAwaitTimer(), clearSteerFocusRecoverTimer(), collapsePageChat(), expandPageChat() (+38 more)
 
 ### Community 70 - "brandkit/SKILL.md"
 Cohesion: 0.04
@@ -356,20 +357,20 @@ Cohesion: 0.09
 Nodes (41): adjustments(), argv, assetQueries(), ASSETS_PATH, briefStop(), briefWords(), deal(), dealHero() (+33 more)
 
 ### Community 72 - "showToast"
-Cohesion: 0.07
-Nodes (49): abandonForeignSession(), abandonSupersededGo(), abortSvelteComponentInjection(), applyOriginalAttrsToSvelteAnchor(), cleanup(), clearHandled(), clearMountErrorCard(), clearScrollY() (+41 more)
+Cohesion: 0.15
+Nodes (18): abandonForeignSession(), abandonSupersededGo(), copyToClipboard(), discardOrphanedSession(), injectVariantsFromSource(), isJsxSourceFile(), isSvelteComponentManifestPath(), markSessionHandled() (+10 more)
 
 ### Community 73 - "handleManualEditActivity"
-Cohesion: 0.20
-Nodes (23): clearStoredManualApplyState(), handleManualEditActivity(), hidePendingApplyDock(), manualApplyLoadingText(), manualApplyStateKey(), manualEditEventForCurrentPage(), numberOrNull(), onPendingKeepFixingClick() (+15 more)
+Cohesion: 0.18
+Nodes (26): clearStoredManualApplyState(), fetchPendingCount(), handleManualEditActivity(), hidePendingApplyDock(), manualApplyLoadingText(), manualApplyStateKey(), manualEditEventForCurrentPage(), numberOrNull() (+18 more)
 
 ### Community 74 - "initGlobalBar"
-Cohesion: 0.07
-Nodes (44): agentStatusText(), applyLiveBarPreference(), barPaletteForTheme(), brandMarkSvg(), cursorForInsertAxis(), detectPageTheme(), own(), pickable() (+36 more)
+Cohesion: 0.08
+Nodes (42): agentStatusText(), barPaletteForTheme(), brandMarkSvg(), buildParamsPanel(), cursorForInsertAxis(), detectPageTheme(), own(), pickable() (+34 more)
 
 ### Community 75 - "actOnAgentTarget"
-Cohesion: 0.29
-Nodes (17): actOnAgentTarget(), agentTargetBusyReason(), agentTargetOverlayGone(), agentTargetTaken(), claimAgentTarget(), claimAndActOnAgentTarget(), declineAgentTargetBusy(), declineAgentTargetUnresolvable() (+9 more)
+Cohesion: 0.22
+Nodes (20): actOnAgentTarget(), agentTargetBusyReason(), agentTargetOverlayGone(), agentTargetTaken(), claimAgentTarget(), claimAndActOnAgentTarget(), declineAgentTargetBusy(), declineAgentTargetUnresolvable() (+12 more)
 
 ### Community 76 - "CORE DIRECTIVE: IMAGE-FIRST WEBSITE DESIGN TO CODE"
 Cohesion: 0.06
@@ -396,8 +397,8 @@ Cohesion: 0.08
 Nodes (25): Assess Adaptation Challenge, Breakpoints: Content-Driven, Content Adaptation, Desktop Adaptation (Mobile → Desktop), Detect Input Method, Not Just Screen Size, Email Adaptation (Web → Email), Implement Adaptations, Layout Adaptation Patterns (+17 more)
 
 ### Community 82 - "new-work.md"
-Cohesion: 0.09
-Nodes (21): Recommended Actions, Craft (deprecated alias), Monorepo notes, Opting out of the boot check, Step 1: Run the pass, Step 2: Act by severity, Step 3: Deprecated fields are binding, Step 4: Do not overclaim on truth drift (+13 more)
+Cohesion: 0.10
+Nodes (17): Recommended Actions, Craft (deprecated alias), Apply, Live-mode signature params, Set the spatial thesis, Two isolated assessments, Verify, Visitor mode (+9 more)
 
 ### Community 83 - "assets.mjs"
 Cohesion: 0.09
@@ -411,9 +412,9 @@ Nodes (25): clock(), credit(), creditRequired(), creditsPath(), dims(), esc(), g
 Cohesion: 0.09
 Nodes (22): Assess Onboarding Needs, Context Over Ceremony, Contextual Help, Design Onboarding Experiences, Documentation & Help, Empty State Design, Feature Discovery & Adoption, Guided Tours & Walkthroughs (+14 more)
 
-### Community 86 - "scheduleAcceptCleanup"
-Cohesion: 0.31
-Nodes (11): acceptedDomAlreadyClean(), clearHandledWrapperReloadStamp(), deferredRecoverySuperseded(), ensureAcceptedDomClean(), findAcceptedRuntimeWrappers(), handledWrapperReloadKey(), reloadAfterMissingAcceptedDom(), restoreAcceptedDomFromSnapshot() (+3 more)
+### Community 86 - "mountSvelteComponentVariant"
+Cohesion: 0.15
+Nodes (22): acceptedDomAlreadyClean(), clearHandledWrapperReloadStamp(), commitAcceptedSvelteComponentToDom(), componentModuleCandidates(), deferredRecoverySuperseded(), describeMountFailure(), detectDevServerBase(), ensureAcceptedDomClean() (+14 more)
 
 ### Community 87 - "text"
 Cohesion: 0.17
@@ -463,17 +464,17 @@ Nodes (19): cleanup_expired_completed_lobbies(), format_date_friendly(), format_
 Cohesion: 0.12
 Nodes (16): 10. Report, 1. Read the brief and the project, 2. Write the argument, 3. Draw the direction, 4. Find the idea, 5. Write the words, 6. Build it, still, 7. Gate (+8 more)
 
-### Community 103 - "onAnnotDown"
-Cohesion: 0.18
-Nodes (19): applyPlaceholderDimensions(), beginEditPin(), buildAnnotationsForCapture(), buildPinElement(), cancelEditingPin(), finalizeEditingPin(), initAnnotOverlay(), localCoords() (+11 more)
+### Community 103 - "documentRefForElement"
+Cohesion: 0.07
+Nodes (35): addManualContextText(), canRestoreManualEditElement(), collectEditableTextRows(), visit(), collectManualContextPieces(), walk(), contextElementForManualEdit(), copyEditContainerContext() (+27 more)
 
 ### Community 104 - "SKILL: Industrial Brutalism & Tactical Telemetry UI"
 Cohesion: 0.12
 Nodes (16): 1. Skill Meta, 2.1 Swiss Industrial Print, 2.2 Tactical Telemetry & CRT Terminal, 2. Visual Archetypes, 3.1 Macro-Typography (Structural Headers), 3.2 Micro-Typography (Data & Telemetry), 3.3 Textural Contrast (Artistic Disruption), 3. Typographic Architecture (+8 more)
 
-### Community 105 - "owner/routes.py"
-Cohesion: 0.33
-Nodes (10): change_password(), community(), dashboard(), mark_notifications_read(), messages(), notifications(), profile(), route (+2 more)
+### Community 105 - "validate_and_upload"
+Cohesion: 0.14
+Nodes (23): checkout_page(), _get_logged_in_user(), route, Main subscription and membership dashboard for logged in users., Legitimate GCash payment checkout page for subscriptions., subscription_page(), club_chat_messages(), club_chat_send_message() (+15 more)
 
 ### Community 106 - "animate.md"
 Cohesion: 0.12
@@ -689,7 +690,7 @@ Nodes (6): Architecture, Authentication Flow, Commands, Dependencies, Environmen
 
 ### Community 161 - "db.py"
 Cohesion: 0.07
-Nodes (38): ledger(), route, is_jwt_expired(), Thread-safe, request-scoped database helper for Supabase. Provides separation…, Decodes a JWT payload locally to check if it's expired or close to it (5-minute…, _get_dashboard_for_role(), has_role_permission(), Role-based access control decorators for protecting routes. (+30 more)
+Nodes (39): ledger(), route, is_jwt_expired(), Thread-safe, request-scoped database helper for Supabase. Provides separation…, Decodes a JWT payload locally to check if it's expired or close to it (5-minute…, _get_dashboard_for_role(), has_role_permission(), Role-based access control decorators for protecting routes. (+31 more)
 
 ### Community 162 - "tasteskill v2 (`design-taste-frontend`)"
 Cohesion: 0.29
@@ -847,33 +848,37 @@ Nodes (4): 20. EXAMPLE INTERPRETATIONS, Example 1, Example 2, Example 3
 Cohesion: 0.50
 Nodes (3): Comps, Directions, Persuade and Experience
 
-### Community 205 - "create_app"
-Cohesion: 0.13
-Nodes (10): Assessment B: Detector + Browser Evidence, create_app(), __bool__(), get(), _get_data(), __getattr__(), __getitem__(), inject_csrf_token() (+2 more)
+### Community 201 - "doctor.md"
+Cohesion: 0.25
+Nodes (7): Monorepo notes, Opting out of the boot check, Step 1: Run the pass, Step 2: Act by severity, Step 3: Deprecated fields are binding, Step 4: Do not overclaim on truth drift, What this owns, and what it does not
 
-### Community 208 - "Read"
-Cohesion: 0.50
-Nodes (3): Comps, Directions, Read
+### Community 202 - "social_routes.py"
+Cohesion: 0.43
+Nodes (7): community(), delete_notification(), mark_notifications_read(), messages(), notifications(), route, tutorials()
+
+### Community 205 - "create_app"
+Cohesion: 0.12
+Nodes (12): Assessment B: Detector + Browser Evidence, create_app(), __bool__(), get(), _get_data(), __getattr__(), __getitem__(), inject_csrf_token() (+4 more)
 
 ## Knowledge Gaps
 - **1057 isolated node(s):** `SELF`, `SOURCES`, `SOURCE_ALIAS`, `VIDEO_TYPES`, `LICENCES` (+1052 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1296 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1298 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **54 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Assessment B: Detector + Browser Evidence` connect `create_app` to `reference/critique.md`?**
-  _High betweenness centrality (0.227) - this node is a cross-community bridge._
+  _High betweenness centrality (0.222) - this node is a cross-community bridge._
 - **Why does `create_app()` connect `create_app` to `superadmin/routes.py`, `clubadmin/routes.py`, `CLAUDE.md`, `require_role`, `get_user_tier`?**
-  _High betweenness centrality (0.224) - this node is a cross-community bridge._
+  _High betweenness centrality (0.218) - this node is a cross-community bridge._
 - **What connects `SELF`, `SOURCES`, `SOURCE_ALIAS` to the rest of the system?**
   _1057 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `superadmin/routes.py` be split into smaller, more focused modules?**
-  _Cohesion score 0.053297199638663056 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05673274094326726 - nodes in this community are weakly interconnected._
 - **Should `clubadmin/routes.py` be split into smaller, more focused modules?**
-  _Cohesion score 0.08879492600422834 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.09059233449477352 - nodes in this community are weakly interconnected._
 - **Should `main/routes.py` be split into smaller, more focused modules?**
-  _Cohesion score 0.0753045404208195 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07171717171717172 - nodes in this community are weakly interconnected._
 - **Should `get_db` be split into smaller, more focused modules?**
   _Cohesion score 0.1141025641025641 - nodes in this community are weakly interconnected._
