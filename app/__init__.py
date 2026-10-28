@@ -38,6 +38,7 @@ def create_app():
     csrf.init_app(app)
     limiter.init_app(app)
     compress.init_app(app)
+    app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 31536000
    
     from app.main.routes import main_bp
     from app.auth.routes import auth_bp

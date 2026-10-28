@@ -1,8 +1,6 @@
 {
   "version": 2,
-  "regions": [
-    "sin1"
-  ],
+  "regions": ["sin1"],
   "builds": [
     {
       "src": "run.py",
@@ -11,18 +9,20 @@
   ],
   "routes": [
     {
-      "src": "/app/static/(.*)",
-      "dest": "/app/static/$1",
-      "headers": {
-        "Cache-Control": "public, max-age=31536000, immutable"
-      }
-    },
-    {
       "src": "/(.*)",
       "dest": "run.py"
     }
   ],
   "headers": [
+    {
+      "source": "/static/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, s-maxage=31536000, immutable"
+        }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [
