@@ -1,11 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
-
+from app.decorators import require_role
 from app.db import get_db
-
 
 support_bp = Blueprint('support', __name__, url_prefix='/support')
 
 @support_bp.route('/submit', methods=['POST'])
+@require_role('player', 'owner', 'facilitystaff', 'clubadmin', 'adminstaff', 'superadmin')
 def submit_ticket():
     user_id = session.get('user_id')
     if not user_id:
@@ -18,6 +18,14 @@ def submit_ticket():
 
     if not subject or not message:
         flash("Subject and Message are required.", "error")
+        return redirect(request.referrer or url_for('main.index'))
+
+    if len(subject) > 200:
+        flash("Subject cannot exceed 200 characters.", "error")
+        return redirect(request.referrer or url_for('main.index'))
+
+    if len(message) > 5000:
+        flash("Message cannot exceed 5000 characters.", "error")
         return redirect(request.referrer or url_for('main.index'))
 
     # Prepend category to subject for easy identification in admin view
@@ -36,4 +44,3 @@ def submit_ticket():
         flash('An error occurred. Please try again.', 'error')
 
     return redirect(request.referrer or url_for('main.index'))
-

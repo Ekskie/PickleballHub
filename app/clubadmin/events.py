@@ -1,10 +1,12 @@
 import time
+import json
 from datetime import datetime
 from flask import request, redirect, url_for, session, render_template, flash, g
 from app.decorators import require_role
 from app.db import get_db, get_admin_db
 from app.clubadmin import clubadmin_bp
 from app.owner.routes import PH_TZ
+from app.booking_utils import safe_time_hours, safe_time_str
 
 @clubadmin_bp.route('/events')
 @require_role('clubadmin')
@@ -14,7 +16,7 @@ def events():
     events_list = []
     try:
         ev_resp = db.table('events').select(
-            'id, title, type, format, event_date, start_time, end_time, max_players, entry_fee, prize_pool, status, location_label, organizer_id, gcash_ref, rejection_reason, facility_id, facilities(name)'
+            'id, title, type, format, event_date, start_time, end_time, max_players, entry_fee, prize_pool, status, location_label, organizer_id, gcash_ref, rejection_reason, facility_id, facilities(id, name, owner_id)'
         ).eq('organizer_id', clubadmin_id).order('event_date', desc=False).execute()
         events_list = ev_resp.data or []
         
@@ -41,12 +43,9 @@ def events():
                 ev['registered_count'] = reg_counts[ev['id']]
                 ev['courts'] = courts_by_ev.get(ev['id'], [])
                 # Calculate duration in hours
-                try:
-                    sh = float(ev['start_time'][:2]) + float(ev['start_time'][3:5])/60.0
-                    eh = float(ev['end_time'][:2]) + float(ev['end_time'][3:5])/60.0
-                    hrs = max(0.5, eh - sh) if eh > sh else 1.0
-                except Exception:
-                    hrs = 1.0
+                sh = safe_time_hours(ev.get('start_time'))
+                eh = safe_time_hours(ev.get('end_time'))
+                hrs = max(0.5, eh - sh) if eh > sh else 1.0
                 ev['duration_hours'] = round(hrs, 1)
             
     except Exception as e:
@@ -138,14 +137,23 @@ def create_event():
     
     if request.method == 'GET':
         facilities_list = []
+        default_facility_id = None
         try:
             fac_resp = db.table('facilities').select('id, name, location').eq('status', 'active').execute()
             facilities_list = fac_resp.data or []
+            
+            # Check for approved home facility to preselect
+            club_resp = db.table('clubs').select('id').eq('admin_id', clubadmin_id).single().execute()
+            if club_resp.data:
+                cid = club_resp.data['id']
+                aff_resp = db.table('club_facility_affiliations').select('facility_id').eq('club_id', cid).eq('status', 'approved').limit(1).execute()
+                if aff_resp.data:
+                    default_facility_id = aff_resp.data[0]['facility_id']
         except Exception as e:
             from flask import current_app
             current_app.logger.error(f"Error loading create event facilities list: {e}")
             flash('An error occurred. Please try again.', 'error')
-        return render_template('clubadmin/create_event.html', facilities=facilities_list)
+        return render_template('clubadmin/create_event.html', facilities=facilities_list, default_facility_id=default_facility_id)
         
     # POST
     facility_id   = request.form.get('facility_id')
@@ -162,6 +170,34 @@ def create_event():
     event_format  = request.form.get('format', 'Doubles').strip()
     prize_pool    = request.form.get('prize_pool', 0)
     reg_type      = request.form.get('registration_type', 'paid')
+
+    # Parse granular schedule_slots JSON
+    schedule_slots_raw = request.form.get('schedule_slots')
+    schedule_slots = []
+    if schedule_slots_raw:
+        try:
+            parsed = json.loads(schedule_slots_raw)
+            for item in parsed:
+                slots = sorted(list(set(int(x) for x in item.get('slots', []))))
+                if slots:
+                    schedule_slots.append({
+                        'court_id': item.get('court_id'),
+                        'court_name': item.get('court_name', ''),
+                        'slots': slots
+                    })
+        except Exception as e:
+            from flask import current_app
+            current_app.logger.warning(f"Could not parse schedule_slots: {e}")
+            schedule_slots = []
+
+    if schedule_slots:
+        court_ids = [s['court_id'] for s in schedule_slots if s.get('court_id')]
+        all_hours = [h for s in schedule_slots for h in s.get('slots', [])]
+        if all_hours:
+            min_h = min(all_hours)
+            max_h = max(all_hours) + 1
+            start_time = f"{min_h:02d}:00"
+            end_time = f"{max_h:02d}:00"
     
     if reg_type == 'free':
         entry_fee = 0
@@ -213,12 +249,26 @@ def create_event():
             return redirect(url_for('clubadmin.create_event'))
 
     # Check court conflicts before inserting
-    if facility_id and court_ids:
+    if facility_id and schedule_slots:
+        from app.booking_utils import check_court_conflict, group_slots_to_ranges
+        for item in schedule_slots:
+            cid = item['court_id']
+            ranges = group_slots_to_ranges(item.get('slots', []))
+            for r in ranges:
+                r_start, r_end = r.split('-')
+                has_conf, conf_detail = check_court_conflict(db, cid, event_date, r_start, r_end)
+                if has_conf:
+                    time_range = conf_detail.get('time_range_12h') or f"{conf_detail.get('start_time')} – {conf_detail.get('end_time')}"
+                    court_lbl = conf_detail.get('court_name') or item.get('court_name') or 'court'
+                    flash(f"Court conflict detected on {court_lbl}: {conf_detail['label']} is scheduled from {time_range}. Please adjust your selected slots.", 'error')
+                    return redirect(url_for('clubadmin.create_event'))
+    elif facility_id and court_ids:
         from app.booking_utils import check_court_conflict
         for cid in court_ids:
             has_conf, conf_detail = check_court_conflict(db, cid, event_date, start_time, end_time)
             if has_conf:
-                flash(f"Court conflict detected: {conf_detail['label']} is scheduled from {conf_detail['start_time']} to {conf_detail['end_time']}. Please select different courts or times.", 'error')
+                time_range = conf_detail.get('time_range_12h') or f"{conf_detail.get('start_time')} – {conf_detail.get('end_time')}"
+                flash(f"Court conflict detected: {conf_detail['label']} is scheduled from {time_range}. Please select different courts or times.", 'error')
                 return redirect(url_for('clubadmin.create_event'))
 
     # Handle Image Upload
@@ -242,13 +292,16 @@ def create_event():
     # Calculate status: if facility is chosen, start with pending_payment to facility
     event_status = 'pending_payment' if facility_id else 'registration_open'
 
+    from app.booking_utils import inject_schedule_slots_into_desc
+    stored_desc = inject_schedule_slots_into_desc(description, schedule_slots) if schedule_slots else description
+
     try:
         insert_data = {
             'organizer_id': clubadmin_id,
             'title': title,
             'type': event_type,
             'format': event_format,
-            'description': description,
+            'description': stored_desc,
             'event_date': event_date,
             'start_time': start_time,
             'end_time': end_time,
@@ -262,8 +315,17 @@ def create_event():
         }
         if facility_id:
             insert_data['facility_id'] = facility_id
+        if schedule_slots:
+            insert_data['schedule_slots'] = schedule_slots
             
-        ev_resp = db.table('events').insert(insert_data).execute()
+        try:
+            ev_resp = db.table('events').insert(insert_data).execute()
+        except Exception as insert_err:
+            if 'schedule_slots' in insert_data and ('column' in str(insert_err).lower() or '42703' in str(insert_err)):
+                insert_data.pop('schedule_slots', None)
+                ev_resp = db.table('events').insert(insert_data).execute()
+            else:
+                raise insert_err
 
         if ev_resp.data:
             event_id = ev_resp.data[0]['id']
@@ -304,8 +366,8 @@ def facility_payment(event_id):
             total_rate = sum([float(c.get('hourly_rate') or 0) for c in courts_data])
             
             # Hour diff
-            sh = float(event['start_time'][:2]) + float(event['start_time'][3:5])/60.0
-            eh = float(event['end_time'][:2]) + float(event['end_time'][3:5])/60.0
+            sh = safe_time_hours(event.get('start_time'))
+            eh = safe_time_hours(event.get('end_time'))
             hours = max(0.5, eh - sh) if eh > sh else 1.0
             total_price = total_rate * hours
             
@@ -363,14 +425,23 @@ def facility_payment(event_id):
         }).eq('id', event_id).execute()
 
         # Notify Facility Owner and assigned Staff
+        st_label = safe_time_str(event.get('start_time'))
+        et_label = safe_time_str(event.get('end_time'))
         notify_facility_staff_and_owner(
             db=db,
             facility_id=event['facility_id'],
             title=f"New Event Booking Request: {event['title']}",
-            message=f"Event booking for '{event['title']}' on {event['event_date']} ({event['start_time'][:5]}-{event['end_time'][:5]}) submitted with GCash Ref: {gcash_ref}. Awaiting your approval.",
+            message=f"Event booking for '{event['title']}' on {event['event_date']} ({st_label}-{et_label}) submitted with GCash Ref: {gcash_ref}. Awaiting your approval.",
             link=url_for('owner.events'),
             notif_type='info'
         )
+
+        # Trigger event coordination chat thread between organizer and facility owner
+        try:
+            from app.chats import trigger_event_booking_autochat
+            trigger_event_booking_autochat(db, event_id, clubadmin_id, event['facility_id'])
+        except Exception as chat_err:
+            current_app.logger.warning(f"Error triggering event booking autochat: {chat_err}")
 
         flash(f'Payment submitted! Your event booking is now pending approval from the facility owner/staff.', 'success')
         return redirect(url_for('clubadmin.events'))
@@ -395,9 +466,28 @@ def edit_event(event_id):
             return redirect(url_for('clubadmin.events'))
             
         if request.method == 'GET':
+            from app.booking_utils import extract_schedule_slots, clean_event_description
             fac_full_resp = db.table('facilities').select('id, name, location').eq('status', 'active').execute()
             facilities_list = fac_full_resp.data or []
-            return render_template('clubadmin/edit_event.html', event=event, facilities=facilities_list)
+            selected_court_ids = []
+            try:
+                ec_resp = db.table('event_courts').select('court_id').eq('event_id', event_id).execute()
+                selected_court_ids = [r['court_id'] for r in (ec_resp.data or [])]
+            except Exception as e:
+                from flask import current_app
+                current_app.logger.warning(f"Could not load event_courts: {e}")
+
+            schedule_slots = extract_schedule_slots(event)
+            event_clean = dict(event)
+            event_clean['description'] = clean_event_description(event.get('description'))
+
+            return render_template(
+                'clubadmin/edit_event.html',
+                event=event_clean,
+                facilities=facilities_list,
+                selected_court_ids=selected_court_ids,
+                event_schedule_slots=json.dumps(schedule_slots or [])
+            )
             
         # POST
         facility_id   = request.form.get('facility_id')
@@ -413,6 +503,36 @@ def edit_event(event_id):
         event_format  = request.form.get('format', 'Doubles').strip()
         prize_pool    = request.form.get('prize_pool', 0)
         reg_type      = request.form.get('registration_type', 'paid')
+
+        # Parse schedule_slots
+        schedule_slots_raw = request.form.get('schedule_slots')
+        schedule_slots = []
+        if schedule_slots_raw:
+            try:
+                parsed = json.loads(schedule_slots_raw)
+                for item in parsed:
+                    slots = sorted(list(set(int(x) for x in item.get('slots', []))))
+                    if slots:
+                        schedule_slots.append({
+                            'court_id': item.get('court_id'),
+                            'court_name': item.get('court_name', ''),
+                            'slots': slots
+                        })
+            except Exception as e:
+                from flask import current_app
+                current_app.logger.warning(f"Could not parse schedule_slots: {e}")
+                schedule_slots = []
+
+        if schedule_slots:
+            court_ids = [s['court_id'] for s in schedule_slots if s.get('court_id')]
+            all_hours = [h for s in schedule_slots for h in s.get('slots', [])]
+            if all_hours:
+                min_h = min(all_hours)
+                max_h = max(all_hours) + 1
+                start_time = f"{min_h:02d}:00"
+                end_time = f"{max_h:02d}:00"
+        else:
+            court_ids = request.form.getlist('court_ids')
         
         if reg_type == 'free':
             entry_fee = 0
@@ -421,20 +541,37 @@ def edit_event(event_id):
             flash('Please fill all required fields.', 'error')
             return redirect(url_for('clubadmin.edit_event', event_id=event_id))
 
-        court_ids = request.form.getlist('court_ids')
-        if facility_id and court_ids:
+        # Check court conflicts before updating
+        if facility_id and schedule_slots:
+            from app.booking_utils import check_court_conflict, group_slots_to_ranges
+            for item in schedule_slots:
+                cid = item['court_id']
+                ranges = group_slots_to_ranges(item.get('slots', []))
+                for r in ranges:
+                    r_start, r_end = r.split('-')
+                    has_conf, conf_detail = check_court_conflict(db, cid, event_date, r_start, r_end, exclude_event_id=event_id)
+                    if has_conf:
+                        time_range = conf_detail.get('time_range_12h') or f"{conf_detail.get('start_time')} – {conf_detail.get('end_time')}"
+                        court_lbl = conf_detail.get('court_name') or item.get('court_name') or 'court'
+                        flash(f"Court conflict detected on {court_lbl}: {conf_detail['label']} is scheduled from {time_range}. Please adjust your selected slots.", 'error')
+                        return redirect(url_for('clubadmin.edit_event', event_id=event_id))
+        elif facility_id and court_ids:
             from app.booking_utils import check_court_conflict
             for cid in court_ids:
                 has_conf, conf_detail = check_court_conflict(db, cid, event_date, start_time, end_time, exclude_event_id=event_id)
                 if has_conf:
-                    flash(f"Court conflict: {conf_detail['label']} ({conf_detail['start_time']}-{conf_detail['end_time']}) overlaps your selected time.", 'error')
+                    time_range = conf_detail.get('time_range_12h') or f"{conf_detail.get('start_time')} – {conf_detail.get('end_time')}"
+                    flash(f"Court conflict detected: {conf_detail['label']} is scheduled from {time_range}. Please select different courts or times.", 'error')
                     return redirect(url_for('clubadmin.edit_event', event_id=event_id))
-            
+
+        from app.booking_utils import inject_schedule_slots_into_desc
+        stored_desc = inject_schedule_slots_into_desc(description, schedule_slots) if schedule_slots else description
+
         update_data = {
             'title': title,
             'type': event_type,
             'format': event_format,
-            'description': description,
+            'description': stored_desc,
             'event_date': event_date,
             'start_time': start_time,
             'end_time': end_time,
@@ -448,6 +585,9 @@ def edit_event(event_id):
             update_data['facility_id'] = facility_id
         else:
             update_data['facility_id'] = None
+            
+        if schedule_slots:
+            update_data['schedule_slots'] = schedule_slots
             
         image_file = request.files.get('image')
         if image_file and image_file.filename:
@@ -465,9 +605,15 @@ def edit_event(event_id):
                 current_app.logger.error(f"Image edit upload error: {e}")
                 flash(f'Warning: Image could not be uploaded.', 'warning')
                 
-        db.table('events').update(update_data).eq('id', event_id).execute()
+        try:
+            db.table('events').update(update_data).eq('id', event_id).execute()
+        except Exception as update_err:
+            if 'schedule_slots' in update_data and ('column' in str(update_err).lower() or '42703' in str(update_err)):
+                update_data.pop('schedule_slots', None)
+                db.table('events').update(update_data).eq('id', event_id).execute()
+            else:
+                raise update_err
         
-        court_ids = request.form.getlist('court_ids')
         db.table('event_courts').delete().eq('event_id', event_id).execute()
         if facility_id and court_ids:
             court_rows = [{'event_id': event_id, 'court_id': cid} for cid in court_ids]

@@ -747,7 +747,7 @@
             <i class="ph {% if category == 'success' %}ph-check-circle{% else %}ph-warning-circle{% endif %}" style="font-size: 1.35rem;"></i>
             <span>{{ message }}</span>
         </div>
-        <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; color:inherit; cursor:pointer; font-size:1.1rem;">
+        <button type="button" class="alert-dismiss-btn" onclick="this.parentElement.remove()" aria-label="Dismiss alert">
             <i class="ph ph-x"></i>
         </button>
     </div>

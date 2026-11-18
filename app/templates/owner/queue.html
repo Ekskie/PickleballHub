@@ -46,12 +46,12 @@
                             <td id="actions-cell-{{ q.id }}">
                                 <div style="display: flex; gap: 8px;" class="queue-actions-wrapper">
                                     {% if q.status == 'waiting' %}
-                                        <button type="button" class="btn-waitlist-action green" onclick="updateQueueStatus('{{ q.id }}', 'next')" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; font-weight:600; border-radius: 6px; cursor:pointer; border:none; color:white; background:var(--btn-green); transition: background-color 0.2s;">Call Next</button>
+                                        <button type="button" class="btn-waitlist-action green" onclick="updateQueueStatus('{{ q.id }}', 'next')">Call Next</button>
                                     {% endif %}
                                     {% if q.status == 'next' %}
-                                        <button type="button" class="btn-waitlist-action navy" onclick="updateQueueStatus('{{ q.id }}', 'completed')" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; font-weight:600; border-radius: 6px; cursor:pointer; border:none; color:white; background:var(--btn-navy); transition: background-color 0.2s;">Playing</button>
+                                        <button type="button" class="btn-waitlist-action navy" onclick="updateQueueStatus('{{ q.id }}', 'completed')">Playing</button>
                                     {% endif %}
-                                    <button type="button" class="btn-waitlist-action red" onclick="deleteQueueItem('{{ q.id }}')" style="padding: 0.35rem 0.5rem; font-size: 0.8rem; border-radius: 6px; background: #fee2e2; color: #ef4444; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; transition: background-color 0.2s;"><i class="ph ph-trash" style="font-size:1.1rem;"></i></button>
+                                    <button type="button" class="btn-waitlist-action red" onclick="deleteQueueItem('{{ q.id }}')" title="Remove from queue"><i class="ph ph-trash" style="font-size:1.1rem;"></i></button>
                                 </div>
                             </td>
                         </tr>

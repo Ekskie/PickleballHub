@@ -1,34 +1,249 @@
 {% extends "owner/base_owner.html" %}
 {% block title %}Event Participants{% endblock %}
-
+{% block extra_head %}
+<style>
+/* ── Page Header & Action Controls ── */
+.participants-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.header-meta-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+}
+.fee-badge {
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 6px;
+}
+.fee-badge.paid {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+}
+.fee-badge.free {
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+.header-action-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.btn-action-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+    line-height: 1.3;
+}
+.btn-action-primary {
+    background: var(--primary-orange, #f97316);
+    color: #ffffff !important;
+    border: none;
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25);
+}
+.btn-action-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(234, 88, 12, 0.35);
+}
+.btn-action-secondary {
+    background: var(--card-bg, #ffffff);
+    border: 1.5px solid var(--border-color, #eaecf0);
+    color: var(--text-secondary, #475467);
+}
+.btn-action-secondary:hover {
+    border-color: var(--text-primary);
+    color: var(--text-primary);
+    transform: translateX(-2px);
+}
+.btn-action-danger {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1.5px solid rgba(239, 68, 68, 0.25);
+    color: #ef4444;
+}
+.btn-action-danger:hover {
+    background: #ef4444;
+    color: #ffffff;
+    border-color: #ef4444;
+}
+/* ── KPI Metric Stat Cards ── */
+.roster-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.roster-stat-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--card-border, var(--border-color, #eaecf0));
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: var(--shadow-card);
+    transition: all 0.2s ease;
+}
+.roster-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+}
+.stat-icon-wrap {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    flex-shrink: 0;
+}
+.stat-icon-wrap.registered { background: rgba(59, 130, 246, 0.12); color: #3b82f6; }
+.stat-icon-wrap.checked-in { background: rgba(16, 185, 129, 0.12); color: #10b981; }
+.stat-icon-wrap.no-show { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
+.stat-icon-wrap.pending { background: rgba(245, 158, 11, 0.12); color: #f59e0b; }
+.stat-details { display: flex; flex-direction: column; }
+.stat-value { font-size: 1.55rem; font-weight: 800; color: var(--text-primary); line-height: 1.1; }
+.stat-label { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 4px; }
+/* ── Attendance Action Pills & Badges ── */
+.attendance-actions-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.btn-roster-checkin {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 6px 14px !important;
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    border-radius: 8px !important;
+    border: none !important;
+    background: #10b981 !important;
+    color: #ffffff !important;
+    cursor: pointer !important;
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.28) !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    line-height: 1.2 !important;
+}
+.btn-roster-checkin:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.38) !important;
+}
+.btn-roster-noshow {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    border-radius: 8px !important;
+    border: 1px solid rgba(239, 68, 68, 0.35) !important;
+    background: rgba(239, 68, 68, 0.08) !important;
+    color: #dc2626 !important;
+    cursor: pointer !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    line-height: 1.2 !important;
+}
+.btn-roster-noshow:hover {
+    background: #ef4444 !important;
+    color: #ffffff !important;
+    border-color: #ef4444 !important;
+    transform: translateY(-1px) !important;
+}
+.btn-roster-undo {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 7px !important;
+    border: 1px solid var(--border-color, #eaecf0) !important;
+    background: var(--input-bg, #f8fafc) !important;
+    color: var(--text-muted, #64748b) !important;
+    font-size: 0.85rem !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    padding: 0 !important;
+}
+.btn-roster-undo:hover {
+    background: var(--card-bg, #ffffff) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--primary-orange) !important;
+}
+.checked-in-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #059669;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+.no-show-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #dc2626;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+</style>
+{% endblock %}
 {% block content %}
-<div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center;">
+<!-- Header -->
+<div class="participants-header">
     <div>
         <h1 class="page-title">{{ event.title }}</h1>
-        <div style="display: flex; gap: 12px; margin-top: 6px;">
-            <p style="color: var(--text-muted);"><i class="ph ph-calendar"></i> {{ event.event_date }}</p>
+        <div class="header-meta-group">
+            <span style="color: var(--text-muted); font-size: 0.88rem;"><i class="ph ph-calendar"></i> {{ event.event_date }}</span>
             {% if event.entry_fee and event.entry_fee > 0 %}
-                <span style="color: #f59e0b; font-size: 0.85rem; font-weight: 700; background: rgba(245,158,11,0.1); padding: 2px 8px; border-radius: 4px;">Paid (₱{{ '%.2f'|format(event.entry_fee) }})</span>
+                <span class="fee-badge paid">Paid (₱{{ '%.2f'|format(event.entry_fee) }})</span>
             {% else %}
-                <span style="color: #4ade80; font-size: 0.85rem; font-weight: 700; background: rgba(74,222,128,0.1); padding: 2px 8px; border-radius: 4px;">Free Event</span>
+                <span class="fee-badge free">Free Event</span>
             {% endif %}
         </div>
     </div>
-    <div style="display: flex; gap: 10px; align-items: center;">
-        <a href="{{ url_for('owner.edit_event', event_id=event.id) }}" class="btn-primary" style="text-decoration: none; padding: 8px 16px;">
+    <div class="header-action-group">
+        <a href="{{ url_for('owner.edit_event', event_id=event.id) }}" class="btn-action-pill btn-action-primary">
             <i class="ph ph-pencil-simple"></i> Edit Event
         </a>
         <form action="{{ url_for('owner.delete_event', event_id=event.id) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Are you sure you want to delete this event? This action cannot be undone and will notify all participants.');">
-            <button type="submit" class="btn-secondary" style="border-color: #ef4444; color: #ef4444; padding: 8px 16px; background: transparent;">
+            <button type="submit" class="btn-action-pill btn-action-danger">
                 <i class="ph ph-trash"></i> Delete
             </button>
         </form>
-        <a href="{{ url_for('owner.events') }}" class="btn-secondary" style="text-decoration: none; padding: 8px 16px;">
-            <i class="ph ph-arrow-left"></i> Back
+        <a href="{{ url_for('owner.events') }}" class="btn-action-pill btn-action-secondary">
+            <i class="ph ph-arrow-left"></i> Back to Events
         </a>
     </div>
 </div>
-
 {% set ns = namespace(checked_in=0, no_show=0, pending=0) %}
 {% for p in participants %}
     {% if p.status == 'registered' %}
@@ -41,29 +256,43 @@
         {% endif %}
     {% endif %}
 {% endfor %}
-
-<!-- Stats Row -->
-<div class="stats-row" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; margin-bottom: 20px;">
-    <div class="stat-card" style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 16px; border-radius: 10px; text-align: center;">
-        <span style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 4px;">{{ participants | length }}</span>
-        <span style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Registered</span>
+<!-- KPI Stats Row -->
+<div class="roster-stat-grid">
+    <div class="roster-stat-card">
+        <div class="stat-icon-wrap registered"><i class="ph ph-users"></i></div>
+        <div class="stat-details">
+            <span class="stat-value">{{ participants | length }}</span>
+            <span class="stat-label">Registered</span>
+        </div>
     </div>
-    <div class="stat-card" style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 16px; border-radius: 10px; text-align: center;">
-        <span style="font-size: 1.5rem; font-weight: 700; color: #22c55e; display: block; margin-bottom: 4px;">{{ ns.checked_in }}</span>
-        <span style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Checked In</span>
+    <div class="roster-stat-card">
+        <div class="stat-icon-wrap checked-in"><i class="ph ph-check-circle"></i></div>
+        <div class="stat-details">
+            <span class="stat-value" style="color:#10b981;">{{ ns.checked_in }}</span>
+            <span class="stat-label">Checked In</span>
+        </div>
     </div>
-    <div class="stat-card" style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 16px; border-radius: 10px; text-align: center;">
-        <span style="font-size: 1.5rem; font-weight: 700; color: #ef4444; display: block; margin-bottom: 4px;">{{ ns.no_show }}</span>
-        <span style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">No-Show</span>
+    <div class="roster-stat-card">
+        <div class="stat-icon-wrap no-show"><i class="ph ph-x-circle"></i></div>
+        <div class="stat-details">
+            <span class="stat-value" style="color:#ef4444;">{{ ns.no_show }}</span>
+            <span class="stat-label">No-Show</span>
+        </div>
     </div>
-    <div class="stat-card" style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 16px; border-radius: 10px; text-align: center;">
-        <span style="font-size: 1.5rem; font-weight: 700; color: #f59e0b; display: block; margin-bottom: 4px;">{{ ns.pending }}</span>
-        <span style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Pending</span>
+    <div class="roster-stat-card">
+        <div class="stat-icon-wrap pending"><i class="ph ph-clock-countdown"></i></div>
+        <div class="stat-details">
+            <span class="stat-value" style="color:#f59e0b;">{{ ns.pending }}</span>
+            <span class="stat-label">Pending</span>
+        </div>
     </div>
 </div>
-
+<!-- Participants Table Card -->
 <div class="glass-card">
-    <h3 class="widget-title">Registered Participants</h3>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 class="widget-title" style="margin:0;"><i class="ph ph-address-book" style="color:var(--primary-orange);"></i> Registered Participants</h3>
+        <span style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">Total: {{ participants|length }}</span>
+    </div>
     <div class="table-container">
         <table class="data-grid">
             <thead>
@@ -82,14 +311,14 @@
                     <tr>
                         <td class="bold">
                             <div style="display:flex; align-items:center; gap:10px;">
-                                <div style="width:32px; height:32px; border-radius:50%; background:var(--btn-navy); color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; flex-shrink:0; overflow:hidden;">
+                                <div style="width:34px; height:34px; border-radius:50%; background:var(--btn-navy); color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; flex-shrink:0; overflow:hidden;">
                                     {% if p.profiles and p.profiles.avatar_url %}
                                         <img src="{{ p.profiles.avatar_url }}" style="width:100%;height:100%;object-fit:cover;">
                                     {% else %}
                                         {{ (p.profiles.first_name[0] ~ p.profiles.last_name[0])|upper if p.profiles else '?' }}
                                     {% endif %}
                                 </div>
-                                <span>{{ p.profiles.first_name if p.profiles else 'Unknown' }} {{ p.profiles.last_name if p.profiles else '' }}</span>
+                                <span style="font-weight:600; color:var(--text-primary);">{{ p.profiles.first_name if p.profiles else 'Unknown' }} {{ p.profiles.last_name if p.profiles else '' }}</span>
                             </div>
                         </td>
                         <td>{{ p.profiles.email if p.profiles else 'N/A' }}</td>
@@ -107,39 +336,35 @@
                         </td>
                         <td>
                             {% if p.status == 'registered' %}
-                                <div style="display: flex; gap: 6px; align-items: center;">
+                                <div class="attendance-actions-wrap">
                                     {% if p.check_in_status == 'checked_in' %}
-                                        <span class="status-pill success" style="display: inline-flex; align-items: center; gap: 4px;" title="Checked in at {{ p.checked_in_at[:16]|replace('T', ' ') if p.checked_in_at else '' }}">
+                                        <span class="checked-in-badge" title="Checked in at {{ p.checked_in_at[:16]|replace('T', ' ') if p.checked_in_at else '' }}">
                                             <i class="ph ph-check-circle"></i> Checked In
                                         </span>
                                         <form action="{{ url_for('owner.event_check_in', event_id=event.id, reg_id=p.id) }}" method="POST" style="margin: 0; display: inline;">
                                             <input type="hidden" name="status" value="pending">
-                                            <button type="submit" class="btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; min-height: auto; width: auto; background: transparent; border-color: var(--border-color); color: var(--text-muted);" title="Undo Check-in">
+                                            <button type="submit" class="btn-roster-undo" title="Undo Check-in">
                                                 <i class="ph ph-arrow-counter-clockwise"></i>
                                             </button>
                                         </form>
                                     {% elif p.check_in_status == 'no_show' %}
-                                        <span class="status-pill expired" style="display: inline-flex; align-items: center; gap: 4px;">
+                                        <span class="no-show-badge">
                                             <i class="ph ph-x-circle"></i> No-Show
                                         </span>
                                         <form action="{{ url_for('owner.event_check_in', event_id=event.id, reg_id=p.id) }}" method="POST" style="margin: 0; display: inline;">
                                             <input type="hidden" name="status" value="pending">
-                                            <button type="submit" class="btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; min-height: auto; width: auto; background: transparent; border-color: var(--border-color); color: var(--text-muted);" title="Undo No-Show">
+                                            <button type="submit" class="btn-roster-undo" title="Undo No-Show">
                                                 <i class="ph ph-arrow-counter-clockwise"></i>
                                             </button>
                                         </form>
                                     {% else %}
                                         <form action="{{ url_for('owner.event_check_in', event_id=event.id, reg_id=p.id) }}" method="POST" style="margin: 0; display: inline;">
                                             <input type="hidden" name="status" value="checked_in">
-                                            <button type="submit" class="btn-primary" style="padding: 4px 8px; font-size: 0.75rem; background: #22c55e; border-color: #22c55e; color: #fff; min-height: auto; width: auto;">
-                                                <i class="ph ph-check"></i> Check In
-                                            </button>
+                                            <button type="submit" class="btn-roster-checkin"><i class="ph ph-check"></i> Check In</button>
                                         </form>
                                         <form action="{{ url_for('owner.event_check_in', event_id=event.id, reg_id=p.id) }}" method="POST" style="margin: 0; display: inline;">
                                             <input type="hidden" name="status" value="no_show">
-                                            <button type="submit" class="btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; border-color: #ef4444; color: #ef4444; background: transparent; min-height: auto; width: auto;">
-                                                <i class="ph ph-x"></i> No-Show
-                                            </button>
+                                            <button type="submit" class="btn-roster-noshow"><i class="ph ph-x"></i> No-Show</button>
                                         </form>
                                     {% endif %}
                                 </div>
@@ -152,7 +377,8 @@
                     {% endfor %}
                 {% else %}
                     <tr>
-                        <td colspan="6" style="text-align: center; padding: 30px; color: var(--text-muted);">
+                        <td colspan="6" style="text-align: center; padding: 36px; color: var(--text-muted);">
+                            <i class="ph ph-users-three" style="font-size:2rem; color:var(--text-muted); display:block; margin-bottom:8px;"></i>
                             No participants have registered for this event yet.
                         </td>
                     </tr>

@@ -130,3 +130,90 @@ def trigger_booking_autochat(db, reservation_id, player_id):
 
     except Exception as e:
         print(f"[trigger_booking_autochat] Error triggering autochat for reservation {reservation_id}: {e}")
+
+
+def trigger_event_booking_autochat(db, event_id, organizer_id, facility_id):
+    """
+    Triggers an introductory automated chat message between the Club Admin (organizer)
+    and the Facility Owner when courts are booked for a tournament or club event.
+    """
+    if not event_id or not organizer_id or not facility_id:
+        return
+
+    try:
+        # Fetch event details with facility and courts info
+        ev_resp = db.table('events').select(
+            'id, title, event_date, start_time, end_time, type, '
+            'facilities(name, owner_id)'
+        ).eq('id', event_id).single().execute()
+
+        ev = ev_resp.data
+        if not ev:
+            return
+
+        facility = ev.get('facilities') or {}
+        owner_id = facility.get('owner_id')
+        facility_name = facility.get('name', 'your facility')
+        title = ev.get('title', 'Club Event')
+        date_val = ev.get('event_date')
+        start_time = (ev.get('start_time') or '')[:5]
+        end_time = (ev.get('end_time') or '')[:5]
+        time_range = f"{start_time} - {end_time}" if start_time else ''
+
+        # Get booked court names
+        court_resp = db.table('event_courts').select('courts(name)').eq('event_id', event_id).execute()
+        court_names = [c['courts']['name'] for c in (court_resp.data or []) if c.get('courts') and c['courts'].get('name')]
+        courts_str = f" on {', '.join(court_names)}" if court_names else ""
+
+        if owner_id and owner_id != organizer_id:
+            intro_msg = (
+                f"Hello! I have requested court reservations for our upcoming event '{title}' at {facility_name} "
+                f"on {date_val} ({time_range}){courts_str}. "
+                f"Looking forward to coordinating our venue setup and schedule with you!"
+            )
+            send_auto_message(db, organizer_id, owner_id, intro_msg)
+    except Exception as e:
+        print(f"[trigger_event_booking_autochat] Error triggering autochat for event {event_id}: {e}")
+
+
+def notify_event_status_chat(db, event_id, status, reviewer_id, reason=None):
+    """
+    Sends an automated chat message from the reviewing Owner/Staff member to the Club Organizer
+    when an event booking is approved or declined.
+    """
+    if not event_id or not reviewer_id:
+        return
+
+    try:
+        ev_resp = db.table('events').select(
+            'id, title, organizer_id, facilities(name)'
+        ).eq('id', event_id).single().execute()
+
+        ev = ev_resp.data
+        if not ev:
+            return
+
+        organizer_id = ev.get('organizer_id')
+        facility_name = (ev.get('facilities') or {}).get('name', 'Facility')
+        title = ev.get('title', 'Event')
+
+        if not organizer_id or organizer_id == reviewer_id:
+            return
+
+        if status == 'approved':
+            content = (
+                f"Official Update: Your court reservation request for '{title}' has been approved by {facility_name}! "
+                f"Courts are confirmed and player registrations are now open. Let us know if you need any on-site setup assistance."
+            )
+        elif status == 'rejected':
+            reason_str = f" Reason: {reason}" if reason else ""
+            content = (
+                f"Official Update: Your court reservation request for '{title}' at {facility_name} was declined.{reason_str} "
+                f"Feel free to reply here to discuss alternative schedules or court options."
+            )
+        else:
+            return
+
+        send_auto_message(db, reviewer_id, organizer_id, content)
+    except Exception as e:
+        print(f"[notify_event_status_chat] Error notifying event {event_id} status chat: {e}")

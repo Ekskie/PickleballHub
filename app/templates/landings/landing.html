@@ -48,7 +48,8 @@
             <div class="editorial-slide {% if loop.first %}active{% endif %}">
                 <div class="slide-img-wrapper">
                     <span class="slide-category">{{ story.category }}</span>
-                    <img src="{{ st_img }}" alt="{{ story.title }}" {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}>
+                    <img src="{{ st_img }}" alt="{{ story.title }}" {% if loop.first %}fetchpriority="high" {% else
+                        %}loading="lazy" {% endif %}>
                 </div>
                 <div class="slide-content">
                     <a href="{{ story.link or url_for('main.courts_listing') }}" class="slide-title">{{ story.title
@@ -451,11 +452,13 @@
                 <h2 class="editorial-section-title" style="text-align: center;">Choose Your Circulation Plan</h2>
                 <p class="editorial-section-subtitle"
                     style="text-align: center; max-width: 680px; margin: 0 auto 14px;">
-                    Transparent membership models tailored for facility operators and tournament organizers. Start free or unlock commercial-grade platform tools.
+                    Transparent membership models tailored for facility operators and tournament organizers. Start free
+                    or unlock commercial-grade platform tools.
                 </p>
                 <div class="player-free-subtle-hint">
                     <i class="ph-fill ph-check-circle"></i>
-                    <span>Looking to play? Athlete accounts are <strong>100% Free Forever</strong> with full court booking &amp; rating privileges.</span>
+                    <span>Looking to play? Athlete accounts are <strong>100% Free Forever</strong> with full court
+                        booking &amp; rating privileges.</span>
                     <a href="{{ url_for('auth.signup', role='player') }}">Sign Up Free as Player &rarr;</a>
                 </div>
             </div>
@@ -532,13 +535,16 @@
                         <h3>Pro Facility Pass</h3>
                         <p>For growing pickleball clubs seeking lower transaction fees, multi-court capacity, and staff
                             tools.</p>
-                        {% set o_p_m = (tier_pricing.owner.pro.price_monthly if tier_pricing and tier_pricing.owner and tier_pricing.owner.pro else 999) %}
-                        {% set o_p_a = (tier_pricing.owner.pro.price_annual if tier_pricing and tier_pricing.owner and tier_pricing.owner.pro else 799) %}
+                        {% set o_p_m = (tier_pricing.owner.pro.price_monthly if tier_pricing and tier_pricing.owner and
+                        tier_pricing.owner.pro else 999) %}
+                        {% set o_p_a = (tier_pricing.owner.pro.price_annual if tier_pricing and tier_pricing.owner and
+                        tier_pricing.owner.pro else 799) %}
                         {% set o_p_yr = (o_p_a * 12)|int %}
                         {% set o_p_save = ((o_p_m * 12) - o_p_yr)|int %}
                         <div class="sub-price-wrap">
                             <div class="sub-price">
-                                <span class="val-price" data-monthly="{{ o_p_m }}" data-annual="{{ o_p_a }}">₱{{ "{:,.0f}".format(o_p_m) }}</span>
+                                <span class="val-price" data-monthly="{{ o_p_m }}" data-annual="{{ o_p_a }}">₱{{
+                                    "{:,.0f}".format(o_p_m) }}</span>
                                 <span class="period">/ mo</span>
                             </div>
                             <span class="sub-annual-note" data-monthly=""
@@ -562,7 +568,8 @@
                             <li><i class="ph ph-check-circle"></i> <span>Fast-track KYC approval &amp; live
                                     support</span></li>
                         </ul>
-                        <a href="{{ url_for('auth.signup') }}?role=owner&tier=pro&cycle=monthly" class="sub-btn plan-cta-btn" data-role="owner" data-tier="pro">Launch Pro
+                        <a href="{{ url_for('auth.signup') }}?role=owner&tier=pro&cycle=monthly"
+                            class="sub-btn plan-cta-btn" data-role="owner" data-tier="pro">Launch Pro
                             Facility</a>
                     </div>
 
@@ -573,13 +580,16 @@
                         <h3>Elite Enterprise</h3>
                         <p>Flagship package for commercial sports arenas, municipal facilities, and multi-venue
                             franchises.</p>
-                        {% set o_e_m = (tier_pricing.owner.elite.price_monthly if tier_pricing and tier_pricing.owner and tier_pricing.owner.elite else 2249) %}
-                        {% set o_e_a = (tier_pricing.owner.elite.price_annual if tier_pricing and tier_pricing.owner and tier_pricing.owner.elite else 1799) %}
+                        {% set o_e_m = (tier_pricing.owner.elite.price_monthly if tier_pricing and tier_pricing.owner
+                        and tier_pricing.owner.elite else 2249) %}
+                        {% set o_e_a = (tier_pricing.owner.elite.price_annual if tier_pricing and tier_pricing.owner and
+                        tier_pricing.owner.elite else 1799) %}
                         {% set o_e_yr = (o_e_a * 12)|int %}
                         {% set o_e_save = ((o_e_m * 12) - o_e_yr)|int %}
                         <div class="sub-price-wrap">
                             <div class="sub-price">
-                                <span class="val-price" data-monthly="{{ o_e_m }}" data-annual="{{ o_e_a }}">₱{{ "{:,.0f}".format(o_e_m) }}</span>
+                                <span class="val-price" data-monthly="{{ o_e_m }}" data-annual="{{ o_e_a }}">₱{{
+                                    "{:,.0f}".format(o_e_m) }}</span>
                                 <span class="period">/ mo</span>
                             </div>
                             <span class="sub-annual-note" data-monthly=""
@@ -603,7 +613,8 @@
                             <li><i class="ph ph-check-circle"></i> <span>Dedicated account manager &amp; VIP
                                     onboarding</span></li>
                         </ul>
-                        <a href="{{ url_for('auth.signup') }}?role=owner&tier=elite&cycle=monthly" class="sub-btn elite-btn plan-cta-btn" data-role="owner" data-tier="elite">Get
+                        <a href="{{ url_for('auth.signup') }}?role=owner&tier=elite&cycle=monthly"
+                            class="sub-btn elite-btn plan-cta-btn" data-role="owner" data-tier="elite">Get
                             Enterprise Access</a>
                     </div>
                 </div>
@@ -625,7 +636,6 @@
                             <span class="sub-annual-note">Free community tier</span>
                         </div>
                         <ul class="sub-features">
-                            <li><i class="ph ph-check-circle"></i> <span><strong>1 Active Club Hub</strong></span></li>
                             <li><i class="ph ph-check-circle"></i> <span>Up to <strong>25 Club Members</strong></span>
                             </li>
                             <li><i class="ph ph-check-circle"></i> <span><strong>1 Tournament / Month</strong> (up to
@@ -650,21 +660,22 @@
                         <span class="sub-card-tag" style="color: var(--primary-orange);">League Builder</span>
                         <h3>Pro Club Pass</h3>
                         <p>For serious tournament directors, circuit coordinators, and sanctioned club networks.</p>
-                        {% set c_p_m = (tier_pricing.clubadmin.pro.price_monthly if tier_pricing and tier_pricing.clubadmin and tier_pricing.clubadmin.pro else 449) %}
-                        {% set c_p_a = (tier_pricing.clubadmin.pro.price_annual if tier_pricing and tier_pricing.clubadmin and tier_pricing.clubadmin.pro else 359) %}
+                        {% set c_p_m = (tier_pricing.clubadmin.pro.price_monthly if tier_pricing and
+                        tier_pricing.clubadmin and tier_pricing.clubadmin.pro else 449) %}
+                        {% set c_p_a = (tier_pricing.clubadmin.pro.price_annual if tier_pricing and
+                        tier_pricing.clubadmin and tier_pricing.clubadmin.pro else 359) %}
                         {% set c_p_yr = (c_p_a * 12)|int %}
                         {% set c_p_save = ((c_p_m * 12) - c_p_yr)|int %}
                         <div class="sub-price-wrap">
                             <div class="sub-price">
-                                <span class="val-price" data-monthly="{{ c_p_m }}" data-annual="{{ c_p_a }}">₱{{ "{:,.0f}".format(c_p_m) }}</span>
+                                <span class="val-price" data-monthly="{{ c_p_m }}" data-annual="{{ c_p_a }}">₱{{
+                                    "{:,.0f}".format(c_p_m) }}</span>
                                 <span class="period">/ mo</span>
                             </div>
                             <span class="sub-annual-note" data-monthly=""
                                 data-annual="Billed ₱{{ '{:,.0f}'.format(c_p_yr) }}/yr{% if c_p_save > 0 %} (Save ₱{{ '{:,.0f}'.format(c_p_save) }}){% endif %}"></span>
                         </div>
                         <ul class="sub-features">
-                            <li><i class="ph ph-check-circle"></i> <span><strong>Up to 5 Active Clubs</strong></span>
-                            </li>
                             <li><i class="ph ph-check-circle"></i> <span><strong>Unlimited Club Members</strong></span>
                             </li>
                             <li><i class="ph ph-check-circle"></i> <span><strong>Unlimited Tournaments</strong> (Up to
@@ -680,7 +691,8 @@
                             <li><i class="ph ph-check-circle"></i> <span>Priority tournament listing on platform
                                     feed</span></li>
                         </ul>
-                        <a href="{{ url_for('auth.signup') }}?role=clubadmin&tier=pro&cycle=monthly" class="sub-btn plan-cta-btn" data-role="clubadmin" data-tier="pro">Start Pro Club
+                        <a href="{{ url_for('auth.signup') }}?role=clubadmin&tier=pro&cycle=monthly"
+                            class="sub-btn plan-cta-btn" data-role="clubadmin" data-tier="pro">Start Pro Club
                             Pass</a>
                     </div>
                 </div>

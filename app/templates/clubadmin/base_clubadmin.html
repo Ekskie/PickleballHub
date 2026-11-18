@@ -29,7 +29,7 @@
 </li>
 
 <!-- Competition Dropdown -->
-{% set is_comp_active = request.endpoint in ['clubadmin.events', 'clubadmin.tournaments', 'clubadmin.leaderboard'] %}
+{% set is_comp_active = request.endpoint in ['clubadmin.events', 'clubadmin.create_event', 'clubadmin.edit_event', 'clubadmin.event_participants', 'clubadmin.facility_payment', 'clubadmin.tournaments', 'clubadmin.tournament_manage', 'clubadmin.leaderboard'] %}
 <li class="sidebar-dropdown-group {% if is_comp_active %}open active-group{% endif %}" data-group="club-comp">
     <button type="button" class="sidebar-dropdown-btn" onclick="toggleSidebarDropdown(this)">
         <span class="dropdown-btn-label">
@@ -39,10 +39,10 @@
         <i class="ph ph-caret-down dropdown-arrow"></i>
     </button>
     <ul class="sidebar-subnav">
-        <li class="{% if request.endpoint == 'clubadmin.events' %}active{% endif %}">
+        <li class="{% if request.endpoint in ['clubadmin.events', 'clubadmin.create_event', 'clubadmin.edit_event', 'clubadmin.event_participants', 'clubadmin.facility_payment'] %}active{% endif %}">
             <a href="{{ url_for('clubadmin.events') }}"><i class="ph ph-calendar-star"></i> <span>Club Events</span></a>
         </li>
-        <li class="{% if request.endpoint == 'clubadmin.tournaments' %}active{% endif %}">
+        <li class="{% if request.endpoint in ['clubadmin.tournaments', 'clubadmin.tournament_manage'] %}active{% endif %}">
             <a href="{{ url_for('clubadmin.tournaments') }}"><i class="ph ph-sword"></i> <span>Tournaments</span></a>
         </li>
         <li class="{% if request.endpoint == 'clubadmin.leaderboard' %}active{% endif %}">

@@ -282,8 +282,7 @@
                         </td>
                         <td style="padding: 14px 16px;">
                             {% if t.receipt_url %}
-                                <button onclick="showReceipt('{{ t.receipt_url }}', '{{ t.gcash_ref }}')"
-                                        style="background:rgba(0,198,255,0.12); color:#00c6ff; border:1px solid rgba(0,198,255,0.2); border-radius:6px; padding:6px 12px; cursor:pointer; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px; font-weight:600;">
+                                <button type="button" class="btn-receipt-pill" onclick="showReceipt('{{ t.receipt_url }}', '{{ t.gcash_ref }}')" title="View GCash Receipt">
                                     <i class="ph ph-image"></i> View Receipt
                                 </button>
                             {% else %}
@@ -331,7 +330,9 @@
 <!-- Lightbox Modal for Receipt -->
 <div id="receiptModal" class="details-drawer-overlay">
     <div style="background:var(--sidebar-bg); border: 1px solid var(--border-color); border-radius:12px; padding:20px; max-width:500px; width:90%; max-height:90vh; box-shadow:var(--shadow-hover); position:relative; display:flex; flex-direction:column; align-items:center; z-index: 999999999 !important;">
-        <button onclick="closeReceiptModal()" style="position:absolute; top:15px; right:15px; background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;"><i class="ph ph-x"></i></button>
+        <button type="button" class="modal-close-icon" onclick="closeReceiptModal()" aria-label="Close dialog" style="position:absolute; top:15px; right:15px;">
+            <i class="ph ph-x"></i>
+        </button>
         <h3 style="margin: 0 0 15px 0; color:var(--text-primary); font-size:1.2rem; display:flex; align-items:center; gap:8px;"><i class="ph ph-wallet" style="color:#00c6ff;"></i> GCash Receipt Screenshot</h3>
         <img id="receiptImage" src="" style="width:100%; max-height:60vh; object-fit:contain; border-radius:8px; border:1px solid var(--border-color); background:#000;">
         <div id="receiptRef" style="margin-top:15px; font-family:monospace; font-size:1.1rem; color:var(--text-secondary); background:var(--bg-color); padding:8px 16px; border-radius:6px; border:1px solid var(--border-color);">Ref: -</div>

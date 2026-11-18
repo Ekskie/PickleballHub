@@ -1,0 +1,35 @@
+{% extends "base.html" if current_user.is_logged_in else "errors/standalone_base.html" %}
+
+{% block title %}Time-Out! Too Many Requests (429) - PickleballHub{% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/error.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="error-card {% if current_user.is_logged_in %}dashboard-mode{% endif %}" style="text-align: center; max-width: 600px; margin: 40px auto; padding: 40px 30px;">
+        <div class="error-badge" style="display: inline-block; padding: 6px 16px; border-radius: 9999px; background: rgba(59, 130, 246, 0.15); color: #3b82f6; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 20px;">
+            <i class="ph ph-timer"></i> Official Time-Out! Code 429
+        </div>
+
+        <div class="illustration-wrap" style="font-size: 4rem; color: #3b82f6; margin-bottom: 20px;">
+            <i class="ph ph-hourglass-high"></i>
+        </div>
+
+        <h1 class="error-title" style="font-size: 2.2rem; font-weight: 800; margin-bottom: 12px; color: var(--text-primary, #f8fafc);">
+            Rate Limit Exceeded
+        </h1>
+        <p class="error-description" style="color: var(--text-secondary, #94a3b8); font-size: 1.05rem; line-height: 1.6; margin-bottom: 30px;">
+            Whoa there! You're serving faster than the referee can track. Please catch your breath for a few moments and try your request again.
+        </p>
+
+        <div class="error-actions" style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            <button onclick="window.location.reload()" class="btn-error-home primary" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 8px; background: #ff5722; color: #fff; font-weight: 600; text-decoration: none; cursor: pointer; border: none;">
+                <i class="ph ph-arrows-clockwise"></i> Try Again
+            </button>
+            <a href="{{ url_for('main.index') }}" class="btn-error-home" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 8px; background: rgba(255, 255, 255, 0.08); color: var(--text-primary, #fff); font-weight: 600; text-decoration: none; border: 1px solid rgba(255, 255, 255, 0.15);">
+                <i class="ph ph-house"></i> Home
+            </a>
+        </div>
+    </div>
+{% endblock %}

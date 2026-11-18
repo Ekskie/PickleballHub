@@ -134,7 +134,7 @@ def leaderboard():
     )
 
 
-@player_bp.route('/leaderboard/challenge/<target_id>')
+@player_bp.route('/leaderboard/challenge/<target_id>', methods=['GET', 'POST'])
 @require_role('player')
 def leaderboard_challenge(target_id):
     player_id = session.get('user_id')
@@ -178,7 +178,7 @@ def leaderboard_challenge(target_id):
         return redirect(url_for('player.leaderboard'))
 
 
-@player_bp.route('/chat/<target_id>')
+@player_bp.route('/chat/<target_id>', methods=['GET', 'POST'])
 @require_role('player')
 def player_chat(target_id):
     player_id = session.get('user_id')

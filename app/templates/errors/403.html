@@ -1,0 +1,60 @@
+{% extends "base.html" if current_user.is_logged_in else "errors/standalone_base.html" %}
+
+{% block title %}Kitchen Fault! Forbidden (403) - PickleballHub{% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/error.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="error-card {% if current_user.is_logged_in %}dashboard-mode{% endif %}" style="text-align: center; max-width: 600px; margin: 40px auto; padding: 40px 30px;">
+        <div class="error-badge" style="display: inline-block; padding: 6px 16px; border-radius: 9999px; background: rgba(245, 158, 11, 0.15); color: #f59e0b; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 20px;">
+            <i class="ph ph-shield-warning"></i> Kitchen Violation! Code 403
+        </div>
+
+        <div class="illustration-wrap" style="font-size: 4rem; color: #f59e0b; margin-bottom: 20px;">
+            <i class="ph ph-lock-key"></i>
+        </div>
+
+        <h1 class="error-title" style="font-size: 2.2rem; font-weight: 800; margin-bottom: 12px; color: var(--text-primary, #f8fafc);">
+            Access Forbidden
+        </h1>
+        <p class="error-description" style="color: var(--text-secondary, #94a3b8); font-size: 1.05rem; line-height: 1.6; margin-bottom: 30px;">
+            You don't have permission to volley in this zone. This area is reserved for specific roles or requires higher clearance.
+        </p>
+
+        <div class="error-actions" style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            {% if current_user.is_logged_in %}
+                {% if current_user.role_raw == 'player' %}
+                    <a href="{{ url_for('player.dashboard') }}" class="btn-error-home primary" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 8px; background: #ff5722; color: #fff; font-weight: 600; text-decoration: none;">
+                        <i class="ph ph-squares-four"></i> Back to Dashboard
+                    </a>
+                {% elif current_user.role_raw == 'owner' %}
+                    <a href="{{ url_for('owner.dashboard') }}" class="btn-error-home primary" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 8px; background: #ff5722; color: #fff; font-weight: 600; text-decoration: none;">
+                        <i class="ph ph-squares-four"></i> Back to Dashboard
+                    </a>
+                {% elif current_user.role_raw == 'clubadmin' %}
+                    <a href="{{ url_for('clubadmin.dashboard') }}" class="btn-error-home primary" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 8px; background: #ff5722; color: #fff; font-weight: 600; text-decoration: none;">
+                        <i class="ph ph-squares-four"></i> Back to Dashboard
+                    </a>
+                {% elif current_user.role_raw == 'facilitystaff' %}
+                    <a href="{{ url_for('facilitystaff.dashboard') }}" class="btn-error-home primary" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 8px; background: #ff5722; color: #fff; font-weight: 600; text-decoration: none;">
+                        <i class="ph ph-squares-four"></i> Back to Dashboard
+                    </a>
+                {% elif current_user.role_raw == 'superadmin' %}
+                    <a href="{{ url_for('superadmin.dashboard') }}" class="btn-error-home primary" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 8px; background: #ff5722; color: #fff; font-weight: 600; text-decoration: none;">
+                        <i class="ph ph-squares-four"></i> Back to Dashboard
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('main.index') }}" class="btn-error-home primary" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 8px; background: #ff5722; color: #fff; font-weight: 600; text-decoration: none;">
+                        <i class="ph ph-house"></i> Home
+                    </a>
+                {% endif %}
+            {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn-error-home primary" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 8px; background: #ff5722; color: #fff; font-weight: 600; text-decoration: none;">
+                    <i class="ph ph-sign-in"></i> Log In
+                </a>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for, session, flash, jsonify, g
+from flask import render_template, request, redirect, url_for, session, flash, jsonify, g, current_app
 from app.decorators import require_role
 from datetime import datetime, timezone, timedelta
 from app.db import get_db, get_admin_db
@@ -294,18 +294,43 @@ def api_reservation_slots():
 
         # Include event slots for this court
         try:
+            from app.booking_utils import extract_schedule_slots, group_slots_to_ranges
             ec_resp = admin_db.table('event_courts').select(
-                'court_id, events!inner(id, title, event_date, start_time, end_time, status)'
+                'court_id, events!inner(id, title, event_date, start_time, end_time, status, description)'
             ).eq('court_id', court_id).execute()
             for ec in (ec_resp.data or []):
                 ev = ec.get('events') or {}
                 if ev.get('event_date') == date and ev.get('status') in ['upcoming', 'registration_open', 'full', 'pending_approval', 'pending_payment']:
-                    slots.append({
-                        'start_time': ev.get('start_time'),
-                        'end_time': ev.get('end_time'),
-                        'type': 'event',
-                        'title': ev.get('title') or 'Club Event'
-                    })
+                    sched_slots = extract_schedule_slots(ev)
+                    court_sched = None
+                    if sched_slots:
+                        for cs in sched_slots:
+                            if cs.get('court_id') == court_id:
+                                court_sched = cs
+                                break
+
+                    if court_sched:
+                        time_ranges = court_sched.get('time_ranges') or []
+                        if not time_ranges and court_sched.get('slots'):
+                            time_ranges = group_slots_to_ranges(court_sched.get('slots'))
+                        for tr in time_ranges:
+                            try:
+                                s_p, e_p = tr.split('-')
+                                slots.append({
+                                    'start_time': s_p.strip()[:5],
+                                    'end_time': e_p.strip()[:5],
+                                    'type': 'event',
+                                    'title': ev.get('title') or 'Club Event'
+                                })
+                            except Exception:
+                                continue
+                    else:
+                        slots.append({
+                            'start_time': ev.get('start_time'),
+                            'end_time': ev.get('end_time'),
+                            'type': 'event',
+                            'title': ev.get('title') or 'Club Event'
+                        })
         except Exception as ee:
             print(f"[api_reservation_slots] event lookup error: {ee}")
 
@@ -353,21 +378,49 @@ def api_facility_occupancy():
 
         # Fetch active or pending event court bookings on this date
         try:
+            from app.booking_utils import extract_schedule_slots, group_slots_to_ranges
             ec_resp = admin_db.table('event_courts').select(
-                'court_id, event_id, events!inner(id, title, event_date, start_time, end_time, status)'
+                'court_id, event_id, events!inner(id, title, event_date, start_time, end_time, status, description)'
             ).in_('court_id', court_ids).execute()
             
             for ec in (ec_resp.data or []):
                 ev = ec.get('events') or {}
                 if ev.get('event_date') == date and ev.get('status') in ['upcoming', 'registration_open', 'full', 'pending_approval', 'pending_payment']:
-                    all_reservations.append({
-                        'court_id': ec['court_id'],
-                        'start_time': (ev.get('start_time') or '')[:5],
-                        'end_time': (ev.get('end_time') or '')[:5],
-                        'type': 'event',
-                        'title': ev.get('title') or 'Club Event',
-                        'status': ev.get('status')
-                    })
+                    cid = ec.get('court_id')
+                    sched_slots = extract_schedule_slots(ev)
+                    court_sched = None
+                    if sched_slots:
+                        for cs in sched_slots:
+                            if cs.get('court_id') == cid:
+                                court_sched = cs
+                                break
+
+                    if court_sched:
+                        time_ranges = court_sched.get('time_ranges') or []
+                        if not time_ranges and court_sched.get('slots'):
+                            time_ranges = group_slots_to_ranges(court_sched.get('slots'))
+                        for tr in time_ranges:
+                            try:
+                                s_p, e_p = tr.split('-')
+                                all_reservations.append({
+                                    'court_id': cid,
+                                    'start_time': s_p.strip()[:5],
+                                    'end_time': e_p.strip()[:5],
+                                    'type': 'event',
+                                    'title': ev.get('title') or 'Club Event',
+                                    'status': ev.get('status')
+                                })
+                            except Exception:
+                                continue
+                    else:
+                        all_reservations.append({
+                            'court_id': cid,
+                            'start_time': (ev.get('start_time') or '')[:5],
+                            'end_time': (ev.get('end_time') or '')[:5],
+                            'type': 'event',
+                            'title': ev.get('title') or 'Club Event',
+                            'status': ev.get('status')
+                        })
         except Exception as ee:
             print(f"[api_facility_occupancy] event lookup error: {ee}")
         
@@ -562,6 +615,45 @@ def book_reservation():
 
     db = get_db()
     try:
+        # 1. Fetch court details server-side (server-authoritative pricing)
+        court_resp = db.table('courts').select('id, hourly_rate, status, facility_id').eq('id', court_id).single().execute()
+        court_data = court_resp.data if court_resp else None
+        if not court_data or court_data.get('status') != 'active':
+            return fail('Selected court is currently unavailable for booking.')
+
+        # Ensure facility_id matches the court's registered facility
+        if court_data.get('facility_id') and str(court_data.get('facility_id')) != str(facility_id):
+            facility_id = court_data.get('facility_id')
+
+        # 2. Strict Temporal Validation (PST / UTC+8)
+        now_ph = datetime.now(PH_TZ)
+        today_ph_str = now_ph.strftime('%Y-%m-%d')
+        current_time_str = now_ph.strftime('%H:%M:%S')
+
+        if str(date) < today_ph_str:
+            return fail('Cannot book a court for a past date.')
+
+        from app.booking_utils import normalize_time_str
+        st_norm = normalize_time_str(start_time)
+        et_norm = normalize_time_str(end_time)
+
+        if str(date) == today_ph_str and st_norm <= current_time_str:
+            return fail('Cannot book a time slot that has already started or passed.')
+
+        # 3. Duration & Time Logic Validation
+        st_dt = datetime.strptime(st_norm, '%H:%M:%S')
+        et_dt = datetime.strptime(et_norm, '%H:%M:%S')
+        if et_dt <= st_dt:
+            return fail('End time must be after start time.')
+
+        computed_hours = round((et_dt - st_dt).total_seconds() / 3600.0, 2)
+        if computed_hours < 1.0:
+            return fail('Court reservations require a minimum duration of 1 hour.')
+
+        # 4. Server-Authoritative Price Calculation
+        official_rate = float(court_data.get('hourly_rate') or 0.0)
+        computed_total = round(computed_hours * official_rate, 2)
+
         # Check advance booking window limit based on player subscription tier
         from app.billing.tiers import check_feature_limit
         adv_check = check_feature_limit(player_id, 'player', 'advance_booking_days', target_date=date, db=db)
@@ -572,7 +664,7 @@ def book_reservation():
         try:
             active_bookings_res = db.table('court_reservations').select('id', count='exact')\
                 .eq('player_id', player_id)\
-                .gte('date', datetime.now(PH_TZ).strftime('%Y-%m-%d'))\
+                .gte('date', today_ph_str)\
                 .in_('status', ['confirmed', 'pending_payment'])\
                 .execute()
             active_count = active_bookings_res.count if active_bookings_res and active_bookings_res.count is not None else 0
@@ -608,9 +700,9 @@ def book_reservation():
             'date':         date,
             'start_time':   start_time,
             'end_time':     end_time,
-            'total_hours':  float(total_hours),
-            'hourly_rate':  float(hourly_rate),
-            'total_amount': float(total_amount),
+            'total_hours':  float(computed_hours),
+            'hourly_rate':  float(official_rate),
+            'total_amount': float(computed_total),
             'party_size':   int(party_size),
             'status':       'pending_payment',
         }).execute()
@@ -687,7 +779,7 @@ def my_reservations():
                         end_dt = datetime.strptime(end_time_str, '%Y-%m-%d %H:%M').replace(tzinfo=PH_TZ)
                         
                     if now >= end_dt:
-                        db.table('court_reservations').update({'status': 'completed'}).eq('id', r['id']).execute()
+                        admin_db.table('court_reservations').update({'status': 'completed'}).eq('id', r['id']).execute()
                         r['status'] = 'completed'
                     elif now < start_dt:
                         r['can_cancel'] = True
@@ -699,6 +791,17 @@ def my_reservations():
             r['start_time_12'] = format_time_12h(r.get('start_time'))
             r['end_time_12'] = format_time_12h(r.get('end_time'))
             reservations.append(r)
+
+        # Batch query player's reviews for completed reservations
+        user_reviews = {}
+        try:
+            rev_res = admin_db.table('facility_reviews').select('id, reservation_id, rating, review_text, lighting_rating, surface_rating, cleanliness_rating').eq('player_id', player_id).execute()
+            user_reviews = {rev['reservation_id']: rev for rev in (rev_res.data or []) if rev.get('reservation_id')}
+        except Exception:
+            pass
+
+        for r in reservations:
+            r['user_review'] = user_reviews.get(r['id'])
             
     except Exception as e:
         flash('An error occurred. Please try again.', 'error')
@@ -736,17 +839,69 @@ def my_reservations():
 def cancel_reservation(reservation_id):
     player_id = session.get('user_id')
     db = get_db()
+    admin_db = get_admin_db() or db
     try:
-        resp = db.table('court_reservations').update({'status': 'cancelled'}).eq(
-            'id', reservation_id).eq('player_id', player_id).in_(
-            'status', ['pending_payment', 'confirmed']).execute()
+        # 1. Fetch reservation info before cancellation
+        res_info = admin_db.table('court_reservations').select(
+            'id, date, start_time, end_time, total_amount, gcash_ref, status, facility_id, courts(name), facilities(name)'
+        ).eq('id', reservation_id).eq('player_id', player_id).single().execute()
+        r = res_info.data
+
+        if not r or r.get('status') not in ['pending_payment', 'confirmed']:
+            flash('Could not cancel reservation. It may have already started or been completed.', 'error')
+            return redirect(url_for('player.my_reservations'))
+
+        # 2. Update reservation status
+        resp = admin_db.table('court_reservations').update({'status': 'cancelled'}).eq(
+            'id', reservation_id).eq('player_id', player_id).execute()
             
         if resp.data:
-            db.table('court_queues').update({'status': 'cancelled'}).eq('reservation_id', reservation_id).execute()
-            flash('Reservation cancelled.', 'success')
+            # 3. Clean up court_queues
+            admin_db.table('court_queues').update({'status': 'cancelled'}).eq('reservation_id', reservation_id).execute()
+
+            # 4. Cascade cancel any open or full matchmaking lobbies linked to this reservation
+            try:
+                open_lobs = admin_db.table('matchmaker_lobbies').select('id, title').eq('reservation_id', reservation_id).in_('status', ['open', 'full']).execute()
+                for lob in (open_lobs.data or []):
+                    admin_db.table('matchmaker_lobbies').update({'status': 'cancelled'}).eq('id', lob['id']).execute()
+                    # Notify joined participants
+                    parts = admin_db.table('lobby_participants').select('player_id').eq('lobby_id', lob['id']).eq('status', 'joined').execute()
+                    for p in (parts.data or []):
+                        if p.get('player_id') and p['player_id'] != player_id:
+                            admin_db.table('notifications').insert({
+                                'user_id': p['player_id'],
+                                'title': 'Match Cancelled: Court Released',
+                                'message': f"The court booking for '{lob.get('title', 'Match')}' was cancelled by the host.",
+                                'type': 'warning',
+                                'link': '/player/matchmaker'
+                            }).execute()
+            except Exception as lob_err:
+                current_app.logger.warning(f"Error updating linked lobbies for cancelled reservation {reservation_id}: {lob_err}")
+
+            # 5. Notify facility staff and owner so the court slot is known to be free
+            try:
+                from app.booking_utils import notify_facility_staff_and_owner, safe_time_str
+                cname = (r.get('courts') or {}).get('name') or 'Court'
+                s_time = safe_time_str(r.get('start_time'))
+                e_time = safe_time_str(r.get('end_time'))
+                had_pay = bool(r.get('gcash_ref'))
+                ref_text = f" (Had payment ref: {r.get('gcash_ref')})" if had_pay else " Court is now vacant."
+                notify_facility_staff_and_owner(
+                    db=admin_db,
+                    facility_id=r['facility_id'],
+                    title="Court Booking Cancelled",
+                    message=f"Player cancelled reservation for {cname} on {r.get('date')} ({s_time}-{e_time}).{ref_text}",
+                    link=url_for('facilitystaff.schedule'),
+                    notif_type='warning'
+                )
+            except Exception as notif_err:
+                current_app.logger.warning(f"Error notifying venue of cancellation: {notif_err}")
+
+            flash('Reservation cancelled successfully.', 'success')
         else:
-            flash('Could not cancel reservation. It may have already started.', 'error')
+            flash('Could not cancel reservation.', 'error')
     except Exception as e:
+        current_app.logger.error(f"Error cancelling reservation {reservation_id}: {e}")
         flash('An error occurred. Please try again.', 'error')
     return redirect(url_for('player.my_reservations'))
 
@@ -833,13 +988,16 @@ def confirm_payment(reservation_id):
         try:
             r_info = db.table('court_reservations').select('facility_id, date, start_time, end_time, courts(name)').eq('id', reservation_id).single().execute()
             if r_info.data and r_info.data.get('facility_id'):
-                from app.booking_utils import notify_facility_staff_and_owner
+                from app.booking_utils import notify_facility_staff_and_owner, safe_time_str
                 cname = (r_info.data.get('courts') or {}).get('name') or 'Court'
+                st = safe_time_str(r_info.data.get('start_time'))
+                et = safe_time_str(r_info.data.get('end_time'))
+                r_date = r_info.data.get('date') or ''
                 notify_facility_staff_and_owner(
                     db=db,
                     facility_id=r_info.data['facility_id'],
                     title="New Court Reservation Payment",
-                    message=f"Player submitted payment proof for {cname} on {r_info.data['date']} ({r_info.data['start_time'][:5]} - {r_info.data['end_time'][:5]}) with GCash Ref: {gcash_ref}. Awaiting ledger approval.",
+                    message=f"Player submitted payment proof for {cname} on {r_date} ({st} - {et}) with GCash Ref: {gcash_ref}. Awaiting ledger approval.",
                     link=url_for('facilitystaff.payment_ledger'),
                     notif_type='info'
                 )
@@ -861,3 +1019,84 @@ def api_upgrade_pro():
         'message': 'All player accounts already enjoy 14-day advance booking, ₱0 convenience fees, and full ratings tracking for free!'
     })
 
+
+
+@player_bp.route('/facility/<facility_id>/review', methods=['POST'])
+@require_role('player')
+def submit_facility_review(facility_id):
+    player_id = session.get('user_id')
+    admin_db = get_admin_db()
+    
+    reservation_id = request.form.get('reservation_id')
+    from app.booking_utils import safe_int
+    rating = safe_int(request.form.get('rating'), 5)
+    lighting_rating = safe_int(request.form.get('lighting_rating'), 5)
+    surface_rating = safe_int(request.form.get('surface_rating'), 5)
+    cleanliness_rating = safe_int(request.form.get('cleanliness_rating'), 5)
+    review_text = (request.form.get('review_text') or '').strip()
+    
+    rating = min(max(rating, 1), 5)
+    lighting_rating = min(max(lighting_rating, 1), 5)
+    surface_rating = min(max(surface_rating, 1), 5)
+    cleanliness_rating = min(max(cleanliness_rating, 1), 5)
+    
+    if not reservation_id:
+        flash("Reservation reference required to submit a verified review.", "error")
+        return redirect(url_for('player.my_reservations'))
+        
+    try:
+        res_resp = admin_db.table('court_reservations').select('id, facility_id, court_id, status, player_id, facilities(name)').eq('id', reservation_id).eq('player_id', player_id).single().execute()
+        res = res_resp.data
+        if not res or str(res.get('facility_id')) != str(facility_id):
+            flash("You can only review facilities you have personally booked and played at.", "error")
+            return redirect(url_for('player.my_reservations'))
+            
+        court_id = res.get('court_id')
+        facility_name = (res.get('facilities') or {}).get('name') or 'Facility'
+
+        dup_check = admin_db.table('facility_reviews').select('id').eq('reservation_id', reservation_id).execute()
+        if dup_check.data:
+            from datetime import timezone
+            admin_db.table('facility_reviews').update({
+                'rating': rating,
+                'lighting_rating': lighting_rating,
+                'surface_rating': surface_rating,
+                'cleanliness_rating': cleanliness_rating,
+                'review_text': review_text,
+                'updated_at': datetime.now(timezone.utc).isoformat()
+            }).eq('id', dup_check.data[0]['id']).execute()
+            flash("Your verified review has been updated. Thank you for your feedback!", "success")
+        else:
+            admin_db.table('facility_reviews').insert({
+                'facility_id': facility_id,
+                'court_id': court_id,
+                'player_id': player_id,
+                'reservation_id': reservation_id,
+                'rating': rating,
+                'lighting_rating': lighting_rating,
+                'surface_rating': surface_rating,
+                'cleanliness_rating': cleanliness_rating,
+                'review_text': review_text
+            }).execute()
+            
+            try:
+                from app.booking_utils import notify_facility_staff_and_owner
+                prof_resp = admin_db.table('profiles').select('first_name, last_name').eq('id', player_id).single().execute()
+                p_prof = prof_resp.data or {}
+                p_name = f"{p_prof.get('first_name', '')} {p_prof.get('last_name', '')}".strip() or "A player"
+                notify_facility_staff_and_owner(
+                    db=admin_db,
+                    facility_id=facility_id,
+                    title="New Verified Court Review",
+                    message=f"{p_name} gave {facility_name} a {rating}-star rating: \"{review_text[:60] if review_text else 'Verified session'}\"",
+                    link=url_for('owner.facilities'),
+                    notif_type='info'
+                )
+            except Exception:
+                pass
+                
+            flash(f"Thank you for rating {facility_name}! Your review helps other players find the best courts.", "success")
+    except Exception as e:
+        flash(f"Error submitting review: {e}", "error")
+        
+    return redirect(url_for('player.my_reservations'))

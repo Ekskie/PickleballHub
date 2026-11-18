@@ -1102,7 +1102,7 @@
     <div class="modal-card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h2 style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary);">Create Open Play Lobby</h2>
-            <button onclick="closeCreateLobbyModal()" style="background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer;"><i class="ph ph-x"></i></button>
+            <button type="button" class="modal-close-icon" onclick="closeCreateLobbyModal()" aria-label="Close dialog"><i class="ph ph-x"></i></button>
         </div>
         
         {% if reservations %}

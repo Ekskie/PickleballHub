@@ -433,30 +433,75 @@
     align-items: center;
     position: relative;
 }
+
 .status-select {
-    padding: 6px 26px 6px 10px;
-    border-radius: 8px;
+    padding: 6px 30px 6px 12px;
+    border-radius: 20px;
     border: 1px solid var(--border-color);
-    background: var(--input-bg);
+    background-color: var(--input-bg);
+    background-image: none !important;
     color: var(--text-primary);
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     font-weight: 600;
     cursor: pointer;
-    appearance: none;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
     outline: none;
-    transition: all 0.2s;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.status-select::-ms-expand {
+    display: none !important;
+}
+.status-select:hover {
+    border-color: var(--primary-orange);
+    background-color: var(--card-bg);
 }
 .status-select:focus {
     border-color: var(--primary-orange);
-    box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.15);
+    box-shadow: 0 0 0 3px rgba(225, 86, 35, 0.15);
 }
 .status-select-wrap i {
     position: absolute;
-    right: 8px;
+    right: 10px;
     font-size: 0.75rem;
     color: var(--text-muted);
     pointer-events: none;
+    transition: transform 0.2s ease, color 0.2s ease;
 }
+.status-select.status-registration_open {
+    background-color: rgba(16, 185, 129, 0.1) !important;
+    border-color: rgba(16, 185, 129, 0.35) !important;
+    color: #059669 !important;
+}
+.status-select.status-upcoming {
+    background-color: rgba(14, 165, 233, 0.1) !important;
+    border-color: rgba(14, 165, 233, 0.35) !important;
+    color: #0284c7 !important;
+}
+.status-select.status-in_progress {
+    background-color: rgba(245, 158, 11, 0.1) !important;
+    border-color: rgba(245, 158, 11, 0.35) !important;
+    color: #d97706 !important;
+}
+.status-select.status-completed {
+    background-color: rgba(100, 116, 139, 0.1) !important;
+    border-color: rgba(100, 116, 139, 0.35) !important;
+    color: #475569 !important;
+}
+.status-select.status-cancelled {
+    background-color: rgba(239, 68, 68, 0.1) !important;
+    border-color: rgba(239, 68, 68, 0.35) !important;
+    color: #dc2626 !important;
+}
+.status-select option {
+    background-color: var(--card-bg, #ffffff) !important;
+    color: var(--text-primary, #0f172a) !important;
+    font-weight: 600;
+    padding: 8px 12px;
+}
+
 
 .action-btn-group {
     display: flex;
@@ -731,7 +776,7 @@
                 {% if ev.organizer_id == session.get('user_id') and ev.status in ['registration_open', 'upcoming', 'in_progress', 'completed', 'cancelled'] %}
                 <form method="POST" action="{{ url_for('clubadmin.change_event_status', event_id=ev.id) }}" style="margin:0;">
                     <div class="status-select-wrap">
-                        <select name="status" class="status-select" onchange="this.form.submit()" title="Change event status">
+                        <select name="status" class="status-select status-{{ ev.status }}" onchange="this.form.submit()" title="Change event status">
                             {% for s in ['registration_open','upcoming','in_progress','completed','cancelled'] %}
                             <option value="{{ s }}" {% if ev.status == s %}selected{% endif %}>{{ s|replace('_',' ')|title }}</option>
                             {% endfor %}
@@ -760,6 +805,12 @@
                     {% if ev.type == 'tournament' and ev.status in ['registration_open', 'upcoming', 'in_progress', 'completed'] %}
                         <a href="{{ url_for('clubadmin.tournament_manage', event_id=ev.id) }}" class="btn-card-action btn-accent" title="Manage Tournament Brackets & Matches">
                             <i class="ph ph-tree-structure"></i> Bracket
+                        </a>
+                    {% endif %}
+
+                    {% if ev.facilities and ev.facilities.owner_id %}
+                        <a href="{{ url_for('clubadmin.messages', chat_user=ev.facilities.owner_id) }}" class="btn-card-action btn-outline" title="Chat with Venue Owner" style="color:var(--primary-orange); border-color:rgba(255,87,34,0.3);">
+                            <i class="ph ph-chat-circle-dots"></i> Venue
                         </a>
                     {% endif %}
 

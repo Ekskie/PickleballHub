@@ -137,9 +137,8 @@
                                 <i class="ph ph-check-square"></i> <span>Complete</span>
                             </button>
                             {% endif %}
-                            <button type="button"
-                                onclick="showConfirmModal({ title: 'Remove Player', message: 'Remove this player from the queue?', confirmText: 'Remove', danger: true, onConfirm: () => updateQueueStatus('{{ q.id }}', 'cancelled', this) })"
-                                class="btn-action-icon red-btn" title="Remove Player">
+                            <button type="button" class="btn-action-icon red-btn" title="Remove Player"
+                                onclick="showConfirmModal({ title: 'Remove Player', message: 'Remove this player from the queue?', confirmText: 'Remove', danger: true, onConfirm: () => updateQueueStatus('{{ q.id }}', 'cancelled', this) })">
                                 <i class="ph ph-trash"></i>
                             </button>
                         </div>

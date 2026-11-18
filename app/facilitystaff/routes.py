@@ -6,6 +6,7 @@ PH_TZ = timezone(timedelta(hours=8))
 from datetime import datetime, timedelta, timezone
 
 from app.db import get_db, get_admin_db, log_audit_action
+from app.booking_utils import safe_time_hours
 
 
 
@@ -90,6 +91,25 @@ def dashboard():
                 'id, court_id, date, start_time, end_time, status, player_id, guest_name, profiles(first_name, last_name, avatar_url)'
             ).in_('court_id', [c['id'] for c in courts]).eq('date', today_str).in_('status', ['confirmed', 'completed']).execute()
             reservations = res_resp.data or []
+
+            # Fetch today's confirmed events/tournaments for these courts
+            court_ids_list = [c['id'] for c in courts]
+            today_events_by_court = {}
+            if court_ids_list:
+                try:
+                    ev_courts_resp = db.table('event_courts').select(
+                        'court_id, event_id, events(id, title, organizer_id, start_time, end_time, status, type, event_date, profiles!organizer_id(first_name, last_name))'
+                    ).in_('court_id', court_ids_list).execute()
+
+                    for row in (ev_courts_resp.data or []):
+                        ev = row.get('events') or {}
+                        if ev.get('event_date') == today_str and ev.get('status') in ['registration_open', 'upcoming', 'in_progress', 'full']:
+                            cid = row['court_id']
+                            if cid not in today_events_by_court:
+                                today_events_by_court[cid] = []
+                            today_events_by_court[cid].append(ev)
+                except Exception as ev_err:
+                    print(f"Error fetching today event courts: {ev_err}")
             
             # For each court, determine if it is currently in use
             for c in courts:
@@ -102,47 +122,81 @@ def dashboard():
                 end_time_fmt = None
                 next_booking_fmt = None
                 rem_mins = 0
+                is_event_court = False
                 
                 if c.get('status') == 'maintenance':
                     status = 'Maintenance'
                     status_color = 'warning'
                     sub_text = 'Unavailable'
                 else:
-                    # Check reservations
-                    for r in reservations:
-                        if r['court_id'] == c['id'] and r['status'] == 'confirmed':
-                            s_raw = r.get('start_time') or '00:00:00'
-                            e_raw = r.get('end_time') or '00:00:00'
-                            start_time_str = f"{today_str} {s_raw}"
-                            end_time_str = f"{today_str} {e_raw}"
-                            try:
-                                start_dt = datetime.strptime(start_time_str, '%Y-%m-%d %H:%M:%S').replace(tzinfo=PH_TZ)
-                                end_dt = datetime.strptime(end_time_str, '%Y-%m-%d %H:%M:%S').replace(tzinfo=PH_TZ)
-                            except ValueError:
-                                start_dt = datetime.strptime(start_time_str, '%Y-%m-%d %H:%M').replace(tzinfo=PH_TZ)
-                                end_dt = datetime.strptime(end_time_str, '%Y-%m-%d %H:%M').replace(tzinfo=PH_TZ)
-                            
-                            if start_dt <= now <= end_dt:
-                                status = 'In Use'
-                                status_color = 'negative'
-                                rem_mins = max(0, int((end_dt - now).total_seconds() / 60))
-                                sub_text = f"Ends in {rem_mins}m"
-                                prof = r.get('profiles') or {}
-                                if prof and (prof.get('first_name') or prof.get('last_name')):
-                                    current_player = f"{prof.get('first_name', '')} {prof.get('last_name', '')}".strip()
-                                    current_player_avatar = prof.get('avatar_url')
-                                else:
-                                    current_player = r.get('guest_name') or 'Walk-in Guest'
-                                start_time_fmt = s_raw[:5]
-                                end_time_fmt = e_raw[:5]
-                                break
-                            elif start_dt > now:
-                                diff_mins = int((start_dt - now).total_seconds() / 60)
-                                if not next_booking_fmt:
-                                    next_booking_fmt = f"{s_raw[:5]} - {e_raw[:5]}"
-                                if status == 'Available' and diff_mins < 60:
-                                    sub_text = f"Next in {diff_mins}m"
-                                    
+                    # 1. Check if occupied by a club tournament or event
+                    for ev in today_events_by_court.get(c['id'], []):
+                        s_raw = ev.get('start_time') or '00:00:00'
+                        e_raw = ev.get('end_time') or '00:00:00'
+                        start_time_str = f"{today_str} {s_raw}"
+                        end_time_str = f"{today_str} {e_raw}"
+                        try:
+                            start_dt = datetime.strptime(start_time_str, '%Y-%m-%d %H:%M:%S').replace(tzinfo=PH_TZ)
+                            end_dt = datetime.strptime(end_time_str, '%Y-%m-%d %H:%M:%S').replace(tzinfo=PH_TZ)
+                        except ValueError:
+                            start_dt = datetime.strptime(start_time_str, '%Y-%m-%d %H:%M').replace(tzinfo=PH_TZ)
+                            end_dt = datetime.strptime(end_time_str, '%Y-%m-%d %H:%M').replace(tzinfo=PH_TZ)
+
+                        if start_dt <= now <= end_dt:
+                            status = 'Tournament / Event'
+                            status_color = 'primary'
+                            rem_mins = max(0, int((end_dt - now).total_seconds() / 60))
+                            sub_text = f"Tournament ({rem_mins}m left)"
+                            org_prof = ev.get('profiles') or {}
+                            org_name = f"{org_prof.get('first_name', '')} {org_prof.get('last_name', '')}".strip() or "Club"
+                            current_player = f"{ev.get('title', 'Event')} (Host: {org_name})"
+                            start_time_fmt = s_raw[:5]
+                            end_time_fmt = e_raw[:5]
+                            is_event_court = True
+                            break
+                        elif start_dt > now:
+                            diff_mins = int((start_dt - now).total_seconds() / 60)
+                            if not next_booking_fmt:
+                                next_booking_fmt = f"Event: {s_raw[:5]} - {e_raw[:5]}"
+                            if status == 'Available' and diff_mins < 60:
+                                sub_text = f"Event in {diff_mins}m"
+
+                    # 2. Check regular player reservations if not occupied by event
+                    if not is_event_court:
+                        for r in reservations:
+                            if r['court_id'] == c['id'] and r['status'] == 'confirmed':
+                                s_raw = r.get('start_time') or '00:00:00'
+                                e_raw = r.get('end_time') or '00:00:00'
+                                start_time_str = f"{today_str} {s_raw}"
+                                end_time_str = f"{today_str} {e_raw}"
+                                try:
+                                    start_dt = datetime.strptime(start_time_str, '%Y-%m-%d %H:%M:%S').replace(tzinfo=PH_TZ)
+                                    end_dt = datetime.strptime(end_time_str, '%Y-%m-%d %H:%M:%S').replace(tzinfo=PH_TZ)
+                                except ValueError:
+                                    start_dt = datetime.strptime(start_time_str, '%Y-%m-%d %H:%M').replace(tzinfo=PH_TZ)
+                                    end_dt = datetime.strptime(end_time_str, '%Y-%m-%d %H:%M').replace(tzinfo=PH_TZ)
+                                
+                                if start_dt <= now <= end_dt:
+                                    status = 'In Use'
+                                    status_color = 'negative'
+                                    rem_mins = max(0, int((end_dt - now).total_seconds() / 60))
+                                    sub_text = f"Ends in {rem_mins}m"
+                                    prof = r.get('profiles') or {}
+                                    if prof and (prof.get('first_name') or prof.get('last_name')):
+                                        current_player = f"{prof.get('first_name', '')} {prof.get('last_name', '')}".strip()
+                                        current_player_avatar = prof.get('avatar_url')
+                                    else:
+                                        current_player = r.get('guest_name') or 'Walk-in Guest'
+                                    start_time_fmt = s_raw[:5]
+                                    end_time_fmt = e_raw[:5]
+                                    break
+                                elif start_dt > now:
+                                    diff_mins = int((start_dt - now).total_seconds() / 60)
+                                    if not next_booking_fmt:
+                                        next_booking_fmt = f"{s_raw[:5]} - {e_raw[:5]}"
+                                    if status == 'Available' and diff_mins < 60:
+                                        sub_text = f"Next in {diff_mins}m"
+                                        
                 court_status_list.append({
                     'id': c['id'],
                     'name': c['name'],
@@ -151,18 +205,19 @@ def dashboard():
                     'status': status,
                     'color': status_color,
                     'sub_text': sub_text,
-                    'current_player': current_player or 'Match in Progress',
+                    'current_player': current_player or 'Ready for Play',
                     'current_player_avatar': current_player_avatar,
                     'start_time': start_time_fmt,
                     'end_time': end_time_fmt,
                     'remaining_mins': rem_mins,
-                    'next_booking': next_booking_fmt
+                    'next_booking': next_booking_fmt,
+                    'is_event_court': is_event_court
                 })
                 
             stats = {
                 'total_courts': len(courts),
                 'available_courts': sum(1 for c in court_status_list if c['status'] == 'Available'),
-                'in_use_courts': sum(1 for c in court_status_list if c['status'] == 'In Use'),
+                'in_use_courts': sum(1 for c in court_status_list if c['status'] in ['In Use', 'Tournament / Event']),
                 'maintenance_courts': sum(1 for c in court_status_list if c['status'] == 'Maintenance'),
                 'waiting_count': sum(1 for q in queues if q['status'] == 'waiting'),
                 'next_count': sum(1 for q in queues if q['status'] == 'next'),
@@ -202,7 +257,9 @@ def get_staff_processed_queues(db, fac_ids):
         if isinstance(res, list):
             res = res[0] if res else None
             
-        if res and res.get('date') == today_str:
+        if res:
+            if res.get('date') != today_str:
+                continue
             start_time_str = f"{today_str} {res.get('start_time')}"
             end_time_str = f"{today_str} {res.get('end_time')}"
             try:
@@ -1644,15 +1701,17 @@ def approve_payment(reservation_id):
             'facility_id': res.get('facility_id')
         })
         
-        # Insert player into court_queues
-        db.table('court_queues').insert({
-            'player_id': res['player_id'],
-            'facility_id': res['facility_id'],
-            'court_id': res['court_id'],
-            'reservation_id': reservation_id,
-            'status': 'waiting',
-            'estimated_wait_mins': 0
-        }).execute()
+        # Insert player into court_queues only if reservation is for today
+        today_str = datetime.now(PH_TZ).strftime('%Y-%m-%d')
+        if res.get('date') == today_str:
+            db.table('court_queues').insert({
+                'player_id': res['player_id'],
+                'facility_id': res['facility_id'],
+                'court_id': res['court_id'],
+                'reservation_id': reservation_id,
+                'status': 'waiting',
+                'estimated_wait_mins': 0
+            }).execute()
         
         # Trigger autochat messages
         try:
@@ -1775,6 +1834,8 @@ def verify_pass():
         
         fs_resp = db.table('facility_staff').select('facility_id').eq('staff_id', staff_id).execute()
         fac_ids = [f['facility_id'] for f in (fs_resp.data or [])]
+        if not fac_ids:
+            return jsonify({'success': False, 'message': 'No facilities currently assigned to your staff profile.'}), 400
         
         # 1. Search today's reservations first
         res_resp = db.table('court_reservations').select(
@@ -1817,8 +1878,9 @@ def verify_pass():
             court_data = match.get('courts') or {}
             court_name = court_data.get('name') or 'Assigned Court'
             court_id = match.get('court_id') or court_data.get('id')
-            s_time = (match.get('start_time') or '00:00')[:5]
-            e_time = (match.get('end_time') or '00:00')[:5]
+            from app.booking_utils import safe_time_str
+            s_time = safe_time_str(match.get('start_time'))
+            e_time = safe_time_str(match.get('end_time'))
             res_date = match.get('date') or today_str
             return jsonify({
                 'success': True,
@@ -1846,10 +1908,19 @@ def checkin_reservation():
     if not reservation_id:
         return jsonify({'success': False, 'message': 'Reservation ID is required.'}), 400
     try:
-        res_resp = db.table('court_reservations').select('*').eq('id', reservation_id).single().execute()
-        res = res_resp.data
+        try:
+            res_resp = db.table('court_reservations').select('*').eq('id', reservation_id).single().execute()
+            res = res_resp.data
+        except Exception:
+            res = None
         if not res:
             return jsonify({'success': False, 'message': 'Reservation not found.'}), 404
+
+        staff_id = session.get('user_id')
+        fs_resp = db.table('facility_staff').select('facility_id').eq('staff_id', staff_id).execute()
+        fac_ids = [f['facility_id'] for f in (fs_resp.data or [])]
+        if res.get('facility_id') not in fac_ids:
+            return jsonify({'success': False, 'message': 'Unauthorized: This reservation belongs to a different facility.'}), 403
 
         # Check if already in queue
         q_check = db.table('court_queues').select('id, status').eq('reservation_id', reservation_id).in_('status', ['waiting', 'next', 'playing']).execute()
@@ -1934,8 +2005,8 @@ def events():
                     ev['registered_count'] = reg_counts[ev['id']]
                     ev['courts'] = courts_by_ev.get(ev['id'], [])
                     try:
-                        sh = float(ev['start_time'][:2]) + float(ev['start_time'][3:5])/60.0
-                        eh = float(ev['end_time'][:2]) + float(ev['end_time'][3:5])/60.0
+                        sh = safe_time_hours(ev.get('start_time'))
+                        eh = safe_time_hours(ev.get('end_time'))
                         hrs = max(0.5, eh - sh) if eh > sh else 1.0
                     except Exception:
                         hrs = 1.0
@@ -1967,6 +2038,9 @@ def approve_event(event_id):
     try:
         fs_resp = db.table('facility_staff').select('facility_id').eq('staff_id', staff_id).execute()
         fac_ids = [f['facility_id'] for f in (fs_resp.data or [])]
+        if not fac_ids:
+            flash("No facilities currently assigned to your staff profile.", "error")
+            return redirect(url_for('facilitystaff.events'))
 
         ev_resp = db.table('events').select('*, facilities(name)').eq('id', event_id).in_('facility_id', fac_ids).single().execute()
         event = ev_resp.data
@@ -1999,6 +2073,13 @@ def approve_event(event_id):
             'link': url_for('clubadmin.events')
         }).execute()
 
+        # Send status update chat to organizer
+        try:
+            from app.chats import notify_event_status_chat
+            notify_event_status_chat(db, event_id, 'approved', staff_id)
+        except Exception as chat_err:
+            pass
+
         flash(f'Event "{event["title"]}" approved! Courts are reserved and registrations are open.', 'success')
     except Exception as e:
         flash(f'Error approving event: {e}', 'error')
@@ -2015,6 +2096,9 @@ def reject_event(event_id):
     try:
         fs_resp = db.table('facility_staff').select('facility_id').eq('staff_id', staff_id).execute()
         fac_ids = [f['facility_id'] for f in (fs_resp.data or [])]
+        if not fac_ids:
+            flash("No facilities currently assigned to your staff profile.", "error")
+            return redirect(url_for('facilitystaff.events'))
 
         ev_resp = db.table('events').select('*, facilities(name)').eq('id', event_id).in_('facility_id', fac_ids).single().execute()
         event = ev_resp.data
@@ -2036,9 +2120,130 @@ def reject_event(event_id):
             'link': url_for('clubadmin.events')
         }).execute()
 
+        # Send status update chat to organizer
+        try:
+            from app.chats import notify_event_status_chat
+            notify_event_status_chat(db, event_id, 'rejected', staff_id, reason=reason)
+        except Exception as chat_err:
+            pass
+
         flash(f'Event "{event["title"]}" booking request was declined.', 'info')
     except Exception as e:
         flash(f'Error declining event: {e}', 'error')
 
     return redirect(url_for('facilitystaff.events'))
 
+
+
+@facilitystaff_bp.route('/events/<event_id>/roster')
+@require_role('facilitystaff')
+def event_roster(event_id):
+    staff_id = session.get('user_id')
+    db = get_admin_db()
+
+    # Verify event is held at a facility assigned to this staff
+    fs_resp = db.table('facility_staff').select('facility_id').eq('staff_id', staff_id).execute()
+    assigned_fac_ids = [f['facility_id'] for f in (fs_resp.data or [])]
+
+    if not assigned_fac_ids:
+        flash("You are not currently assigned to any facility.", "error")
+        return redirect(url_for('facilitystaff.events'))
+
+    try:
+        ev_resp = db.table('events').select(
+            '*, facilities(name, location), profiles!organizer_id(first_name, last_name, phone, avatar_url, email)'
+        ).eq('id', event_id).in_('facility_id', assigned_fac_ids).single().execute()
+        event = ev_resp.data
+    except Exception:
+        event = None
+
+    if not event:
+        flash("Event not found or unauthorized for your facility.", "error")
+        return redirect(url_for('facilitystaff.events'))
+
+    # Fetch event participants
+    reg_resp = db.table('event_registrations').select(
+        'id, player_id, is_walkin, guest_name, check_in_status, checked_in_at, checked_in_by, registered_at, '
+        'profiles!player_id(first_name, last_name, phone, avatar_url, email), '
+        'staff_profile:profiles!checked_in_by(first_name, last_name)'
+    ).eq('event_id', event_id).order('registered_at').execute()
+    participants = reg_resp.data or []
+
+    # Get booked courts for this event
+    court_resp = db.table('event_courts').select('court_id, courts(name)').eq('event_id', event_id).execute()
+    booked_courts = [c['courts']['name'] for c in (court_resp.data or []) if c.get('courts')]
+
+    total_registered = len(participants)
+    checked_in_count = sum(1 for p in participants if p.get('check_in_status') == 'checked_in')
+
+    return render_template(
+        'facilitystaff/event_roster.html',
+        event=event,
+        participants=participants,
+        booked_courts=booked_courts,
+        total_registered=total_registered,
+        checked_in_count=checked_in_count
+    )
+
+
+@facilitystaff_bp.route('/events/<event_id>/registrations/<reg_id>/checkin', methods=['POST'])
+@require_role('facilitystaff')
+def event_checkin(event_id, reg_id):
+    staff_id = session.get('user_id')
+    db = get_admin_db()
+
+    status = request.form.get('status', 'checked_in')
+    if status not in ['pending', 'checked_in', 'no_show']:
+        status = 'checked_in'
+
+    checked_in_at = datetime.now(PH_TZ).isoformat() if status == 'checked_in' else None
+    checked_in_by = staff_id if status == 'checked_in' else None
+
+    try:
+        # Check authorization
+        fs_resp = db.table('facility_staff').select('facility_id').eq('staff_id', staff_id).execute()
+        assigned_fac_ids = [f['facility_id'] for f in (fs_resp.data or [])]
+
+        if not assigned_fac_ids:
+            flash("Unauthorized.", "error")
+            return redirect(url_for('facilitystaff.events'))
+
+        try:
+            ev_resp = db.table('events').select('id, title, organizer_id').eq('id', event_id).in_('facility_id', assigned_fac_ids).single().execute()
+            event = ev_resp.data
+        except Exception:
+            event = None
+
+        if not event:
+            flash("Unauthorized.", "error")
+            return redirect(url_for('facilitystaff.events'))
+
+        db.table('event_registrations').update({
+            'check_in_status': status,
+            'checked_in_at': checked_in_at,
+            'checked_in_by': checked_in_by
+        }).eq('id', reg_id).eq('event_id', event_id).execute()
+
+        # If checked in, notify the Club Admin
+        if status == 'checked_in':
+            try:
+                reg_info = db.table('event_registrations').select('player_id, guest_name, profiles(first_name, last_name)').eq('id', reg_id).single().execute()
+                p_data = reg_info.data or {}
+                prof = p_data.get('profiles') or {}
+                p_name = f"{prof.get('first_name', '')} {prof.get('last_name', '')}".strip() or p_data.get('guest_name') or "Participant"
+
+                db.table('notifications').insert({
+                    'user_id': event['organizer_id'],
+                    'title': f"Front Desk Check-In: {p_name}",
+                    'message': f"{p_name} was just checked in at the front desk for '{event['title']}'.",
+                    'type': 'info',
+                    'link': url_for('clubadmin.event_participants', event_id=event_id)
+                }).execute()
+            except Exception:
+                pass
+
+        flash("Participant check-in status updated.", "success")
+    except Exception as e:
+        flash(f"Error updating check-in: {e}", "error")
+
+    return redirect(url_for('facilitystaff.event_roster', event_id=event_id))

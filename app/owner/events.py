@@ -1,11 +1,13 @@
 import time
 import random
+import json
 from datetime import datetime
 from flask import request, redirect, url_for, session, render_template, flash, jsonify, current_app
 from app.decorators import require_role
 from app.db import get_db, get_admin_db
 from app.owner import owner_bp
 from app.owner.routes import PH_TZ
+from app.booking_utils import safe_time_hours
 
 # ── Events (on owner's courts) ─────────────────────────────────────────────────
 @owner_bp.route('/events')
@@ -48,8 +50,8 @@ def events():
                     ev['registered_count'] = reg_counts[ev['id']]
                     ev['courts'] = courts_by_ev.get(ev['id'], [])
                     try:
-                        sh = float(ev['start_time'][:2]) + float(ev['start_time'][3:5])/60.0
-                        eh = float(ev['end_time'][:2]) + float(ev['end_time'][3:5])/60.0
+                        sh = safe_time_hours(ev.get('start_time'))
+                        eh = safe_time_hours(ev.get('end_time'))
                         hrs = max(0.5, eh - sh) if eh > sh else 1.0
                     except Exception:
                         hrs = 1.0
@@ -122,6 +124,13 @@ def approve_event(event_id):
             'link': url_for('clubadmin.events')
         }).execute()
 
+        # Send status update chat to organizer
+        try:
+            from app.chats import notify_event_status_chat
+            notify_event_status_chat(db, event_id, 'approved', owner_id)
+        except Exception as chat_err:
+            current_app.logger.warning(f"Error sending approval chat: {chat_err}")
+
         flash(f'Event "{event["title"]}" approved! Courts are confirmed and registrations are now open.', 'success')
     except Exception as e:
         current_app.logger.error(f"Error approving event {event_id}: {e}")
@@ -163,6 +172,13 @@ def reject_event(event_id):
             'type': 'error',
             'link': url_for('clubadmin.events')
         }).execute()
+
+        # Send status update chat to organizer
+        try:
+            from app.chats import notify_event_status_chat
+            notify_event_status_chat(db, event_id, 'rejected', owner_id, reason=reason)
+        except Exception as chat_err:
+            current_app.logger.warning(f"Error sending rejection chat: {chat_err}")
 
         flash(f'Event "{event["title"]}" booking request was declined.', 'info')
     except Exception as e:
@@ -266,10 +282,10 @@ def tournament_manage(event_id):
         all_t_resp = db.table('events').select('id, title').in_('facility_id', fac_ids).eq('type', 'tournament').execute()
         all_tournaments = all_t_resp.data or []
         
-        # Get participants
+        # Get participants (both registered users and walk-ins)
         reg_resp = db.table('event_registrations').select(
-            'player_id, profiles!player_id(first_name, last_name)'
-        ).eq('event_id', event_id).eq('status', 'registered').execute()
+            'id, player_id, is_walkin, guest_name, skill_level, estimated_elo, status, registered_at, profiles!player_id(first_name, last_name, avatar_url, elo, dupr, proficiency)'
+        ).eq('event_id', event_id).eq('status', 'registered').order('registered_at').execute()
         participants = reg_resp.data or []
         
         # Get matches
@@ -289,6 +305,7 @@ def tournament_manage(event_id):
         booked_courts = court_resp.data or []
         
         has_bracket = len(matches) > 0
+        can_reset = has_bracket and not any(m.get('player1_score') is not None for m in matches)
         
         return render_template('owner/tournament_manage.html', 
                                event=event, 
@@ -296,6 +313,7 @@ def tournament_manage(event_id):
                                participants=participants,
                                matches=matches,
                                has_bracket=has_bracket,
+                               can_reset=can_reset,
                                booked_courts=booked_courts)
                                
     except Exception as e:
@@ -303,11 +321,49 @@ def tournament_manage(event_id):
         flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('owner.events'))
 
+def generate_seed_order(n):
+    """Generate official single-elimination tournament seed pairing order for bracket size n (power of 2)."""
+    order = [1, 2]
+    while len(order) < n:
+        next_order = []
+        target = len(order) * 2 + 1
+        for s in order:
+            next_order.append(s)
+            next_order.append(target - s)
+        order = next_order
+    return order
+
+@owner_bp.route('/tournaments/<event_id>/bracket/reset', methods=['POST'])
+@require_role('owner')
+def bracket_reset(event_id):
+    owner_id = session.get('user_id')
+    db = get_admin_db() or get_db()
+    try:
+        fac_resp = db.table('facilities').select('id').eq('owner_id', owner_id).execute()
+        fac_ids = [f['id'] for f in (fac_resp.data or [])]
+        db.table('events').select('id').eq('id', event_id).in_('facility_id', fac_ids).single().execute()
+
+        comp_chk = db.table('tournament_matches').select('id, player1_score').eq('event_id', event_id).execute()
+        matches = comp_chk.data or []
+        if any(m.get('player1_score') is not None for m in matches):
+            flash("Cannot reset bracket because one or more matches have already been scored.", "warning")
+            return redirect(url_for('owner.tournament_manage', event_id=event_id))
+
+        db.table('tournament_matches').delete().eq('event_id', event_id).execute()
+        db.table('events').update({'status': 'registration_open'}).eq('id', event_id).execute()
+        flash("Bracket has been reset. You can now adjust players and re-generate.", "success")
+    except Exception as e:
+        current_app.logger.error(f"Error resetting bracket for owner: {e}")
+        flash('Failed to reset bracket.', 'error')
+
+    return redirect(url_for('owner.tournament_manage', event_id=event_id))
+
 @owner_bp.route('/tournaments/<event_id>/bracket/generate', methods=['POST'])
 @require_role('owner')
 def bracket_generate(event_id):
     owner_id = session.get('user_id')
-    db = get_db()
+    db = get_admin_db() or get_db()
+    seed_mode = request.form.get('seed_mode', 'fair')
     
     try:
         # Verify ownership
@@ -315,41 +371,110 @@ def bracket_generate(event_id):
         fac_ids = [f['id'] for f in (fac_resp.data or [])]
         db.table('events').select('id').eq('id', event_id).in_('facility_id', fac_ids).single().execute()
         
-        # Get participants
-        reg_resp = db.table('event_registrations').select('player_id').eq('event_id', event_id).eq('status', 'registered').execute()
-        players = [r['player_id'] for r in (reg_resp.data or [])]
+        # Get participants (both registered users and walk-ins)
+        reg_resp = db.table('event_registrations').select(
+            'id, player_id, is_walkin, guest_name, skill_level, estimated_elo, profiles!player_id(first_name, last_name, elo, dupr, proficiency)'
+        ).eq('event_id', event_id).eq('status', 'registered').execute()
+        raw_regs = reg_resp.data or []
         
-        if len(players) < 2:
-            flash("Not enough players to generate a bracket.", "warning")
+        if len(raw_regs) < 2:
+            flash("At least 2 players are required to generate a tournament bracket.", "warning")
             return redirect(url_for('owner.tournament_manage', event_id=event_id))
             
-        random.shuffle(players)
-        
+        from app.ratings import get_initial_rating
+        players = []
+        for r in raw_regs:
+            prof = r.get('profiles')
+            if r.get('is_walkin') or not r.get('player_id'):
+                p_name = (r.get('guest_name') or 'Guest Walk-in').strip()
+                p_elo = r.get('estimated_elo') or get_initial_rating(r.get('skill_level'))[0]
+                players.append({
+                    'player_id': None,
+                    'guest_name': p_name,
+                    'reg_id': r['id'],
+                    'elo': p_elo,
+                    'is_walkin': True
+                })
+            else:
+                p_first = prof.get('first_name') if prof else ''
+                p_last = prof.get('last_name') if prof else ''
+                p_name = f"{p_first} {p_last}".strip() or 'Player'
+                p_elo = prof.get('elo') if prof and prof.get('elo') is not None else get_initial_rating(prof.get('proficiency') if prof else 'beginner')[0]
+                players.append({
+                    'player_id': r['player_id'],
+                    'guest_name': None,
+                    'reg_id': r['id'],
+                    'elo': p_elo,
+                    'is_walkin': False
+                })
+
+        # Calculate next power of 2 bracket size
+        N = len(players)
+        P = 2
+        while P < N:
+            P *= 2
+
+        if seed_mode == 'fair':
+            players.sort(key=lambda p: -p['elo'])
+            seed_order = generate_seed_order(P)
+            seed_map = {}
+            for idx, p in enumerate(players):
+                seed_map[idx + 1] = p
+            for s in range(N + 1, P + 1):
+                seed_map[s] = None
+        else:
+            random.shuffle(players)
+            seed_order = generate_seed_order(P)
+            seed_map = {}
+            for idx, p in enumerate(players):
+                seed_map[idx + 1] = p
+            for s in range(N + 1, P + 1):
+                seed_map[s] = None
+
         matches_to_insert = []
         match_num = 1
-        for i in range(0, len(players), 2):
-            p1 = players[i]
-            p2 = players[i+1] if i+1 < len(players) else None
-            
+        for i in range(0, P, 2):
+            s1 = seed_order[i]
+            s2 = seed_order[i + 1]
+            p1 = seed_map[s1]
+            p2 = seed_map[s2]
+
+            if not p1 and p2:
+                p1, p2 = p2, p1
+
+            if not p1 and not p2:
+                continue
+
+            is_bye = (p2 is None)
             matches_to_insert.append({
                 'event_id': event_id,
                 'round_number': 1,
                 'match_number': match_num,
-                'player1_id': p1,
-                'player2_id': p2,
-                'status': 'pending' if p2 else 'completed',
-                'winner_id': p1 if not p2 else None # Bye
+                'player1_id': p1['player_id'] if p1 else None,
+                'player1_guest_name': p1['guest_name'] if p1 else None,
+                'player1_reg_id': p1['reg_id'] if p1 else None,
+                'player2_id': p2['player_id'] if p2 else None,
+                'player2_guest_name': p2['guest_name'] if p2 else None,
+                'player2_reg_id': p2['reg_id'] if p2 else None,
+                'status': 'completed' if is_bye else 'pending',
+                'winner_id': p1['player_id'] if is_bye else None,
+                'winner_guest_name': p1['guest_name'] if is_bye else None,
+                'winner_reg_id': p1['reg_id'] if is_bye else None
             })
             match_num += 1
             
         if matches_to_insert:
             db.table('tournament_matches').insert(matches_to_insert).execute()
+            try:
+                db.table('events').update({'status': 'in_progress'}).eq('id', event_id).execute()
+            except Exception:
+                pass
             
-        flash("Bracket generated successfully!", "success")
+        flash(f"Bracket generated successfully ({'Fair Seeding by ELO' if seed_mode == 'fair' else 'Random Draw'})!", "success")
         
     except Exception as e:
-        current_app.logger.error(f"Error generating bracket for event {event_id}: {e}")
-        flash('An error occurred. Please try again.', 'error')
+        current_app.logger.error(f"Error generating tournament bracket {event_id}: {e}")
+        flash('An error occurred while generating the bracket.', 'error')
         
     return redirect(url_for('owner.tournament_manage', event_id=event_id))
 
@@ -357,7 +482,7 @@ def _advance_bracket(db, event_id):
     """Check current round completion and auto-generate next round or declare champion."""
     try:
         all_m = db.table('tournament_matches').select(
-            'id, round_number, status, winner_id'
+            'id, round_number, status, winner_id, winner_guest_name, winner_reg_id'
         ).eq('event_id', event_id).order('round_number').execute()
         matches = all_m.data or []
         if not matches:
@@ -369,20 +494,27 @@ def _advance_bracket(db, event_id):
         if any(m['status'] != 'completed' for m in round_matches):
             return  # Round not finished yet
 
-        winners = [m['winner_id'] for m in round_matches if m['winner_id']]
+        winners = []
+        for m in round_matches:
+            winners.append({
+                'id': m.get('winner_id'),
+                'guest_name': m.get('winner_guest_name'),
+                'reg_id': m.get('winner_reg_id')
+            })
 
         if len(winners) == 1:
             # 🏆 Champion decided
             db.table('events').update({'status': 'completed'}).eq('id', event_id).execute()
-            try:
-                db.table('notifications').insert({
-                    'user_id': winners[0],
-                    'title': '🏆 Tournament Champion!',
-                    'message': 'Congratulations! You have won the tournament!',
-                    'type': 'success'
-                }).execute()
-            except Exception:
-                pass
+            if winners[0]['id']:
+                try:
+                    db.table('notifications').insert({
+                        'user_id': winners[0]['id'],
+                        'title': '🏆 Tournament Champion!',
+                        'message': 'Congratulations! You have won the tournament!',
+                        'type': 'success'
+                    }).execute()
+                except Exception:
+                    pass
             return
 
         # Pair winners → next round
@@ -390,18 +522,26 @@ def _advance_bracket(db, event_id):
         match_num = 1
         next_matches = []
         for i in range(0, len(winners), 2):
-            p1 = winners[i]
-            p2 = winners[i + 1] if i + 1 < len(winners) else None
+            w1 = winners[i]
+            w2 = winners[i + 1] if i + 1 < len(winners) else None
+            is_bye = (w2 is None)
             next_matches.append({
                 'event_id': event_id,
                 'round_number': next_round,
                 'match_number': match_num,
-                'player1_id': p1,
-                'player2_id': p2,
-                'status': 'completed' if not p2 else 'pending',
-                'winner_id': p1 if not p2 else None,
+                'player1_id': w1['id'],
+                'player1_guest_name': w1['guest_name'],
+                'player1_reg_id': w1['reg_id'],
+                'player2_id': w2['id'] if w2 else None,
+                'player2_guest_name': w2['guest_name'] if w2 else None,
+                'player2_reg_id': w2['reg_id'] if w2 else None,
+                'status': 'completed' if is_bye else 'pending',
+                'winner_id': w1['id'] if is_bye else None,
+                'winner_guest_name': w1['guest_name'] if is_bye else None,
+                'winner_reg_id': w1['reg_id'] if is_bye else None
             })
             match_num += 1
+
         if next_matches:
             db.table('tournament_matches').insert(next_matches).execute()
             if len(next_matches) == 1 and next_matches[0]['status'] == 'completed':
@@ -414,11 +554,12 @@ def _advance_bracket(db, event_id):
 @require_role('owner')
 def match_score(event_id, match_id):
     owner_id = session.get('user_id')
-    db = get_db()
+    db = get_admin_db() or get_db()
 
     p1_score = request.form.get('player1_score', type=int)
     p2_score = request.form.get('player2_score', type=int)
-    winner_id = request.form.get('winner_id') or None
+    winner_side = request.form.get('winner_side') # 'player1' or 'player2'
+    winner_id_param = request.form.get('winner_id')
 
     try:
         fac_resp = db.table('facilities').select('id').eq('owner_id', owner_id).execute()
@@ -426,17 +567,30 @@ def match_score(event_id, match_id):
         db.table('events').select('id').eq('id', event_id).in_('facility_id', fac_ids).single().execute()
 
         # Get match before updating to pass to ratings logic
-        prev_match = None
-        try:
-            m_resp = db.table('tournament_matches').select('*').eq('id', match_id).single().execute()
-            prev_match = m_resp.data
-        except Exception:
-            pass
+        m_resp = db.table('tournament_matches').select('*').eq('id', match_id).single().execute()
+        prev_match = m_resp.data
+        if not prev_match:
+            flash("Match not found.", "error")
+            return redirect(url_for('owner.tournament_manage', event_id=event_id))
+
+        is_p1_winner = False
+        if winner_side == 'player1' or winner_id_param == 'player1' or (winner_id_param and winner_id_param == prev_match.get('player1_id')):
+            is_p1_winner = True
+        elif winner_side == 'player2' or winner_id_param == 'player2' or (winner_id_param and winner_id_param == prev_match.get('player2_id')):
+            is_p1_winner = False
+        else:
+            is_p1_winner = (p1_score or 0) >= (p2_score or 0)
+
+        winner_id = prev_match.get('player1_id') if is_p1_winner else prev_match.get('player2_id')
+        winner_guest_name = prev_match.get('player1_guest_name') if is_p1_winner else prev_match.get('player2_guest_name')
+        winner_reg_id = prev_match.get('player1_reg_id') if is_p1_winner else prev_match.get('player2_reg_id')
 
         db.table('tournament_matches').update({
             'player1_score': p1_score,
             'player2_score': p2_score,
             'winner_id': winner_id,
+            'winner_guest_name': winner_guest_name,
+            'winner_reg_id': winner_reg_id,
             'status': 'completed',
             'played_at': datetime.now(PH_TZ).isoformat()
         }).eq('id', match_id).eq('event_id', event_id).execute()
@@ -526,6 +680,33 @@ def create_event():
     event_format  = request.form.get('format', 'Doubles').strip()
     prize_pool    = request.form.get('prize_pool', 0)
     reg_type      = request.form.get('registration_type', 'paid')
+
+    # Parse granular schedule_slots JSON
+    schedule_slots_raw = request.form.get('schedule_slots')
+    schedule_slots = []
+    if schedule_slots_raw:
+        try:
+            parsed = json.loads(schedule_slots_raw)
+            for item in parsed:
+                slots = sorted(list(set(int(x) for x in item.get('slots', []))))
+                if slots:
+                    schedule_slots.append({
+                        'court_id': item.get('court_id'),
+                        'court_name': item.get('court_name', ''),
+                        'slots': slots
+                    })
+        except Exception as e:
+            current_app.logger.warning(f"Could not parse schedule_slots: {e}")
+            schedule_slots = []
+
+    if schedule_slots:
+        court_ids = [s['court_id'] for s in schedule_slots if s.get('court_id')]
+        all_hours = [h for s in schedule_slots for h in s.get('slots', [])]
+        if all_hours:
+            min_h = min(all_hours)
+            max_h = max(all_hours) + 1
+            start_time = f"{min_h:02d}:00"
+            end_time = f"{max_h:02d}:00"
     
     if reg_type == 'free':
         entry_fee = 0
@@ -535,6 +716,29 @@ def create_event():
         return redirect(url_for('owner.create_event_page'))
 
     db = get_db()
+    
+    # Check court conflicts before inserting
+    if facility_id and schedule_slots:
+        from app.booking_utils import check_court_conflict, group_slots_to_ranges
+        for item in schedule_slots:
+            cid = item['court_id']
+            ranges = group_slots_to_ranges(item.get('slots', []))
+            for r in ranges:
+                r_start, r_end = r.split('-')
+                has_conf, conf_detail = check_court_conflict(db, cid, event_date, r_start, r_end)
+                if has_conf:
+                    time_range = conf_detail.get('time_range_12h') or f"{conf_detail.get('start_time')} – {conf_detail.get('end_time')}"
+                    court_lbl = conf_detail.get('court_name') or item.get('court_name') or 'court'
+                    flash(f"Court conflict detected on {court_lbl}: {conf_detail['label']} is scheduled from {time_range}. Please adjust your selected slots.", 'error')
+                    return redirect(url_for('owner.create_event_page'))
+    elif facility_id and court_ids:
+        from app.booking_utils import check_court_conflict
+        for cid in court_ids:
+            has_conf, conf_detail = check_court_conflict(db, cid, event_date, start_time, end_time)
+            if has_conf:
+                time_range = conf_detail.get('time_range_12h') or f"{conf_detail.get('start_time')} – {conf_detail.get('end_time')}"
+                flash(f"Court conflict detected: {conf_detail['label']} is scheduled from {time_range}. Please select different courts or times.", 'error')
+                return redirect(url_for('owner.create_event_page'))
     
     # Handle Image Upload
     image_file = request.files.get('image')
@@ -553,24 +757,38 @@ def create_event():
             current_app.logger.error(f"Image upload error: {e}")
             flash(f'Warning: Image could not be uploaded.', 'error')
 
+    from app.booking_utils import inject_schedule_slots_into_desc
+    stored_desc = inject_schedule_slots_into_desc(description, schedule_slots) if schedule_slots else description
+
+    insert_payload = {
+        'organizer_id': owner_id,
+        'facility_id': facility_id,
+        'title': title,
+        'type': event_type,
+        'format': event_format,
+        'description': stored_desc,
+        'event_date': event_date,
+        'start_time': start_time,
+        'end_time': end_time,
+        'max_players': int(max_players),
+        'entry_fee': float(entry_fee),
+        'prize_pool': float(prize_pool) if prize_pool else 0,
+        'location_label': location_label,
+        'image_url': image_url,
+        'status': 'registration_open',
+    }
+    if schedule_slots:
+        insert_payload['schedule_slots'] = schedule_slots
+
     try:
-        ev_resp = db.table('events').insert({
-            'organizer_id': owner_id,
-            'facility_id': facility_id,
-            'title': title,
-            'type': event_type,
-            'format': event_format,
-            'description': description,
-            'event_date': event_date,
-            'start_time': start_time,
-            'end_time': end_time,
-            'max_players': int(max_players),
-            'entry_fee': float(entry_fee),
-            'prize_pool': float(prize_pool) if prize_pool else 0,
-            'location_label': location_label,
-            'image_url': image_url,
-            'status': 'registration_open',
-        }).execute()
+        try:
+            ev_resp = db.table('events').insert(insert_payload).execute()
+        except Exception as insert_err:
+            if 'schedule_slots' in insert_payload and ('column' in str(insert_err).lower() or '42703' in str(insert_err)):
+                insert_payload.pop('schedule_slots', None)
+                ev_resp = db.table('events').insert(insert_payload).execute()
+            else:
+                raise insert_err
 
         if ev_resp.data and court_ids:
             event_id = ev_resp.data[0]['id']
@@ -604,9 +822,27 @@ def edit_event(event_id):
             return redirect(url_for('owner.events'))
             
         if request.method == 'GET':
+            from app.booking_utils import extract_schedule_slots, clean_event_description
             fac_full_resp = db.table('facilities').select('id, name, location').eq('owner_id', owner_id).eq('status', 'active').execute()
             facilities_list = fac_full_resp.data or []
-            return render_template('owner/edit_event.html', event=event, facilities=facilities_list)
+            selected_court_ids = []
+            try:
+                ec_resp = db.table('event_courts').select('court_id').eq('event_id', event_id).execute()
+                selected_court_ids = [r['court_id'] for r in (ec_resp.data or [])]
+            except Exception as e:
+                current_app.logger.warning(f"Could not load event_courts: {e}")
+                
+            schedule_slots = extract_schedule_slots(event)
+            event_clean = dict(event)
+            event_clean['description'] = clean_event_description(event.get('description'))
+            
+            return render_template(
+                'owner/edit_event.html',
+                event=event_clean,
+                facilities=facilities_list,
+                selected_court_ids=selected_court_ids,
+                event_schedule_slots=json.dumps(schedule_slots or [])
+            )
             
         # POST logic
         facility_id   = request.form.get('facility_id')
@@ -622,6 +858,35 @@ def edit_event(event_id):
         event_format  = request.form.get('format', 'Doubles').strip()
         prize_pool    = request.form.get('prize_pool', 0)
         reg_type      = request.form.get('registration_type', 'paid')
+
+        # Parse schedule_slots
+        schedule_slots_raw = request.form.get('schedule_slots')
+        schedule_slots = []
+        if schedule_slots_raw:
+            try:
+                parsed = json.loads(schedule_slots_raw)
+                for item in parsed:
+                    slots = sorted(list(set(int(x) for x in item.get('slots', []))))
+                    if slots:
+                        schedule_slots.append({
+                            'court_id': item.get('court_id'),
+                            'court_name': item.get('court_name', ''),
+                            'slots': slots
+                        })
+            except Exception as e:
+                current_app.logger.warning(f"Could not parse schedule_slots: {e}")
+                schedule_slots = []
+
+        if schedule_slots:
+            court_ids = [s['court_id'] for s in schedule_slots if s.get('court_id')]
+            all_hours = [h for s in schedule_slots for h in s.get('slots', [])]
+            if all_hours:
+                min_h = min(all_hours)
+                max_h = max(all_hours) + 1
+                start_time = f"{min_h:02d}:00"
+                end_time = f"{max_h:02d}:00"
+        else:
+            court_ids = request.form.getlist('court_ids')
         
         if reg_type == 'free':
             entry_fee = 0
@@ -629,13 +894,39 @@ def edit_event(event_id):
         if not all([title, facility_id, event_date, start_time, end_time]):
             flash('Please fill all required fields.', 'error')
             return redirect(url_for('owner.edit_event', event_id=event_id))
-            
+
+        # Check court conflicts before updating
+        if facility_id and schedule_slots:
+            from app.booking_utils import check_court_conflict, group_slots_to_ranges
+            for item in schedule_slots:
+                cid = item['court_id']
+                ranges = group_slots_to_ranges(item.get('slots', []))
+                for r in ranges:
+                    r_start, r_end = r.split('-')
+                    has_conf, conf_detail = check_court_conflict(db, cid, event_date, r_start, r_end, exclude_event_id=event_id)
+                    if has_conf:
+                        time_range = conf_detail.get('time_range_12h') or f"{conf_detail.get('start_time')} – {conf_detail.get('end_time')}"
+                        court_lbl = conf_detail.get('court_name') or item.get('court_name') or 'court'
+                        flash(f"Court conflict detected on {court_lbl}: {conf_detail['label']} is scheduled from {time_range}. Please adjust your selected slots.", 'error')
+                        return redirect(url_for('owner.edit_event', event_id=event_id))
+        elif facility_id and court_ids:
+            from app.booking_utils import check_court_conflict
+            for cid in court_ids:
+                has_conf, conf_detail = check_court_conflict(db, cid, event_date, start_time, end_time, exclude_event_id=event_id)
+                if has_conf:
+                    time_range = conf_detail.get('time_range_12h') or f"{conf_detail.get('start_time')} – {conf_detail.get('end_time')}"
+                    flash(f"Court conflict detected: {conf_detail['label']} is scheduled from {time_range}. Please select different courts or times.", 'error')
+                    return redirect(url_for('owner.edit_event', event_id=event_id))
+
+        from app.booking_utils import inject_schedule_slots_into_desc
+        stored_desc = inject_schedule_slots_into_desc(description, schedule_slots) if schedule_slots else description
+
         update_data = {
             'facility_id': facility_id,
             'title': title,
             'type': event_type,
             'format': event_format,
-            'description': description,
+            'description': stored_desc,
             'event_date': event_date,
             'start_time': start_time,
             'end_time': end_time,
@@ -644,6 +935,8 @@ def edit_event(event_id):
             'prize_pool': float(prize_pool) if prize_pool else 0,
             'location_label': location_label,
         }
+        if schedule_slots:
+            update_data['schedule_slots'] = schedule_slots
         
         # Handle Image Upload
         image_file = request.files.get('image')
@@ -661,10 +954,16 @@ def edit_event(event_id):
                 current_app.logger.error(f"Image edit upload error: {e}")
                 flash(f'Warning: Image could not be uploaded.', 'warning')
                 
-        db.table('events').update(update_data).eq('id', event_id).execute()
+        try:
+            db.table('events').update(update_data).eq('id', event_id).execute()
+        except Exception as update_err:
+            if 'schedule_slots' in update_data and ('column' in str(update_err).lower() or '42703' in str(update_err)):
+                update_data.pop('schedule_slots', None)
+                db.table('events').update(update_data).eq('id', event_id).execute()
+            else:
+                raise update_err
         
         # Also update courts if needed
-        court_ids = request.form.getlist('court_ids')
         if court_ids:
             # delete existing courts and re-insert
             db.table('event_courts').delete().eq('event_id', event_id).execute()
@@ -748,6 +1047,22 @@ def api_courts_by_facility(facility_id):
             return jsonify(resp.data or [])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@owner_bp.route('/api/facility_month_availability')
+@require_role('owner')
+def api_facility_month_availability():
+    facility_id = request.args.get('facility_id')
+    year = request.args.get('year', type=int)
+    month = request.args.get('month', type=int)
+    exclude_event_id = request.args.get('exclude_event_id')
+    if not facility_id or not year or not month:
+        return jsonify({'error': 'Missing parameters'}), 400
+
+    from app.booking_utils import get_facility_month_availability_data
+    db = get_db()
+    data = get_facility_month_availability_data(db, facility_id, year, month, exclude_event_id=exclude_event_id)
+    return jsonify(data)
 
 
 # ── Event Status Lifecycle ────────────────────────────────────────────────────

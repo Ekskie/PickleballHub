@@ -186,7 +186,6 @@ def club_setup():
             # If banner was uploaded, persist to platform_settings and attempt table update
             if banner_url and target_club_id:
                 try:
-                    from app.db import get_admin_db
                     admin_db = get_admin_db() or db
                     admin_db.table('platform_settings').upsert({
                         'key': f"club_banner_{target_club_id}",
@@ -205,7 +204,127 @@ def club_setup():
         except Exception as e:
             flash('An error occurred. Please try again.', 'error')
             
-    return render_template('clubadmin/club_setup.html')
+    facilities_list = []
+    current_affiliation = None
+    try:
+        admin_db = get_admin_db() or db
+        f_resp = admin_db.table('facilities').select('id, name, location').eq('status', 'active').order('name').execute()
+        facilities_list = f_resp.data or []
+        if g.club:
+            aff_resp = admin_db.table('club_facility_affiliations').select(
+                'id, club_id, facility_id, status, request_notes, response_notes, created_at, updated_at, '
+                'facilities(id, name, location, owner_id)'
+            ).eq('club_id', g.club['id']).order('created_at', desc=True).execute()
+            if aff_resp.data:
+                current_affiliation = aff_resp.data[0]
+    except Exception as e:
+        current_app.logger.error(f"Error loading setup affiliations: {e}")
+
+    return render_template('clubadmin/club_setup.html', facilities_list=facilities_list, current_affiliation=current_affiliation)
+
+
+@clubadmin_bp.route('/affiliation/request', methods=['POST'])
+@require_role('clubadmin')
+def request_affiliation():
+    admin_id = session.get('user_id')
+    db = get_db()
+    admin_db = get_admin_db() or db
+    if not g.club:
+        flash("Club profile required.", "error")
+        return redirect(url_for('clubadmin.club_setup'))
+
+    facility_id = request.form.get('facility_id')
+    request_notes = request.form.get('request_notes', '').strip()
+
+    if not facility_id:
+        flash("Please select a facility.", "error")
+        return redirect(url_for('clubadmin.club_setup'))
+
+    try:
+        from datetime import timezone
+        # Insert or upsert affiliation request
+        db.table('club_facility_affiliations').upsert({
+            'club_id': g.club['id'],
+            'facility_id': facility_id,
+            'status': 'pending',
+            'requested_by': admin_id,
+            'request_notes': request_notes,
+            'updated_at': datetime.now(timezone.utc).isoformat()
+        }, on_conflict='club_id,facility_id').execute()
+
+        # Safely notify facility owner and start intro auto-chat using admin_db to respect RLS
+        try:
+            fac_resp = admin_db.table('facilities').select('name, owner_id').eq('id', facility_id).single().execute()
+            if fac_resp.data and fac_resp.data.get('owner_id'):
+                owner_id = fac_resp.data['owner_id']
+                fac_name = fac_resp.data.get('name', 'Facility')
+
+                admin_db.table('notifications').insert({
+                    'user_id': owner_id,
+                    'title': f"Home Venue Request: {g.club['name']}",
+                    'message': f"Club '{g.club['name']}' requested {fac_name} as their official Home Venue.",
+                    'type': 'info',
+                    'link': url_for('owner.facilities')
+                }).execute()
+
+                # Start chat safely
+                try:
+                    from app.chats import send_auto_message
+                    msg_content = (
+                        f"Hello! Our club '{g.club['name']}' has submitted a request to make {fac_name} our official Home Venue. "
+                        f"{f'Message from organizer: {request_notes}' if request_notes else 'Looking forward to hosting our club events and member meetups at your venue!'}"
+                    )
+                    send_auto_message(admin_db, admin_id, owner_id, msg_content)
+                except Exception as chat_err:
+                    current_app.logger.warning(f"Could not send auto-chat for affiliation: {chat_err}")
+        except Exception as notif_err:
+            current_app.logger.warning(f"Could not notify owner for affiliation: {notif_err}")
+
+        flash("Home Venue partnership request sent to facility owner!", "success")
+    except Exception as e:
+        current_app.logger.error(f"Error requesting affiliation: {e}")
+        flash("Failed to submit partnership request.", "error")
+
+    return redirect(url_for('clubadmin.club_setup'))
+
+
+@clubadmin_bp.route('/affiliation/cancel', methods=['POST'])
+@require_role('clubadmin')
+def cancel_affiliation():
+    db = get_admin_db() or get_db()
+    if not g.club:
+        return redirect(url_for('clubadmin.club_setup'))
+    affil_id = request.form.get('affiliation_id')
+    try:
+        # Check current status before deleting so we give the right feedback and notify owner if needed
+        existing = db.table('club_facility_affiliations').select(
+            'status, facility_id, facilities(name, owner_id)'
+        ).eq('id', affil_id).eq('club_id', g.club['id']).single().execute()
+
+        was_approved = bool(existing.data and existing.data.get('status') == 'approved')
+        fac_info = existing.data.get('facilities') if existing.data else {}
+
+        db.table('club_facility_affiliations').delete().eq('id', affil_id).eq('club_id', g.club['id']).execute()
+
+        if was_approved:
+            flash("Home venue partnership has been revoked.", "info")
+            if fac_info and fac_info.get('owner_id'):
+                try:
+                    db.table('notifications').insert({
+                        'user_id': fac_info['owner_id'],
+                        'title': f"Partnership Ended: {g.club['name']}",
+                        'message': f"Club '{g.club['name']}' has revoked their official home venue partnership with {fac_info.get('name', 'your facility')}.",
+                        'type': 'warning',
+                        'link': url_for('owner.facilities')
+                    }).execute()
+                except Exception as notif_err:
+                    current_app.logger.warning(f"Could not notify owner of revoked partnership: {notif_err}")
+        else:
+            flash("Partnership request cancelled.", "info")
+    except Exception as e:
+        current_app.logger.error(f"Error cancelling affiliation: {e}")
+        flash("Failed to cancel affiliation request.", "error")
+    return redirect(url_for('clubadmin.club_setup'))
 
 @clubadmin_bp.route('/dashboard')
 @require_role('clubadmin')
@@ -617,4 +736,20 @@ def api_courts_by_facility(facility_id):
             return jsonify(resp.data or [])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@clubadmin_bp.route('/api/facility_month_availability')
+@require_role('clubadmin')
+def api_facility_month_availability():
+    facility_id = request.args.get('facility_id')
+    year = request.args.get('year', type=int)
+    month = request.args.get('month', type=int)
+    exclude_event_id = request.args.get('exclude_event_id')
+    if not facility_id or not year or not month:
+        return jsonify({'error': 'Missing parameters'}), 400
+
+    from app.booking_utils import get_facility_month_availability_data
+    db = get_db()
+    data = get_facility_month_availability_data(db, facility_id, year, month, exclude_event_id=exclude_event_id)
+    return jsonify(data)
 

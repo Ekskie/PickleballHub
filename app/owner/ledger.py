@@ -45,22 +45,36 @@ def payment_ledger():
         fac_ids = [f['id'] for f in facilities_data]
         
         if fac_ids:
-            # Query court_reservations where gcash_ref is not null/empty
+            # Query all court_reservations for owner facilities (both GCash and Front Desk Cash)
             resp = db.table('court_reservations').select(
-                'id, date, start_time, end_time, total_amount, status, gcash_ref, receipt_url, created_at, player_id, facility_id, '
+                'id, date, start_time, end_time, total_amount, status, gcash_ref, receipt_url, created_at, player_id, facility_id, guest_name, guest_phone, '
                 'profiles(first_name, last_name, phone, avatar_url), '
                 'courts(name, type), '
                 'facilities(id, name)'
-            ).in_('facility_id', fac_ids).neq('gcash_ref', None).neq('gcash_ref', '').order('created_at', desc=True).execute()
+            ).in_('facility_id', fac_ids).order('created_at', desc=True).execute()
             
             transactions = resp.data or []
             
             # Post-process user initials & commission breakdown per transaction
             for t in transactions:
-                prof = t.get('profiles') or {}
-                first = (prof.get('first_name') or ' ')[0]
-                last = (prof.get('last_name') or ' ')[0]
-                prof['initials'] = (first + last).upper().strip() or '?'
+                prof = t.get('profiles')
+                if prof:
+                    first = (prof.get('first_name') or ' ')[0]
+                    last = (prof.get('last_name') or ' ')[0]
+                    prof['initials'] = (first + last).upper().strip() or '?'
+                    prof['is_guest'] = False
+                else:
+                    g_name = (t.get('guest_name') or 'Guest Player').strip()
+                    parts = g_name.split()
+                    initials = (parts[0][0] + (parts[-1][0] if len(parts) > 1 else '')).upper() if parts else 'GP'
+                    t['profiles'] = {
+                        'first_name': parts[0] if parts else 'Guest',
+                        'last_name': ' '.join(parts[1:]) if len(parts) > 1 else '',
+                        'phone': t.get('guest_phone') or 'Front Desk Walk-in',
+                        'avatar_url': None,
+                        'initials': initials,
+                        'is_guest': True
+                    }
 
                 gross = float(t.get('total_amount') or 0)
                 comm_fee = round(gross * commission_rate, 2)
@@ -68,6 +82,7 @@ def payment_ledger():
                 t['gross_amount'] = gross
                 t['commission_fee'] = comm_fee
                 t['net_amount'] = net_payout
+                t['payment_method'] = 'GCash' if (t.get('gcash_ref') and t.get('gcash_ref').strip()) else 'Cash'
 
             # Fetch audit logs to see if reservations were approved by Front Desk staff
             res_ids = [t['id'] for t in transactions]
@@ -185,15 +200,17 @@ def approve_payment(reservation_id):
             'facility_id': res.get('facility_id')
         })
         
-        # Insert player into court_queues
-        db.table('court_queues').insert({
-            'player_id': res['player_id'],
-            'facility_id': res['facility_id'],
-            'court_id': res['court_id'],
-            'reservation_id': reservation_id,
-            'status': 'waiting',
-            'estimated_wait_mins': 0
-        }).execute()
+        # Insert player into court_queues only if reservation is for today
+        today_str = datetime.now(PH_TZ).strftime('%Y-%m-%d')
+        if res.get('date') == today_str:
+            db.table('court_queues').insert({
+                'player_id': res['player_id'],
+                'facility_id': res['facility_id'],
+                'court_id': res['court_id'],
+                'reservation_id': reservation_id,
+                'status': 'waiting',
+                'estimated_wait_mins': 0
+            }).execute()
         
         # Trigger autochat messages
         try:
@@ -306,7 +323,7 @@ def export_ledger_csv():
         transactions = []
         if fac_ids:
             resp = db.table('court_reservations').select(
-                'id, date, start_time, end_time, total_amount, status, gcash_ref, created_at, '
+                'id, date, start_time, end_time, total_amount, status, gcash_ref, created_at, guest_name, guest_phone, '
                 'profiles(first_name, last_name, email, phone), '
                 'courts(name, type), '
                 'facilities(name)'
@@ -315,13 +332,16 @@ def export_ledger_csv():
 
         si = StringIO()
         writer = csv.writer(si)
-        writer.writerow(['Reservation ID', 'Booking Date', 'Time Slot', 'Facility', 'Court', 'Customer Name', 'Phone', 'Total (PHP)', 'GCash Reference', 'Status', 'Timestamp'])
+        writer.writerow(['Reservation ID', 'Booking Date', 'Time Slot', 'Facility', 'Court', 'Customer Name', 'Phone', 'Payment Method', 'Total (PHP)', 'Payment Reference', 'Status', 'Timestamp'])
 
         for t in transactions:
             prof = t.get('profiles') or {}
             fac = t.get('facilities') or {}
             court = t.get('courts') or {}
-            cust_name = f"{prof.get('first_name', '')} {prof.get('last_name', '')}".strip()
+            cust_name = f"{prof.get('first_name', '')} {prof.get('last_name', '')}".strip() or t.get('guest_name') or 'Guest Walk-in'
+            cust_phone = prof.get('phone') or t.get('guest_phone') or 'Front Desk'
+            pay_method = 'GCash' if (t.get('gcash_ref') and t.get('gcash_ref').strip()) else 'Cash (Front Desk)'
+            pay_ref = t.get('gcash_ref') or 'N/A (Cash)'
             slot = f"{t.get('start_time', '')} - {t.get('end_time', '')}"
             writer.writerow([
                 t.get('id', ''),
@@ -330,9 +350,10 @@ def export_ledger_csv():
                 fac.get('name', ''),
                 court.get('name', ''),
                 cust_name,
-                prof.get('phone', ''),
+                cust_phone,
+                pay_method,
                 t.get('total_amount', 0),
-                t.get('gcash_ref', ''),
+                pay_ref,
                 t.get('status', ''),
                 t.get('created_at', '')[:19]
             ])

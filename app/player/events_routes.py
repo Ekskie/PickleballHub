@@ -1,6 +1,6 @@
 from flask import render_template, request, redirect, url_for, session, flash, jsonify
 from app.decorators import require_role
-from app.db import get_db
+from app.db import get_db, get_admin_db
 from app.player import player_bp
 
 @player_bp.route('/events')
@@ -202,18 +202,21 @@ def unregister_event(event_id):
             reg_count_resp = db.table('event_registrations').select('id', count='exact').eq('event_id', event_id).eq('status', 'registered').execute()
             reg_count = reg_count_resp.count or 0
 
+            # Waitlist promotion requires admin_db to bypass RLS policies across other player records
+            admin_db = get_admin_db() or db
+
             # If there's now a free spot and the event was marked full, open it
             if ev['status'] == 'full' and reg_count < ev['max_players']:
-                db.table('events').update({'status': 'registration_open'}).eq('id', event_id).execute()
+                admin_db.table('events').update({'status': 'registration_open'}).eq('id', event_id).execute()
 
             # Promote the oldest waitlisted player
             if reg_count < ev['max_players']:
-                waitlist_resp = db.table('event_registrations').select('id, player_id').eq('event_id', event_id).eq('status', 'waitlisted').order('created_at').limit(1).execute()
+                waitlist_resp = admin_db.table('event_registrations').select('id, player_id').eq('event_id', event_id).eq('status', 'waitlisted').order('created_at').limit(1).execute()
                 if waitlist_resp.data:
                     promoted = waitlist_resp.data[0]
-                    db.table('event_registrations').update({'status': 'registered'}).eq('id', promoted['id']).execute()
+                    admin_db.table('event_registrations').update({'status': 'registered'}).eq('id', promoted['id']).execute()
                     # Notify the promoted player
-                    db.table('notifications').insert({
+                    admin_db.table('notifications').insert({
                         'user_id': promoted['player_id'],
                         'title': f'🎉 Spot Available: {ev["title"]}',
                         'message': f'A spot opened up for "{ev["title"]}" and you have been automatically registered. Check your events!',

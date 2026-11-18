@@ -998,8 +998,7 @@
                                 <span class="status-dot-pulse"></span> Pending Review
                             </span>
                             {% if m.receipt_url %}
-                            <button type="button" onclick="showReceipt('{{ m.receipt_url }}', '{{ m.gcash_ref }}')" 
-                                    style="margin-left: 6px; background: rgba(14, 165, 233, 0.1); color: #0284c7; border: 1px solid rgba(14, 165, 233, 0.2); border-radius: 6px; padding: 2px 7px; font-size: 0.72rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                            <button type="button" class="btn-receipt-pill" onclick="showReceipt('{{ m.receipt_url }}', '{{ m.gcash_ref }}')" title="View GCash Receipt" style="margin-left: 6px; padding: 2px 7px; font-size: 0.72rem;">
                                 <i class="ph ph-receipt"></i> Receipt
                             </button>
                             {% endif %}

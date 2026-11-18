@@ -205,21 +205,33 @@ def club_detail(club_id):
             except Exception as chat_err:
                 print(f"[club_detail] Error loading initial chat messages: {chat_err}")
         
+        # 7. Fetch approved home facility affiliation
+        home_facility = None
+        try:
+            aff_resp = db.table('club_facility_affiliations').select(
+                'id, facility_id, facilities(id, name, location, image_url)'
+            ).eq('club_id', club_id).eq('status', 'approved').limit(1).execute()
+            if aff_resp.data and aff_resp.data[0].get('facilities'):
+                home_facility = aff_resp.data[0]['facilities']
+        except Exception as aff_err:
+            print(f"[club_detail] Error loading home facility: {aff_err}")
+
+        return render_template(
+            'player/club_detail.html',
+            club=club,
+            members=members,
+            top_members=top_members,
+            avg_dupr=avg_dupr,
+            my_membership=my_membership,
+            events=events_list,
+            chat_messages=chat_messages,
+            can_access_chat=can_access_chat,
+            home_facility=home_facility
+        )
+
     except Exception as e:
         flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('player.clubs'))
-        
-    return render_template(
-        'player/club_detail.html',
-        club=club,
-        members=members,
-        top_members=top_members,
-        avg_dupr=avg_dupr,
-        my_membership=my_membership,
-        events=events_list,
-        chat_messages=chat_messages,
-        can_access_chat=can_access_chat
-    )
 
 
 @player_bp.route('/clubs/<club_id>/messages')

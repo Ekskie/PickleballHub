@@ -1388,9 +1388,14 @@
                         <!-- Action -->
                         <td style="text-align: right;">
                             {% if not is_me %}
-                            <a href="{{ url_for('player.leaderboard_challenge', target_id=player.id) }}" class="btn-table-msg" title="Send direct challenge or message">
-                                <i class="ph ph-chat-circle-dots"></i> Message
-                            </a>
+                            <div style="display: inline-flex; gap: 6px; justify-content: flex-end; align-items: center;">
+                                <a href="{{ url_for('player.player_chat', target_id=player.id) }}" class="btn-table-msg" title="Send direct message">
+                                    <i class="ph ph-chat-circle-dots"></i> Message
+                                </a>
+                                <a href="{{ url_for('player.leaderboard_challenge', target_id=player.id) }}" class="btn-table-msg" style="background: rgba(234, 88, 12, 0.12); color: #ea580c; border: 1px solid rgba(234, 88, 12, 0.25);" title="Challenge to Open Play Match">
+                                    <i class="ph ph-swords"></i> Challenge
+                                </a>
+                            </div>
                             {% else %}
                             <span style="font-size: 0.78rem; font-weight: 800; color: #6366f1; background: rgba(99, 102, 241, 0.12); padding: 4px 10px; border-radius: 9999px;">
                                 Your Rank

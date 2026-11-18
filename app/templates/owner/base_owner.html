@@ -35,7 +35,7 @@
 </li>
 
 <!-- Finance & Events Dropdown -->
-{% set is_fin_active = request.endpoint in ['owner.payment_ledger', 'owner.events', 'owner.create_event_page'] %}
+{% set is_fin_active = request.endpoint in ['owner.payment_ledger', 'owner.events', 'owner.create_event_page', 'owner.tournament_manage', 'owner.event_participants', 'owner.edit_event'] %}
 <li class="sidebar-dropdown-group {% if is_fin_active %}open active-group{% endif %}" data-group="owner-fin">
     <button type="button" class="sidebar-dropdown-btn" onclick="toggleSidebarDropdown(this)">
         <span class="dropdown-btn-label">
@@ -48,7 +48,7 @@
         <li class="{% if request.endpoint == 'owner.payment_ledger' %}active{% endif %}">
             <a href="{{ url_for('owner.payment_ledger') }}"><i class="ph ph-receipt"></i> <span>Payment Ledger</span></a>
         </li>
-        <li class="{% if request.endpoint in ['owner.events', 'owner.create_event_page'] %}active{% endif %}">
+        <li class="{% if request.endpoint in ['owner.events', 'owner.create_event_page', 'owner.tournament_manage', 'owner.event_participants', 'owner.edit_event'] %}active{% endif %}">
             <a href="{{ url_for('owner.events') }}"><i class="ph ph-trophy"></i> <span>Events</span></a>
         </li>
     </ul>

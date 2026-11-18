@@ -447,6 +447,18 @@ def match_score(event_id, match_id):
     winner_side = request.form.get('winner_side') # 'player1' or 'player2'
     winner_id_param = request.form.get('winner_id')
 
+    if p1_score is None or p2_score is None:
+        flash('Both player scores are required to record match results.', 'error')
+        return redirect(url_for('clubadmin.tournament_manage', event_id=event_id))
+
+    if p1_score < 0 or p2_score < 0:
+        flash('Match scores cannot be negative numbers.', 'error')
+        return redirect(url_for('clubadmin.tournament_manage', event_id=event_id))
+
+    if p1_score == p2_score:
+        flash('Pickleball matches cannot end in a draw. A definitive winner must be determined.', 'error')
+        return redirect(url_for('clubadmin.tournament_manage', event_id=event_id))
+
     try:
         # Verify ownership
         admin_db.table('events').select('id').eq('id', event_id).eq('organizer_id', admin_id).single().execute()

@@ -186,8 +186,9 @@ selectattr('status', 'equalto', 'dismissed') | list | length) %}
         style="background: var(--modal-box-bg) !important; border: 1px solid var(--modal-box-border) !important; padding:28px; width:100%; max-width:520px; border-radius:16px !important; box-shadow:0 20px 60px rgba(0,0,0,0.4) !important; transform:none !important;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <h2 style="margin:0; font-size:1.2rem; color: var(--text-primary);">Review Dispute</h2>
-            <button onclick="closeDisputeModal()"
-                style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1.4rem;">&times;</button>
+            <button type="button" class="modal-close-icon" onclick="closeDisputeModal()" aria-label="Close dialog">
+                <i class="ph ph-x"></i>
+            </button>
         </div>
 
         <div id="modalSubject" style="font-weight:700; margin-bottom:8px; font-size:1rem; color: var(--text-primary);">
@@ -218,7 +219,7 @@ selectattr('status', 'equalto', 'dismissed') | list | length) %}
                     style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:var(--input-bg); color:var(--text-primary); resize:vertical; font-family:inherit; outline: none;"></textarea>
             </div>
             <div style="display:flex; gap:10px; justify-content:flex-end;">
-                <button type="button" onclick="closeDisputeModal()"
+                <button type="button" class="btn-secondary" onclick="closeDisputeModal()"
                     style="padding:10px 20px; border-radius:8px; border:1px solid var(--border-color); background:transparent; color:var(--text-primary); cursor:pointer; font-weight:600;">
                     Cancel
                 </button>

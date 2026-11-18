@@ -289,6 +289,24 @@ def courts_listing():
                         'facility_location': facility.get('location', 'Laguna')
                     })
                     
+        # Batch aggregate verified ratings and reviews
+        if client and facilities_dict:
+            try:
+                rev_resp = client.table('facility_reviews').select('facility_id, rating').execute()
+                rev_map = {}
+                for rev in (rev_resp.data or []):
+                    fid = str(rev.get('facility_id') or '')
+                    if fid:
+                        if fid not in rev_map:
+                            rev_map[fid] = []
+                        rev_map[fid].append(rev.get('rating') or 5)
+                for fid, fac_obj in facilities_dict.items():
+                    r_list = rev_map.get(fid, [])
+                    fac_obj['review_count'] = len(r_list)
+                    fac_obj['avg_rating'] = round(sum(r_list) / len(r_list), 1) if r_list else None
+            except Exception:
+                pass
+
         facilities = list(facilities_dict.values())
         # Sort facilities: Featured top pin (Elite) first, then verified partner (Pro), then alphabetical
         facilities.sort(key=lambda x: (not x.get('is_featured_pin', False), not x.get('is_verified_partner', False), x.get('name', '')))
@@ -333,7 +351,9 @@ def courts_listing():
                 'facility_latitude': f['latitude'],
                 'facility_longitude': f['longitude'],
                 'facility_image_url': f['image_url'],
-                'facility_description': f['description']
+                'facility_description': f['description'],
+                'avg_rating': f.get('avg_rating'),
+                'review_count': f.get('review_count', 0)
             })
 
     return render_template(

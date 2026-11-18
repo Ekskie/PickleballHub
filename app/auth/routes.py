@@ -764,35 +764,3 @@ def logout():
     return redirect(url_for('auth.login'))
 
 
-@auth_bp.route('/demo-player')
-def demo_player():
-    """Quick demo login for client demonstration of PickleballHub 2.0 sports platform."""
-    try:
-        from app.db import get_admin_db
-        db = get_admin_db()
-        prof_resp = db.table('profiles').select('*').eq('role', 'player').order('wins', desc=True).limit(1).execute()
-        if prof_resp.data:
-            p = prof_resp.data[0]
-            session['user_id'] = p['id']
-            session['email'] = p.get('email', 'dennrick@pickleballhub.ph')
-            session['first_name'] = p.get('first_name', 'Dennrick')
-            session['last_name'] = p.get('last_name', '')
-            session['phone'] = p.get('phone', '')
-            session['role'] = 'player'
-            session['dupr'] = p.get('dupr', 3.08)
-            session['elo'] = p.get('elo', 1230)
-            return redirect(url_for('player.dashboard'))
-    except Exception as e:
-        print(f"[demo_player] error: {e}")
-
-    session['user_id'] = 'demo-player-001'
-    session['email'] = 'dennrick@pickleballhub.ph'
-    session['first_name'] = 'Dennrick'
-    session['last_name'] = 'Player'
-    session['phone'] = '+63 912 345 6789'
-    session['role'] = 'player'
-    session['dupr'] = 3.45
-    session['elo'] = 1350
-    return redirect(url_for('player.dashboard'))
-
-

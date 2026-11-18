@@ -1,0 +1,466 @@
+{% extends "facilitystaff/base_facilitystaff.html" %}
+
+{% block title %}Front Desk Check-In: {{ event.title }} • PickleballHub{% endblock %}
+
+{% block extra_head %}
+<style>
+.roster-page-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding-bottom: 40px;
+}
+
+.roster-header-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 18px;
+    padding: 24px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    position: relative;
+    overflow: hidden;
+}
+
+.roster-header-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, #ff5722 0%, #22c55e 100%);
+}
+
+.roster-kpi-bar {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.roster-kpi-pill {
+    background: var(--input-bg, #f8fafc);
+    border: 1px solid var(--border-color, #e2e8f0);
+    padding: 10px 18px;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    min-width: 120px;
+}
+
+.roster-kpi-lbl {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted, #64748b);
+    letter-spacing: 0.5px;
+}
+
+.roster-kpi-val {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text-primary, #0f172a);
+    margin-top: 2px;
+}
+
+.search-filter-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 16px;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.search-input-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 280px;
+}
+
+.search-input-wrap i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 1.1rem;
+}
+
+.search-input-field {
+    width: 100%;
+    padding: 10px 14px 10px 40px;
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 10px;
+    background: var(--input-bg, #f8fafc);
+    color: var(--text-primary);
+    font-size: 0.88rem;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.search-input-field:focus {
+    border-color: var(--primary-orange);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.12);
+}
+
+.filter-pills-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.filter-chip {
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border: 1px solid var(--border-color, #e2e8f0);
+    background: var(--input-bg, #f8fafc);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-chip.active {
+    background: var(--primary-orange, #ff5722);
+    border-color: var(--primary-orange, #ff5722);
+    color: #fff;
+}
+
+.roster-table-container {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+}
+
+.roster-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.roster-table th {
+    background: var(--input-bg, #f8fafc);
+    padding: 14px 20px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.roster-table td {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.88rem;
+    color: var(--text-primary);
+    vertical-align: middle;
+}
+
+.roster-table tr:hover td {
+    background: rgba(255, 87, 34, 0.02);
+}
+
+.participant-avatar-wrap {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 87, 34, 0.1);
+    color: var(--primary-orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.status-badge-checked {
+    background: rgba(34, 197, 94, 0.12);
+    color: #16a34a;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.status-badge-pending {
+    background: rgba(245, 158, 11, 0.12);
+    color: #d97706;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.status-badge-noshow {
+    background: rgba(239, 68, 68, 0.12);
+    color: #dc2626;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-desk-checkin {
+    background: #22c55e;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.btn-desk-checkin:hover {
+    background: #16a34a;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);
+}
+
+.btn-desk-noshow {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.btn-desk-noshow:hover {
+    border-color: #ef4444;
+    color: #ef4444;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="roster-page-container">
+    <!-- Header with Back Button and Event Overview -->
+    <div class="roster-header-card">
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <a href="{{ url_for('facilitystaff.events') }}" style="color: var(--text-muted); text-decoration: none; display: flex; align-items: center; gap: 4px; font-size: 0.82rem; font-weight: 600;">
+                    <i class="ph ph-arrow-left"></i> Back to Venue Events
+                </a>
+                <span style="color: var(--border-color);">•</span>
+                <span style="background: rgba(255, 87, 34, 0.12); color: var(--primary-orange); font-size: 0.74rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; text-transform: uppercase;">
+                    {{ event.type }}
+                </span>
+            </div>
+            <h1 style="margin: 0; font-size: 1.5rem; font-weight: 800; color: var(--text-primary);">
+                {{ event.title }}
+            </h1>
+            <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap; font-size: 0.85rem; color: var(--text-secondary);">
+                <span><i class="ph ph-calendar"></i> {{ event.event_date }} ({{ event.start_time[:5] }} - {{ event.end_time[:5] }})</span>
+                <span><i class="ph ph-buildings"></i> {{ event.facilities.name }}</span>
+                {% if booked_courts %}
+                <span><i class="ph ph-intersect"></i> Courts: {{ booked_courts|join(', ') }}</span>
+                {% endif %}
+            </div>
+            {% if event.organizer_id %}
+            <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Organizer: <strong>{{ event.profiles.first_name }} {{ event.profiles.last_name }}</strong></span>
+                <a href="{{ url_for('facilitystaff.messages', chat_user=event.organizer_id) }}" style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.78rem; font-weight: 700; color: var(--primary-orange); text-decoration: none; padding: 3px 8px; background: rgba(255,87,34,0.08); border-radius: 6px;">
+                    <i class="ph ph-chat-circle-dots"></i> Message Organizer
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- KPIs -->
+        <div class="roster-kpi-bar">
+            <div class="roster-kpi-pill">
+                <span class="roster-kpi-lbl">Total Registered</span>
+                <span class="roster-kpi-val">{{ total_registered }} / {{ event.max_players or 16 }}</span>
+            </div>
+            <div class="roster-kpi-pill" style="border-color: rgba(34, 197, 94, 0.4); background: rgba(34, 197, 94, 0.04);">
+                <span class="roster-kpi-lbl" style="color: #16a34a;">Checked In</span>
+                <span class="roster-kpi-val" style="color: #16a34a;">{{ checked_in_count }}</span>
+            </div>
+            <div class="roster-kpi-pill">
+                <span class="roster-kpi-lbl">Pending Arrival</span>
+                <span class="roster-kpi-val" style="color: #f59e0b;">{{ total_registered - checked_in_count }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search & Filter Controls -->
+    <div class="search-filter-card">
+        <div class="search-input-wrap">
+            <i class="ph ph-magnifying-glass"></i>
+            <input type="text" id="rosterSearchInput" class="search-input-field" placeholder="Search participant by name or phone..." onkeyup="filterRoster()">
+        </div>
+        <div class="filter-pills-row">
+            <button class="filter-chip active" data-filter="all" onclick="setRosterFilter('all', this)">All ({{ total_registered }})</button>
+            <button class="filter-chip" data-filter="checked_in" onclick="setRosterFilter('checked_in', this)">Checked In ({{ checked_in_count }})</button>
+            <button class="filter-chip" data-filter="pending" onclick="setRosterFilter('pending', this)">Pending ({{ total_registered - checked_in_count }})</button>
+        </div>
+    </div>
+
+    <!-- Participants Table -->
+    <div class="roster-table-container">
+        {% if participants %}
+        <table class="roster-table" id="rosterTable">
+            <thead>
+                <tr>
+                    <th>Participant</th>
+                    <th>Contact</th>
+                    <th>Registration Type</th>
+                    <th>Attendance Status</th>
+                    <th>Desk Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in participants %}
+                {% set p_name = (p.profiles.first_name ~ ' ' ~ p.profiles.last_name)|strip if p.profiles else (p.guest_name or 'Participant') %}
+                {% set p_phone = (p.profiles.phone if p.profiles else '') or '' %}
+                {% set p_status = p.check_in_status or 'pending' %}
+                <tr class="roster-row" data-name="{{ p_name|lower }}" data-phone="{{ p_phone|lower }}" data-status="{{ p_status }}">
+                    <td>
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <div class="participant-avatar-wrap">
+                                {% if p.profiles and p.profiles.avatar_url %}
+                                <img src="{{ p.profiles.avatar_url }}" alt="{{ p_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                {{ (p_name[:2])|upper }}
+                                {% endif %}
+                            </div>
+                            <div>
+                                <strong style="display: block; font-size: 0.95rem;">{{ p_name }}</strong>
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">
+                                    Registered: {{ p.registered_at[:10] if p.registered_at else 'Recent' }}
+                                </span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        {% if p_phone %}
+                        <a href="tel:{{ p_phone }}" style="color: var(--text-primary); text-decoration: none; font-weight: 600;">
+                            <i class="ph ph-phone"></i> {{ p_phone }}
+                        </a>
+                        {% else %}
+                        <span style="color: var(--text-muted); font-size: 0.8rem;">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if p.is_walkin %}
+                        <span style="background: rgba(148, 163, 184, 0.15); color: #475569; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 4px;">Walk-In</span>
+                        {% else %}
+                        <span style="background: rgba(59, 130, 246, 0.12); color: #2563eb; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 4px;">Pre-Registered</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if p_status == 'checked_in' %}
+                        <span class="status-badge-checked">
+                            <i class="ph ph-check-circle"></i> Checked In
+                        </span>
+                        {% if p.staff_profile %}
+                        <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">
+                            By staff: {{ p.staff_profile.first_name }}
+                        </div>
+                        {% endif %}
+                        {% elif p_status == 'no_show' %}
+                        <span class="status-badge-noshow">
+                            <i class="ph ph-x-circle"></i> No Show
+                        </span>
+                        {% else %}
+                        <span class="status-badge-pending">
+                            <i class="ph ph-hourglass-medium"></i> Pending
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            {% if p_status != 'checked_in' %}
+                            <form method="POST" action="{{ url_for('facilitystaff.event_checkin', event_id=event.id, reg_id=p.id) }}" style="margin:0;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="status" value="checked_in">
+                                <button type="submit" class="btn-desk-checkin">
+                                    <i class="ph ph-check"></i> Check In
+                                </button>
+                            </form>
+                            {% else %}
+                            <form method="POST" action="{{ url_for('facilitystaff.event_checkin', event_id=event.id, reg_id=p.id) }}" style="margin:0;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="status" value="pending">
+                                <button type="submit" class="btn-desk-noshow" title="Undo Check-in">
+                                    <i class="ph ph-arrow-counter-clockwise"></i> Undo
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="padding: 40px; text-align: center; color: var(--text-muted);">
+            <i class="ph ph-users" style="font-size: 2.2rem; margin-bottom: 8px; display: inline-block;"></i>
+            <h3>No participants registered yet</h3>
+            <p style="margin: 0; font-size: 0.88rem;">Once players register for this event, they will appear in this check-in list.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+let currentFilter = 'all';
+
+function setRosterFilter(filter, el) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    filterRoster();
+}
+
+function filterRoster() {
+    const q = (document.getElementById('rosterSearchInput').value || '').toLowerCase().trim();
+    const rows = document.querySelectorAll('.roster-row');
+
+    rows.forEach(r => {
+        const name = r.dataset.name || '';
+        const phone = r.dataset.phone || '';
+        const status = r.dataset.status || 'pending';
+
+        const matchesSearch = !q || name.includes(q) || phone.includes(q);
+        const matchesFilter = (currentFilter === 'all') || (status === currentFilter);
+
+        if (matchesSearch && matchesFilter) {
+            r.style.display = '';
+        } else {
+            r.style.display = 'none';
+        }
+    });
+}
+</script>
+{% endblock %}

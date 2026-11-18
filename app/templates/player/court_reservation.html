@@ -3817,9 +3817,9 @@
 <!-- Map Modal HTML -->
 <div id="map-modal">
     <div class="glass-card" style="width: 90%; max-width: 600px; position: relative;">
-        <button onclick="closeMapModal()"
-            style="position: absolute; top: 15px; right: 15px; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center;"><i
-                class="ph ph-x"></i></button>
+        <button type="button" class="modal-close-icon" onclick="closeMapModal()" aria-label="Close Map" style="position: absolute; top: 15px; right: 15px;">
+            <i class="ph ph-x"></i>
+        </button>
         <h3 style="margin-bottom: 10px; font-size: 1.1rem; color: var(--text-primary);">Facility Location</h3>
         <div id="facility-map"></div>
     </div>
@@ -3841,8 +3841,7 @@
                 <p id="team-modal-facility-name"
                     style="margin:3px 0 0 0; font-size:0.75rem; color:var(--text-muted); font-weight:600;"></p>
             </div>
-            <button type="button" onclick="closeFacilityTeamModal()"
-                style="background:var(--input-bg); border:1px solid var(--border-color); color:var(--text-primary); border-radius:50%; width:32px; height:32px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">
+            <button type="button" class="modal-close-icon" onclick="closeFacilityTeamModal()" aria-label="Close Facility Team">
                 <i class="ph ph-x"></i>
             </button>
         </div>
@@ -3852,8 +3851,8 @@
         </div>
         <div
             style="padding:12px 20px; background:var(--input-bg); border-top:1px solid var(--border-color); display:flex; justify-content:flex-end;">
-            <button type="button" onclick="closeFacilityTeamModal()"
-                style="padding:7px 18px; border-radius:10px; border:1px solid var(--border-color); background:var(--card-bg); color:var(--text-primary); font-size:0.82rem; font-weight:700; cursor:pointer; font-family:inherit;">
+            <button type="button" class="action-box" onclick="closeFacilityTeamModal()"
+                style="padding:7px 18px; border-radius:10px; border:1px solid var(--border-color); background:var(--card-bg); color:var(--text-primary); font-size:0.82rem; font-weight:700; cursor:pointer; font-family:inherit; width:auto;">
                 Done
             </button>
         </div>
@@ -3876,8 +3875,7 @@
                         advance. Upgrade to Pro Player Pass to unlock 14-day early access!
                     </p>
                 </div>
-                <button type="button" onclick="closeProEarlyAccessModal()"
-                    style="background:var(--input-bg); border:1px solid var(--border-color); color:var(--text-primary); border-radius:50%; width:32px; height:32px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s; flex-shrink:0;">
+                <button type="button" class="modal-close-icon" onclick="closeProEarlyAccessModal()" aria-label="Close Pro Early Access">
                     <i class="ph ph-x"></i>
                 </button>
             </div>

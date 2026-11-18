@@ -35,6 +35,7 @@ def facilities():
     owner_id = session.get('user_id')
     db = get_admin_db()
     facilities_list = []
+    affiliations = []
     try:
         resp = db.table('facilities').select(
             'id, name, location, description, status, open_time, close_time, slot_duration_minutes, created_at, kyc_status, kyc_document_url, latitude, longitude, image_url'
@@ -56,6 +57,22 @@ def facilities():
                 f['display_description'] = clean_description(f.get('description'))
                 facilities_list.append(f)
 
+            # Load verified player reviews and ratings
+            try:
+                rev_resp = db.table('facility_reviews').select('facility_id, rating').in_('facility_id', fac_ids).execute()
+                rev_map = {}
+                for rev in (rev_resp.data or []):
+                    fid = rev.get('facility_id')
+                    if fid not in rev_map:
+                        rev_map[fid] = []
+                    rev_map[fid].append(rev.get('rating') or 5)
+                for f in facilities_list:
+                    r_list = rev_map.get(f['id'], [])
+                    f['review_count'] = len(r_list)
+                    f['avg_rating'] = round(sum(r_list) / len(r_list), 1) if r_list else None
+            except Exception:
+                pass
+
             # Check if any facility was rejected and retrieve the rejection feedback
             rejected_facs = [f for f in facilities_list if f.get('kyc_status') == 'rejected']
             if rejected_facs:
@@ -70,6 +87,19 @@ def facilities():
                                 break
                 except Exception:
                     pass
+
+        # Fetch club affiliations for owner's facilities
+        affiliations = []
+        if facilities_data:
+            fac_ids = [f['id'] for f in facilities_data]
+            try:
+                aff_resp = db.table('club_facility_affiliations').select(
+                    'id, club_id, facility_id, status, request_notes, response_notes, created_at, '
+                    'facilities(name), clubs(id, name, location, logo_url, admin_id, profiles!admin_id(first_name, last_name, phone))'
+                ).in_('facility_id', fac_ids).order('created_at', desc=True).execute()
+                affiliations = aff_resp.data or []
+            except Exception as aff_err:
+                current_app.logger.warning(f"Error loading affiliations: {aff_err}")
     except Exception as e:
         from flask import current_app
         current_app.logger.error(f"Error loading facilities for owner {owner_id}: {e}")
@@ -86,6 +116,9 @@ def facilities():
     limit_message = limit_check.get('message', '')
     required_tier = limit_check.get('required_tier', 'pro')
 
+    pending_affiliations = [a for a in affiliations if a.get('status') == 'pending']
+    partner_clubs = [a for a in affiliations if a.get('status') == 'approved']
+
     return render_template(
         'owner/facilities.html',
         facilities=facilities_list,
@@ -94,8 +127,163 @@ def facilities():
         current_fac_count=current_fac_count,
         limit_message=limit_message,
         owner_tier=owner_tier,
-        required_tier=required_tier
+        required_tier=required_tier,
+        pending_affiliations=pending_affiliations,
+        partner_clubs=partner_clubs
     )
+
+
+@owner_bp.route('/facilities/affiliations/<affil_id>/approve', methods=['POST'])
+@require_role('owner')
+def approve_affiliation(affil_id):
+    owner_id = session.get('user_id')
+    db = get_admin_db()
+    response_notes = request.form.get('response_notes', '').strip()
+    try:
+        fac_resp = db.table('facilities').select('id, name').eq('owner_id', owner_id).execute()
+        fac_ids = [f['id'] for f in (fac_resp.data or [])]
+
+        aff_resp = db.table('club_facility_affiliations').select('*, clubs(name, admin_id), facilities(name)').eq('id', affil_id).in_('facility_id', fac_ids).single().execute()
+        aff = aff_resp.data
+        if not aff:
+            flash("Affiliation request not found or unauthorized.", "error")
+            return redirect(url_for('owner.facilities'))
+
+        from datetime import timezone, datetime
+        db.table('club_facility_affiliations').update({
+            'status': 'approved',
+            'responded_by': owner_id,
+            'response_notes': response_notes,
+            'updated_at': datetime.now(timezone.utc).isoformat()
+        }).eq('id', affil_id).execute()
+
+        club_admin_id = aff.get('clubs', {}).get('admin_id')
+        facility_name = aff.get('facilities', {}).get('name') or "Facility"
+        club_name = aff.get('clubs', {}).get('name') or "Club"
+
+        if club_admin_id:
+            try:
+                db.table('notifications').insert({
+                    'user_id': club_admin_id,
+                    'title': f"Home Venue Approved: {facility_name}",
+                    'message': f"Congratulations! {facility_name} has accepted your request. Your club is now officially affiliated with this venue.",
+                    'type': 'success',
+                    'link': url_for('clubadmin.club_setup')
+                }).execute()
+
+                from app.chats import send_auto_message
+                conf_msg = (
+                    f"Welcome to {facility_name}! We are excited to officially partner with {club_name} as your Home Venue. "
+                    f"{f'Note from owner: {response_notes}' if response_notes else 'Looking forward to hosting your tournaments and member sessions!'}"
+                )
+                send_auto_message(db, owner_id, club_admin_id, conf_msg)
+            except Exception as notif_err:
+                from flask import current_app
+                current_app.logger.warning(f"Failed to deliver approval notification: {notif_err}")
+
+        flash(f"Partnership with {club_name} approved! They now have {facility_name} marked as their official Home Court.", "success")
+    except Exception as e:
+        flash(f"Error approving partnership: {e}", "error")
+
+    return redirect(url_for('owner.facilities'))
+
+
+@owner_bp.route('/facilities/affiliations/<affil_id>/decline', methods=['POST'])
+@require_role('owner')
+def decline_affiliation(affil_id):
+    owner_id = session.get('user_id')
+    db = get_admin_db()
+    reason = request.form.get('response_notes', '').strip() or 'Facility currently at capacity'
+    try:
+        fac_resp = db.table('facilities').select('id, name').eq('owner_id', owner_id).execute()
+        fac_ids = [f['id'] for f in (fac_resp.data or [])]
+
+        aff_resp = db.table('club_facility_affiliations').select('*, clubs(name, admin_id), facilities(name)').eq('id', affil_id).in_('facility_id', fac_ids).single().execute()
+        aff = aff_resp.data
+        if not aff:
+            flash("Affiliation request not found or unauthorized.", "error")
+            return redirect(url_for('owner.facilities'))
+
+        from datetime import timezone, datetime
+        db.table('club_facility_affiliations').update({
+            'status': 'declined',
+            'responded_by': owner_id,
+            'response_notes': reason,
+            'updated_at': datetime.now(timezone.utc).isoformat()
+        }).eq('id', affil_id).execute()
+
+        club_admin_id = aff.get('clubs', {}).get('admin_id')
+        facility_name = aff.get('facilities', {}).get('name') or "Facility"
+        club_name = aff.get('clubs', {}).get('name') or "Club"
+
+        if club_admin_id:
+            try:
+                db.table('notifications').insert({
+                    'user_id': club_admin_id,
+                    'title': f"Partnership Request Declined: {facility_name}",
+                    'message': f"Your partnership request with {facility_name} was declined. Reason: {reason}",
+                    'type': 'info',
+                    'link': url_for('clubadmin.club_setup')
+                }).execute()
+
+                from app.chats import send_auto_message
+                dec_msg = f"Thank you for your interest in {facility_name}. Regarding your partnership request for {club_name}: {reason}."
+                send_auto_message(db, owner_id, club_admin_id, dec_msg)
+            except Exception as notif_err:
+                from flask import current_app
+                current_app.logger.warning(f"Failed to deliver decline notification: {notif_err}")
+
+        flash(f"Partnership request with {club_name} declined.", "info")
+    except Exception as e:
+        flash(f"Error declining partnership: {e}", "error")
+
+    return redirect(url_for('owner.facilities'))
+
+
+@owner_bp.route('/facilities/affiliations/<affil_id>/revoke', methods=['POST'])
+@require_role('owner')
+def revoke_affiliation(affil_id):
+    owner_id = session.get('user_id')
+    db = get_admin_db()
+    reason = request.form.get('response_notes', '').strip() or 'Partnership revoked by facility owner'
+    try:
+        fac_resp = db.table('facilities').select('id, name').eq('owner_id', owner_id).execute()
+        fac_ids = [f['id'] for f in (fac_resp.data or [])]
+
+        aff_resp = db.table('club_facility_affiliations').select('*, clubs(name, admin_id), facilities(name)').eq('id', affil_id).in_('facility_id', fac_ids).single().execute()
+        aff = aff_resp.data
+        if not aff:
+            flash("Affiliation request not found or unauthorized.", "error")
+            return redirect(url_for('owner.facilities'))
+
+        db.table('club_facility_affiliations').delete().eq('id', affil_id).execute()
+
+        club_admin_id = aff.get('clubs', {}).get('admin_id')
+        facility_name = aff.get('facilities', {}).get('name') or "Facility"
+        club_name = aff.get('clubs', {}).get('name') or "Club"
+
+        if club_admin_id:
+            try:
+                db.table('notifications').insert({
+                    'user_id': club_admin_id,
+                    'title': f"Partnership Ended: {facility_name}",
+                    'message': f"{facility_name} has ended the official home venue partnership with {club_name}. Note: {reason}",
+                    'type': 'warning',
+                    'link': url_for('clubadmin.club_setup')
+                }).execute()
+
+                from app.chats import send_auto_message
+                rev_msg = f"Notice: {facility_name} has disconnected the home venue partnership with {club_name}. Reason: {reason}."
+                send_auto_message(db, owner_id, club_admin_id, rev_msg)
+            except Exception as notif_err:
+                from flask import current_app
+                current_app.logger.warning(f"Failed to deliver revoke notification: {notif_err}")
+
+        flash(f"Partnership with {club_name} revoked.", "info")
+    except Exception as e:
+        flash(f"Error revoking partnership: {e}", "error")
+
+    return redirect(url_for('owner.facilities'))
 
 
 @owner_bp.route('/facilities/add', methods=['POST'])
@@ -325,13 +513,18 @@ def kyc_upload(facility_id):
     db = get_admin_db()
     
     # Check if facility belongs to owner
-    fac_resp = db.table('facilities').select('id, kyc_document_url').eq('id', facility_id).eq('owner_id', owner_id).single().execute()
-    if not fac_resp.data:
+    try:
+        fac_resp = db.table('facilities').select('id, kyc_document_url').eq('id', facility_id).eq('owner_id', owner_id).single().execute()
+        fac_data = fac_resp.data
+    except Exception:
+        fac_data = None
+
+    if not fac_data:
         flash("Facility not found or unauthorized.", "error")
         return redirect(url_for('owner.facilities'))
 
     current_kyc_data = {}
-    existing_raw = fac_resp.data.get('kyc_document_url') or ''
+    existing_raw = fac_data.get('kyc_document_url') or ''
     if existing_raw.startswith('{'):
         try:
             current_kyc_data = json.loads(existing_raw)

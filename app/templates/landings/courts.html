@@ -1067,7 +1067,7 @@
                 </select>
             </div>
 
-            <button type="submit">Filter <i class="ph ph-funnel"></i></button>
+            <button type="submit" class="courts-filter-submit-btn">Filter <i class="ph ph-funnel"></i></button>
         </form>
 
         <!-- Courts Layout Split Pane -->
@@ -1095,6 +1095,9 @@
                                     <div class="facility-info-body">
                                         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;">
                                             <span class="facility-location-tag"><i class="ph-fill ph-map-pin"></i> {{ fac.location or 'Laguna District' }}</span>
+                                            {% if fac.avg_rating %}
+                                                <span class="badge-star-rating" style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.75rem; font-weight: 800; background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.35); padding: 2px 8px; border-radius: 999px;"><i class="ph-fill ph-star"></i> {{ fac.avg_rating }} ({{ fac.review_count }})</span>
+                                            {% endif %}
                                             {% if fac.is_featured_pin %}
                                                 <span class="badge-featured-pin" style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.72rem; font-weight: 700; background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.35); padding: 2px 8px; border-radius: 999px;"><i class="ph-fill ph-push-pin"></i> Featured Venue</span>
                                             {% endif %}

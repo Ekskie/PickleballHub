@@ -1665,7 +1665,7 @@
     <div class="modal-card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0;">Edit Match Lobby</h2>
-            <button onclick="closeEditLobbyModal()" style="background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer;"><i class="ph ph-x"></i></button>
+            <button type="button" class="modal-close-icon" onclick="closeEditLobbyModal()" aria-label="Close dialog"><i class="ph ph-x"></i></button>
         </div>
         
         <form method="POST" action="{{ url_for('player.matchmaker_edit', lobby_id=lobby.id) }}">
@@ -1756,4 +1756,65 @@
     }
 </script>
 {% endif %}
+
+<script>
+    // ── Supabase Realtime Lobby Sync ────────────────────────
+    (function initMatchmakerLobbyRealtime() {
+        const lobbyId = "{{ lobby.id }}";
+        if (!lobbyId || typeof supabaseClient === 'undefined' || !supabaseClient) {
+            return;
+        }
+
+        try {
+            const channel = supabaseClient.channel(`mm-lobby-${lobbyId}`)
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*',
+                        schema: 'public',
+                        table: 'lobby_participants',
+                        filter: `lobby_id=eq.${lobbyId}`
+                    },
+                    (payload) => {
+                        handleLobbyRealtimeUpdate('Participant update', payload);
+                    }
+                )
+                .on(
+                    'postgres_changes',
+                    {
+                        event: 'UPDATE',
+                        schema: 'public',
+                        table: 'matchmaker_lobbies',
+                        filter: `id=eq.${lobbyId}`
+                    },
+                    (payload) => {
+                        handleLobbyRealtimeUpdate('Lobby status update', payload);
+                    }
+                )
+                .subscribe((status) => {
+                    if (status === 'SUBSCRIBED') {
+                        console.log(`[Realtime] Subscribed to matchmaker lobby ${lobbyId}`);
+                    }
+                });
+
+            let reloadTimeout = null;
+            function handleLobbyRealtimeUpdate(type, payload) {
+                if (typeof playNotificationSound === 'function') {
+                    playNotificationSound();
+                }
+
+                if (typeof showToast === 'function') {
+                    showToast('Lobby Updated', 'A player joined, switched slot, or lobby updated!', 'info');
+                }
+
+                if (reloadTimeout) clearTimeout(reloadTimeout);
+                reloadTimeout = setTimeout(() => {
+                    window.location.reload();
+                }, 800);
+            }
+        } catch (e) {
+            console.warn('[Realtime] Failed to initialize lobby subscription:', e);
+        }
+    })();
+</script>
 {% endblock %}

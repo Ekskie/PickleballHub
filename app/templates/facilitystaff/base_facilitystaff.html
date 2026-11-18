@@ -29,7 +29,7 @@
 </li>
 
 <!-- Front Desk & Finance Dropdown -->
-{% set is_desk_active = request.endpoint in ['facilitystaff.walkin', 'facilitystaff.mediation_desk', 'facilitystaff.payment_ledger'] %}
+{% set is_desk_active = request.endpoint in ['facilitystaff.walkin', 'facilitystaff.mediation_desk', 'facilitystaff.payment_ledger', 'facilitystaff.events'] %}
 <li class="sidebar-dropdown-group {% if is_desk_active %}open active-group{% endif %}" data-group="staff-desk">
     <button type="button" class="sidebar-dropdown-btn" onclick="toggleSidebarDropdown(this)">
         <span class="dropdown-btn-label">

@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 PH_TZ = timezone(timedelta(hours=8))
 
 from app.db import get_db, get_admin_db, log_audit_action
+from app.booking_utils import safe_int
 
 
 
@@ -530,7 +531,7 @@ def landing_page():
                     settings_to_save['signin_bg_image'] = signin_img_url
                 
                 hero_slides = []
-                slide_count = int(request.form.get('hero_slides_count', 3))
+                slide_count = safe_int(request.form.get('hero_slides_count'), 3)
                 for i in range(slide_count):
                     title = request.form.get(f'hero_title_{i}', '').strip()
                     subtitle = request.form.get(f'hero_subtitle_{i}', '').strip()
@@ -560,7 +561,7 @@ def landing_page():
             # 2. Lead Stories Carousel
             if action_type in ('lead_stories', 'all'):
                 lead_stories = []
-                lead_count = int(request.form.get('lead_count', 3))
+                lead_count = safe_int(request.form.get('lead_count'), 3)
                 for i in range(lead_count):
                     cat = request.form.get(f'lead_category_{i}', '').strip()
                     title = request.form.get(f'lead_title_{i}', '').strip()
@@ -594,7 +595,7 @@ def landing_page():
             # 3. Sidebar Bulletins
             if action_type in ('bulletins', 'all'):
                 bulletins = []
-                bulletin_count = int(request.form.get('bulletin_count', 3))
+                bulletin_count = safe_int(request.form.get('bulletin_count'), 3)
                 for i in range(bulletin_count):
                     b_time = request.form.get(f'bulletin_time_{i}', 'Just In').strip()
                     b_title = request.form.get(f'bulletin_title_{i}', '').strip()
@@ -642,12 +643,12 @@ def landing_page():
             # 6. Testimonials (Section E)
             if action_type in ('testimonials', 'all'):
                 testimonials = []
-                test_count = int(request.form.get('test_count', 0))
+                test_count = safe_int(request.form.get('test_count'), 0)
                 for i in range(test_count):
                     t_author = request.form.get(f'test_author_{i}', '').strip()
                     t_role = request.form.get(f'test_role_{i}', '').strip()
                     t_quote = request.form.get(f'test_quote_{i}', '').strip()
-                    t_rating = int(request.form.get(f'test_rating_{i}', 5))
+                    t_rating = safe_int(request.form.get(f'test_rating_{i}'), 5)
                     if t_author and t_quote:
                         testimonials.append({
                             'id': i + 1,
@@ -662,7 +663,7 @@ def landing_page():
             # 7. FAQs (Section F)
             if action_type in ('faqs', 'all'):
                 faqs = []
-                faq_count = int(request.form.get('faq_count', 0))
+                faq_count = safe_int(request.form.get('faq_count'), 0)
                 for i in range(faq_count):
                     f_q = request.form.get(f'faq_q_{i}', '').strip()
                     f_a = request.form.get(f'faq_a_{i}', '').strip()

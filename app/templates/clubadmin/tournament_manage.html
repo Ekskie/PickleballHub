@@ -466,7 +466,7 @@ input:checked + .switch-slider:before { transform: translateX(18px); }
             </div>
             {% if not has_bracket %}
             <form action="{{ url_for('clubadmin.registration_remove', event_id=event.id, reg_id=p.id) }}" method="POST" onsubmit="return confirm('Remove {{ p_name }} from the tournament roster?');" style="margin:0;">
-                <button type="submit" style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:6px;border-radius:6px;display:flex;align-items:center;" title="Remove player">
+                <button type="submit" class="btn-icon-danger" title="Remove player">
                     <i class="ph ph-trash" style="font-size:1.05rem;"></i>
                 </button>
             </form>
@@ -495,7 +495,7 @@ input:checked + .switch-slider:before { transform: translateX(18px); }
             </button>
             {% elif can_reset %}
             <form action="{{ url_for('clubadmin.bracket_reset', event_id=event.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to reset the bracket? You will be able to add or remove walk-in players and re-generate the bracket.');" style="margin:0;">
-                <button type="submit" style="padding:8px 16px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#ef4444;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.85rem;display:flex;align-items:center;gap:6px;">
+                <button type="submit" class="btn-danger-outline">
                     <i class="ph ph-arrow-counter-clockwise"></i> Reset Bracket
                 </button>
             </form>
@@ -646,7 +646,7 @@ input:checked + .switch-slider:before { transform: translateX(18px); }
 <div class="score-drawer" id="score-drawer">
     <div class="drawer-header">
         <h2><i class="ph ph-notepad"></i> Record Match Score</h2>
-        <button class="drawer-close" onclick="closeDrawer()">&#x2715;</button>
+        <button type="button" class="modal-close-icon" onclick="closeDrawer()"><i class="ph ph-x"></i></button>
     </div>
     <div class="drawer-body">
         <!-- Player vs display -->
@@ -693,7 +693,7 @@ input:checked + .switch-slider:before { transform: translateX(18px); }
 <div class="score-drawer" id="assign-drawer">
     <div class="drawer-header">
         <h2><i class="ph ph-map-pin"></i> Court &amp; Referee Assignment</h2>
-        <button class="drawer-close" onclick="closeAssignModal()">&#x2715;</button>
+        <button type="button" class="modal-close-icon" onclick="closeAssignModal()"><i class="ph ph-x"></i></button>
     </div>
     <div class="drawer-body">
         <form id="assignForm" method="POST">
@@ -725,7 +725,7 @@ input:checked + .switch-slider:before { transform: translateX(18px); }
     <div class="modal-box">
         <div class="modal-header">
             <h3><i class="ph ph-user-plus" style="color:var(--primary-orange);"></i> Add Walk-in Players</h3>
-            <button type="button" class="modal-close-btn" onclick="closeWalkinModal()">✕</button>
+            <button type="button" class="modal-close-icon" onclick="closeWalkinModal()"><i class="ph ph-x"></i></button>
         </div>
         <form action="{{ url_for('clubadmin.walkins_add', event_id=event.id) }}" method="POST">
             <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:14px;">
@@ -735,14 +735,14 @@ input:checked + .switch-slider:before { transform: translateX(18px); }
             <div id="walkin-rows-container">
                 <div class="walkin-row-item">
                     <input type="text" name="guest_name[]" placeholder="Player Full Name" required>
-                    <select name="skill_level[]">
+                    <select name="skill_level[]" class="walkin-select">
                         <option value="novice">Novice (~800 ELO)</option>
                         <option value="beginner">Beginner (~1000 ELO)</option>
                         <option value="intermediate" selected>Intermediate (~1400 ELO)</option>
                         <option value="advanced">Advanced (~1800 ELO)</option>
                         <option value="pro">Pro (~2200 ELO)</option>
                     </select>
-                    <button type="button" class="walkin-del-btn" onclick="removeWalkinRow(this)" title="Remove">✕</button>
+                    <button type="button" class="walkin-del-btn" onclick="removeWalkinRow(this)" title="Remove"><i class="ph ph-trash"></i></button>
                 </div>
             </div>
 
@@ -762,7 +762,7 @@ input:checked + .switch-slider:before { transform: translateX(18px); }
     <div class="modal-box">
         <div class="modal-header">
             <h3><i class="ph ph-tree-structure" style="color:var(--primary-orange);"></i> Generate Tournament Bracket</h3>
-            <button type="button" class="modal-close-btn" onclick="closeGenerateModal()">✕</button>
+            <button type="button" class="modal-close-icon" onclick="closeGenerateModal()"><i class="ph ph-x"></i></button>
         </div>
         <form action="{{ url_for('clubadmin.bracket_generate', event_id=event.id) }}" method="POST">
             <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:16px;">
@@ -956,14 +956,14 @@ function addWalkinRow() {
     div.className = 'walkin-row-item';
     div.innerHTML = `
         <input type="text" name="guest_name[]" placeholder="Player Full Name" required>
-        <select name="skill_level[]">
+        <select name="skill_level[]" class="walkin-select">
             <option value="novice">Novice (~800 ELO)</option>
             <option value="beginner">Beginner (~1000 ELO)</option>
             <option value="intermediate" selected>Intermediate (~1400 ELO)</option>
             <option value="advanced">Advanced (~1800 ELO)</option>
             <option value="pro">Pro (~2200 ELO)</option>
         </select>
-        <button type="button" class="walkin-del-btn" onclick="removeWalkinRow(this)" title="Remove">✕</button>
+        <button type="button" class="walkin-del-btn" onclick="removeWalkinRow(this)" title="Remove"><i class="ph ph-trash"></i></button>
     `;
     container.appendChild(div);
 }

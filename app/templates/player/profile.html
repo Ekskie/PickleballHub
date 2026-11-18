@@ -842,7 +842,7 @@
                     <label class="delete-input-label">1. Confirm Current Password *</label>
                     <div style="position: relative; display: flex; align-items: center;">
                         <input type="password" name="password" id="deletePasswordInput" class="delete-input-field" required placeholder="Enter your current password">
-                        <button type="button" onclick="toggleDeletePasswordView()" style="position: absolute; right: 12px; background: none; border: none; color: var(--sports-text-muted); cursor: pointer; font-size: 1.1rem; display: flex; align-items: center;">
+                        <button type="button" class="btn-password-toggle" onclick="toggleDeletePasswordView()" aria-label="Toggle Password Visibility">
                             <i class="ph ph-eye" id="deleteEyeIcon"></i>
                         </button>
                     </div>

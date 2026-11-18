@@ -583,6 +583,16 @@
                     <span class="badge-status-chip {% if ev.status == 'registration_open' %}registration-open{% else %}completed{% endif %}">
                         {{ ev.status|replace('_',' ')|title }}
                     </span>
+                    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-left:auto;">
+                        <a href="{{ url_for('facilitystaff.event_roster', event_id=ev.id) }}" class="btn-sm btn-sm-outline" style="text-decoration:none;" title="Front Desk Check-In Terminal">
+                            <i class="ph ph-clipboard-text"></i> Check-In
+                        </a>
+                        {% if ev.organizer_id %}
+                        <a href="{{ url_for('facilitystaff.messages', chat_user=ev.organizer_id) }}" class="btn-sm btn-sm-outline" style="color:var(--primary-orange);border-color:rgba(255,87,34,0.3);text-decoration:none;" title="Chat with Organizer">
+                            <i class="ph ph-chat-circle-dots"></i> Message
+                        </a>
+                        {% endif %}
+                    </div>
                 {% endif %}
             </div>
         </div>
@@ -605,9 +615,12 @@
 <!-- Staff Reject Reason Modal -->
 <div class="modal-overlay" id="rejectModal">
     <div class="modal-box">
-        <h3 style="font-size:1.1rem; color:var(--text-primary); margin-bottom:8px; display:flex; align-items:center; gap:8px;">
-            <i class="ph ph-warning-circle" style="color:#ef4444;"></i> Decline Event Booking
-        </h3>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <h3 style="font-size:1.1rem; color:var(--text-primary); margin:0; display:flex; align-items:center; gap:8px;">
+                <i class="ph ph-warning-circle" style="color:#ef4444;"></i> Decline Event Booking
+            </h3>
+            <button type="button" class="modal-close-icon" onclick="closeRejectModal()" title="Close"><i class="ph ph-x"></i></button>
+        </div>
         <p style="font-size:0.83rem; color:var(--text-muted); margin-bottom:16px;">
             Declining <strong id="modalEventTitle"></strong>. Please provide a reason to inform the organizer:
         </p>

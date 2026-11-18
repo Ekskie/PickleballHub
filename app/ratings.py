@@ -125,10 +125,16 @@ def update_match_ratings(db, match_id, prev_match=None):
 
         # CASE 1: Both players are registered
         if p1_id and p2_id:
-            p1_resp = db.table('profiles').select('*').eq('id', p1_id).single().execute()
-            p2_resp = db.table('profiles').select('*').eq('id', p2_id).single().execute()
-            p1 = p1_resp.data
-            p2 = p2_resp.data
+            try:
+                p1_resp = db.table('profiles').select('*').eq('id', p1_id).single().execute()
+                p1 = p1_resp.data
+            except Exception:
+                p1 = None
+            try:
+                p2_resp = db.table('profiles').select('*').eq('id', p2_id).single().execute()
+                p2 = p2_resp.data
+            except Exception:
+                p2 = None
             
             if not p1 or not p2:
                 return
@@ -218,8 +224,11 @@ def update_match_ratings(db, match_id, prev_match=None):
 
         # CASE 2: Player 1 is registered, Player 2 is walk-in
         elif p1_id and not p2_id:
-            p1_resp = db.table('profiles').select('*').eq('id', p1_id).single().execute()
-            p1 = p1_resp.data
+            try:
+                p1_resp = db.table('profiles').select('*').eq('id', p1_id).single().execute()
+                p1 = p1_resp.data
+            except Exception:
+                p1 = None
             if not p1:
                 return
 
@@ -273,8 +282,11 @@ def update_match_ratings(db, match_id, prev_match=None):
 
         # CASE 3: Player 2 is registered, Player 1 is walk-in
         elif p2_id and not p1_id:
-            p2_resp = db.table('profiles').select('*').eq('id', p2_id).single().execute()
-            p2 = p2_resp.data
+            try:
+                p2_resp = db.table('profiles').select('*').eq('id', p2_id).single().execute()
+                p2 = p2_resp.data
+            except Exception:
+                p2 = None
             if not p2:
                 return
 

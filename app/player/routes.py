@@ -56,11 +56,12 @@ def check_player_memberships_expiry(db, player_id):
             .lt('expires_at', now_str)\
             .execute()
         
+        admin_db = get_admin_db() or db
         for em in (resp.data or []):
-            db.table('club_memberships').update({'status': 'expired'}).eq('id', em['id']).execute()
+            admin_db.table('club_memberships').update({'status': 'expired'}).eq('id', em['id']).execute()
             club_name = em.get('clubs', {}).get('name', 'the club')
             try:
-                db.table('notifications').insert({
+                admin_db.table('notifications').insert({
                     'user_id': player_id,
                     'title': '⚠️ Membership Expired',
                     'message': f"Your membership for {club_name} has expired. Please renew your membership to continue enjoying member benefits.",

@@ -225,6 +225,7 @@ def create_app():
             'is_pro': False,
             'is_elite': False,
             'tier_limits': {},
+            'unread_notifications_count': 0,
         }
 
         if not user_id:
@@ -233,6 +234,17 @@ def create_app():
                 supabase_url=supabase_url,
                 supabase_anon_key=supabase_key
             )
+
+        # Fetch unread notifications count for logged-in user
+        unread_count = 0
+        try:
+            from app.db import get_admin_db
+            admin_client = get_admin_db()
+            if admin_client:
+                n_resp = admin_client.table('notifications').select('id', count='exact').eq('user_id', user_id).eq('is_read', False).execute()
+                unread_count = n_resp.count or 0
+        except Exception:
+            unread_count = 0
 
         # --- 1. Reuse profile cached in flask.g by verify_session_integrity ---
         d = getattr(g, 'current_profile', None)
@@ -309,6 +321,7 @@ def create_app():
                 'is_pro':                      (user_tier in ['pro', 'elite']) if role != 'player' else True,
                 'is_elite':                    (user_tier == 'elite') and (role != 'player'),
                 'tier_limits':                 tier_limits,
+                'unread_notifications_count':  unread_count,
             }, supabase_url=supabase_url, supabase_anon_key=supabase_key)
 
         # --- 2. Fall back to whatever was stored in session at login ---
@@ -355,6 +368,7 @@ def create_app():
             'is_pro':                      (user_tier in ['pro', 'elite']) if role != 'player' else True,
             'is_elite':                    (user_tier == 'elite') and (role != 'player'),
             'tier_limits':                 tier_limits,
+            'unread_notifications_count':  unread_count,
         }, supabase_url=supabase_url, supabase_anon_key=supabase_key)
 
     class _LazyLandingContent:
@@ -475,10 +489,45 @@ def create_app():
         day = dt.day
         return f"{dt.strftime('%B')} {day}, {dt.year}"
 
-    # ── Error Handlers ────────────────────────────────────────────────────────
+    # ── Dual-Format Error Handlers ───────────────────────────────────────────
+    def _render_error_response(status_code, template_name, message):
+        wants_json = (
+            request.is_json
+            or request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            or request.args.get('format') == 'json'
+            or 'application/json' in request.headers.get('Accept', '')
+        )
+        if wants_json:
+            return jsonify({
+                'success': False,
+                'error': message,
+                'status_code': status_code
+            }), status_code
+        try:
+            return render_template(f'errors/{template_name}', error=message), status_code
+        except Exception:
+            return f"Error {status_code}: {message}", status_code
+
+    @app.errorhandler(400)
+    def bad_request(e):
+        return _render_error_response(400, '400.html', 'Bad Request: The server could not understand your request.')
+
+    @app.errorhandler(403)
+    def forbidden(e):
+        return _render_error_response(403, '403.html', 'Access Forbidden: You do not have permission to view this resource.')
+
     @app.errorhandler(404)
     def page_not_found(e):
-        return render_template('errors/404.html'), 404
+        return _render_error_response(404, '404.html', 'Page Not Found: The requested URL was not found on this server.')
+
+    @app.errorhandler(429)
+    def ratelimit_handler(e):
+        return _render_error_response(429, '429.html', 'Rate Limit Exceeded: Please slow down and try again shortly.')
+
+    @app.errorhandler(500)
+    def internal_server_error(e):
+        app.logger.error(f'[500 Internal Error] Unhandled exception: {e}')
+        return _render_error_response(500, '500.html', 'Internal Server Error: An unexpected issue occurred on the server.')
 
     return app
 

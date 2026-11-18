@@ -5,6 +5,7 @@ from app.db import get_db, get_admin_db
 from app.player import player_bp
 from app.player.routes import PH_TZ
 from app.ratings import update_matchmaker_ratings
+from app.booking_utils import safe_int, safe_float
 
 def get_lobby_display_status(lobby_status, res_date, res_start, res_end):
     if lobby_status in ['completed', 'pending_verification', 'staff_mediation', 'cancelled']:
@@ -290,9 +291,9 @@ def matchmaker_create():
     reservation_id = request.form.get('reservation_id')
     title = request.form.get('title', '').strip()
     description = request.form.get('description', '').strip()
-    min_dupr = float(request.form.get('min_dupr', 2.00))
-    max_dupr = float(request.form.get('max_dupr', 8.00))
-    slots_total = int(request.form.get('slots_total', 3))
+    min_dupr = safe_float(request.form.get('min_dupr'), 2.00)
+    max_dupr = safe_float(request.form.get('max_dupr'), 8.00)
+    slots_total = safe_int(request.form.get('slots_total'), 3)
     match_type = request.form.get('match_type', 'ranked').strip()
 
     if not all([reservation_id, title]):
@@ -929,9 +930,9 @@ def matchmaker_edit(lobby_id):
     
     title = request.form.get('title', '').strip()
     description = request.form.get('description', '').strip()
-    min_dupr = float(request.form.get('min_dupr', 2.00))
-    max_dupr = float(request.form.get('max_dupr', 8.00))
-    slots_total = int(request.form.get('slots_total', 3))
+    min_dupr = safe_float(request.form.get('min_dupr'), 2.00)
+    max_dupr = safe_float(request.form.get('max_dupr'), 8.00)
+    slots_total = safe_int(request.form.get('slots_total'), 3)
     match_type = request.form.get('match_type', 'ranked').strip()
     
     if not title:
@@ -981,7 +982,7 @@ def matchmaker_delete(lobby_id):
     
     try:
         # Fetch lobby
-        lob_resp = db.table('matchmaker_lobbies').select('creator_id, status').eq('id', lobby_id).single().execute()
+        lob_resp = db.table('matchmaker_lobbies').select('creator_id, status, title').eq('id', lobby_id).single().execute()
         lobby = lob_resp.data
         if not lobby or lobby['creator_id'] != player_id:
             flash("Unauthorized.", "error")
@@ -990,13 +991,30 @@ def matchmaker_delete(lobby_id):
         if lobby['status'] == 'completed':
             flash("Cannot delete a completed match.", "error")
             return redirect(url_for('player.matchmaker_detail', lobby_id=lobby_id))
+
+        admin_db = get_admin_db() or db
+
+        # Notify all joined participants before disbanding
+        try:
+            parts = admin_db.table('lobby_participants').select('player_id').eq('lobby_id', lobby_id).eq('status', 'joined').execute()
+            for p in (parts.data or []):
+                if p.get('player_id') and p['player_id'] != player_id:
+                    admin_db.table('notifications').insert({
+                        'user_id': p['player_id'],
+                        'title': 'Matchmaking Lobby Disbanded',
+                        'message': f"The host has disbanded the match lobby '{lobby.get('title', 'Match')}'.",
+                        'type': 'warning',
+                        'link': '/player/matchmaker'
+                    }).execute()
+        except Exception as notif_err:
+            print(f"Error notifying participants of lobby deletion: {notif_err}")
             
         # Delete lobby (cascades to participants)
-        db.table('matchmaker_lobbies').delete().eq('id', lobby_id).execute()
+        admin_db.table('matchmaker_lobbies').delete().eq('id', lobby_id).execute()
         
         # Also clean up conversation
         try:
-            db.table('conversations').delete().eq('id', lobby_id).execute()
+            admin_db.table('conversations').delete().eq('id', lobby_id).execute()
         except Exception as convo_err:
             print(f"Error deleting lobby conversation: {convo_err}")
             

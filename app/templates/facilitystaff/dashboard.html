@@ -3,6 +3,7 @@
 {% block title %}Operations Desk • PickleballHub{% endblock %}
 
 {% block extra_head %}
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
     /* ==========================================================================
        OPERATIONS DESK COMMAND CENTER STYLES
@@ -1102,6 +1103,10 @@
                     <span class="court-status-pill available">
                         <span class="live-pulse-dot" style="width:6px; height:6px;"></span> Available
                     </span>
+                    {% elif court.status == 'Tournament / Event' %}
+                    <span class="court-status-pill in-use" style="background: rgba(139, 92, 246, 0.15); color: #8b5cf6; border-color: rgba(139, 92, 246, 0.3);">
+                        <i class="ph ph-trophy"></i> Tournament
+                    </span>
                     {% elif court.status == 'In Use' %}
                     <span class="court-status-pill in-use">
                         <i class="ph ph-tennis-ball"></i> In Play
@@ -1131,11 +1136,13 @@
                     </div>
                 </div>
 
-                {% elif court.status == 'In Use' %}
-                <div class="court-session-info">
+                {% elif court.status in ['In Use', 'Tournament / Event'] %}
+                <div class="court-session-info" {% if court.status == 'Tournament / Event' %}style="border-color: rgba(139, 92, 246, 0.3); background: rgba(139, 92, 246, 0.03);"{% endif %}>
                     <div class="court-session-player">
-                        <div class="session-player-avatar">
-                            {% if court.current_player_avatar %}
+                        <div class="session-player-avatar" {% if court.status == 'Tournament / Event' %}style="background: #8b5cf6; color: #fff;"{% endif %}>
+                            {% if court.status == 'Tournament / Event' %}
+                            <i class="ph ph-trophy"></i>
+                            {% elif court.current_player_avatar %}
                             <img src="{{ court.current_player_avatar }}" alt="{{ court.current_player }}">
                             {% else %}
                             {{ court.current_player[:2]|upper }}
@@ -1143,14 +1150,20 @@
                         </div>
                         <div style="flex:1; min-width:0;">
                             <div class="session-player-name">{{ court.current_player }}</div>
-                            <div style="font-size:0.75rem; color:var(--text-muted);">Active Match / Reservation</div>
+                            <div style="font-size:0.75rem; color:var(--text-muted);">
+                                {% if court.status == 'Tournament / Event' %}
+                                Official Club Tournament Slot
+                                {% else %}
+                                Active Match / Reservation
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                     <div class="session-time-row">
                         <span><i class="ph ph-clock"></i> {{ court.start_time }} - {{ court.end_time }}</span>
-                        {% if court.rem_mins is not none %}
-                        <span class="countdown-timer-badge">
-                            <i class="ph ph-hourglass-high"></i> {{ court.rem_mins }}m left
+                        {% if court.remaining_mins is not none %}
+                        <span class="countdown-timer-badge" {% if court.status == 'Tournament / Event' %}style="background: rgba(139, 92, 246, 0.15); color: #8b5cf6;"{% endif %}>
+                            <i class="ph ph-hourglass-high"></i> {{ court.remaining_mins }}m left
                         </span>
                         {% endif %}
                     </div>
@@ -1192,6 +1205,14 @@
                         onclick="toggleMaintenance('{{ court.id }}')">
                     <i class="ph ph-wrench"></i>
                 </button>
+
+                {% elif court.status == 'Tournament / Event' %}
+                <a href="{{ url_for('facilitystaff.events') }}" class="desk-action-btn-outline" style="flex: 1; padding: 8px 12px; font-size: 0.8rem; justify-content: center; color: #8b5cf6; border-color: rgba(139, 92, 246, 0.3); text-decoration: none;">
+                    <i class="ph ph-clipboard-text"></i> Tournament Events
+                </a>
+                <a href="{{ url_for('facilitystaff.schedule') }}" class="desk-action-btn-outline" style="padding: 8px 10px; font-size: 0.8rem; text-decoration: none;" title="View Schedule">
+                    <i class="ph ph-calendar"></i>
+                </a>
 
                 {% elif court.status == 'In Use' %}
                 <button type="button" class="desk-action-btn-outline" style="flex: 1; padding: 8px 12px; font-size: 0.8rem; justify-content: center; color: var(--btn-green); border-color: rgba(34, 197, 94, 0.3);"
@@ -1406,18 +1427,30 @@
             </button>
         </div>
         <div class="modal-body">
-            <!-- Animated Laser Viewfinder -->
-            <div class="scan-viewfinder">
-                <div class="scan-laser-line"></div>
-                <i class="ph ph-camera" style="font-size: 3.2rem; color: rgba(255, 255, 255, 0.4); z-index: 1;"></i>
+            <!-- Active Camera Scanner Container -->
+            <div id="cameraScannerBox" style="position: relative; border-radius: 14px; overflow: hidden; background: #0f172a; margin-bottom: 16px; border: 1px solid var(--border-color); min-height: 220px; display: flex; align-items: center; justify-content: center;">
+                <div id="interactiveQrReader" style="width: 100%; display: none;"></div>
+                
+                <!-- Placeholder when camera is inactive -->
+                <div id="scannerPlaceholder" class="scan-viewfinder" style="margin-bottom: 0; width: 100%; border: none;">
+                    <div class="scan-laser-line"></div>
+                    <i class="ph ph-camera" style="font-size: 3.2rem; color: rgba(255, 255, 255, 0.4); z-index: 1;"></i>
+                </div>
             </div>
-            <p style="text-align: center; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px;">
-                Hold the player's QR pass or booking barcode in front of the terminal camera.
-            </p>
+
+            <!-- Camera Scanner Controls -->
+            <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                <button type="button" id="startCamBtn" class="desk-action-btn-primary" style="flex: 1; justify-content: center;" onclick="toggleCameraScanner()">
+                    <i class="ph ph-camera" id="startCamIcon"></i> <span id="startCamText">Start Camera Scanner</span>
+                </button>
+                <button type="button" id="flipCamBtn" class="desk-action-btn-outline" style="display: none; padding: 8px 12px;" onclick="flipCamera()" title="Switch Camera">
+                    <i class="ph ph-arrows-clockwise"></i>
+                </button>
+            </div>
 
             <!-- Manual Code Lookup Box -->
             <div style="background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
-                <label class="field-label">Manual Pass Code / Booking Ref</label>
+                <label class="field-label">Manual Pass Code / Booking Ref / Player Name</label>
                 <div style="display: flex; gap: 8px;">
                     <input type="text" id="manualPassInput" class="field-input" placeholder="e.g. 32473acb or Player Name" onkeypress="if(event.key==='Enter') verifyPassCode()">
                     <button type="button" class="desk-action-btn-primary" onclick="verifyPassCode()" style="white-space: nowrap;">
@@ -1657,6 +1690,9 @@
     }
 
     function closeModal(id) {
+        if (id === 'scanPassModal' && typeof stopCameraScanner === 'function') {
+            stopCameraScanner();
+        }
         const m = document.getElementById(id);
         if (m) {
             m.classList.remove('open');
@@ -2059,10 +2095,130 @@
         {% endif %}
     }
 
-    // Verify Pass Code
-    async function verifyPassCode() {
+    // Camera Scanner & QR Code Controller
+    let html5QrScanner = null;
+    let isCameraScanning = false;
+    let currentCameraFacing = 'environment';
+
+    async function toggleCameraScanner() {
+        if (isCameraScanning) {
+            stopCameraScanner();
+        } else {
+            startCameraScanner();
+        }
+    }
+
+    async function startCameraScanner() {
+        if (typeof Html5Qrcode === 'undefined') {
+            alert('Scanner library is loading. Please try again or use manual pass code input.');
+            return;
+        }
+
+        const readerEl = document.getElementById('interactiveQrReader');
+        const placeholder = document.getElementById('scannerPlaceholder');
+        const startCamBtn = document.getElementById('startCamBtn');
+        const startCamText = document.getElementById('startCamText');
+        const startCamIcon = document.getElementById('startCamIcon');
+        const flipCamBtn = document.getElementById('flipCamBtn');
+
+        try {
+            if (!html5QrScanner) {
+                html5QrScanner = new Html5Qrcode("interactiveQrReader");
+            }
+
+            readerEl.style.display = 'block';
+            if (placeholder) placeholder.style.display = 'none';
+            if (startCamText) startCamText.textContent = 'Stop Camera Scanner';
+            if (startCamIcon) startCamIcon.className = 'ph ph-camera-slash';
+            if (startCamBtn) {
+                startCamBtn.style.background = '#ef4444';
+                startCamBtn.style.borderColor = '#ef4444';
+            }
+
+            const config = { fps: 10, qrbox: { width: 200, height: 200 } };
+
+            await html5QrScanner.start(
+                { facingMode: currentCameraFacing },
+                config,
+                (decodedText) => {
+                    onQrCodeScanned(decodedText);
+                },
+                (errorMessage) => {
+                    // Frame error while scanning (silently ignored)
+                }
+            );
+
+            isCameraScanning = true;
+            if (flipCamBtn) flipCamBtn.style.display = 'inline-flex';
+        } catch (err) {
+            console.warn('Camera start error:', err);
+            alert('Unable to access device camera. Please check camera permissions or enter the pass code manually.');
+            stopCameraScanner();
+        }
+    }
+
+    function stopCameraScanner() {
+        if (html5QrScanner && isCameraScanning) {
+            html5QrScanner.stop().then(() => {
+                resetScannerUI();
+            }).catch(err => {
+                console.warn('Camera stop error:', err);
+                resetScannerUI();
+            });
+        } else {
+            resetScannerUI();
+        }
+    }
+
+    function resetScannerUI() {
+        isCameraScanning = false;
+        const readerEl = document.getElementById('interactiveQrReader');
+        const placeholder = document.getElementById('scannerPlaceholder');
+        const startCamBtn = document.getElementById('startCamBtn');
+        const startCamText = document.getElementById('startCamText');
+        const startCamIcon = document.getElementById('startCamIcon');
+        const flipCamBtn = document.getElementById('flipCamBtn');
+
+        if (readerEl) readerEl.style.display = 'none';
+        if (placeholder) placeholder.style.display = 'flex';
+        if (startCamText) startCamText.textContent = 'Start Camera Scanner';
+        if (startCamIcon) startCamIcon.className = 'ph ph-camera';
+        if (startCamBtn) {
+            startCamBtn.style.background = '';
+            startCamBtn.style.borderColor = '';
+        }
+        if (flipCamBtn) flipCamBtn.style.display = 'none';
+    }
+
+    function flipCamera() {
+        currentCameraFacing = (currentCameraFacing === 'environment') ? 'user' : 'environment';
+        stopCameraScanner();
+        setTimeout(() => startCameraScanner(), 300);
+    }
+
+    function onQrCodeScanned(decodedText) {
+        if (!decodedText) return;
+
+        // Play audio feedback
+        if (typeof playNotificationSound === 'function') {
+            playNotificationSound();
+        }
+
+        // Set input value
         const input = document.getElementById('manualPassInput');
-        const code = input ? input.value.trim() : '';
+        if (input) input.value = decodedText;
+
+        // Stop camera once scanned
+        stopCameraScanner();
+
+        // Trigger verification
+        verifyPassCode(decodedText);
+    }
+
+    // Verify Pass Code
+    async function verifyPassCode(overrideCode) {
+        const input = document.getElementById('manualPassInput');
+        const code = (overrideCode || (input ? input.value : '')).trim();
         const resultBox = document.getElementById('passResultBox');
 
         if (!code) {
@@ -2088,8 +2244,13 @@
             if (res.success && res.found) {
                 resultBox.style.background = 'rgba(34, 197, 94, 0.1)';
                 resultBox.style.border = '1px solid rgba(34, 197, 94, 0.3)';
+                
+                const safeName = (res.player_name || 'Player').replace(/'/g, "\\'");
+                const safeCourt = (res.court_name || 'Court').replace(/'/g, "\\'");
+                const resId = res.reservation_id || '';
+
                 resultBox.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
                         <div>
                             <strong style="color: #16a34a; font-size: 0.95rem; display:block;">
                                 <i class="ph ph-check-circle"></i> Pass Verified Active
@@ -2097,8 +2258,8 @@
                             <div style="color: var(--text-primary); font-weight:700; margin-top:2px;">${res.player_name}</div>
                             <div style="font-size:0.8rem; color: var(--text-muted);">${res.court_name} • ${res.time_slot}</div>
                         </div>
-                        <button type="button" class="desk-action-btn-green" style="padding:6px 12px; font-size:0.8rem;" onclick="closeModal('scanPassModal'); showToast('Checked In', 'Player pass confirmed!', 'success');">
-                            Check In
+                        <button type="button" class="desk-action-btn-green" style="padding:8px 14px; font-size:0.85rem;" onclick="confirmPassCheckIn('${resId}', '${safeName}', '${safeCourt}')">
+                            <i class="ph ph-check"></i> Check In to Queue
                         </button>
                     </div>
                 `;
@@ -2116,12 +2277,38 @@
         }
     }
 
+    async function confirmPassCheckIn(resId, playerName, courtName) {
+        if (!resId) {
+            alert('Invalid reservation ID.');
+            return;
+        }
+        try {
+            const resp = await fetch("{{ url_for('facilitystaff.checkin_reservation') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify({ reservation_id: resId })
+            });
+            const res = await resp.json();
+            if (res.success) {
+                closeModal('scanPassModal');
+                showToast('Check-In Complete', `${playerName} successfully checked in for ${courtName}!`, 'success');
+                setTimeout(() => location.reload(), 900);
+            } else {
+                alert(res.message || 'Check-in failed');
+            }
+        } catch (e) {
+            alert('Check-in network error: ' + e);
+        }
+    }
+
     function simulateFastPassScan() {
-        closeModal('scanPassModal');
-        if (typeof showToast === 'function') {
-            showToast('Pass Verified', 'QR Pass verified: Matt Andrew (Court B, 1 Hour session confirmed).', 'success');
-        } else {
-            alert('Pass Verified: Matt Andrew check-in confirmed!');
+        const input = document.getElementById('manualPassInput');
+        if (input) {
+            input.value = 'PB-PASS-TEST';
+            verifyPassCode('PB-PASS-TEST');
         }
     }
 </script>
