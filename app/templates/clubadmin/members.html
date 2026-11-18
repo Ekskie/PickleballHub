@@ -52,7 +52,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: linear-gradient(135deg, var(--primary-orange) 0%, #ea580c 100%);
+    background: var(--primary-orange);
     color: #ffffff !important;
     border: none;
     border-radius: 12px;
@@ -60,14 +60,15 @@
     font-size: 0.88rem;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 4px 14px rgba(234, 88, 12, 0.25);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     transition: all 0.2s ease;
     text-decoration: none;
 }
 
 .btn-primary-action:hover {
+    background: var(--primary-orange-hover);
     transform: translateY(-1px);
-    box-shadow: 0 6px 18px rgba(234, 88, 12, 0.35);
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
 }
 
 .btn-secondary-action {
@@ -137,7 +138,7 @@
     flex-shrink: 0;
 }
 
-.kpi-icon-orange { background: rgba(249, 115, 22, 0.12); color: var(--primary-orange); }
+.kpi-icon-orange { background: var(--primary-orange-light); color: var(--primary-orange); }
 .kpi-icon-green  { background: rgba(16, 185, 129, 0.12); color: #059669; }
 .kpi-icon-amber  { background: rgba(245, 158, 11, 0.12); color: #d97706; }
 .kpi-icon-blue   { background: rgba(37, 99, 235, 0.12); color: #2563eb; }
@@ -222,7 +223,7 @@
 .search-box-wrapper input:focus {
     border-color: var(--primary-orange);
     background: var(--card-bg, #ffffff);
-    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12);
+    box-shadow: 0 0 0 3px var(--primary-orange-light);
 }
 
 .clear-search-btn {
@@ -337,7 +338,7 @@
 }
 
 .club-roster-table tbody tr:hover {
-    background-color: rgba(249, 115, 22, 0.025);
+    background-color: rgba(124, 58, 237, 0.04);
 }
 
 /* Player Column */
@@ -351,7 +352,7 @@
     width: 44px;
     height: 44px;
     border-radius: 14px;
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    background: #0f172a;
     color: #ffffff;
     display: flex;
     align-items: center;
@@ -360,7 +361,7 @@
     font-weight: 800;
     overflow: hidden;
     flex-shrink: 0;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 }
 
 .player-avatar-circle img {
@@ -597,7 +598,7 @@
     width: 52px;
     height: 52px;
     border-radius: 16px;
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    background: #0f172a;
     color: #ffffff;
     display: flex;
     align-items: center;
@@ -606,7 +607,7 @@
     font-weight: 800;
     overflow: hidden;
     flex-shrink: 0;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 }
 
 .dir-card-avatar img {
@@ -1103,7 +1104,7 @@
                 </div>
                 <div class="dir-stat-item">
                     <span class="lbl">Club ELO</span>
-                    <span class="val" style="color: #ea580c;">{{ m.profiles.elo or 1200 }}</span>
+                    <span class="val" style="color: var(--primary-orange);">{{ m.profiles.elo or 1200 }}</span>
                 </div>
             </div>
 
@@ -1165,7 +1166,7 @@
     <div class="modal-box-card">
         <div class="modal-header-flex">
             <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(249, 115, 22, 0.12); color: var(--primary-orange); display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: var(--primary-orange-light); color: var(--primary-orange); display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
                     <i class="ph ph-user-plus"></i>
                 </div>
                 <div>
@@ -1226,7 +1227,7 @@
                 <button type="button" class="btn-secondary-action" style="flex: 1; justify-content: center;" onclick="closeRemoveModal()">
                     Cancel
                 </button>
-                <button type="submit" class="btn-primary-action" style="flex: 1; justify-content: center; background: #ef4444; box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);">
+                <button type="submit" class="btn-primary-action" style="flex: 1; justify-content: center; background: #ef4444; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);">
                     <i class="ph ph-trash"></i> Remove Player
                 </button>
             </div>
@@ -1279,7 +1280,7 @@
                 </div>
                 <div style="background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; text-align: center;">
                     <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Club ELO</span>
-                    <div id="dossierElo" style="font-size: 1.35rem; font-weight: 800; color: #ea580c; margin-top: 2px;">1200</div>
+                    <div id="dossierElo" style="font-size: 1.35rem; font-weight: 800; color: var(--primary-orange); margin-top: 2px;">1200</div>
                 </div>
             </div>
 
@@ -1319,7 +1320,7 @@
             <!-- Tournament Matches Section -->
             <div style="border-top: 1px solid var(--border-color); padding-top: 12px;">
                 <h4 style="margin: 0 0 8px 0; font-size: 0.88rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
-                    <i class="ph ph-sword" style="color: #ea580c;"></i> Recent Tournament Matches
+                    <i class="ph ph-sword" style="color: var(--primary-orange);"></i> Recent Tournament Matches
                 </h4>
                 <div id="dossierMatchesList" style="display: flex; flex-direction: column; gap: 8px;">
                 </div>

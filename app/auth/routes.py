@@ -182,6 +182,7 @@ def login():
                     user = response.user
                     meta = user.user_metadata or {}
 
+                    session.permanent = True
                     session['user_id']    = user.id
                     session['email']      = user.email or email or ''
                     session['first_name'] = meta.get('first_name', '')

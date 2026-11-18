@@ -54,9 +54,9 @@
 
     transform: translateY(-5px); 
 
-    box-shadow: 0 20px 42px -6px rgba(0, 0, 0, 0.12), 0 6px 14px -3px rgba(0, 0, 0, 0.05); 
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08); 
 
-    border-color: rgba(249, 115, 22, 0.35); 
+    border-color: var(--role-accent-border); 
 
 }
 
@@ -230,7 +230,7 @@
 
     color: #ffffff; 
 
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35); 
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08); 
 
 }
 
@@ -242,7 +242,7 @@
 
     color: #ffffff; 
 
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35); 
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08); 
 
 }
 
@@ -258,7 +258,7 @@
 
     cursor: pointer; 
 
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35); 
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08); 
 
     transition: all 0.15s ease; 
 
@@ -310,7 +310,7 @@
 
     background: #10b981; 
 
-    box-shadow: 0 0 8px #10b981; 
+    box-shadow: none; 
 
 }
 
@@ -634,9 +634,9 @@
 
     color: var(--primary-orange); 
 
-    border-color: rgba(249, 115, 22, 0.3); 
+    border-color: var(--role-accent-border); 
 
-    background: rgba(249, 115, 22, 0.06); 
+    background: var(--primary-orange-light); 
 
     font-weight: 700; 
 
@@ -704,7 +704,7 @@
 
     cursor: pointer; 
 
-    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.25); 
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08); 
 
     transition: all 0.2s ease; 
 
@@ -718,7 +718,7 @@
 
     transform: translateY(-1px); 
 
-    box-shadow: 0 4px 14px rgba(249, 115, 22, 0.35); 
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12); 
 
 }
 
@@ -760,7 +760,7 @@
 
     color: var(--primary-orange); 
 
-    background: rgba(249, 115, 22, 0.05); 
+    background: var(--primary-orange-light); 
 
 }
 
@@ -872,7 +872,7 @@
 
 .modal-header-left { display:flex; align-items:center; gap:12px; }
 
-.modal-icon-badge { width:42px; height:42px; border-radius:12px; background:rgba(249,115,22,0.12); color:var(--primary-orange, #f97316); display:flex; align-items:center; justify-content:center; font-size:1.35rem; flex-shrink:0; }
+.modal-icon-badge { width:42px; height:42px; border-radius:12px; background:var(--primary-orange-light); color:var(--primary-orange); display:flex; align-items:center; justify-content:center; font-size:1.35rem; flex-shrink:0; }
 
 .modal-header-text h3 { margin:0; font-size:1.15rem; font-weight:800; color:var(--text-primary); }
 
@@ -938,7 +938,7 @@
 
 .wizard-step-tab:hover {
 
-    background: rgba(249, 115, 22, 0.05);
+    background: var(--primary-orange-light);
 
 }
 
@@ -950,7 +950,7 @@
 
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 
-    border: 1px solid rgba(249, 115, 22, 0.35);
+    border: 1px solid var(--role-accent-border);
 
 }
 
@@ -992,7 +992,7 @@
 
     color: #ffffff;
 
-    box-shadow: 0 0 10px rgba(249, 115, 22, 0.4);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 
 }
 
@@ -1232,7 +1232,7 @@
 
     gap: 7px;
 
-    box-shadow: 0 3px 10px rgba(249, 115, 22, 0.3);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 
     transition: all 0.2s ease;
 
@@ -1246,7 +1246,7 @@
 
     transform: translateY(-1px);
 
-    box-shadow: 0 5px 16px rgba(249, 115, 22, 0.4);
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
 
 }
 
@@ -1276,7 +1276,7 @@
 
     gap: 7px;
 
-    box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 
     transition: all 0.2s ease;
 
@@ -1290,7 +1290,7 @@
 
     transform: translateY(-1px);
 
-    box-shadow: 0 5px 16px rgba(16, 185, 129, 0.4);
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
 
 }
 
@@ -1360,11 +1360,11 @@
 
 .edit-tab-btn.active {
 
-    background: rgba(249, 115, 22, 0.1);
+    background: var(--primary-orange-light);
 
     color: var(--primary-orange);
 
-    border-color: rgba(249, 115, 22, 0.25);
+    border-color: var(--role-accent-border);
 
 }
 
@@ -1408,7 +1408,7 @@
 
 .form-group input,.form-group select,.form-group textarea { width:100%; padding:9px 12px; background:var(--card-bg, #ffffff); border:1px solid var(--border-color); border-radius:8px; color:var(--text-primary); font-size:0.86rem; font-family:inherit; box-sizing:border-box; transition:border-color 0.2s, box-shadow 0.2s; }
 
-.form-group input:focus,.form-group select:focus,.form-group textarea:focus { outline:none; border-color:var(--primary-orange); box-shadow:0 0 0 3px rgba(249,115,22,0.12); }
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus { outline:none; border-color:var(--primary-orange); box-shadow:0 0 0 3px var(--primary-orange-light); }
 
 .form-group textarea { resize:vertical; min-height:64px; }
 
@@ -1418,7 +1418,7 @@
 
 .schedule-preset-btn { font-size:0.7rem; font-weight:700; padding:4px 9px; border-radius:6px; background:var(--card-bg, #ffffff); border:1px solid var(--border-color, #e2e8f0); color:var(--text-secondary); cursor:pointer; transition:all 0.15s ease; }
 
-.schedule-preset-btn:hover { border-color:var(--primary-orange); color:var(--primary-orange); background:rgba(249,115,22,0.06); }
+.schedule-preset-btn:hover { border-color:var(--primary-orange); color:var(--primary-orange); background:var(--primary-orange-light); }
 
 .hours-live-badge { font-size:0.72rem; font-weight:700; color:#059669; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.2); padding:3px 8px; border-radius:6px; display:inline-flex; align-items:center; gap:4px; }
 
@@ -1448,7 +1448,7 @@
 
 .img-upload-zone { border:2px dashed var(--border-color); border-radius:10px; padding:16px; text-align:center; cursor:pointer; transition:border-color .2s, background .2s; background:var(--card-bg); position:relative; }
 
-.img-upload-zone:hover { border-color:var(--primary-orange); background:rgba(249,115,22,.04); }
+.img-upload-zone:hover { border-color:var(--primary-orange); background:var(--primary-orange-light); }
 
 .img-upload-zone i { font-size:1.8rem; color:var(--primary-orange); display:block; margin-bottom:4px; opacity:0.8; }
 
@@ -1504,7 +1504,7 @@
 
 .amenity-chip .chip-content i { font-size: 0.95rem; color: var(--text-muted); transition: color 0.15s ease; }
 
-.amenity-chip input:checked + .chip-content { background: rgba(249, 115, 22, 0.08); border-color: var(--primary-orange); color: var(--primary-orange); }
+.amenity-chip input:checked + .chip-content { background: var(--primary-orange-light); border-color: var(--primary-orange); color: var(--primary-orange); }
 
 .amenity-chip input:checked + .chip-content i { color: var(--primary-orange); }
 
@@ -1564,7 +1564,7 @@
 
     gap: 18px;
 
-    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.08);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 
     transition: all 0.3s ease;
 
@@ -1580,7 +1580,7 @@ html.dark-mode .facility-limit-banner {
 
     border-left-color: #fbbf24;
 
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35), 0 0 20px rgba(245, 158, 11, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 
 }
 
@@ -1782,7 +1782,7 @@ html.dark-mode .limit-banner-desc {
 
 
 
-.btn-upgrade-glow {
+.btn-upgrade-cta {
 
     display: inline-flex;
 
@@ -1804,7 +1804,7 @@ html.dark-mode .limit-banner-desc {
 
     text-decoration: none;
 
-    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 
     transition: all 0.25s ease;
 
@@ -1814,13 +1814,13 @@ html.dark-mode .limit-banner-desc {
 
 
 
-.btn-upgrade-glow:hover {
+.btn-upgrade-cta:hover {
 
     transform: translateY(-2px);
 
-    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45);
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
 
-    filter: brightness(1.06);
+    background: #d97706;
 
 }
 
@@ -1836,7 +1836,7 @@ html.dark-mode .limit-banner-desc {
 
     cursor: pointer;
 
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 
     transition: all 0.2s ease;
 
@@ -1854,9 +1854,9 @@ html.dark-mode .limit-banner-desc {
 
     transform: translateY(-1px);
 
-    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.35);
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
 
-    filter: brightness(1.05);
+    background: #d97706 !important;
 
 }
 
@@ -1998,7 +1998,7 @@ html.dark-mode .limit-modal-hero {
 
     color: #fff;
 
-    box-shadow: 0 6px 18px rgba(245, 158, 11, 0.4);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 
 }
 
@@ -2326,7 +2326,7 @@ html.dark-mode .limit-modal-comparison {
 
     text-decoration: none;
 
-    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 
     transition: all 0.2s ease;
 
@@ -2338,9 +2338,9 @@ html.dark-mode .limit-modal-comparison {
 
     transform: translateY(-1px);
 
-    box-shadow: 0 6px 18px rgba(245, 158, 11, 0.45);
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
 
-    filter: brightness(1.06);
+    background: #d97706;
 
 }
 
@@ -2356,7 +2356,7 @@ html.dark-mode .limit-modal-comparison {
 
     }
 
-    .btn-upgrade-glow {
+    .btn-upgrade-cta {
 
         justify-content: center;
 
@@ -2450,7 +2450,7 @@ html.dark-mode .limit-modal-comparison {
 
     <div class="limit-banner-actions">
 
-        <a href="{{ url_for('billing.subscription_page') }}?highlight={{ required_tier }}" class="btn-upgrade-glow">
+        <a href="{{ url_for('billing.subscription_page') }}?highlight={{ required_tier }}" class="btn-upgrade-cta">
 
             <i class="ph-fill ph-crown"></i>
 
@@ -2584,7 +2584,7 @@ html.dark-mode .limit-modal-comparison {
 
                     {% elif f.kyc_status == 'rejected' %}
 
-                        <button type="button" class="facility-badge-glass badge-kyc-unverified-btn" style="background: rgba(239, 68, 68, 0.95); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);" onclick="openKycModal('{{ f.id }}')" title="KYC Rejected. Click to re-upload documents">
+                        <button type="button" class="facility-badge-glass badge-kyc-unverified-btn" style="background: rgba(239, 68, 68, 0.95); box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);" onclick="openKycModal('{{ f.id }}')" title="KYC Rejected. Click to re-upload documents">
 
                             <i class="ph-fill ph-warning-circle"></i> KYC Rejected — Resubmit
 
@@ -2966,7 +2966,7 @@ html.dark-mode .limit-modal-comparison {
 
             {% for aff in pending_affiliations %}
 
-            <div style="background: var(--card-bg, #ffffff); border: 1.5px solid rgba(245, 158, 11, 0.4); border-radius: 18px; padding: 22px; box-shadow: 0 4px 20px rgba(245, 158, 11, 0.06); display: flex; flex-direction: column; justify-content: space-between; gap: 16px;">
+            <div style="background: var(--card-bg, #ffffff); border: 1.5px solid rgba(245, 158, 11, 0.4); border-radius: 18px; padding: 22px; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08); display: flex; flex-direction: column; justify-content: space-between; gap: 16px;">
 
                 <div>
 
@@ -3060,7 +3060,7 @@ html.dark-mode .limit-modal-comparison {
 
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-                        <button type="submit" class="btn-primary" style="width: 100%; background: #16a34a; color: #fff; border: none; padding: 9px 14px; border-radius: 10px; font-weight: 700; font-size: 0.84rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 2px 8px rgba(22, 163, 74, 0.25);">
+                        <button type="submit" class="btn-primary" style="width: 100%; background: #16a34a; color: #fff; border: none; padding: 9px 14px; border-radius: 10px; font-weight: 700; font-size: 0.84rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);">
 
                             <i class="ph-bold ph-check"></i> Accept Partner
 

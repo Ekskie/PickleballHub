@@ -289,7 +289,7 @@
 }
 
 .status-tab-btn.active .tab-badge {
-    background: rgba(225, 86, 35, 0.12);
+    background: var(--primary-orange-light);
     color: var(--primary-orange);
 }
 
@@ -349,7 +349,7 @@
     outline: none;
     border-color: var(--primary-orange);
     background: var(--card-bg);
-    box-shadow: 0 0 0 3px rgba(225, 86, 35, 0.12);
+    box-shadow: 0 0 0 3px var(--primary-orange-light);
 }
 
 .search-clear-btn {
@@ -391,7 +391,7 @@
 
 .filter-select:focus {
     border-color: var(--primary-orange);
-    box-shadow: 0 0 0 3px rgba(225, 86, 35, 0.12);
+    box-shadow: 0 0 0 3px var(--primary-orange-light);
 }
 
 .result-counter-badge {
@@ -448,7 +448,7 @@
 }
 
 .ledger-table tr:hover td {
-    background: rgba(225, 86, 35, 0.02);
+    background: rgba(37, 99, 235, 0.03);
 }
 
 .ledger-table tr:last-child td {
@@ -719,7 +719,7 @@
     align-items: center;
     gap: 4px;
     transition: all 0.15s;
-    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 }
 
 .btn-table-approve:hover {
@@ -958,7 +958,7 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.28);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     transition: all 0.15s;
 }
 
@@ -1070,9 +1070,9 @@
     </div>
 
     <!-- ── Tier Commission Breakdown & Savings Banner ── -->
-    <div class="tier-commission-banner" style="background: rgba(249, 115, 22, 0.08); border: 1px solid rgba(249, 115, 22, 0.25); border-left: 5px solid var(--primary-orange); border-radius: 14px; padding: 14px 20px; margin-top: 16px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+    <div class="tier-commission-banner" style="background: var(--primary-orange-light); border: 1px solid var(--role-accent-border); border-left: 5px solid var(--primary-orange); border-radius: 14px; padding: 14px 20px; margin-top: 16px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
         <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(249, 115, 22, 0.15); color: var(--primary-orange); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+            <div style="width: 40px; height: 40px; border-radius: 10px; background: var(--primary-orange-light); color: var(--primary-orange); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
                 <i class="ph-fill ph-percent"></i>
             </div>
             <div>
@@ -1094,7 +1094,7 @@
             </div>
         </div>
         {% if stats.owner_tier != 'elite' %}
-        <a href="{{ url_for('billing.subscription_page') }}?highlight={{ 'elite' if stats.owner_tier == 'pro' else 'pro' }}" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; background: var(--primary-orange); color: #ffffff; font-size: 0.82rem; font-weight: 700; text-decoration: none; box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3); transition: all 0.2s;">
+        <a href="{{ url_for('billing.subscription_page') }}?highlight={{ 'elite' if stats.owner_tier == 'pro' else 'pro' }}" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; background: var(--primary-orange); color: #ffffff; font-size: 0.82rem; font-weight: 700; text-decoration: none; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08); transition: all 0.2s;">
             <i class="ph-fill ph-crown"></i>
             <span>{{ 'Upgrade for 0% Fee' if stats.owner_tier == 'pro' else 'Upgrade to Save 5%' }}</span>
             <i class="ph ph-arrow-right"></i>
@@ -1245,7 +1245,7 @@
                                     <div class="player-name">
                                         {{ player_fn }} {{ player_ln }}
                                         {% if t.profiles and t.profiles.is_guest %}
-                                        <span style="font-size: 0.65rem; background: rgba(249, 115, 22, 0.15); color: var(--primary-orange); border: 1px solid rgba(249, 115, 22, 0.3); border-radius: 4px; padding: 1px 5px; font-weight: 600; vertical-align: middle; margin-left: 4px;">Walk-in</span>
+                                        <span style="font-size: 0.65rem; background: var(--primary-orange-light); color: var(--primary-orange); border: 1px solid var(--role-accent-border); border-radius: 4px; padding: 1px 5px; font-weight: 600; vertical-align: middle; margin-left: 4px;">Walk-in</span>
                                         {% endif %}
                                     </div>
                                     <div class="player-phone">

@@ -69,14 +69,12 @@
         height: 8px;
         border-radius: 50%;
         background-color: #10b981;
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
         animation: pulse-ring 2s infinite cubic-bezier(0.45, 0, 0.55, 1);
     }
 
     @keyframes pulse-ring {
-        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-        70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
-        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        0%, 100% { transform: scale(0.95); opacity: 1; }
+        50% { transform: scale(1.05); opacity: 0.45; }
     }
 
     .btn-refresh {
@@ -95,8 +93,8 @@
     }
 
     .btn-refresh:hover {
-        background: rgba(255, 87, 34, 0.08);
-        border-color: rgba(255, 87, 34, 0.3);
+        background: var(--primary-orange-light);
+        border-color: var(--role-accent-border);
         color: var(--primary-orange);
     }
 
@@ -159,8 +157,8 @@
     }
 
     .stat-icon-wrapper.orange {
-        background: rgba(255, 87, 34, 0.1);
-        border-color: rgba(255, 87, 34, 0.2);
+        background: var(--primary-orange-light);
+        border-color: var(--role-accent-border);
         color: var(--primary-orange);
     }
 
@@ -277,8 +275,8 @@
     }
 
     .queue-tab-btn.active {
-        background: rgba(255, 87, 34, 0.1);
-        border-color: rgba(255, 87, 34, 0.25);
+        background: var(--primary-orange-light);
+        border-color: var(--role-accent-border);
         color: var(--primary-orange);
     }
 
@@ -334,8 +332,8 @@
     }
 
     .dispatch-item:hover {
-        background: rgba(255, 87, 34, 0.06);
-        border-color: rgba(255, 87, 34, 0.25);
+        background: var(--primary-orange-light);
+        border-color: var(--role-accent-border);
         transform: translateX(3px);
     }
 
@@ -750,7 +748,7 @@
     .btn-dialog.approve {
         background: #10b981;
         color: #ffffff;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .btn-dialog.approve:hover {
@@ -760,7 +758,7 @@
     .btn-dialog.reject {
         background: #ef4444;
         color: #ffffff;
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .btn-dialog.reject:hover {
@@ -1249,7 +1247,7 @@
 
                 <a href="{{ url_for('adminstaff.support') }}" class="dispatch-item">
                     <div class="dispatch-left">
-                        <div class="dispatch-icon" style="background:rgba(255,87,34,0.12); color:var(--primary-orange);">
+                        <div class="dispatch-icon" style="background:var(--primary-orange-light); color:var(--primary-orange);">
                             <i class="ph ph-ticket"></i>
                         </div>
                         <div class="dispatch-info">
@@ -1878,8 +1876,8 @@
                         {
                             label: 'Tickets Opened',
                             data: tOpened,
-                            backgroundColor: 'rgba(255, 87, 34, 0.7)',
-                            borderColor: '#ff5722',
+                            backgroundColor: 'rgba(217, 119, 6, 0.75)',
+                            borderColor: '#d97706',
                             borderWidth: 1.5,
                             borderRadius: 6,
                             barPercentage: 0.6,

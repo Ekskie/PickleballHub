@@ -191,6 +191,9 @@
             <div class="notif-content">
                 <h4>{{ n.title }}</h4>
                 <p>{{ n.message }}</p>
+                {% if n.link and not (n.link | string).strip().lower().startswith('javascript:') %}
+                <a href="{{ n.link }}" class="notif-action-link">View Details <i class="ph ph-arrow-right"></i></a>
+                {% endif %}
             </div>
             <div class="notif-right">
                 <span class="notif-time">{{ n.created_at | community_timeago }}</span>
@@ -208,22 +211,107 @@
 </div>
 
 <script>
+    function getCsrfToken() {
+        const meta = document.querySelector('meta[name="csrf-token"]');
+        return meta ? meta.getAttribute('content') : '';
+    }
+
     function dismissNotif(btn) {
         const item = btn.closest('.notif-item');
+        if (!item) return;
+        const notifId = item.getAttribute('data-id');
+        const isUnread = item.classList.contains('unread');
+        const deleteUrl = "{{ url_for(request.blueprint ~ '.delete_notification', notif_id='__NOTIF_ID__') }}".replace('__NOTIF_ID__', encodeURIComponent(notifId));
+
+        // Visual fade out
         item.style.opacity = '0';
         item.style.transform = 'translateX(20px)';
         item.style.transition = 'opacity 0.3s, transform 0.3s';
-        setTimeout(() => item.remove(), 300);
+
+        // Delete from database
+        fetch(deleteUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken(),
+                'X-CSRF-Token': getCsrfToken()
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                setTimeout(() => {
+                    item.remove();
+
+                    // Update unread label count
+                    const unreadCount = document.querySelectorAll('.notif-item.unread').length;
+                    const label = document.querySelector('.unread-label');
+                    if (label) {
+                        label.textContent = `(${unreadCount} unread)`;
+                    }
+
+                    // Dynamically update header bell badge count
+                    if (isUnread) {
+                        const badge = document.querySelector('.notification-bell .badge');
+                        if (badge) {
+                            const currentCount = parseInt(badge.textContent || '0', 10);
+                            const nextCount = currentCount - 1;
+                            if (nextCount <= 0) {
+                                badge.style.display = 'none';
+                                badge.textContent = '0';
+                            } else {
+                                badge.textContent = nextCount;
+                            }
+                        }
+                    }
+
+                    // Check if list is empty now
+                    const list = document.querySelector('.notif-list');
+                    if (list && list.querySelectorAll('.notif-item').length === 0) {
+                        list.innerHTML = `
+                            <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                                <i class="ph ph-bell-slash" style="font-size: 3rem; margin-bottom: 10px;"></i>
+                                <p>No notifications yet.</p>
+                            </div>`;
+                    }
+                }, 300);
+            } else {
+                item.style.opacity = '';
+                item.style.transform = '';
+                if (typeof showToast === 'function') {
+                    showToast('Error', 'Could not delete notification.', 'error');
+                }
+            }
+        })
+        .catch(err => {
+            item.style.opacity = '';
+            item.style.transform = '';
+            console.error('Dismiss error:', err);
+        });
     }
 
     function markAllRead() {
         fetch("{{ url_for(request.blueprint ~ '.mark_notifications_read') }}", {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken(),
+                'X-CSRF-Token': getCsrfToken()
+            }
         }).then(res => res.json()).then(data => {
-            if(data.success) {
+            if (data.success) {
                 document.querySelectorAll('.notif-item.unread').forEach(el => el.classList.remove('unread'));
-                document.querySelector('.unread-label').textContent = '(0 unread)';
+                const label = document.querySelector('.unread-label');
+                if (label) {
+                    label.textContent = '(0 unread)';
+                }
+
+                // Clear top header bell badge count
+                const badge = document.querySelector('.notification-bell .badge');
+                if (badge) {
+                    badge.style.display = 'none';
+                    badge.textContent = '0';
+                }
             }
         });
     }

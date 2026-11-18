@@ -39,20 +39,8 @@
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, #ff5722, #f59e0b, #0ea5e9);
+        background: var(--primary-orange, #ff5722);
         z-index: 2;
-    }
-
-    .messages-hero-banner::before {
-        content: "";
-        position: absolute;
-        top: -40px;
-        right: -40px;
-        width: 260px;
-        height: 260px;
-        background: radial-gradient(circle, rgba(255, 87, 34, 0.1) 0%, rgba(14, 165, 233, 0.04) 60%, transparent 80%);
-        border-radius: 50%;
-        pointer-events: none;
     }
 
     .messages-hero-info {
@@ -70,8 +58,8 @@
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.6px;
-        color: var(--primary-orange, #ff5722);
-        background: rgba(255, 87, 34, 0.1);
+        color: var(--primary-orange);
+        background: var(--primary-orange-light);
         padding: 4px 12px;
         border-radius: 9999px;
         margin-bottom: 8px;
@@ -125,7 +113,7 @@
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        background: linear-gradient(135deg, #ff5722 0%, #ea580c 100%);
+        background: var(--primary-orange);
         color: #ffffff;
         border: none;
         padding: 10px 20px;
@@ -133,13 +121,14 @@
         font-size: 0.88rem;
         font-weight: 800;
         cursor: pointer;
-        box-shadow: 0 4px 14px rgba(225, 86, 35, 0.35);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+        transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .btn-new-chat-hero:hover {
+        background: var(--primary-orange-hover);
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(225, 86, 35, 0.45);
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
     }
 
     /* ── Main Chat Layout ── */
@@ -192,8 +181,8 @@
     .convo-count-badge {
         font-size: 0.72rem;
         font-weight: 800;
-        color: var(--primary-orange, #ff5722);
-        background: rgba(255, 87, 34, 0.1);
+        color: var(--primary-orange);
+        background: var(--primary-orange-light);
         padding: 2px 8px;
         border-radius: 9999px;
     }
@@ -202,7 +191,7 @@
         width: 36px;
         height: 36px;
         border-radius: 10px;
-        background: linear-gradient(135deg, #ff5722 0%, #ea580c 100%);
+        background: var(--primary-orange);
         border: none;
         color: #ffffff;
         cursor: pointer;
@@ -210,14 +199,15 @@
         align-items: center;
         justify-content: center;
         font-size: 1.15rem;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        box-shadow: 0 2px 8px rgba(225, 86, 35, 0.3);
+        transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
         flex-shrink: 0;
     }
 
     .new-chat-btn:hover {
+        background: var(--primary-orange-hover);
         transform: scale(1.08);
-        box-shadow: 0 4px 14px rgba(225, 86, 35, 0.45);
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
     }
 
     /* ── Contacts Search & Filter Tabs ── */
@@ -259,8 +249,8 @@
     }
 
     .contacts-search:focus {
-        border-color: var(--primary-orange, #ff5722);
-        box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.12);
+        border-color: var(--primary-orange);
+        box-shadow: 0 0 0 3px var(--primary-orange-light);
     }
 
     /* Filter Chips (All, Unread, Staff, Players) */
@@ -320,17 +310,17 @@
     }
 
     .contact-item:hover {
-        background: rgba(255, 87, 34, 0.04);
+        background: var(--table-row-hover, rgba(15, 23, 42, 0.03));
     }
 
     .contact-item.active {
-        background: rgba(255, 87, 34, 0.08);
-        border-left-color: var(--primary-orange, #ff5722);
+        background: var(--primary-orange-light);
+        border-left-color: var(--primary-orange);
     }
 
     .contact-item.unread {
-        background: rgba(255, 87, 34, 0.03);
-        border-left-color: var(--primary-orange, #ff5722);
+        background: var(--table-row-hover, rgba(15, 23, 42, 0.03));
+        border-left-color: var(--primary-orange);
     }
 
     .contact-item.unread .contact-name {
@@ -473,7 +463,7 @@
     }
 
     .unread-badge {
-        background: var(--primary-orange, #ff5722);
+        background: var(--primary-orange);
         color: #ffffff;
         font-size: 0.62rem;
         font-weight: 800;
@@ -484,7 +474,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 2px 6px rgba(255, 87, 34, 0.35);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
         flex-shrink: 0;
     }
 
@@ -598,7 +588,6 @@
         height: 7px;
         background: #10b981;
         border-radius: 50%;
-        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
     }
 
     .chat-header-actions {
@@ -623,9 +612,9 @@
     }
 
     .chat-action-btn:hover {
-        background: rgba(255, 87, 34, 0.1);
-        border-color: var(--primary-orange, #ff5722);
-        color: var(--primary-orange, #ff5722);
+        background: var(--primary-orange-light);
+        border-color: var(--primary-orange);
+        color: var(--primary-orange);
     }
 
     /* ── Empty Placeholder Hub ── */
@@ -635,7 +624,7 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        background: radial-gradient(circle at 50% 35%, rgba(255, 87, 34, 0.04) 0%, transparent 70%);
+        background: transparent;
         padding: 30px;
         text-align: center;
     }
@@ -644,15 +633,15 @@
         width: 80px;
         height: 80px;
         border-radius: 24px;
-        background: linear-gradient(135deg, rgba(255, 87, 34, 0.15) 0%, rgba(245, 158, 11, 0.1) 100%);
-        border: 1.5px solid rgba(255, 87, 34, 0.25);
-        color: var(--primary-orange, #ff5722);
+        background: var(--primary-orange-light);
+        border: 1.5px solid var(--role-accent-border);
+        color: var(--primary-orange);
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 2.6rem;
         margin-bottom: 20px;
-        box-shadow: 0 8px 24px rgba(255, 87, 34, 0.12);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
         animation: floatIcon 3s ease-in-out infinite alternate;
     }
 
@@ -726,7 +715,7 @@
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        background: linear-gradient(135deg, #ff5722 0%, #ea580c 100%);
+        background: var(--primary-orange);
         color: #ffffff;
         border: none;
         padding: 12px 24px;
@@ -734,13 +723,14 @@
         font-size: 0.92rem;
         font-weight: 800;
         cursor: pointer;
-        box-shadow: 0 4px 16px rgba(225, 86, 35, 0.35);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+        transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .btn-placeholder-new:hover {
+        background: var(--primary-orange-hover);
         transform: translateY(-2px);
-        box-shadow: 0 8px 22px rgba(225, 86, 35, 0.45);
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
     }
 
     /* ── Chat Messages Stream ── */
@@ -818,10 +808,10 @@
     }
 
     .msg-bubble.sent {
-        background: linear-gradient(135deg, #ff5722 0%, #ea580c 100%);
+        background: var(--primary-orange);
         color: #ffffff;
         border-bottom-right-radius: 4px;
-        box-shadow: 0 4px 14px rgba(225, 86, 35, 0.25);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .msg-bubble.received {
@@ -892,9 +882,9 @@
     }
 
     .quick-reply-pill:hover {
-        background: rgba(255, 87, 34, 0.1);
-        border-color: var(--primary-orange, #ff5722);
-        color: var(--primary-orange, #ff5722);
+        background: var(--primary-orange-light);
+        border-color: var(--primary-orange);
+        color: var(--primary-orange);
         transform: translateY(-1px);
     }
 
@@ -924,9 +914,9 @@
     }
 
     .chat-input:focus {
-        border-color: var(--primary-orange, #ff5722);
+        border-color: var(--primary-orange);
         background: var(--card-bg, #ffffff);
-        box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.12);
+        box-shadow: 0 0 0 3px var(--primary-orange-light);
     }
 
     .chat-input::placeholder {
@@ -937,7 +927,7 @@
         width: 44px;
         height: 44px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #ff5722 0%, #ea580c 100%);
+        background: var(--primary-orange);
         border: none;
         color: #ffffff;
         cursor: pointer;
@@ -945,14 +935,15 @@
         align-items: center;
         justify-content: center;
         font-size: 1.2rem;
-        transition: transform 0.18s ease, box-shadow 0.18s ease;
-        box-shadow: 0 4px 12px rgba(225, 86, 35, 0.35);
+        transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
         flex-shrink: 0;
     }
 
     .send-btn:hover {
+        background: var(--primary-orange-hover);
         transform: scale(1.08);
-        box-shadow: 0 6px 18px rgba(225, 86, 35, 0.45);
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
     }
 
     .send-btn:disabled {
@@ -1047,9 +1038,9 @@
     }
 
     .user-search-input:focus {
-        border-color: var(--primary-orange, #ff5722);
+        border-color: var(--primary-orange);
         background: var(--card-bg, #ffffff);
-        box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.12);
+        box-shadow: 0 0 0 3px var(--primary-orange-light);
     }
 
     .user-search-results {
@@ -1080,8 +1071,8 @@
     }
 
     .user-result-item:hover {
-        background: rgba(255, 87, 34, 0.06);
-        border-color: rgba(255, 87, 34, 0.2);
+        background: var(--primary-orange-light);
+        border-color: var(--role-accent-border);
     }
 
     .user-result-avatar {
@@ -1192,7 +1183,7 @@
     }
 
     html.dark-mode .contact-item.active {
-        background: rgba(255, 87, 34, 0.14);
+        background: var(--primary-orange-light);
     }
 
     html.dark-mode .msg-bubble.received {

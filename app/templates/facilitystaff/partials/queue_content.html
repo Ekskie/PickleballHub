@@ -74,12 +74,12 @@
                     </td>
                     <td>
                         {% if q.status == 'playing' %}
-                        <span class="status-badge orange-glow"><span
+                        <span class="status-badge badge-playing"><span
                                 class="dot-indicator bg-orange"></span>Playing</span>
                         {% elif q.status == 'next' %}
-                        <span class="status-badge green-glow"><span class="dot-indicator bg-green"></span>Next Up</span>
+                        <span class="status-badge badge-next"><span class="dot-indicator bg-green"></span>Next Up</span>
                         {% else %}
-                        <span class="status-badge gray-glow"><span class="dot-indicator bg-gray"></span>Waiting</span>
+                        <span class="status-badge badge-waiting"><span class="dot-indicator bg-gray"></span>Waiting</span>
                         {% endif %}
                     </td>
                     <td>

@@ -38,13 +38,13 @@
     font-size: 0.88rem;
     border-radius: 12px;
     text-decoration: none;
-    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     border: none;
 }
 .btn-create-event:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
     color: #fff;
 }
 .btn-create-event i { font-size: 1.15rem; }
@@ -128,8 +128,8 @@
     outline: none;
 }
 .filter-search-input:focus {
-    border-color: #10b981;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 0 3px var(--primary-orange-light);
 }
 .filter-pills {
     display: flex;
@@ -160,7 +160,7 @@
     background: #10b981;
     color: #fff;
     border-color: #10b981;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+    box-shadow: none;
 }
 .pill-count {
     background: rgba(0, 0, 0, 0.12);
@@ -193,7 +193,7 @@
     overflow: hidden;
 }
 .event-card:hover {
-    box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(16, 185, 129, 0.08);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
     transform: translateY(-3px);
 }
 .event-card.card-pending {
@@ -222,7 +222,7 @@
     align-items: center;
     gap: 4px;
 }
-.badge-tournament { color: #ea580c; background: rgba(249, 115, 22, 0.12); }
+.badge-tournament { color: var(--primary-orange); background: var(--primary-orange-light); }
 .badge-social     { color: #0284c7; background: rgba(14, 165, 233, 0.12); }
 .badge-training   { color: #7c3aed; background: rgba(139, 92, 246, 0.12); }
 .badge-league     { color: #b45309; background: rgba(245, 158, 11, 0.12); }
@@ -389,8 +389,8 @@
     background-color: var(--card-bg);
 }
 .status-select:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 0 3px var(--primary-orange-light);
 }
 .status-select-wrap i {
     position: absolute;
@@ -657,7 +657,7 @@
                             </button>
                         </form>
                         {% if ev.organizer_id %}
-                        <a href="{{ url_for('owner.messages', chat_user=ev.organizer_id) }}" class="btn-sm btn-sm-outline" style="text-decoration:none;color:var(--primary-orange);border-color:rgba(255,87,34,0.3);" title="Message Organizer">
+                        <a href="{{ url_for('owner.messages', chat_user=ev.organizer_id) }}" class="btn-sm btn-sm-outline" style="text-decoration:none;color:var(--primary-orange);border-color:var(--role-accent-border);" title="Message Organizer">
                             <i class="ph ph-chat-circle-dots"></i> Message
                         </a>
                         {% endif %}
@@ -684,7 +684,7 @@
                             <i class="ph ph-users"></i> Participants
                         </a>
                         {% if ev.organizer_id and ev.organizer_id != session.get('user_id') %}
-                        <a href="{{ url_for('owner.messages', chat_user=ev.organizer_id) }}" class="btn-sm btn-sm-outline" style="padding:5px 11px;font-size:0.75rem;text-decoration:none;color:var(--primary-orange);border-color:rgba(255,87,34,0.3);" title="Message Organizer">
+                        <a href="{{ url_for('owner.messages', chat_user=ev.organizer_id) }}" class="btn-sm btn-sm-outline" style="padding:5px 11px;font-size:0.75rem;text-decoration:none;color:var(--primary-orange);border-color:var(--role-accent-border);" title="Message Organizer">
                             <i class="ph ph-chat-circle-dots"></i> Message
                         </a>
                         {% endif %}

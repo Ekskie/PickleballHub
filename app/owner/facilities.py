@@ -1,5 +1,5 @@
 import time
-from flask import request, redirect, url_for, session, render_template, flash
+from flask import request, redirect, url_for, session, render_template, flash, current_app
 from app.decorators import require_role
 from app.db import get_db, get_admin_db
 from app.owner import owner_bp
@@ -157,9 +157,9 @@ def approve_affiliation(affil_id):
             'updated_at': datetime.now(timezone.utc).isoformat()
         }).eq('id', affil_id).execute()
 
-        club_admin_id = aff.get('clubs', {}).get('admin_id')
-        facility_name = aff.get('facilities', {}).get('name') or "Facility"
-        club_name = aff.get('clubs', {}).get('name') or "Club"
+        club_admin_id = (aff.get('clubs') or {}).get('admin_id')
+        facility_name = (aff.get('facilities') or {}).get('name') or "Facility"
+        club_name = (aff.get('clubs') or {}).get('name') or "Club"
 
         if club_admin_id:
             try:
@@ -170,16 +170,18 @@ def approve_affiliation(affil_id):
                     'type': 'success',
                     'link': url_for('clubadmin.club_setup')
                 }).execute()
+            except Exception as notif_err:
+                current_app.logger.warning(f"Failed to deliver approval notification: {notif_err}")
 
+            try:
                 from app.chats import send_auto_message
                 conf_msg = (
                     f"Welcome to {facility_name}! We are excited to officially partner with {club_name} as your Home Venue. "
                     f"{f'Note from owner: {response_notes}' if response_notes else 'Looking forward to hosting your tournaments and member sessions!'}"
                 )
                 send_auto_message(db, owner_id, club_admin_id, conf_msg)
-            except Exception as notif_err:
-                from flask import current_app
-                current_app.logger.warning(f"Failed to deliver approval notification: {notif_err}")
+            except Exception as chat_err:
+                current_app.logger.warning(f"Failed to deliver approval chat message: {chat_err}")
 
         flash(f"Partnership with {club_name} approved! They now have {facility_name} marked as their official Home Court.", "success")
     except Exception as e:
@@ -212,9 +214,9 @@ def decline_affiliation(affil_id):
             'updated_at': datetime.now(timezone.utc).isoformat()
         }).eq('id', affil_id).execute()
 
-        club_admin_id = aff.get('clubs', {}).get('admin_id')
-        facility_name = aff.get('facilities', {}).get('name') or "Facility"
-        club_name = aff.get('clubs', {}).get('name') or "Club"
+        club_admin_id = (aff.get('clubs') or {}).get('admin_id')
+        facility_name = (aff.get('facilities') or {}).get('name') or "Facility"
+        club_name = (aff.get('clubs') or {}).get('name') or "Club"
 
         if club_admin_id:
             try:
@@ -225,13 +227,15 @@ def decline_affiliation(affil_id):
                     'type': 'info',
                     'link': url_for('clubadmin.club_setup')
                 }).execute()
+            except Exception as notif_err:
+                current_app.logger.warning(f"Failed to deliver decline notification: {notif_err}")
 
+            try:
                 from app.chats import send_auto_message
                 dec_msg = f"Thank you for your interest in {facility_name}. Regarding your partnership request for {club_name}: {reason}."
                 send_auto_message(db, owner_id, club_admin_id, dec_msg)
-            except Exception as notif_err:
-                from flask import current_app
-                current_app.logger.warning(f"Failed to deliver decline notification: {notif_err}")
+            except Exception as chat_err:
+                current_app.logger.warning(f"Failed to deliver decline chat message: {chat_err}")
 
         flash(f"Partnership request with {club_name} declined.", "info")
     except Exception as e:

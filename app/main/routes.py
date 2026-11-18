@@ -1,5 +1,7 @@
-from flask import Blueprint, render_template, request, jsonify, session, g
+from flask import Blueprint, render_template, request, jsonify, session, g, redirect, url_for, Response, current_app
 import os
+import json
+from xml.sax.saxutils import escape as xml_escape
 from supabase import create_client
 import random
 
@@ -955,6 +957,129 @@ def memberships():
 def pricing():
     """Alias for memberships and pricing tiers page."""
     return memberships()
+
+
+@main_bp.route('/cookie-policy')
+def cookie_policy():
+    """Redirect to the Cookies & Tracking Technologies section of the Privacy Policy."""
+    return redirect(url_for('main.privacy_policy', _anchor='cookies'))
+
+
+@main_bp.route('/robots.txt')
+def robots_txt():
+    """Serve robots.txt rules for search engine crawlers."""
+    sitemap_url = f"{request.url_root}sitemap.xml"
+    lines = [
+        "User-agent: *",
+        "Allow: /",
+        "Disallow: /superadmin/",
+        "Disallow: /adminstaff/",
+        "Disallow: /owner/",
+        "Disallow: /clubadmin/",
+        "Disallow: /facilitystaff/",
+        "Disallow: /player/",
+        "Disallow: /auth/",
+        "Disallow: /billing/",
+        f"Sitemap: {sitemap_url}",
+        "",
+    ]
+    return Response("\n".join(lines), mimetype='text/plain')
+
+
+@main_bp.route('/sitemap.xml')
+def sitemap_xml():
+    """Generate dynamic XML sitemap for public landing pages and published articles."""
+    base_url = request.url_root.rstrip('/')
+    public_paths = [
+        ('/', 'daily', '1.0'),
+        ('/courts', 'daily', '0.9'),
+        ('/tournaments', 'daily', '0.9'),
+        ('/clinics', 'weekly', '0.8'),
+        ('/community', 'daily', '0.8'),
+        ('/memberships', 'weekly', '0.8'),
+        ('/about-us', 'monthly', '0.6'),
+        ('/privacy-policy', 'monthly', '0.4'),
+        ('/terms-of-service', 'monthly', '0.4'),
+    ]
+
+    url_entries = []
+    for path, changefreq, priority in public_paths:
+        loc = xml_escape(f"{base_url}{path}")
+        url_entries.append(
+            f"  <url>\n"
+            f"    <loc>{loc}</loc>\n"
+            f"    <changefreq>{changefreq}</changefreq>\n"
+            f"    <priority>{priority}</priority>\n"
+            f"  </url>"
+        )
+
+    try:
+        from app.landing_helper import get_articles_db
+        articles = get_articles_db()
+        if isinstance(articles, dict):
+            for key, art in articles.items():
+                art_id = art.get('id', key) if isinstance(art, dict) else key
+                if art_id is not None:
+                    loc = xml_escape(f"{base_url}/article/{art_id}")
+                    url_entries.append(
+                        f"  <url>\n"
+                        f"    <loc>{loc}</loc>\n"
+                        f"    <changefreq>weekly</changefreq>\n"
+                        f"    <priority>0.7</priority>\n"
+                        f"  </url>"
+                    )
+    except Exception as e:
+        current_app.logger.warning(f"[sitemap_xml] Article listing error: {e}")
+
+    xml_content = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        + "\n".join(url_entries)
+        + "\n</urlset>\n"
+    )
+    return Response(xml_content, mimetype='application/xml')
+
+
+@main_bp.route('/manifest.json')
+def manifest_json():
+    """Serve the PickleballHub Progressive Web App (PWA) manifest."""
+    from app.settings_helper import load_platform_settings
+    settings = load_platform_settings()
+    app_name = settings.get('platform_name') or 'PickleballHub'
+    description = settings.get('seo_meta_description') or 'Discover and book pickleball courts, join tournaments, and connect with players.'
+    manifest = {
+        "name": app_name,
+        "short_name": app_name,
+        "description": description,
+        "start_url": "/",
+        "scope": "/",
+        "display": "standalone",
+        "background_color": "#f3efe6",
+        "theme_color": "#E15623",
+        "orientation": "portrait-primary",
+        "icons": [
+            {
+                "src": "/static/images/logo.png",
+                "sizes": "192x192",
+                "type": "image/png",
+                "purpose": "any maskable"
+            },
+            {
+                "src": "/static/images/logo.png",
+                "sizes": "512x512",
+                "type": "image/png",
+                "purpose": "any"
+            }
+        ]
+    }
+    return Response(json.dumps(manifest), mimetype='application/manifest+json')
+
+
+@main_bp.route('/api/health')
+@main_bp.route('/health')
+def health_check():
+    """Return service health status for monitoring and uptime probes."""
+    return jsonify({"status": "ok", "service": "PickleballHub"}), 200
 
 
 

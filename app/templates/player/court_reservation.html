@@ -100,12 +100,12 @@
     .facility-card:hover {
         transform: translateY(-4px);
         border-color: var(--primary-orange);
-        box-shadow: 0 12px 28px rgba(255, 87, 34, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
     }
 
     .facility-card.selected {
         border-color: var(--primary-orange);
-        box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.22), 0 8px 24px rgba(255, 87, 34, 0.14);
+        box-shadow: 0 0 0 2px var(--primary-orange), 0 6px 16px rgba(15, 23, 42, 0.08);
     }
 
     /* Hero Banner & Badges */
@@ -113,7 +113,7 @@
         height: 165px;
         position: relative;
         overflow: hidden;
-        background: linear-gradient(135deg, #1e293b, #0f172a);
+        background: #1e293b;
     }
 
     .fac-hero-img {
@@ -188,7 +188,6 @@
         height: 7px;
         background: #10b981;
         border-radius: 50%;
-        box-shadow: 0 0 6px #10b981;
     }
 
     .fac-price-chip {
@@ -476,14 +475,14 @@
         background: var(--primary-orange);
         border-color: var(--primary-orange);
         color: #fff;
-        box-shadow: 0 4px 14px rgba(255, 87, 34, 0.25);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .facility-card.selected .btn-select-fac {
         background: #10b981;
         border-color: #10b981;
         color: #fff;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     /* Keep support for booking summary staff contact styling */
@@ -798,13 +797,13 @@
     .cal-day:hover:not(.past):not(.disabled) {
         border-color: var(--primary-orange);
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(225, 86, 35, 0.15);
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
     }
 
     .cal-day.selected {
         border-color: var(--primary-orange) !important;
         background: var(--primary-orange-light) !important;
-        box-shadow: 0 0 0 2px var(--primary-orange);
+        box-shadow: none;
     }
 
     .cal-day.today .cal-day-num {
@@ -902,7 +901,6 @@
 
     .cal-legend-dot.pro-locked {
         background: #8b5cf6;
-        box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.25);
     }
 
     .cal-legend-dot.past {
@@ -972,7 +970,7 @@
     }
 
     .btn-cal-upgrade {
-        background: linear-gradient(135deg, #8b5cf6, #6366f1);
+        background: #7c3aed;
         color: #fff;
         border: none;
         padding: 5px 12px;
@@ -989,8 +987,9 @@
     }
 
     .btn-cal-upgrade:hover {
+        background: #6d28d9;
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.35);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
     }
 
     /* Cal Day Pro Locked */
@@ -1005,7 +1004,7 @@
         border-style: solid;
         background: rgba(139, 92, 246, 0.12);
         transform: translateY(-2px);
-        box-shadow: 0 4px 14px rgba(139, 92, 246, 0.22);
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
     }
 
     .cal-day.pro-locked .cal-day-num {
@@ -1039,7 +1038,7 @@
         background: var(--card-bg);
         border-radius: 20px;
         border: 1.5px solid rgba(139, 92, 246, 0.35);
-        box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.35), 0 0 35px rgba(139, 92, 246, 0.15);
+        box-shadow: 0 20px 48px rgba(15, 23, 42, 0.28);
         max-width: 490px;
         width: 92%;
         overflow: hidden;
@@ -1060,7 +1059,7 @@
     }
 
     .early-access-header {
-        background: linear-gradient(135deg, rgba(139, 92, 246, 0.16) 0%, rgba(255, 87, 34, 0.1) 100%);
+        background: rgba(139, 92, 246, 0.08);
         padding: 22px 22px 16px 22px;
         border-bottom: 1px solid var(--border-color);
         position: relative;
@@ -1079,7 +1078,7 @@
         text-transform: uppercase;
         letter-spacing: 0.6px;
         margin-bottom: 10px;
-        box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
     }
 
     .early-access-title {
@@ -1185,7 +1184,7 @@
     }
 
     .btn-upgrade-pro-action {
-        background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+        background: #7c3aed;
         color: #fff;
         border: none;
         padding: 11px 18px;
@@ -1197,13 +1196,14 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
-        box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
         transition: all 0.2s;
         font-family: inherit;
     }
 
     .btn-upgrade-pro-action:hover {
-        box-shadow: 0 6px 18px rgba(139, 92, 246, 0.5);
+        background: #6d28d9;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.16);
         transform: translateY(-1px);
     }
 
@@ -1403,7 +1403,7 @@
     .slot-time-card:hover:not(.booked) {
         border-color: var(--primary-orange);
         transform: translateY(-2px);
-        box-shadow: 0 4px 14px rgba(225, 86, 35, 0.15);
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
     }
 
     .slot-time-card.selected {
@@ -1684,7 +1684,7 @@
 
     .visual-court-card.selected {
         border-color: var(--primary-orange);
-        box-shadow: 0 0 0 2px var(--primary-orange), 0 8px 25px rgba(249, 115, 22, 0.25);
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
         transform: scale(1.02);
     }
 
@@ -1955,7 +1955,7 @@
         border-color: var(--primary-orange);
         background: var(--primary-orange-light);
         transform: translateY(-1px);
-        box-shadow: 0 4px 14px rgba(225, 86, 35, 0.15);
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
     }
 
     .cart-btn-icon-wrap {
@@ -1984,30 +1984,23 @@
 
     .cart-pulse-dot.pending {
         background: #f59e0b;
-        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
         animation: cartDotPulse 1.8s infinite;
     }
 
     .cart-pulse-dot.confirmed {
         background: #16a34a;
-        box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7);
         animation: cartDotPulse 1.8s infinite;
     }
 
     @keyframes cartDotPulse {
-        0% {
-            transform: scale(0.95);
-            box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
-        }
-
-        70% {
+        0%, 100% {
             transform: scale(1);
-            box-shadow: 0 0 0 6px rgba(245, 158, 11, 0);
+            opacity: 1;
         }
 
-        100% {
-            transform: scale(0.95);
-            box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+        50% {
+            transform: scale(0.8);
+            opacity: 0.45;
         }
     }
 
@@ -2136,7 +2129,7 @@
                     style="position:absolute;top:10px;left:10px;display:flex;flex-direction:column;gap:5px;z-index:3;">
                     {% if f.is_featured_pin %}
                     <div class="fac-badge-top-left badge-featured-pin" title="Elite Enterprise Featured Venue"
-                        style="background:linear-gradient(135deg, #7c3aed, #4f46e5);color:#fff;border:1px solid rgba(255,255,255,0.3);box-shadow:0 4px 12px rgba(124,58,237,0.35);font-weight:800;padding:4px 9px;border-radius:20px;font-size:0.72rem;display:inline-flex;align-items:center;gap:4px;">
+                        style="background:#7c3aed;color:#fff;border:1px solid rgba(255,255,255,0.3);box-shadow:0 2px 6px rgba(15,23,42,0.12);font-weight:800;padding:4px 9px;border-radius:20px;font-size:0.72rem;display:inline-flex;align-items:center;gap:4px;">
                         <i class="ph-fill ph-crown"></i>
                         <span>Featured Venue</span>
                     </div>
@@ -2144,7 +2137,7 @@
 
                     {% if f.is_verified_partner %}
                     <div class="fac-badge-top-left badge-partner" title="PickleballHub Verified Partner Venue"
-                        style="background:linear-gradient(135deg, #f59e0b, #d97706);color:#fff;border:1px solid rgba(255,255,255,0.3);box-shadow:0 4px 12px rgba(245,158,11,0.3);font-weight:700;padding:4px 9px;border-radius:20px;font-size:0.72rem;display:inline-flex;align-items:center;gap:4px;">
+                        style="background:#f59e0b;color:#fff;border:1px solid rgba(255,255,255,0.3);box-shadow:0 2px 6px rgba(15,23,42,0.12);font-weight:700;padding:4px 9px;border-radius:20px;font-size:0.72rem;display:inline-flex;align-items:center;gap:4px;">
                         <i class="ph-fill ph-seal-check"></i>
                         <span>Verified Partner</span>
                     </div>
@@ -3034,7 +3027,7 @@
                 const targetCourt = state.courtsList.find(c => c.id === state.targetCourtId);
                 if (targetCourt) {
                     noticeContainer.innerHTML = `
-                        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 18px;background:rgba(255,87,34,0.08);border:1.5px solid rgba(255,87,34,0.35);border-radius:12px;box-shadow:0 2px 8px rgba(255,87,34,0.06);">
+                        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 18px;background:rgba(255,87,34,0.08);border:1.5px solid rgba(255,87,34,0.35);border-radius:12px;box-shadow:0 2px 6px rgba(15,23,42,0.06);">
                             <div style="display:flex;align-items:center;gap:10px;">
                                 <div style="width:34px;height:34px;border-radius:50%;background:var(--primary-orange);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">
                                     <i class="ph ph-tennis-ball"></i>

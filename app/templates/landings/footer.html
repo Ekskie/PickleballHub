@@ -106,6 +106,8 @@
                 <li><a href="{{ url_for('main.privacy_policy') }}">Safety</a></li>
                 <li><a href="{{ url_for('main.terms_of_service') }}">Terms of Service</a></li>
                 <li><a href="{{ url_for('main.privacy_policy') }}">Privacy Policy</a></li>
+                <li><a href="{{ url_for('main.privacy_policy') }}#cookies">Cookie Policy</a></li>
+                <li><a href="#" onclick="if(window.openCookiePreferences){window.openCookiePreferences();return false;}">Cookie Settings</a></li>
             </ul>
         </div>
         
@@ -149,3 +151,4 @@
         }
     }
 </script>
+{% include 'partials/cookie_consent.html' ignore missing %}

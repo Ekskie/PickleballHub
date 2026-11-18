@@ -27,7 +27,7 @@
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, var(--primary-orange) 0%, #f97316 40%, var(--btn-green) 100%);
+        background: var(--primary-orange);
     }
 
     .schedule-header-flex {
@@ -57,15 +57,13 @@
         height: 8px;
         border-radius: 50%;
         background-color: var(--btn-green);
-        box-shadow: 0 0 0 rgba(34, 197, 94, 0.7);
         animation: livePulse 1.8s infinite;
         display: inline-block;
     }
 
     @keyframes livePulse {
-        0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
-        70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.45; }
     }
 
     .schedule-title-group h1 {
@@ -116,7 +114,7 @@
     }
 
     .desk-btn-primary {
-        background: linear-gradient(135deg, var(--primary-orange), #ea580c);
+        background: var(--primary-orange);
         color: #ffffff;
         border: none;
         padding: 10px 18px;
@@ -129,12 +127,13 @@
         cursor: pointer;
         transition: all 0.2s ease;
         text-decoration: none;
-        box-shadow: 0 4px 12px rgba(225, 86, 35, 0.25);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .desk-btn-primary:hover {
+        background: var(--primary-orange-hover);
         transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(225, 86, 35, 0.35);
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
         color: #ffffff;
     }
 
@@ -157,7 +156,7 @@
     .desk-btn-outline:hover {
         border-color: var(--primary-orange);
         color: var(--primary-orange);
-        background: rgba(225, 86, 35, 0.05);
+        background: var(--primary-orange-light);
     }
 
     /* Date Navigator */
@@ -241,9 +240,9 @@
     }
 
     .date-status-badge.future {
-        background: rgba(225, 86, 35, 0.1);
+        background: var(--primary-orange-light);
         color: var(--primary-orange);
-        border: 1px solid rgba(225, 86, 35, 0.2);
+        border: 1px solid var(--role-accent-border);
     }
 
     .date-quick-presets {
@@ -277,7 +276,7 @@
         background: var(--primary-orange);
         color: #ffffff;
         border-color: var(--primary-orange);
-        box-shadow: 0 2px 8px rgba(225, 86, 35, 0.25);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .date-picker-input-wrapper {
@@ -305,10 +304,10 @@
 
     .custom-calendar-trigger-btn:hover {
         border-color: var(--primary-orange);
-        background: rgba(225, 86, 35, 0.08);
+        background: var(--primary-orange-light);
         color: var(--primary-orange);
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(225, 86, 35, 0.15);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .custom-cal-trigger-date {
@@ -407,7 +406,7 @@
     .cal-nav-btn:hover {
         border-color: var(--primary-orange);
         color: var(--primary-orange);
-        background: rgba(225, 86, 35, 0.08);
+        background: var(--primary-orange-light);
     }
 
     .cal-select {
@@ -447,7 +446,7 @@
     .cal-quick-pill:hover {
         border-color: var(--primary-orange);
         color: var(--primary-orange);
-        background: rgba(225, 86, 35, 0.06);
+        background: var(--primary-orange-light);
     }
 
     .cal-legend-strip {
@@ -557,7 +556,7 @@
 
     .cal-day.is-selected {
         border-color: var(--primary-orange);
-        background: rgba(225, 86, 35, 0.08);
+        background: var(--primary-orange-light);
         box-shadow: 0 0 0 2px var(--primary-orange);
     }
 
@@ -600,9 +599,9 @@
     }
 
     .cal-day-badge.active-booking {
-        background: rgba(225, 86, 35, 0.15);
+        background: var(--primary-orange-light);
         color: var(--primary-orange);
-        border: 1px solid rgba(225, 86, 35, 0.3);
+        border: 1px solid var(--role-accent-border);
     }
 
     .cal-day-badge.past-booking {
@@ -702,9 +701,9 @@
     }
 
     .cal-go-schedule-btn:hover {
-        background: var(--primary-hover);
+        background: var(--primary-orange-hover);
         transform: translateY(-1px);
-        box-shadow: 0 4px 14px rgba(225, 86, 35, 0.3);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     /* All Dates List View */
@@ -782,7 +781,7 @@
     }
 
     .kpi-icon-orange {
-        background: rgba(225, 86, 35, 0.1);
+        background: var(--primary-orange-light);
         color: var(--primary-orange);
     }
 
@@ -1082,7 +1081,7 @@
         border-radius: 6px;
         background: var(--primary-orange-light);
         color: var(--primary-orange);
-        border: 1px solid rgba(225, 86, 35, 0.2);
+        border: 1px solid var(--role-accent-border);
         cursor: pointer;
         text-decoration: none;
         transition: all 0.2s ease;
@@ -1108,7 +1107,7 @@
     }
 
     .hour-th.is-now {
-        background: rgba(225, 86, 35, 0.12);
+        background: var(--primary-orange-light);
         color: var(--primary-orange);
         border-bottom: 2px solid var(--primary-orange);
     }
@@ -1135,7 +1134,7 @@
     }
 
     .empty-slot:hover {
-        background: rgba(225, 86, 35, 0.05);
+        background: var(--primary-orange-light);
     }
 
     .empty-slot-plus {
@@ -1146,7 +1145,7 @@
         background: var(--primary-orange-light);
         padding: 4px 8px;
         border-radius: 6px;
-        border: 1px solid rgba(225, 86, 35, 0.2);
+        border: 1px solid var(--role-accent-border);
         align-items: center;
         gap: 3px;
     }
@@ -1186,26 +1185,26 @@
         z-index: 5;
     }
 
-    /* Confirmed Booking (Orange theme) */
+    /* Confirmed Booking (Role Accent theme) */
     .res-card-confirmed {
-        background: linear-gradient(135deg, rgba(225, 86, 35, 0.12), rgba(249, 115, 22, 0.06));
+        background: var(--primary-orange-light);
         border: 1px solid var(--primary-orange);
         border-left: 4px solid var(--primary-orange);
     }
 
     /* Completed Booking (Green theme) */
     .res-card-completed {
-        background: linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(22, 163, 74, 0.06));
+        background: rgba(34, 197, 94, 0.1);
         border: 1px solid var(--btn-green);
         border-left: 4px solid var(--btn-green);
     }
 
-    /* Live In-Session (Glowing emerald/orange) */
+    /* Live In-Session (Active emerald border) */
     .res-card-live {
-        background: linear-gradient(135deg, rgba(34, 197, 94, 0.18), rgba(225, 86, 35, 0.15));
+        background: rgba(34, 197, 94, 0.14);
         border: 1.5px solid var(--btn-green);
         border-left: 4px solid var(--btn-green);
-        box-shadow: 0 0 12px rgba(34, 197, 94, 0.25);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .res-card-top {
@@ -1346,7 +1345,7 @@
         width: 40px;
         height: 40px;
         border-radius: 12px;
-        background: rgba(225, 86, 35, 0.12);
+        background: var(--primary-orange-light);
         color: var(--primary-orange);
         display: flex;
         align-items: center;
@@ -1581,8 +1580,8 @@
         left: 0;
         right: 0;
         height: 3px;
-        background: linear-gradient(90deg, transparent, #22c55e, #10b981, transparent);
-        box-shadow: 0 0 14px #22c55e;
+        background: #22c55e;
+        box-shadow: none;
         animation: scanSweep 2s ease-in-out infinite alternate;
     }
 
@@ -1726,7 +1725,7 @@
         <!-- Right: Custom Interactive Calendar Picker & Jump to Today -->
         <div class="date-picker-input-wrapper">
             {% if not is_today %}
-            <a href="{{ url_for('facilitystaff.schedule') }}" class="preset-pill" style="font-weight: 700; color: var(--primary-orange); border-color: rgba(225, 86, 35, 0.3);">
+            <a href="{{ url_for('facilitystaff.schedule') }}" class="preset-pill" style="font-weight: 700; color: var(--primary-orange); border-color: var(--role-accent-border);">
                 <i class="ph ph-arrow-u-up-left"></i> Jump to Today
             </a>
             {% endif %}
@@ -2059,7 +2058,7 @@
         <!-- Modal Header -->
         <div class="modal-header" style="padding: 18px 24px;">
             <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(225, 86, 35, 0.12); display: flex; align-items: center; justify-content: center; color: var(--primary-orange); font-size: 1.4rem; flex-shrink: 0;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: var(--primary-orange-light); display: flex; align-items: center; justify-content: center; color: var(--primary-orange); font-size: 1.4rem; flex-shrink: 0;">
                     <i class="ph ph-calendar-check"></i>
                 </div>
                 <div>
@@ -2236,7 +2235,7 @@
     <div class="modal-box">
         <div class="modal-header">
             <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(225, 86, 35, 0.12); display: flex; align-items: center; justify-content: center; color: var(--primary-orange); font-size: 1.35rem; flex-shrink: 0;">
+                <div style="width: 42px; height: 42px; border-radius: 12px; background: var(--primary-orange-light); display: flex; align-items: center; justify-content: center; color: var(--primary-orange); font-size: 1.35rem; flex-shrink: 0;">
                     <i class="ph ph-calendar-blank"></i>
                 </div>
                 <div>
@@ -2331,7 +2330,7 @@
 
             <div class="modal-header">
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(225, 86, 35, 0.12); display: flex; align-items: center; justify-content: center; color: var(--primary-orange); font-size: 1.35rem; flex-shrink: 0;">
+                    <div style="width: 42px; height: 42px; border-radius: 12px; background: var(--primary-orange-light); display: flex; align-items: center; justify-content: center; color: var(--primary-orange); font-size: 1.35rem; flex-shrink: 0;">
                         <i class="ph ph-user-plus"></i>
                     </div>
                     <div>
@@ -2446,7 +2445,7 @@
 
             <div class="modal-footer">
                 <button type="button" class="desk-btn-outline" onclick="closeModal('quickWalkinModal')">Cancel</button>
-                <button type="submit" id="walkinSubmitBtn" class="desk-btn-primary" style="background: linear-gradient(135deg, var(--btn-green), #16a34a); box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25); min-width: 220px; justify-content: center;">
+                <button type="submit" id="walkinSubmitBtn" class="desk-btn-primary" style="background: var(--btn-green); box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08); min-width: 220px; justify-content: center;">
                     <i class="ph ph-check-circle" id="walkinBtnIcon"></i>
                     <span id="walkinBtnText">Confirm Walk-In & Dispatch</span>
                 </button>
@@ -2462,7 +2461,7 @@
     <div class="modal-box">
         <div class="modal-header">
             <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(225, 86, 35, 0.12); display: flex; align-items: center; justify-content: center; color: var(--primary-orange); font-size: 1.3rem; flex-shrink: 0;">
+                <div style="width: 40px; height: 40px; border-radius: 12px; background: var(--primary-orange-light); display: flex; align-items: center; justify-content: center; color: var(--primary-orange); font-size: 1.3rem; flex-shrink: 0;">
                     <i class="ph ph-qr-code"></i>
                 </div>
                 <div>
@@ -3300,7 +3299,7 @@
             return `
                 <div class="cal-list-item-card" data-date="${dStr}" data-search="${formatted.toLowerCase()} ${dStr} ${(info.courts || []).join(' ').toLowerCase()}" onclick="navigateToDate('${dStr}')">
                     <div style="display: flex; align-items: center; gap: 14px;">
-                        <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(225, 86, 35, 0.12); display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--primary-orange); flex-shrink: 0;">
+                        <div style="width: 44px; height: 44px; border-radius: 12px; background: var(--primary-orange-light); display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--primary-orange); flex-shrink: 0;">
                             <span style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase;">${dObj.toLocaleDateString('en-US', { month: 'short' })}</span>
                             <span style="font-size: 1.05rem; font-weight: 800; line-height: 1;">${dObj.getDate()}</span>
                         </div>
@@ -3317,7 +3316,7 @@
                         </div>
                     </div>
                     <div>
-                        <button type="button" class="desk-action-btn-outline" style="font-size: 0.8rem; padding: 6px 14px; border-color: rgba(225, 86, 35, 0.3); color: var(--primary-orange);">
+                        <button type="button" class="desk-action-btn-outline" style="font-size: 0.8rem; padding: 6px 14px; border-color: var(--role-accent-border); color: var(--primary-orange);">
                             View Schedule <i class="ph ph-caret-right"></i>
                         </button>
                     </div>

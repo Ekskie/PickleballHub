@@ -1,0 +1,150 @@
+{% extends "facilitystaff/base_facilitystaff.html" %}
+{% block title %}Support Center{% endblock %}
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="page-title">Support Center</h1>
+</div>
+
+<div class="dashboard-grid">
+    <div class="dashboard-main" style="max-width:680px;">
+        <!-- Submit Ticket -->
+        <div class="glass-card" style="margin-bottom:20px;">
+            <div class="widget-header" style="margin-bottom:20px;">
+                <h3><i class="ph ph-ticket" style="margin-right:8px;color:var(--primary-orange);"></i>Submit a Support Ticket</h3>
+            </div>
+
+            <form method="POST" action="{{ url_for('support.submit_ticket') }}">
+                <div style="margin-bottom:18px;">
+                    <label style="display:block;margin-bottom:6px;font-weight:600;font-size:0.9rem;color:var(--text-secondary);">Category</label>
+                    <select name="category" style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);">
+                        <option value="general">General Inquiry</option>
+                        <option value="queue">Live Court Queue</option>
+                        <option value="walkin">Walk-In Registration</option>
+                        <option value="mediation">Match Mediation / Disputes</option>
+                        <option value="schedule">Court Schedule &amp; Maintenance</option>
+                        <option value="payment">Payment Ledger / Receipts</option>
+                        <option value="bug">Bug Report</option>
+                    </select>
+                </div>
+                <div style="margin-bottom:18px;">
+                    <label style="display:block;margin-bottom:6px;font-weight:600;font-size:0.9rem;color:var(--text-secondary);">Subject *</label>
+                    <input type="text" name="subject" required placeholder="Brief description of your issue"
+                           style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);">
+                </div>
+                <div style="margin-bottom:24px;">
+                    <label style="display:block;margin-bottom:6px;font-weight:600;font-size:0.9rem;color:var(--text-secondary);">Message *</label>
+                    <textarea name="message" required rows="5"
+                              placeholder="Describe your operational issue in detail. Include the facility name, court number, booking/queue ID, or error details."
+                              style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);resize:vertical;font-family:inherit;"></textarea>
+                </div>
+                <button type="submit" class="action-box orange"
+                        style="padding:12px 28px;border:none;border-radius:10px;cursor:pointer;font-weight:700;font-size:0.95rem;display:flex;align-items:center;gap:8px;">
+                    <i class="ph ph-paper-plane-tilt"></i> Send Ticket
+                </button>
+            </form>
+        </div>
+
+        <!-- My Support Tickets & Official Responses -->
+        <div class="glass-card" style="margin-bottom:20px;">
+            <div class="widget-header" style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
+                <h3 style="margin:0;"><i class="ph ph-chats-teardrop" style="margin-right:8px;color:var(--primary-orange);"></i>My Support Tickets &amp; Official Responses</h3>
+                {% if tickets %}
+                <span style="font-size:0.8rem;color:var(--text-secondary);font-weight:600;">{{ tickets | length }} ticket{{ 's' if tickets | length != 1 else '' }}</span>
+                {% endif %}
+            </div>
+
+            {% if tickets %}
+            <div style="display:flex;flex-direction:column;gap:14px;">
+                {% for t in tickets %}
+                {% set st = (t.status or 'open') | lower %}
+                {% set status_label = 'Resolved' if st == 'closed' else ('In Progress' if st == 'in_progress' else 'Open') %}
+                <div class="ticket-history-card">
+                    <div class="ticket-history-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+                        <div>
+                            <div class="ticket-history-subject" style="font-weight:700;font-size:0.95rem;color:var(--text-primary);margin-bottom:4px;">
+                                {{ t.subject or 'Support Inquiry' }}
+                            </div>
+                            <div class="ticket-history-meta" style="font-size:0.78rem;color:var(--text-muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                                <span title="{{ t.created_at or '' }}"><i class="ph ph-clock" style="margin-right:3px;"></i>{{ t.created_at | community_timeago if t.created_at else '' }}</span>
+                                {% if t.id %}<span>• #TK-{{ (t.id | string)[:6].upper() }}</span>{% endif %}
+                            </div>
+                        </div>
+                        <span class="ticket-status-pill {{ st }}">
+                            {% if st == 'closed' %}<i class="ph ph-check-circle"></i>{% elif st == 'in_progress' %}<i class="ph ph-arrows-clockwise"></i>{% else %}<i class="ph ph-clock"></i>{% endif %}
+                            {{ status_label }}
+                        </span>
+                    </div>
+
+                    <p class="ticket-history-message" style="margin:10px 0 0;font-size:0.88rem;color:var(--text-secondary);line-height:1.55;white-space:pre-line;">{{ t.message }}</p>
+
+                    {% if t.response %}
+                    <div class="ticket-reply-box">
+                        <div class="ticket-reply-header">
+                            <i class="ph ph-shield-check"></i> Admin Staff Response
+                        </div>
+                        <div style="font-size:0.88rem;color:var(--text-primary);line-height:1.55;white-space:pre-line;">{{ t.response }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="text-align:center;padding:28px 16px;color:var(--text-muted);font-size:0.9rem;">
+                <i class="ph ph-ticket" style="font-size:2.2rem;display:block;margin-bottom:8px;opacity:0.6;"></i>
+                You have not submitted any support tickets yet.
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Facility Staff FAQ -->
+        <div class="glass-card">
+            <h3 style="font-size:1rem;margin:0 0 16px;"><i class="ph ph-question" style="margin-right:6px;color:var(--role-secondary, #0284c7);"></i>Common Facility Staff Questions</h3>
+            <div style="display:flex;flex-direction:column;gap:0;">
+                {% for q, a in [
+                    ('How do I call the next group in the Live Court Queue?', 'Open Queue Management, assign an available court if needed, and click Call Next to notify the player before moving them On Court.'),
+                    ('How do I register a walk-in guest without an account?', 'Go to Walk-In Registration, enter the guest name, party size, and court selection, and record payment to generate an instant receipt.'),
+                    ('How do I handle a disputed match score?', 'Visit the Mediation Desk to inspect reported scores and player dispute notes, then verify or override the final match outcome.'),
+                    ('How do I block a court for maintenance?', 'Open Court Schedule, select the court and time slot, and mark it unavailable for maintenance so players cannot book it.')
+                ] %}
+                <details style="border-bottom:1px solid var(--border-color);padding:12px 0;cursor:pointer;">
+                    <summary style="font-weight:600;font-size:0.9rem;list-style:none;display:flex;justify-content:space-between;align-items:center;">
+                        {{ q }} <i class="ph ph-caret-down" style="color:var(--text-secondary);font-size:0.8rem;"></i>
+                    </summary>
+                    <p style="color:var(--text-secondary);font-size:0.88rem;margin-top:8px;line-height:1.6;">{{ a }}</p>
+                </details>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="dashboard-side">
+        <div class="glass-card">
+            <h3 class="widget-title">Contact Info</h3>
+            <div style="display:flex;flex-direction:column;gap:14px;font-size:0.88rem;">
+                <div style="display:flex;gap:10px;align-items:flex-start;">
+                    <i class="ph ph-envelope" style="font-size:1.2rem;color:var(--primary-orange);margin-top:2px;flex-shrink:0;"></i>
+                    <div>
+                        <div style="font-weight:600;margin-bottom:2px;">Email Support</div>
+                        <div style="color:var(--text-secondary);">support@pickleballhub.com</div>
+                    </div>
+                </div>
+                <div style="display:flex;gap:10px;align-items:flex-start;">
+                    <i class="ph ph-clock" style="font-size:1.2rem;color:var(--role-secondary, #0284c7);margin-top:2px;flex-shrink:0;"></i>
+                    <div>
+                        <div style="font-weight:600;margin-bottom:2px;">Response Time</div>
+                        <div style="color:var(--text-secondary);">Front desk priority: 12–24 hours</div>
+                    </div>
+                </div>
+                <div style="display:flex;gap:10px;align-items:flex-start;">
+                    <i class="ph ph-chat-circle" style="font-size:1.2rem;color:#10b981;margin-top:2px;flex-shrink:0;"></i>
+                    <div>
+                        <div style="font-weight:600;margin-bottom:2px;">Operations Desk</div>
+                        <div style="color:var(--text-secondary);">Available Mon–Sun, 7AM–9PM PHT</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

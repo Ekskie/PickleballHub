@@ -12,17 +12,6 @@
                 <h3><i class="ph ph-ticket" style="margin-right:8px;color:var(--primary-orange);"></i>Submit a Support Ticket</h3>
             </div>
 
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}{% for cat, msg in messages %}
-            <div style="padding:12px 16px;border-radius:8px;margin-bottom:16px;
-                background:{% if cat == 'success' %}rgba(74,222,128,0.15){% else %}rgba(248,113,113,0.15){% endif %};
-                color:{% if cat == 'success' %}#4ade80{% else %}#f87171{% endif %};
-                border:1px solid {% if cat == 'success' %}rgba(74,222,128,0.3){% else %}rgba(248,113,113,0.3){% endif %};">
-                <i class="ph {% if cat == 'success' %}ph-check-circle{% else %}ph-warning-circle{% endif %}" style="margin-right:8px;"></i>{{ msg }}
-            </div>
-            {% endfor %}{% endif %}
-            {% endwith %}
-
             <form method="POST" action="{{ url_for('support.submit_ticket') }}">
                 <div style="margin-bottom:18px;">
                     <label style="display:block;margin-bottom:6px;font-weight:600;font-size:0.9rem;color:var(--text-secondary);">Category</label>
@@ -51,6 +40,58 @@
                     <i class="ph ph-paper-plane-tilt"></i> Send Ticket
                 </button>
             </form>
+        </div>
+
+        <!-- My Support Tickets & Official Responses -->
+        <div class="glass-card" style="margin-bottom:20px;">
+            <div class="widget-header" style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
+                <h3 style="margin:0;"><i class="ph ph-chats-teardrop" style="margin-right:8px;color:var(--primary-orange);"></i>My Support Tickets &amp; Official Responses</h3>
+                {% if tickets %}
+                <span style="font-size:0.8rem;color:var(--text-secondary);font-weight:600;">{{ tickets | length }} ticket{{ 's' if tickets | length != 1 else '' }}</span>
+                {% endif %}
+            </div>
+
+            {% if tickets %}
+            <div style="display:flex;flex-direction:column;gap:14px;">
+                {% for t in tickets %}
+                {% set st = (t.status or 'open') | lower %}
+                {% set status_label = 'Resolved' if st == 'closed' else ('In Progress' if st == 'in_progress' else 'Open') %}
+                <div class="ticket-history-card">
+                    <div class="ticket-history-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+                        <div>
+                            <div class="ticket-history-subject" style="font-weight:700;font-size:0.95rem;color:var(--text-primary);margin-bottom:4px;">
+                                {{ t.subject or 'Support Inquiry' }}
+                            </div>
+                            <div class="ticket-history-meta" style="font-size:0.78rem;color:var(--text-muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                                <span title="{{ t.created_at or '' }}"><i class="ph ph-clock" style="margin-right:3px;"></i>{{ t.created_at | community_timeago if t.created_at else '' }}</span>
+                                {% if t.id %}<span>• #TK-{{ (t.id | string)[:6].upper() }}</span>{% endif %}
+                            </div>
+                        </div>
+                        <span class="ticket-status-pill {{ st }}">
+                            {% if st == 'closed' %}<i class="ph ph-check-circle"></i>{% elif st == 'in_progress' %}<i class="ph ph-arrows-clockwise"></i>{% else %}<i class="ph ph-clock"></i>{% endif %}
+                            {{ status_label }}
+                        </span>
+                    </div>
+
+                    <p class="ticket-history-message" style="margin:10px 0 0;font-size:0.88rem;color:var(--text-secondary);line-height:1.55;white-space:pre-line;">{{ t.message }}</p>
+
+                    {% if t.response %}
+                    <div class="ticket-reply-box">
+                        <div class="ticket-reply-header">
+                            <i class="ph ph-shield-check"></i> Admin Staff Response
+                        </div>
+                        <div style="font-size:0.88rem;color:var(--text-primary);line-height:1.55;white-space:pre-line;">{{ t.response }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="text-align:center;padding:28px 16px;color:var(--text-muted);font-size:0.9rem;">
+                <i class="ph ph-ticket" style="font-size:2.2rem;display:block;margin-bottom:8px;opacity:0.6;"></i>
+                You have not submitted any support tickets yet.
+            </div>
+            {% endif %}
         </div>
 
         <!-- ClubAdmin-specific FAQ -->

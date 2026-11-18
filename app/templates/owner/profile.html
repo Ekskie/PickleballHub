@@ -213,7 +213,7 @@
 .kpi-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
-    border-color: rgba(225, 86, 35, 0.35);
+    border-color: var(--role-accent-border);
 }
 
 .kpi-icon-badge {
@@ -228,7 +228,7 @@
 }
 
 .kpi-icon-orange {
-    background: rgba(225, 86, 35, 0.12);
+    background: var(--primary-orange-light);
     color: var(--primary-orange);
 }
 
@@ -328,7 +328,7 @@ html.dark-mode .kpi-icon-navy {
     width: 36px;
     height: 36px;
     border-radius: 10px;
-    background: rgba(225, 86, 35, 0.12);
+    background: var(--primary-orange-light);
     color: var(--primary-orange);
     display: flex;
     align-items: center;
@@ -394,7 +394,7 @@ html.dark-mode .kpi-icon-navy {
     outline: none;
     border-color: var(--primary-orange);
     background: var(--card-bg);
-    box-shadow: 0 0 0 3px rgba(225, 86, 35, 0.12);
+    box-shadow: 0 0 0 3px var(--primary-orange-light);
 }
 
 .form-group input[readonly] {
@@ -458,15 +458,15 @@ html.dark-mode .kpi-icon-navy {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    box-shadow: 0 4px 14px rgba(225, 86, 35, 0.32);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     transition: all 0.2s ease;
     margin-top: 6px;
 }
 
 .btn-primary-save:hover {
+    background: var(--primary-orange-hover);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(225, 86, 35, 0.42);
-    filter: brightness(1.04);
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
 }
 
 /* ── Facilities Portfolio List ── */
@@ -489,7 +489,7 @@ html.dark-mode .kpi-icon-navy {
 }
 
 .facility-portfolio-item:hover {
-    border-color: rgba(225, 86, 35, 0.35);
+    border-color: var(--role-accent-border);
     background: var(--card-bg, #ffffff);
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.03);
 }
@@ -505,7 +505,7 @@ html.dark-mode .kpi-icon-navy {
     width: 38px;
     height: 38px;
     border-radius: 10px;
-    background: rgba(225, 86, 35, 0.1);
+    background: var(--primary-orange-light);
     color: var(--primary-orange);
     display: flex;
     align-items: center;
@@ -866,7 +866,7 @@ html.dark-mode .kpi-icon-navy {
                             <p>Overview of your managed pickleball sports hubs.</p>
                         </div>
                     </div>
-                    <a href="{{ url_for('owner.facilities') }}" class="btn-facility-link" style="color: var(--primary-orange); border-color: rgba(225, 86, 35, 0.3);">
+                    <a href="{{ url_for('owner.facilities') }}" class="btn-facility-link" style="color: var(--primary-orange); border-color: var(--role-accent-border);">
                         <i class="ph ph-arrow-up-right"></i> All Facilities
                     </a>
                 </div>

@@ -1,0 +1,1015 @@
+/* ==========================================================================
+   PICKLEBALLHUB — SCOPED ROLE PORTAL THEMES & SHARED CONSOLE UI
+   Loaded globally in base.html after dashboard.css and role-specific themes.
+   ========================================================================== */
+
+:root {
+    --role-accent: #ff5722;
+    --role-accent-hover: #ea580c;
+    --role-accent-light: rgba(255, 87, 34, 0.12);
+    --role-accent-border: rgba(255, 87, 34, 0.25);
+    --role-secondary: #10b981;
+
+    /* Elevated portal surface & data-grid tokens (Light mode defaults) */
+    --card-bg-elevated: rgba(255, 255, 255, 0.85);
+    --border-color-soft: rgba(0, 0, 0, 0.06);
+    --dropdown-bg: rgba(255, 255, 255, 0.98);
+    --dropdown-border: rgba(0, 0, 0, 0.08);
+    --stat-icon-bg: rgba(0, 0, 0, 0.03);
+    --stat-icon-border: rgba(0, 0, 0, 0.06);
+    --action-box-bg: rgba(0, 0, 0, 0.02);
+    --modal-box-bg: rgba(255, 255, 255, 0.98);
+    --modal-box-border: rgba(0, 0, 0, 0.1);
+    --text-card-muted: #6a7181;
+    --table-bg: #ffffff;
+    --table-header-bg: rgba(0, 0, 0, 0.02);
+    --table-border-color: rgba(0, 0, 0, 0.06);
+    --table-row-hover: rgba(255, 87, 34, 0.04);
+}
+
+html.dark-mode {
+    /* Elevated portal surface & data-grid tokens (Dark mode) */
+    --card-bg-elevated: rgba(22, 25, 33, 0.72);
+    --border-color-soft: rgba(255, 255, 255, 0.08);
+    --dropdown-bg: rgba(18, 22, 29, 0.98);
+    --dropdown-border: rgba(255, 255, 255, 0.1);
+    --stat-icon-bg: rgba(255, 255, 255, 0.04);
+    --stat-icon-border: rgba(255, 255, 255, 0.08);
+    --action-box-bg: rgba(255, 255, 255, 0.03);
+    --modal-box-bg: rgba(22, 25, 33, 0.98);
+    --modal-box-border: rgba(255, 255, 255, 0.1);
+    --text-card-muted: #64748b;
+    --table-bg: rgba(22, 25, 33, 0.6);
+    --table-header-bg: rgba(255, 255, 255, 0.03);
+    --table-border-color: rgba(255, 255, 255, 0.08);
+    --table-row-hover: rgba(255, 87, 34, 0.06);
+}
+
+/* ==========================================================================
+   1. SCOPED PORTAL PALETTES (6 ROLES, LIGHT + DARK MODE)
+   ========================================================================== */
+
+/* ── Player Portal: Energetic Sports Orange / Emerald ── */
+body.role-player-portal {
+    --primary-orange: #ff5722;
+    --primary-orange-hover: #ea580c;
+    --primary-orange-light: rgba(255, 87, 34, 0.12);
+    --role-accent: #ff5722;
+    --role-accent-hover: #ea580c;
+    --role-accent-light: rgba(255, 87, 34, 0.12);
+    --role-accent-border: rgba(255, 87, 34, 0.25);
+    --role-secondary: #10b981;
+    --table-row-hover: rgba(255, 87, 34, 0.04);
+}
+
+html.dark-mode body.role-player-portal {
+    --primary-orange: #ff5722;
+    --primary-orange-hover: #ea580c;
+    --primary-orange-light: rgba(255, 87, 34, 0.16);
+    --role-accent: #ff7043;
+    --role-accent-hover: #ff5722;
+    --role-accent-light: rgba(255, 87, 34, 0.16);
+    --role-accent-border: rgba(255, 87, 34, 0.34);
+    --role-secondary: #34d399;
+    --table-row-hover: rgba(255, 87, 34, 0.07);
+}
+
+/* ── Facility Owner Portal: Executive Blue / Teal (complements owner-theme.css) ── */
+body.role-owner-portal {
+    --primary-orange: #2563eb;
+    --primary-orange-hover: #1d4ed8;
+    --primary-orange-light: #eaf2ff;
+    --role-accent: #2563eb;
+    --role-accent-hover: #1d4ed8;
+    --role-accent-light: #eaf2ff;
+    --role-accent-border: rgba(37, 99, 235, 0.25);
+    --role-secondary: #0f766e;
+    --table-row-hover: rgba(37, 99, 235, 0.04);
+}
+
+html.dark-mode body.role-owner-portal {
+    --primary-orange: #2563eb;
+    --primary-orange-hover: #1d4ed8;
+    --primary-orange-light: rgba(37, 99, 235, 0.16);
+    --role-accent: #60a5fa;
+    --role-accent-hover: #3b82f6;
+    --role-accent-light: rgba(37, 99, 235, 0.16);
+    --role-accent-border: rgba(59, 130, 246, 0.34);
+    --role-secondary: #14b8a6;
+    --table-row-hover: rgba(59, 130, 246, 0.08);
+}
+
+/* ── Facility Staff Portal: Operations Teal / Cyan ── */
+body.role-facilitystaff-portal {
+    --primary-orange: #0d9488;
+    --primary-orange-hover: #0f766e;
+    --primary-orange-light: rgba(13, 148, 136, 0.12);
+    --role-accent: #0d9488;
+    --role-accent-hover: #0f766e;
+    --role-accent-light: rgba(13, 148, 136, 0.12);
+    --role-accent-border: rgba(13, 148, 136, 0.26);
+    --role-secondary: #0284c7;
+    --table-row-hover: rgba(13, 148, 136, 0.05);
+}
+
+html.dark-mode body.role-facilitystaff-portal {
+    --primary-orange: #0d9488;
+    --primary-orange-hover: #0f766e;
+    --primary-orange-light: rgba(20, 184, 166, 0.16);
+    --role-accent: #2dd4bf;
+    --role-accent-hover: #14b8a6;
+    --role-accent-light: rgba(20, 184, 166, 0.16);
+    --role-accent-border: rgba(20, 184, 166, 0.34);
+    --role-secondary: #38bdf8;
+    --table-row-hover: rgba(20, 184, 166, 0.08);
+}
+
+/* ── Club Admin Portal: Community Purple / Indigo ── */
+body.role-clubadmin-portal {
+    --primary-orange: #7c3aed;
+    --primary-orange-hover: #6d28d9;
+    --primary-orange-light: rgba(124, 58, 237, 0.12);
+    --role-accent: #7c3aed;
+    --role-accent-hover: #6d28d9;
+    --role-accent-light: rgba(124, 58, 237, 0.12);
+    --role-accent-border: rgba(124, 58, 237, 0.26);
+    --role-secondary: #4f46e5;
+    --table-row-hover: rgba(124, 58, 237, 0.05);
+}
+
+html.dark-mode body.role-clubadmin-portal {
+    --primary-orange: #7c3aed;
+    --primary-orange-hover: #6d28d9;
+    --primary-orange-light: rgba(139, 92, 246, 0.16);
+    --role-accent: #a78bfa;
+    --role-accent-hover: #8b5cf6;
+    --role-accent-light: rgba(139, 92, 246, 0.16);
+    --role-accent-border: rgba(139, 92, 246, 0.34);
+    --role-secondary: #818cf8;
+    --table-row-hover: rgba(139, 92, 246, 0.08);
+}
+
+/* ── Admin Staff Portal: Moderation Amber / Slate ── */
+body.role-adminstaff-portal {
+    --primary-orange: #d97706;
+    --primary-orange-hover: #b45309;
+    --primary-orange-light: rgba(217, 119, 6, 0.12);
+    --role-accent: #d97706;
+    --role-accent-hover: #b45309;
+    --role-accent-light: rgba(217, 119, 6, 0.12);
+    --role-accent-border: rgba(217, 119, 6, 0.28);
+    --role-secondary: #4f46e5;
+    --table-row-hover: rgba(217, 119, 6, 0.05);
+}
+
+html.dark-mode body.role-adminstaff-portal {
+    --primary-orange: #d97706;
+    --primary-orange-hover: #b45309;
+    --primary-orange-light: rgba(245, 158, 11, 0.16);
+    --role-accent: #fbbf24;
+    --role-accent-hover: #f59e0b;
+    --role-accent-light: rgba(245, 158, 11, 0.16);
+    --role-accent-border: rgba(245, 158, 11, 0.34);
+    --role-secondary: #818cf8;
+    --table-row-hover: rgba(245, 158, 11, 0.08);
+}
+
+/* ── Super Admin Portal: Command Crimson / Orange ── */
+body.role-superadmin-portal {
+    --primary-orange: #e11d48;
+    --primary-orange-hover: #be123c;
+    --primary-orange-light: rgba(225, 29, 72, 0.12);
+    --role-accent: #e11d48;
+    --role-accent-hover: #be123c;
+    --role-accent-light: rgba(225, 29, 72, 0.12);
+    --role-accent-border: rgba(225, 29, 72, 0.28);
+    --role-secondary: #ea580c;
+    --table-row-hover: rgba(225, 29, 72, 0.05);
+}
+
+html.dark-mode body.role-superadmin-portal {
+    --primary-orange: #e11d48;
+    --primary-orange-hover: #be123c;
+    --primary-orange-light: rgba(244, 63, 94, 0.16);
+    --role-accent: #fb7185;
+    --role-accent-hover: #f43f5e;
+    --role-accent-light: rgba(244, 63, 94, 0.16);
+    --role-accent-border: rgba(244, 63, 94, 0.34);
+    --role-secondary: #fb923c;
+    --table-row-hover: rgba(244, 63, 94, 0.08);
+}
+
+/* ==========================================================================
+   2. PORTAL CHROME OVERRIDES (SIDEBAR, DROPDOWNS, BUTTONS, LINKS)
+   ========================================================================== */
+
+/* Sidebar active states, dropdown headers & subnav accents */
+:is(
+    body.role-player-portal,
+    body.role-facilitystaff-portal,
+    body.role-clubadmin-portal,
+    body.role-adminstaff-portal,
+    body.role-superadmin-portal
+) .sidebar-nav li.active > a,
+:is(
+    body.role-player-portal,
+    body.role-facilitystaff-portal,
+    body.role-clubadmin-portal,
+    body.role-adminstaff-portal,
+    body.role-superadmin-portal
+) .sidebar-subnav li.active > a {
+    background: var(--primary-orange-light);
+    color: var(--role-accent);
+    font-weight: 700;
+    position: relative;
+}
+
+:is(
+    body.role-facilitystaff-portal,
+    body.role-clubadmin-portal,
+    body.role-adminstaff-portal,
+    body.role-superadmin-portal
+) .sidebar-nav li.active > a::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 6px;
+    bottom: 6px;
+    width: 3.5px;
+    border-radius: 0 4px 4px 0;
+    background: var(--role-accent);
+}
+
+:is(
+    body.role-player-portal,
+    body.role-facilitystaff-portal,
+    body.role-clubadmin-portal,
+    body.role-adminstaff-portal,
+    body.role-superadmin-portal
+) .sidebar-nav a:hover,
+:is(
+    body.role-player-portal,
+    body.role-facilitystaff-portal,
+    body.role-clubadmin-portal,
+    body.role-adminstaff-portal,
+    body.role-superadmin-portal
+) .sidebar-subnav a:hover {
+    background: var(--primary-orange-light);
+    color: var(--role-accent);
+}
+
+:is(
+    body.role-player-portal,
+    body.role-facilitystaff-portal,
+    body.role-clubadmin-portal,
+    body.role-adminstaff-portal,
+    body.role-superadmin-portal
+) .sidebar-dropdown-btn:hover {
+    background: rgba(15, 23, 42, 0.04);
+    color: var(--text-primary);
+}
+
+html.dark-mode :is(
+    body.role-player-portal,
+    body.role-facilitystaff-portal,
+    body.role-clubadmin-portal,
+    body.role-adminstaff-portal,
+    body.role-superadmin-portal
+) .sidebar-dropdown-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+:is(
+    body.role-player-portal,
+    body.role-facilitystaff-portal,
+    body.role-clubadmin-portal,
+    body.role-adminstaff-portal,
+    body.role-superadmin-portal
+) .sidebar-dropdown-group.active-group .sidebar-dropdown-btn {
+    color: var(--role-accent);
+    font-weight: 700;
+}
+
+:is(
+    body.role-player-portal,
+    body.role-facilitystaff-portal,
+    body.role-clubadmin-portal,
+    body.role-adminstaff-portal,
+    body.role-superadmin-portal
+) .sidebar-dropdown-group.active-group .sidebar-dropdown-btn i.group-icon,
+:is(
+    body.role-player-portal,
+    body.role-facilitystaff-portal,
+    body.role-clubadmin-portal,
+    body.role-adminstaff-portal,
+    body.role-superadmin-portal
+) .sidebar-dropdown-group.open .dropdown-arrow {
+    color: var(--role-accent);
+}
+
+:is(
+    body.role-player-portal,
+    body.role-facilitystaff-portal,
+    body.role-clubadmin-portal,
+    body.role-adminstaff-portal,
+    body.role-superadmin-portal
+) .sidebar-dropdown-group.active-group .sidebar-subnav {
+    border-left-color: var(--role-accent-border);
+}
+
+/* Super Admin active sidebar icon pulse */
+body.role-superadmin-portal .sidebar-nav li a {
+    transition: all 0.25s ease;
+}
+
+body.role-superadmin-portal .sidebar-nav li.active a i {
+    color: var(--role-accent) !important;
+    animation: navIconPulse 1.2s ease infinite alternate;
+}
+
+@keyframes navIconPulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.15); }
+}
+
+/* Header & Profile Dropdown Header / Items across all portals */
+.user-profile-dropdown.open .user-profile {
+    background: var(--primary-orange-light);
+    border-color: var(--role-accent-border);
+}
+
+.user-profile:hover .name,
+.user-profile:hover .avatar,
+.user-profile-dropdown.open .name,
+.user-profile-dropdown.open .profile-dropdown-caret {
+    color: var(--role-accent);
+}
+
+.user-dropdown-header {
+    border-color: var(--role-accent-border);
+}
+
+.user-dropdown-header .udh-avatar {
+    background: var(--primary-orange);
+}
+
+.user-dropdown-item:hover {
+    background: var(--primary-orange-light);
+    color: var(--role-accent);
+}
+
+.user-dropdown-item.highlighted {
+    background: var(--primary-orange-light);
+    border: 1px solid var(--role-accent-border);
+}
+
+.user-dropdown-item.highlighted:hover {
+    background: var(--primary-orange-light);
+    color: var(--role-accent);
+}
+
+/* Role-aware Buttons, Links & Confirm Modal */
+:is(
+    body.role-facilitystaff-portal,
+    body.role-clubadmin-portal,
+    body.role-adminstaff-portal,
+    body.role-superadmin-portal
+) .btn-primary,
+:is(
+    body.role-facilitystaff-portal,
+    body.role-clubadmin-portal,
+    body.role-adminstaff-portal,
+    body.role-superadmin-portal
+) .btn-primary-action,
+:is(
+    body.role-facilitystaff-portal,
+    body.role-clubadmin-portal,
+    body.role-adminstaff-portal,
+    body.role-superadmin-portal
+) .action-box.orange {
+    background: var(--primary-orange);
+    border-color: var(--primary-orange);
+    color: #ffffff;
+}
+
+:is(
+    body.role-facilitystaff-portal,
+    body.role-clubadmin-portal,
+    body.role-adminstaff-portal,
+    body.role-superadmin-portal
+) .btn-primary:hover,
+:is(
+    body.role-facilitystaff-portal,
+    body.role-clubadmin-portal,
+    body.role-adminstaff-portal,
+    body.role-superadmin-portal
+) .btn-primary-action:hover,
+:is(
+    body.role-facilitystaff-portal,
+    body.role-clubadmin-portal,
+    body.role-adminstaff-portal,
+    body.role-superadmin-portal
+) .action-box.orange:hover {
+    background: var(--primary-orange-hover);
+    border-color: var(--primary-orange-hover);
+}
+
+:is(
+    body.role-facilitystaff-portal,
+    body.role-clubadmin-portal,
+    body.role-adminstaff-portal,
+    body.role-superadmin-portal
+) a.action-link,
+:is(
+    body.role-facilitystaff-portal,
+    body.role-clubadmin-portal,
+    body.role-adminstaff-portal,
+    body.role-superadmin-portal
+) a.view-all,
+:is(
+    body.role-facilitystaff-portal,
+    body.role-clubadmin-portal,
+    body.role-adminstaff-portal,
+    body.role-superadmin-portal
+) a.table-action-link,
+:is(
+    body.role-facilitystaff-portal,
+    body.role-clubadmin-portal,
+    body.role-adminstaff-portal,
+    body.role-superadmin-portal
+) a.link-accent {
+    color: var(--role-accent);
+}
+
+:is(
+    body.role-facilitystaff-portal,
+    body.role-clubadmin-portal,
+    body.role-adminstaff-portal,
+    body.role-superadmin-portal
+) a.action-link:hover,
+:is(
+    body.role-facilitystaff-portal,
+    body.role-clubadmin-portal,
+    body.role-adminstaff-portal,
+    body.role-superadmin-portal
+) a.view-all:hover,
+:is(
+    body.role-facilitystaff-portal,
+    body.role-clubadmin-portal,
+    body.role-adminstaff-portal,
+    body.role-superadmin-portal
+) a.table-action-link:hover,
+:is(
+    body.role-facilitystaff-portal,
+    body.role-clubadmin-portal,
+    body.role-adminstaff-portal,
+    body.role-superadmin-portal
+) a.link-accent:hover {
+    color: var(--role-secondary);
+}
+
+.confirm-modal-icon-wrap:not(.danger):not(.success) {
+    background: var(--primary-orange-light);
+    color: var(--role-accent);
+    border-color: var(--role-accent-border);
+}
+
+.confirm-btn-primary:not(.danger):not(.success) {
+    background: var(--primary-orange);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+}
+
+.confirm-btn-primary:not(.danger):not(.success):hover {
+    background: var(--primary-orange-hover);
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.16);
+}
+
+.role-bottom-nav-item:hover,
+.role-bottom-nav-item.active,
+.role-bottom-nav-more:hover {
+    color: var(--role-accent);
+}
+
+.role-bottom-nav-item.active::after {
+    background: var(--role-accent);
+}
+
+/* ==========================================================================
+   3. CONSOLIDATED PORTAL UI CLASSES (FROM ADMINSTAFF & SUPERADMIN)
+   ========================================================================== */
+
+/* Elevated Glassmorphic Cards for Admin & Superadmin Consoles */
+body.role-adminstaff-portal .glass-card,
+body.role-superadmin-portal .glass-card {
+    background: var(--card-bg-elevated) !important;
+    border: 1px solid var(--border-color-soft) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    transition: transform 0.25s cubic-bezier(0.165, 0.84, 0.44, 1),
+                box-shadow 0.25s cubic-bezier(0.165, 0.84, 0.44, 1),
+                border-color 0.25s ease;
+    border-radius: 16px !important;
+    box-shadow: var(--shadow-card) !important;
+    overflow: visible;
+    color: var(--text-primary);
+}
+
+body.role-adminstaff-portal .glass-card:hover,
+body.role-superadmin-portal .glass-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover) !important;
+    border-color: var(--role-accent-border) !important;
+}
+
+/* Data Grid & Table Container */
+.table-container {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-color-soft);
+    background: var(--table-bg);
+}
+
+.data-grid {
+    border-collapse: collapse !important;
+    width: 100%;
+    background: transparent;
+}
+
+.data-grid th {
+    background: var(--table-header-bg) !important;
+    color: var(--text-primary) !important;
+    font-size: 0.8rem !important;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-weight: 700 !important;
+    padding: 14px 18px !important;
+    border-bottom: 2px solid var(--table-border-color) !important;
+    text-align: left;
+}
+
+.data-grid td {
+    padding: 14px 18px !important;
+    border-bottom: 1px solid var(--table-border-color) !important;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    transition: background 0.2s ease;
+    vertical-align: middle;
+}
+
+.data-grid tbody tr {
+    background: transparent;
+}
+
+.data-grid tbody tr:hover td {
+    background: var(--table-row-hover) !important;
+    color: var(--text-primary);
+}
+
+/* Status Pill Badges */
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 30px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+}
+
+.status-pill.success {
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    color: #059669;
+}
+
+html.dark-mode .status-pill.success {
+    color: #10b981;
+}
+
+.status-pill.warning {
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    color: #d97706;
+}
+
+html.dark-mode .status-pill.warning {
+    color: #f59e0b;
+}
+
+.status-pill.error,
+.status-pill.danger {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    color: #dc2626;
+}
+
+html.dark-mode .status-pill.error,
+html.dark-mode .status-pill.danger {
+    color: #ef4444;
+}
+
+.status-pill.info {
+    background: rgba(99, 102, 241, 0.08);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    color: #4f46e5;
+}
+
+html.dark-mode .status-pill.info {
+    color: #818cf8;
+}
+
+/* Action Buttons & Table Action Groups */
+.action-button-group {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.action-button-group form,
+.inline-action-form {
+    display: inline-flex;
+    margin: 0;
+    padding: 0;
+}
+
+.btn-action-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 9px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    line-height: 1.25;
+    font-family: inherit;
+    cursor: pointer;
+    border: 1px solid transparent;
+    text-decoration: none !important;
+    white-space: nowrap;
+    user-select: none;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+}
+
+.btn-action-pill:focus-visible {
+    outline: 2px solid var(--primary-orange);
+    outline-offset: 2px;
+}
+
+.btn-action-pill:active {
+    transform: translateY(0) scale(0.97) !important;
+}
+
+.btn-action-pill i {
+    font-size: 0.95rem;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    transition: transform 0.2s ease;
+}
+
+.btn-action-pill.approve {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.32);
+    color: #059669;
+}
+
+html.dark-mode .btn-action-pill.approve {
+    background: rgba(16, 185, 129, 0.16);
+    border-color: rgba(16, 185, 129, 0.4);
+    color: #34d399;
+}
+
+.btn-action-pill.approve:hover {
+    background: #059669;
+    border-color: #059669;
+    color: #ffffff !important;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+    transform: translateY(-1.5px);
+}
+
+.btn-action-pill.approve:hover i {
+    transform: scale(1.18);
+}
+
+.btn-action-pill.reject {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.28);
+    color: #dc2626;
+}
+
+html.dark-mode .btn-action-pill.reject {
+    background: rgba(239, 68, 68, 0.14);
+    border-color: rgba(239, 68, 68, 0.38);
+    color: #f87171;
+}
+
+.btn-action-pill.reject:hover {
+    background: #dc2626;
+    border-color: #dc2626;
+    color: #ffffff !important;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+    transform: translateY(-1.5px);
+}
+
+.btn-action-pill.reject:hover i {
+    transform: rotate(90deg);
+}
+
+.btn-action-pill.revoke {
+    background: rgba(245, 158, 11, 0.08);
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #d97706;
+}
+
+html.dark-mode .btn-action-pill.revoke {
+    background: rgba(245, 158, 11, 0.14);
+    border-color: rgba(245, 158, 11, 0.4);
+    color: #fbbf24;
+}
+
+.btn-action-pill.revoke:hover {
+    background: #d97706;
+    border-color: #d97706;
+    color: #ffffff !important;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+    transform: translateY(-1.5px);
+}
+
+.btn-action-pill.revoke:hover i {
+    transform: rotate(-45deg);
+}
+
+/* Actions Dropdown Menus */
+.actions-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-trigger {
+    background: rgba(15, 23, 42, 0.03);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color-soft);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    transition: all 0.2s ease;
+}
+
+html.dark-mode .dropdown-trigger {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.dropdown-trigger:hover {
+    background: var(--primary-orange-light);
+    border-color: var(--role-accent-border);
+    color: var(--role-accent);
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 5px);
+    background: var(--dropdown-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--dropdown-border);
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+    min-width: 140px;
+    z-index: 999;
+    overflow: hidden;
+    animation: dropDownShow 0.2s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+}
+
+@keyframes dropDownShow {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-item {
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background: var(--primary-orange-light);
+    color: var(--role-accent);
+}
+
+.dropdown-item.danger:hover {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+}
+
+/* ==========================================================================
+   4. SHARED NOTIFICATION DEEP-LINK & SUPPORT TICKET HISTORY COMPONENTS
+   ========================================================================== */
+
+/* Deep-link Action Button inside Notifications */
+.notif-action-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--role-accent);
+    background: var(--primary-orange-light);
+    border: 1px solid var(--role-accent-border);
+    transition: all 0.18s ease;
+}
+
+.notif-action-link:hover {
+    background: var(--primary-orange);
+    border-color: var(--primary-orange);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.notif-action-link i {
+    font-size: 0.88rem;
+    transition: transform 0.18s ease;
+}
+
+.notif-action-link:hover i {
+    transform: translateX(2px);
+}
+
+/* Support Ticket History Cards */
+.ticket-history-card {
+    background: var(--input-bg, #f9fafb);
+    border: 1px solid var(--border-color, #eaecf0);
+    border-radius: 12px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ticket-history-card:hover {
+    border-color: var(--role-accent-border);
+    box-shadow: var(--shadow-sm);
+}
+
+html.dark-mode .ticket-history-card {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.ticket-history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.ticket-history-subject {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.ticket-history-meta {
+    font-size: 0.76rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.ticket-history-message {
+    font-size: 0.87rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* Support Ticket Status Pills */
+.ticket-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.ticket-status-pill.open {
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: #d97706;
+}
+
+html.dark-mode .ticket-status-pill.open {
+    color: #fbbf24;
+}
+
+.ticket-status-pill.in_progress,
+.ticket-status-pill.in-progress {
+    background: rgba(2, 132, 199, 0.12);
+    border: 1px solid rgba(2, 132, 199, 0.3);
+    color: #0284c7;
+}
+
+html.dark-mode .ticket-status-pill.in_progress,
+html.dark-mode .ticket-status-pill.in-progress {
+    color: #38bdf8;
+}
+
+.ticket-status-pill.closed,
+.ticket-status-pill.resolved {
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #059669;
+}
+
+html.dark-mode .ticket-status-pill.closed,
+html.dark-mode .ticket-status-pill.resolved {
+    color: #34d399;
+}
+
+/* Official Admin Staff Response Box */
+.ticket-reply-box {
+    margin-top: 4px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    border-left: 3.5px solid #10b981;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    line-height: 1.55;
+    word-break: break-word;
+}
+
+.ticket-reply-box p,
+.ticket-reply-body {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+html.dark-mode .ticket-reply-box {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.3);
+    border-left-color: #34d399;
+}
+
+.ticket-reply-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: #059669;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 6px;
+}
+
+html.dark-mode .ticket-reply-header {
+    color: #34d399;
+}

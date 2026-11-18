@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
             overflow: hidden;
             margin: 0 auto 12px;
             border: 2px solid var(--primary-orange);
-            box-shadow: 0 4px 10px rgba(225, 86, 35, 0.15);
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -237,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .stat-box-mini.loss { border-color: rgba(239, 68, 68, 0.2); }
         .stat-box-mini.loss .stat-number { color: #ef4444; }
         
-        .stat-box-mini.rate { border-color: rgba(225, 86, 35, 0.2); }
+        .stat-box-mini.rate { border-color: var(--role-accent-border); }
         .stat-box-mini.rate .stat-number { color: var(--primary-orange); }
         
         .modal-match-history-list {

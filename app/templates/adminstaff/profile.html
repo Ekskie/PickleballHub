@@ -6,11 +6,11 @@
 {{ super() }}
 <style>
     /* ── PROFILE CONSOLE DESIGN SYSTEM ── */
-    :root {
-        --staff-accent: #f97316;
-        --staff-accent-hover: #ea580c;
-        --staff-accent-soft: rgba(249, 115, 22, 0.1);
-        --staff-accent-border: rgba(249, 115, 22, 0.25);
+    body {
+        --staff-accent: var(--primary-orange);
+        --staff-accent-hover: var(--primary-orange-hover);
+        --staff-accent-soft: var(--primary-orange-light);
+        --staff-accent-border: var(--role-accent-border);
     }
 
     .profile-console-wrap {
@@ -43,7 +43,7 @@
         left: 0;
         right: 0;
         height: 5px;
-        background: linear-gradient(90deg, #f97316 0%, #ea580c 45%, #6366f1 100%);
+        background: var(--primary-orange);
     }
 
     .staff-hero-left {
@@ -64,7 +64,7 @@
         width: 86px;
         height: 86px;
         border-radius: 22px;
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        background: #0f172a;
         color: #ffffff;
         display: flex;
         align-items: center;
@@ -72,14 +72,14 @@
         font-size: 2.2rem;
         font-weight: 800;
         overflow: hidden;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
         border: 2px solid var(--card-bg, #ffffff);
         transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
     }
 
     .staff-avatar-wrapper:hover .staff-avatar-box {
         transform: scale(1.03);
-        box-shadow: 0 14px 30px rgba(0, 0, 0, 0.18);
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.16);
     }
 
     .staff-avatar-box img {
@@ -135,7 +135,7 @@
         display: inline-flex;
         align-items: center;
         gap: 5px;
-        background: rgba(249, 115, 22, 0.1);
+        background: var(--primary-orange-light);
         color: var(--staff-accent);
         border: 1px solid var(--staff-accent-border);
         font-size: 0.74rem;
@@ -221,14 +221,12 @@
         height: 10px;
         border-radius: 50%;
         background: #10b981;
-        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
         animation: pulseDuty 2s infinite;
     }
 
     @keyframes pulseDuty {
-        0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
-        70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.45; }
     }
 
     .duty-status-text {
@@ -486,7 +484,7 @@
 
     .form-input-custom:focus {
         border-color: var(--staff-accent);
-        box-shadow: 0 0 0 3px var(--staff-accent-soft);
+        box-shadow: none;
     }
 
     .form-input-custom:read-only {
@@ -540,13 +538,13 @@
         border: none;
         cursor: pointer;
         transition: all 0.18s ease;
-        box-shadow: 0 4px 14px rgba(249, 115, 22, 0.22);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .btn-staff-primary:hover {
         background: var(--staff-accent-hover);
         transform: translateY(-1px);
-        box-shadow: 0 6px 18px rgba(249, 115, 22, 0.3);
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
     }
 
     .btn-staff-navy {
@@ -556,20 +554,20 @@
         gap: 8px;
         padding: 11px 22px;
         border-radius: 10px;
-        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        background: #1e293b;
         color: #ffffff !important;
         font-size: 0.9rem;
         font-weight: 700;
         border: none;
         cursor: pointer;
         transition: all 0.18s ease;
-        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.25);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
     }
 
     .btn-staff-navy:hover {
         background: #0f172a;
         transform: translateY(-1px);
-        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.35);
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.16);
     }
 
     /* ── Performance Resolution Card ── */
@@ -612,7 +610,7 @@
     .sla-progress-fill {
         height: 100%;
         border-radius: 99px;
-        background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+        background: #10b981;
         transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
 

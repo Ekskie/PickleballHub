@@ -124,11 +124,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const isDark = document.documentElement.classList.contains("dark-mode");
     const ctx = perfCanvas.getContext("2d");
 
-    // Create subtle gradient for court emerald
-    const gradient = ctx.createLinearGradient(0, 0, 0, 160);
-    gradient.addColorStop(0, "rgba(16, 185, 129, 0.28)");
-    gradient.addColorStop(1, "rgba(16, 185, 129, 0.0)");
-
     new Chart(ctx, {
       type: "line",
       data: {
@@ -138,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
           data: [50, 58, 62, 60, 65, 68],
           borderColor: "#10b981",
           borderWidth: 3,
-          backgroundColor: gradient,
+          backgroundColor: "rgba(16, 185, 129, 0.12)",
           fill: true,
           tension: 0.4,
           pointBackgroundColor: "#10b981",

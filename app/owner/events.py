@@ -115,14 +115,18 @@ def approve_event(event_id):
         }).eq('id', event_id).execute()
 
         # Send notification to organizer
-        facility_name = event.get('facilities', {}).get('name') or "Facility"
-        db.table('notifications').insert({
-            'user_id': event['organizer_id'],
-            'title': f"Event Approved: {event['title']}",
-            'message': f"Your event '{event['title']}' has been approved by {facility_name}! Player registrations are now open.",
-            'type': 'success',
-            'link': url_for('clubadmin.events')
-        }).execute()
+        facility_name = (event.get('facilities') or {}).get('name') or "Facility"
+        if event.get('organizer_id'):
+            try:
+                db.table('notifications').insert({
+                    'user_id': event['organizer_id'],
+                    'title': f"Event Approved: {event['title']}",
+                    'message': f"Your event '{event['title']}' has been approved by {facility_name}! Player registrations are now open.",
+                    'type': 'success',
+                    'link': url_for('clubadmin.events')
+                }).execute()
+            except Exception as notif_err:
+                current_app.logger.warning(f"Error sending event approval notification: {notif_err}")
 
         # Send status update chat to organizer
         try:
@@ -164,14 +168,18 @@ def reject_event(event_id):
         }).eq('id', event_id).execute()
 
         # Send notification to organizer
-        facility_name = event.get('facilities', {}).get('name') or "Facility"
-        db.table('notifications').insert({
-            'user_id': event['organizer_id'],
-            'title': f"Event Booking Declined: {event['title']}",
-            'message': f"Your event court booking for '{event['title']}' was declined by {facility_name}. Reason: {reason}",
-            'type': 'error',
-            'link': url_for('clubadmin.events')
-        }).execute()
+        facility_name = (event.get('facilities') or {}).get('name') or "Facility"
+        if event.get('organizer_id'):
+            try:
+                db.table('notifications').insert({
+                    'user_id': event['organizer_id'],
+                    'title': f"Event Booking Declined: {event['title']}",
+                    'message': f"Your event court booking for '{event['title']}' was declined by {facility_name}. Reason: {reason}",
+                    'type': 'error',
+                    'link': url_for('clubadmin.events')
+                }).execute()
+            except Exception as notif_err:
+                current_app.logger.warning(f"Error sending event rejection notification: {notif_err}")
 
         # Send status update chat to organizer
         try:
@@ -969,6 +977,19 @@ def edit_event(event_id):
             db.table('event_courts').delete().eq('event_id', event_id).execute()
             court_rows = [{'event_id': event_id, 'court_id': cid} for cid in court_ids]
             db.table('event_courts').insert(court_rows).execute()
+
+        # Notify organizer if owner updated a Club Admin's event
+        if event.get('organizer_id') and str(event.get('organizer_id')) != str(owner_id):
+            try:
+                db.table('notifications').insert({
+                    'user_id': event['organizer_id'],
+                    'title': f"Event Updated: {title}",
+                    'message': f"The facility owner updated details for your event '{title}' ({event_date}, {start_time}-{end_time}).",
+                    'type': 'info',
+                    'link': url_for('clubadmin.events')
+                }).execute()
+            except Exception as notif_err:
+                current_app.logger.warning(f"Error sending event update notification: {notif_err}")
             
         flash('Event updated successfully!', 'success')
         return redirect(url_for('owner.event_participants', event_id=event_id))
@@ -991,25 +1012,42 @@ def delete_event(event_id):
             return redirect(url_for('owner.events'))
             
         # Check if event exists and belongs to owner
-        ev_resp = db.table('events').select('title').eq('id', event_id).in_('facility_id', fac_ids).single().execute()
+        ev_resp = db.table('events').select('title, organizer_id').eq('id', event_id).in_('facility_id', fac_ids).single().execute()
         if not ev_resp.data:
             flash("Event not found or unauthorized.", "error")
             return redirect(url_for('owner.events'))
             
         title = ev_resp.data['title']
+        organizer_id = ev_resp.data.get('organizer_id')
         
         # Notify registered players before deleting (batch insert)
         reg_resp = db.table('event_registrations').select('player_id').eq('event_id', event_id).execute()
         if reg_resp.data:
-            notifs = [
-                {
-                    'user_id': r['player_id'],
-                    'title': f'Event Cancelled: {title}',
-                    'message': f'The event "{title}" you registered for has been cancelled and removed.',
-                    'type': 'system'
-                } for r in reg_resp.data
-            ]
-            db.table('notifications').insert(notifs).execute()
+            try:
+                notifs = [
+                    {
+                        'user_id': r['player_id'],
+                        'title': f'Event Cancelled: {title}',
+                        'message': f'The event "{title}" you registered for has been cancelled and removed.',
+                        'type': 'system'
+                    } for r in reg_resp.data
+                ]
+                db.table('notifications').insert(notifs).execute()
+            except Exception as notif_err:
+                current_app.logger.warning(f"Error notifying players of event deletion: {notif_err}")
+
+        # Notify organizer if owner deleted a Club Admin's event
+        if organizer_id and str(organizer_id) != str(owner_id):
+            try:
+                db.table('notifications').insert({
+                    'user_id': organizer_id,
+                    'title': f"Event Removed by Venue: {title}",
+                    'message': f'Your event "{title}" was cancelled and removed by the facility owner.',
+                    'type': 'warning',
+                    'link': url_for('clubadmin.events')
+                }).execute()
+            except Exception as notif_err:
+                current_app.logger.warning(f"Error notifying organizer of event deletion: {notif_err}")
             
         # Delete event (registrations deleted automatically due to cascade)
         db.table('events').delete().eq('id', event_id).execute()

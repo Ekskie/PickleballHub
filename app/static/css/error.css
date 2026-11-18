@@ -32,7 +32,7 @@
     overflow: hidden;
 }
 
-/* Glowing Neon Border Effect */
+/* Solid Top Accent Bar */
 .error-card::before {
     content: '';
     position: absolute;
@@ -40,15 +40,7 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, var(--primary-orange), #a3e635, var(--primary-orange));
-    background-size: 200% auto;
-    animation: borderGlow 4s linear infinite;
-}
-
-@keyframes borderGlow {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+    background: var(--primary-orange);
 }
 
 .error-badge {
@@ -67,9 +59,7 @@
     font-size: 2.5rem;
     font-weight: 800;
     margin: 0;
-    background: linear-gradient(135deg, #fff 30%, #a1a1aa 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--text-primary);
 }
 
 .error-description {
@@ -93,7 +83,7 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
-    filter: drop-shadow(0 0 15px rgba(255, 87, 34, 0.3));
+    filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.25));
     animation: float 4s ease-in-out infinite;
 }
 
@@ -239,7 +229,7 @@
 .btn-error-home.primary:hover {
     background: var(--primary-orange-hover);
     transform: translateY(-2px);
-    box-shadow: 0 10px 20px -10px rgba(255, 87, 34, 0.5);
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.2);
 }
 
 .btn-error-home.secondary {
@@ -268,7 +258,7 @@
 }
 
 .error-card.dashboard-mode::before {
-    /* Keep a subtle neon border glow but fit it to dashboard card shape */
+    /* Fit solid top accent bar to dashboard card shape */
     height: 3px;
     border-radius: 24px 24px 0 0;
 }

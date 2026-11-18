@@ -34,7 +34,7 @@
     left: 0;
     right: 0;
     height: 5px;
-    background: linear-gradient(90deg, var(--primary-orange) 0%, #ea580c 40%, #f59e0b 100%);
+    background: var(--primary-orange);
 }
 
 .club-hero-left {
@@ -49,7 +49,7 @@
     width: 82px;
     height: 82px;
     border-radius: 20px;
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    background: #0f172a;
     color: #ffffff;
     display: flex;
     align-items: center;
@@ -57,7 +57,7 @@
     font-size: 2rem;
     font-weight: 800;
     overflow: hidden;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     border: 2px solid var(--card-bg, #ffffff);
     flex-shrink: 0;
 }
@@ -149,7 +149,7 @@
 }
 
 .btn-hero-primary {
-    background: linear-gradient(135deg, var(--primary-orange) 0%, #ea580c 100%);
+    background: var(--primary-orange);
     color: #ffffff;
     border: none;
     padding: 10px 18px;
@@ -160,15 +160,15 @@
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    box-shadow: 0 4px 14px rgba(225, 86, 35, 0.32);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     transition: all 0.2s ease;
     text-decoration: none;
 }
 
 .btn-hero-primary:hover {
+    background: var(--primary-orange-hover);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(225, 86, 35, 0.42);
-    filter: brightness(1.05);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
     color: #ffffff;
 }
 
@@ -216,7 +216,7 @@
 .kpi-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
-    border-color: rgba(225, 86, 35, 0.35);
+    border-color: var(--role-accent-border);
 }
 
 .kpi-icon-badge {
@@ -231,7 +231,7 @@
 }
 
 .kpi-icon-orange {
-    background: rgba(225, 86, 35, 0.12);
+    background: var(--primary-orange-light);
     color: var(--primary-orange);
 }
 
@@ -336,7 +336,7 @@
     width: 36px;
     height: 36px;
     border-radius: 10px;
-    background: rgba(225, 86, 35, 0.12);
+    background: var(--primary-orange-light);
     color: var(--primary-orange);
     display: flex;
     align-items: center;
@@ -417,7 +417,7 @@
 }
 
 .club-table tr:hover td {
-    background: rgba(225, 86, 35, 0.02);
+    background: rgba(124, 58, 237, 0.04);
 }
 
 .club-table tr:last-child td {
@@ -443,7 +443,7 @@
     color: #ffffff;
     flex-shrink: 0;
     overflow: hidden;
-    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    background: var(--primary-orange);
 }
 
 .member-avatar img {
@@ -561,7 +561,7 @@
 }
 
 .event-radar-item:hover {
-    border-color: rgba(225, 86, 35, 0.35);
+    border-color: var(--role-accent-border);
     background: var(--card-bg, #ffffff);
 }
 
@@ -689,7 +689,7 @@
     font-size: 0.75rem;
     font-weight: 800;
     color: #ffffff;
-    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    background: #2563eb;
     overflow: hidden;
     flex-shrink: 0;
 }
@@ -740,7 +740,7 @@
 
 .dock-action-btn:hover {
     background: var(--card-bg, #ffffff);
-    border-color: rgba(225, 86, 35, 0.35);
+    border-color: var(--role-accent-border);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
@@ -755,7 +755,7 @@
     font-size: 1.15rem;
 }
 
-.dock-icon-orange { background: rgba(225, 86, 35, 0.12); color: var(--primary-orange); }
+.dock-icon-orange { background: var(--primary-orange-light); color: var(--primary-orange); }
 .dock-icon-navy { background: rgba(30, 41, 59, 0.12); color: #1e293b; }
 html.dark-mode .dock-icon-navy { background: rgba(147, 197, 253, 0.15); color: #93c5fd; }
 .dock-icon-green { background: rgba(16, 185, 129, 0.12); color: #10b981; }
@@ -876,7 +876,7 @@ html.dark-mode .dock-icon-navy { background: rgba(147, 197, 253, 0.15); color: #
     width: 42px;
     height: 42px;
     border-radius: 12px;
-    background: rgba(225, 86, 35, 0.12);
+    background: var(--primary-orange-light);
     color: var(--primary-orange);
     display: flex;
     align-items: center;
@@ -1607,7 +1607,7 @@ html.dark-mode .dock-icon-navy { background: rgba(147, 197, 253, 0.15); color: #
     <div class="modal-box" style="max-width: 460px;">
         <div class="modal-header-hero">
             <div class="modal-header-left">
-                <div class="modal-icon-badge" style="background: rgba(249, 115, 22, 0.12); color: var(--primary-orange);">
+                <div class="modal-icon-badge" style="background: var(--primary-orange-light); color: var(--primary-orange);">
                     <i class="ph ph-user-focus"></i>
                 </div>
                 <div class="modal-header-text">
@@ -1621,7 +1621,7 @@ html.dark-mode .dock-icon-navy { background: rgba(147, 197, 253, 0.15); color: #
         </div>
 
         <div style="display: flex; flex-direction: column; align-items: center; text-align: center; padding: 10px 0 16px;">
-            <div id="drawerAvatar" style="width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #1e293b, #0f172a); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 800; overflow: hidden; margin-bottom: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); border: 3px solid #fff;">
+            <div id="drawerAvatar" style="width: 72px; height: 72px; border-radius: 50%; background: #0f172a; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 800; overflow: hidden; margin-bottom: 10px; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08); border: 3px solid #fff;">
             </div>
             <h4 id="drawerName" style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0 0 6px 0;"></h4>
             <div style="display: flex; gap: 8px; align-items: center; justify-content: center;">
@@ -1637,7 +1637,7 @@ html.dark-mode .dock-icon-navy { background: rgba(147, 197, 253, 0.15); color: #
             </div>
             <div style="background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 14px; text-align: center;">
                 <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">Club ELO</span>
-                <span id="drawerElo" style="font-size: 1.25rem; font-weight: 800; color: #ea580c;">--</span>
+                <span id="drawerElo" style="font-size: 1.25rem; font-weight: 800; color: var(--primary-orange);">--</span>
             </div>
         </div>
 

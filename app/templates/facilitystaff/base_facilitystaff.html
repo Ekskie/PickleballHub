@@ -55,7 +55,7 @@
 </li>
 
 <!-- Communication Dropdown -->
-{% set is_comm_active = request.endpoint in ['facilitystaff.community', 'facilitystaff.messages', 'facilitystaff.tutorials'] %}
+{% set is_comm_active = request.endpoint in ['facilitystaff.community', 'facilitystaff.messages', 'facilitystaff.tutorials', 'facilitystaff.support'] %}
 <li class="sidebar-dropdown-group {% if is_comm_active %}open active-group{% endif %}" data-group="staff-comm">
     <button type="button" class="sidebar-dropdown-btn" onclick="toggleSidebarDropdown(this)">
         <span class="dropdown-btn-label">
@@ -73,6 +73,9 @@
         </li>
         <li class="{% if request.endpoint == 'facilitystaff.tutorials' %}active{% endif %}">
             <a href="{{ url_for('facilitystaff.tutorials') }}"><i class="ph ph-video"></i> <span>Tutorials</span></a>
+        </li>
+        <li class="{% if request.endpoint == 'facilitystaff.support' %}active{% endif %}">
+            <a href="{{ url_for('facilitystaff.support') }}"><i class="ph ph-lifebuoy"></i> <span>Help &amp; Support</span></a>
         </li>
     </ul>
 </li>

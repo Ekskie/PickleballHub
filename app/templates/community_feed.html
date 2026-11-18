@@ -39,20 +39,8 @@
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, #ff5722, #f59e0b, #6366f1);
+        background: var(--primary-orange, #ff5722);
         z-index: 2;
-    }
-
-    .community-hero-banner::before {
-        content: "";
-        position: absolute;
-        top: -40px;
-        right: -40px;
-        width: 280px;
-        height: 280px;
-        background: radial-gradient(circle, rgba(255, 87, 34, 0.1) 0%, rgba(99, 102, 241, 0.04) 60%, transparent 80%);
-        border-radius: 50%;
-        pointer-events: none;
     }
 
     .community-hero-info {
@@ -132,8 +120,8 @@
 
     .community-search-input:focus {
         width: 280px;
-        border-color: var(--primary-orange, #ff5722);
-        box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.1);
+        border-color: var(--primary-orange);
+        box-shadow: 0 0 0 3px var(--primary-orange-light);
     }
 
     .community-refresh-btn {
@@ -173,8 +161,8 @@
 
     /* ── Smart Feed Banner ── */
     .smart-feed-banner {
-        background: linear-gradient(135deg, rgba(255, 87, 34, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%);
-        border: 1.5px solid rgba(255, 87, 34, 0.25);
+        background: var(--primary-orange-light);
+        border: 1.5px solid var(--role-accent-border);
         border-radius: 16px;
         padding: 14px 20px;
         display: flex;
@@ -183,7 +171,7 @@
         font-size: 0.88rem;
         font-weight: 700;
         color: var(--sports-text-main, #0f172a);
-        box-shadow: 0 2px 10px rgba(255, 87, 34, 0.06);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
         animation: postFadeIn 0.3s ease;
     }
 
@@ -241,8 +229,8 @@
     }
 
     .create-post-card:focus-within {
-        border-color: rgba(255, 87, 34, 0.4);
-        box-shadow: 0 6px 20px rgba(255, 87, 34, 0.08);
+        border-color: var(--role-accent-border);
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
     }
 
     .create-post-top {
@@ -256,7 +244,7 @@
         width: 44px;
         height: 44px;
         border-radius: 12px;
-        background: linear-gradient(135deg, var(--primary-orange, #ff5722), #ea580c);
+        background: var(--primary-orange);
         color: #ffffff;
         display: flex;
         align-items: center;
@@ -265,7 +253,7 @@
         font-weight: 800;
         flex-shrink: 0;
         overflow: hidden;
-        box-shadow: 0 2px 8px rgba(255, 87, 34, 0.25);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .community-avatar img {
@@ -299,8 +287,8 @@
 
     .post-textarea:focus {
         background: var(--sports-card-bg, #ffffff);
-        border-color: var(--primary-orange, #ff5722);
-        box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.1);
+        border-color: var(--primary-orange);
+        box-shadow: 0 0 0 3px var(--primary-orange-light);
     }
 
     .post-textarea::placeholder {
@@ -340,9 +328,9 @@
     }
 
     .quick-tag-chip:hover {
-        background: #fff7ed;
-        border-color: var(--primary-orange, #ff5722);
-        color: var(--primary-orange, #ff5722);
+        background: var(--primary-orange-light);
+        border-color: var(--primary-orange);
+        color: var(--primary-orange);
         transform: translateY(-1px);
     }
 
@@ -417,9 +405,9 @@
     }
 
     .post-action-btn:hover {
-        background: #fff7ed;
-        border-color: var(--primary-orange, #ff5722);
-        color: var(--primary-orange, #ff5722);
+        background: var(--primary-orange-light);
+        border-color: var(--primary-orange);
+        color: var(--primary-orange);
     }
 
     .btn-post {
@@ -427,7 +415,7 @@
         align-items: center;
         gap: 8px;
         padding: 10px 24px;
-        background: var(--primary-orange, #ff5722);
+        background: var(--primary-orange);
         color: #ffffff;
         border: none;
         border-radius: 12px;
@@ -435,13 +423,13 @@
         font-weight: 800;
         cursor: pointer;
         transition: all 0.2s ease;
-        box-shadow: 0 2px 10px rgba(255, 87, 34, 0.25);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .btn-post:hover {
-        background: var(--primary-orange-hover, #ea580c);
+        background: var(--primary-orange-hover);
         transform: translateY(-1px);
-        box-shadow: 0 4px 14px rgba(255, 87, 34, 0.35);
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
     }
 
     .btn-post:disabled {
@@ -481,10 +469,10 @@
     }
 
     .comm-filter-tab.active {
-        background: var(--primary-orange, #ff5722);
+        background: var(--primary-orange);
         color: #ffffff;
-        border-color: var(--primary-orange, #ff5722);
-        box-shadow: 0 2px 8px rgba(255, 87, 34, 0.25);
+        border-color: var(--primary-orange);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     /* ── Feed Post Cards ── */
@@ -507,7 +495,7 @@
     /* Official Announcement Post Styling */
     .feed-post-card.is-announcement {
         border-color: rgba(245, 158, 11, 0.45);
-        background: linear-gradient(180deg, rgba(254, 243, 199, 0.25) 0%, var(--sports-card-bg, #ffffff) 65px);
+        background: rgba(245, 158, 11, 0.10);
     }
 
     .post-announcement-ribbon {
@@ -710,15 +698,15 @@
     }
 
     .feed-action:hover {
-        background: #fff7ed;
-        border-color: var(--primary-orange, #ff5722);
-        color: var(--primary-orange, #ff5722);
+        background: var(--primary-orange-light);
+        border-color: var(--primary-orange);
+        color: var(--primary-orange);
     }
 
     .feed-action.like-btn.liked {
-        background: rgba(255, 87, 34, 0.1);
-        border-color: rgba(255, 87, 34, 0.3);
-        color: var(--primary-orange, #ff5722);
+        background: var(--primary-orange-light);
+        border-color: var(--role-accent-border);
+        color: var(--primary-orange);
     }
 
     .feed-action.comment-toggle-btn.active {
@@ -761,7 +749,7 @@
         width: 34px;
         height: 34px;
         border-radius: 10px;
-        background: linear-gradient(135deg, var(--primary-orange, #ff5722), #ea580c);
+        background: var(--primary-orange);
         color: #ffffff;
         display: flex;
         align-items: center;
@@ -784,8 +772,8 @@
     }
 
     .comment-input-wrap:focus-within {
-        border-color: var(--primary-orange, #ff5722);
-        box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.1);
+        border-color: var(--primary-orange);
+        box-shadow: 0 0 0 3px var(--primary-orange-light);
         background: var(--sports-card-bg, #ffffff);
     }
 
@@ -927,9 +915,9 @@
     }
 
     .trending-chip:hover {
-        background: #fff7ed;
-        border-color: var(--primary-orange, #ff5722);
-        color: var(--primary-orange, #ff5722);
+        background: var(--primary-orange-light);
+        border-color: var(--primary-orange);
+        color: var(--primary-orange);
         transform: translateY(-1px);
     }
 
@@ -948,8 +936,8 @@
         width: 28px;
         height: 28px;
         border-radius: 8px;
-        background: rgba(255, 87, 34, 0.1);
-        color: var(--primary-orange, #ff5722);
+        background: var(--primary-orange-light);
+        color: var(--primary-orange);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -992,9 +980,9 @@
     }
 
     .quick-nav-link:hover {
-        border-color: var(--primary-orange, #ff5722);
-        color: var(--primary-orange, #ff5722);
-        background: #fff7ed;
+        border-color: var(--primary-orange);
+        color: var(--primary-orange);
+        background: var(--primary-orange-light);
         transform: translateX(3px);
     }
 
@@ -1177,9 +1165,9 @@
     }
 
     .share-option-btn:hover {
-        background: #fff7ed;
-        border-color: var(--primary-orange, #ff5722);
-        color: var(--primary-orange, #ff5722);
+        background: var(--primary-orange-light);
+        border-color: var(--primary-orange);
+        color: var(--primary-orange);
     }
 
     .share-copied-toast {
@@ -1276,7 +1264,7 @@
 
     html.dark-mode .feed-post-card.is-announcement {
         border-color: rgba(245, 158, 11, 0.35);
-        background: linear-gradient(180deg, rgba(245, 158, 11, 0.12) 0%, #19202e 70px);
+        background: rgba(245, 158, 11, 0.10);
     }
 
     html.dark-mode .post-announcement-ribbon {
@@ -1515,7 +1503,7 @@
                     <i class="ph ph-compass"></i> Play & Compete
                 </h3>
                 <a href="{{ url_for('player.matchmaker') }}" class="quick-nav-link">
-                    <span><i class="ph ph-lightning" style="color: #ff5722; margin-right: 6px;"></i> Open Play Matchmaker</span>
+                    <span><i class="ph ph-lightning" style="color: var(--primary-orange); margin-right: 6px;"></i> Open Play Matchmaker</span>
                     <i class="ph ph-caret-right" style="color: var(--sports-text-muted);"></i>
                 </a>
                 <a href="{{ url_for('player.clubs') }}" class="quick-nav-link">

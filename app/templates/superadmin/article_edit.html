@@ -12,7 +12,7 @@
 
     /* ── BUTTON SYSTEM (FOLLOWS PLATFORM THEME STRICTLY) ── */
     .theme-btn-save {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        background: #10b981 !important;
         color: #ffffff !important;
         border: none !important;
         border-radius: 10px !important;
@@ -26,16 +26,16 @@
         justify-content: center !important;
         gap: 8px !important;
         cursor: pointer !important;
-        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35) !important;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08) !important;
         transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
         text-decoration: none !important;
         user-select: none !important;
     }
 
     .theme-btn-save:hover {
-        background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+        background: #059669 !important;
         transform: translateY(-2px) !important;
-        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45) !important;
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12) !important;
     }
 
     .theme-btn-outline {
@@ -60,9 +60,9 @@
     .theme-btn-outline:hover {
         border-color: var(--primary-orange) !important;
         color: var(--primary-orange) !important;
-        background: rgba(255, 87, 34, 0.04) !important;
+        background: var(--primary-orange-light) !important;
         transform: translateY(-2px) !important;
-        box-shadow: 0 4px 12px rgba(255, 87, 34, 0.15) !important;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08) !important;
     }
 
     .cloud-status-pill {
@@ -83,14 +83,12 @@
         height: 8px;
         background: #10b981;
         border-radius: 50%;
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
         animation: pulseGreen 2s infinite;
     }
 
     @keyframes pulseGreen {
-        0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-        70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.45; }
     }
 
     .editor-section-title {
@@ -153,7 +151,7 @@
 
     .form-input:focus {
         border-color: var(--primary-orange) !important;
-        box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.18) !important;
+        box-shadow: none !important;
         background: #ffffff !important;
     }
 
@@ -177,8 +175,8 @@
     }
 
     .html-pill {
-        background: rgba(255, 87, 34, 0.08);
-        border: 1px solid rgba(255, 87, 34, 0.25);
+        background: var(--primary-orange-light);
+        border: 1px solid var(--role-accent-border);
         color: var(--primary-orange);
         font-size: 0.78rem;
         padding: 5px 12px;
@@ -189,7 +187,8 @@
     }
 
     .html-pill:hover {
-        background: rgba(255, 87, 34, 0.18);
+        background: var(--primary-orange-light);
+        border-color: var(--primary-orange);
         transform: translateY(-1px);
     }
 
@@ -275,7 +274,7 @@
     }
 
     .badge-selected {
-        background: rgba(255, 87, 34, 0.95);
+        background: var(--primary-orange);
         color: #fff;
         font-size: 0.7rem;
         font-weight: 700;
@@ -294,18 +293,18 @@
     }
 
     .file-dropzone {
-        border: 2px dashed rgba(255, 87, 34, 0.4);
+        border: 2px dashed var(--role-accent-border);
         border-radius: 12px;
         padding: 16px 20px;
         text-align: center;
         cursor: pointer;
-        background: rgba(255, 87, 34, 0.03);
+        background: var(--primary-orange-light);
         transition: all 0.2s ease;
     }
 
     .file-dropzone:hover {
         border-color: var(--primary-orange);
-        background: rgba(255, 87, 34, 0.08);
+        background: var(--primary-orange-light);
         transform: translateY(-1px);
     }
 
@@ -370,7 +369,7 @@
         display: flex;
         align-items: center;
         gap: 6px;
-        background: rgba(255, 87, 34, 0.08);
+        background: var(--primary-orange-light);
         padding: 6px 12px;
         border-radius: 6px;
     }

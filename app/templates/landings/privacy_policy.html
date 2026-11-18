@@ -159,6 +159,31 @@
             color: var(--text-primary);
         }
 
+        .cookie-manage-wrap {
+            margin: 20px 0 8px;
+        }
+
+        .btn-cookie-manage {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 11px 20px;
+            background: var(--primary-orange, #E15623);
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.94rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+            transition: transform 0.15s ease, background-color 0.2s ease;
+        }
+
+        .btn-cookie-manage:hover {
+            background: var(--primary-orange-hover, #c94819);
+            transform: translateY(-1px);
+        }
+
         @media (max-width: 768px) {
             .legal-section {
                 padding: 40px 20px;
@@ -202,7 +227,7 @@
                         <li><a href="#information-collection">1. Information We Collect</a></li>
                         <li><a href="#how-we-use">2. How We Use Your Information</a></li>
                         <li><a href="#data-sharing">3. Data Sharing & Security</a></li>
-                        <li><a href="#cookies-tracking">4. Cookies & Session Tracking</a></li>
+                        <li><a href="#cookies">4. Cookies & Tracking Technologies</a></li>
                         <li><a href="#your-rights">5. Your Privacy Rights</a></li>
                         <li><a href="#contact-us">6. Contacting Support</a></li>
                     </ul>
@@ -241,13 +266,25 @@
                         <li><strong>Legal Enforcement:</strong> We may share necessary details with local municipal authorities if required by law or to investigate severe vandalism to facility assets.</li>
                     </ul>
 
-                    <h2 id="cookies-tracking">4. Cookies & Session Tracking</h2>
-                    <p>Like most modern interactive websites, our platform uses cookie identifiers to elevate the user experience:</p>
+                    <span id="cookies-tracking"></span>
+                    <h2 id="cookies">4. Cookies &amp; Tracking Technologies</h2>
+                    <p>PickleballHub uses essential cookies and, where you grant consent, optional analytics and marketing technologies to keep your account secure and improve platform performance:</p>
                     <ul>
-                        <li><strong>Session Management:</strong> Remembering your logged-in credentials so you can navigate between courts, tournaments, and your dashboard without entering details repeatedly.</li>
-                        <li><strong>Preferences:</strong> Retaining your selected light or dark mode theme toggle settings across different subpages.</li>
-                        <li><strong>Analytics:</strong> Tracking anonymous usage patterns to optimize page load speeds, map search responsiveness, and layout layouts.</li>
+                        <li><strong>Essential &amp; Security Cookies (Always Active):</strong>
+                            <ul>
+                                <li><code>pbhub_session</code>: Our hardened, HTTP-only Flask session cookie (<code>SameSite=Lax</code>, 30-day permanent session lifetime, <code>Secure</code> in production) that keeps you authenticated as you move across courts, tournaments, and dashboards.</li>
+                                <li><strong>CSRF Protection Tokens:</strong> Anti-Cross-Site Request Forgery tokens embedded in forms and <code>X-CSRF-Token</code> request headers to verify that state-changing actions originate from your browser session.</li>
+                                <li><code>pb_cookie_consent</code>: Records your cookie consent choices (essential, analytics, and marketing toggles plus timestamp) for 1 year (<code>31536000</code> seconds) in both browser cookie and <code>localStorage</code>, alongside local UI/theme preferences (light/dark mode and sidebar layout).</li>
+                            </ul>
+                        </li>
+                        <li><strong>Analytics Cookies (Optional — Consent Required):</strong> When enabled, Google Analytics (<code>gtag.js</code>) helps us measure anonymous traffic trends, page load speeds, and court search usability. Analytics scripts remain blocked unless you opt in.</li>
+                        <li><strong>Marketing Cookies (Optional — Consent Required):</strong> When enabled, Facebook Pixel (<code>fbq</code>) helps evaluate campaign effectiveness and promote relevant local tournaments and partner facilities. Marketing pixels remain blocked unless you opt in.</li>
                     </ul>
+                    <div class="cookie-manage-wrap">
+                        <button type="button" class="btn-cookie-manage" onclick="window.openCookiePreferences && window.openCookiePreferences()">
+                            <i class="ph ph-sliders-horizontal"></i> Manage Cookie Preferences
+                        </button>
+                    </div>
 
                     <h2 id="your-rights">5. Your Privacy Rights</h2>
                     <p>As a player on our platform, you hold control over your personal data files:</p>

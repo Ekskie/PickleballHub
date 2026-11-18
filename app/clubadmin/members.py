@@ -199,6 +199,14 @@ def approve_member(membership_id):
         elif duration == 'annually':
             expires_at = (datetime.now(timezone.utc) + timedelta(days=365)).isoformat()
             
+        player_id = None
+        try:
+            mem_res = db.table('club_memberships').select('id, player_id').eq('id', membership_id).eq('club_id', g.club['id']).limit(1).execute()
+            if mem_res and mem_res.data:
+                player_id = mem_res.data[0].get('player_id')
+        except Exception:
+            player_id = None
+
         update_data = {
             'status': 'active',
             'joined_at': datetime.now(timezone.utc).isoformat()
@@ -206,7 +214,24 @@ def approve_member(membership_id):
         if expires_at:
             update_data['expires_at'] = expires_at
             
-        db.table('club_memberships').update(update_data).eq('id', membership_id).eq('club_id', g.club['id']).execute()
+        upd_res = db.table('club_memberships').update(update_data).eq('id', membership_id).eq('club_id', g.club['id']).execute()
+        if not player_id and upd_res and upd_res.data:
+            player_id = upd_res.data[0].get('player_id')
+
+        if player_id:
+            try:
+                club_name = g.club.get('name') or 'your club'
+                db.table('notifications').insert({
+                    'user_id': player_id,
+                    'title': f'Membership Approved: {club_name}',
+                    'message': f'Congratulations! Your membership request for {club_name} has been approved.',
+                    'type': 'success',
+                    'link': url_for('player.my_clubs')
+                }).execute()
+            except Exception as notif_err:
+                from flask import current_app
+                current_app.logger.warning(f"Failed to notify player {player_id} on membership approval: {notif_err}")
+
         flash("Member verified and approved successfully.", "success")
     except Exception as e:
         from flask import current_app
@@ -280,7 +305,32 @@ def reject_member(membership_id):
         return redirect(url_for('clubadmin.dashboard'))
         
     try:
-        db.table('club_memberships').update({'status': 'rejected'}).eq('id', membership_id).eq('club_id', g.club['id']).execute()
+        player_id = None
+        try:
+            mem_res = db.table('club_memberships').select('id, player_id').eq('id', membership_id).eq('club_id', g.club['id']).limit(1).execute()
+            if mem_res and mem_res.data:
+                player_id = mem_res.data[0].get('player_id')
+        except Exception:
+            player_id = None
+
+        upd_res = db.table('club_memberships').update({'status': 'rejected'}).eq('id', membership_id).eq('club_id', g.club['id']).execute()
+        if not player_id and upd_res and upd_res.data:
+            player_id = upd_res.data[0].get('player_id')
+
+        if player_id:
+            try:
+                club_name = g.club.get('name') or 'the club'
+                db.table('notifications').insert({
+                    'user_id': player_id,
+                    'title': f'Membership Application Declined: {club_name}',
+                    'message': f'Your membership application for {club_name} was declined at this time.',
+                    'type': 'warning',
+                    'link': url_for('player.my_clubs')
+                }).execute()
+            except Exception as notif_err:
+                from flask import current_app
+                current_app.logger.warning(f"Failed to notify player {player_id} on membership rejection: {notif_err}")
+
         flash("Member application rejected.", "info")
     except Exception as e:
         from flask import current_app

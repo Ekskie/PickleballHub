@@ -28,7 +28,7 @@
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, var(--primary-orange) 0%, #f97316 40%, var(--btn-green) 100%);
+        background: var(--primary-orange);
     }
 
     .desk-header-flex {
@@ -58,20 +58,16 @@
         height: 8px;
         border-radius: 50%;
         background-color: var(--btn-green);
-        box-shadow: 0 0 0 rgba(34, 197, 94, 0.7);
         animation: livePulse 1.8s infinite;
         display: inline-block;
     }
 
     @keyframes livePulse {
-        0% {
-            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+        0%, 100% {
+            opacity: 1;
         }
-        70% {
-            box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
-        }
-        100% {
-            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+        50% {
+            opacity: 0.45;
         }
     }
 
@@ -183,9 +179,9 @@
     }
 
     .kpi-icon-wrap.orange {
-        background: rgba(249, 115, 22, 0.12);
+        background: var(--primary-orange-light);
         color: var(--primary-orange);
-        border: 1px solid rgba(249, 115, 22, 0.25);
+        border: 1px solid var(--role-accent-border);
     }
 
     .kpi-icon-wrap.blue {
@@ -414,9 +410,9 @@
     }
 
     .court-status-pill.in-use {
-        background: rgba(249, 115, 22, 0.12);
+        background: var(--primary-orange-light);
         color: var(--primary-orange);
-        border: 1px solid rgba(249, 115, 22, 0.25);
+        border: 1px solid var(--role-accent-border);
     }
 
     .court-status-pill.maintenance {
@@ -459,7 +455,7 @@
         justify-content: center;
         font-weight: 700;
         font-size: 0.8rem;
-        border: 1px solid rgba(225, 86, 35, 0.2);
+        border: 1px solid var(--role-accent-border);
         overflow: hidden;
     }
 
@@ -491,7 +487,7 @@
         font-size: 0.78rem;
         font-weight: 700;
         color: var(--primary-orange);
-        background: rgba(249, 115, 22, 0.1);
+        background: var(--primary-orange-light);
         padding: 3px 8px;
         border-radius: 8px;
     }
@@ -544,13 +540,13 @@
         align-items: center;
         gap: 8px;
         transition: all 0.2s;
-        box-shadow: 0 4px 12px rgba(225, 86, 35, 0.25);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .desk-action-btn-primary:hover {
         background: var(--primary-orange-hover);
         transform: translateY(-1px);
-        box-shadow: 0 6px 16px rgba(225, 86, 35, 0.35);
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
     }
 
     .desk-action-btn-green {
@@ -566,13 +562,13 @@
         align-items: center;
         gap: 8px;
         transition: all 0.2s;
-        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .desk-action-btn-green:hover {
         background: #15803d;
         transform: translateY(-1px);
-        box-shadow: 0 6px 16px rgba(22, 163, 74, 0.35);
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
     }
 
     .desk-action-btn-outline {
@@ -664,9 +660,9 @@
     }
 
     .pos-circle.top-priority {
-        background: rgba(225, 86, 35, 0.12);
+        background: var(--primary-orange-light);
         color: var(--primary-orange);
-        border-color: rgba(225, 86, 35, 0.3);
+        border-color: var(--role-accent-border);
     }
 
     .player-row-flex {
@@ -686,7 +682,7 @@
         justify-content: center;
         font-weight: 700;
         font-size: 0.85rem;
-        border: 1px solid rgba(225, 86, 35, 0.2);
+        border: 1px solid var(--role-accent-border);
         flex-shrink: 0;
         overflow: hidden;
     }
@@ -839,7 +835,7 @@
     .field-input:focus {
         outline: none;
         border-color: var(--primary-orange);
-        box-shadow: 0 0 0 3px rgba(225, 86, 35, 0.15);
+        box-shadow: none;
     }
 
     /* Walk-in Payment Chips */
@@ -863,18 +859,18 @@
 
     .walkin-pm-chip:hover {
         border-color: var(--primary-orange);
-        background: rgba(225, 86, 35, 0.05);
+        background: var(--primary-orange-light);
     }
 
     .walkin-pm-chip.active {
         border-color: var(--primary-orange) !important;
-        background: rgba(225, 86, 35, 0.1) !important;
+        background: var(--primary-orange-light) !important;
         color: var(--primary-orange) !important;
-        box-shadow: 0 0 0 3px rgba(225, 86, 35, 0.18);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .walkin-total-card {
-        background: linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(16, 185, 129, 0.14) 100%);
+        background: rgba(34, 197, 94, 0.1);
         border: 1.5px solid rgba(34, 197, 94, 0.35);
         border-radius: 14px;
         padding: 16px 20px;
@@ -912,7 +908,7 @@
         right: 0;
         height: 3px;
         background: #ef4444;
-        box-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444;
+        box-shadow: none;
         animation: laserScan 2s infinite ease-in-out;
     }
 
@@ -1364,7 +1360,7 @@
                                     <i class="ph ph-play"></i> Start Game
                                 </button>
                                 {% if q.player_id %}
-                                <button type="button" class="desk-action-btn-outline" style="padding: 6px 10px; font-size: 0.78rem; color: var(--primary-orange); border-color: rgba(225, 86, 35, 0.3);"
+                                <button type="button" class="desk-action-btn-outline" style="padding: 6px 10px; font-size: 0.78rem; color: var(--primary-orange); border-color: var(--role-accent-border);"
                                         title="Nudge Player Device"
                                         onclick="nudgePlayerAction('{{ q.player_id }}', this)">
                                     <i class="ph ph-bell"></i> Nudge
@@ -1414,7 +1410,7 @@
     <div class="modal-box">
         <div class="modal-header">
             <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(225, 86, 35, 0.12); display: flex; align-items: center; justify-content: center; color: var(--primary-orange); font-size: 1.3rem; flex-shrink: 0;">
+                <div style="width: 40px; height: 40px; border-radius: 12px; background: var(--primary-orange-light); display: flex; align-items: center; justify-content: center; color: var(--primary-orange); font-size: 1.3rem; flex-shrink: 0;">
                     <i class="ph ph-qr-code"></i>
                 </div>
                 <div>
@@ -1483,7 +1479,7 @@
 
             <div class="modal-header">
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(225, 86, 35, 0.12); display: flex; align-items: center; justify-content: center; color: var(--primary-orange); font-size: 1.35rem; flex-shrink: 0;">
+                    <div style="width: 42px; height: 42px; border-radius: 12px; background: var(--primary-orange-light); display: flex; align-items: center; justify-content: center; color: var(--primary-orange); font-size: 1.35rem; flex-shrink: 0;">
                         <i class="ph ph-user-plus"></i>
                     </div>
                     <div>
@@ -1614,7 +1610,7 @@
     <div class="modal-box">
         <div class="modal-header">
             <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(225, 86, 35, 0.12); display: flex; align-items: center; justify-content: center; color: var(--primary-orange); font-size: 1.3rem; flex-shrink: 0;">
+                <div style="width: 40px; height: 40px; border-radius: 12px; background: var(--primary-orange-light); display: flex; align-items: center; justify-content: center; color: var(--primary-orange); font-size: 1.3rem; flex-shrink: 0;">
                     <i class="ph ph-tennis-ball"></i>
                 </div>
                 <div>

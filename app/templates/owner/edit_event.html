@@ -57,7 +57,7 @@
     background: var(--owner-primary-blue, #2563eb) !important;
     border-color: var(--owner-primary-blue, #2563eb) !important;
     color: #ffffff !important;
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.18) !important;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08) !important;
 }
 .step-item.done .step-circle,
 .step-circle.done {
@@ -191,7 +191,7 @@
 .form-group textarea:focus {
     outline: none;
     border-color: var(--owner-primary-blue, #2563eb);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    box-shadow: 0 0 0 3px var(--primary-orange-light);
 }
 
 .form-group select,
@@ -219,7 +219,7 @@
 .form-group select.form-select:focus {
     outline: none;
     border-color: var(--owner-primary-blue, #2563eb);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    box-shadow: 0 0 0 3px var(--primary-orange-light);
 }
 
 /* Banner Upload Box */
@@ -414,8 +414,8 @@
 }
 .event-cal-day.selected {
     border-color: var(--owner-primary-blue, #2563eb) !important;
-    background: rgba(37, 99, 235, 0.1) !important;
-    box-shadow: 0 0 0 2px var(--owner-primary-blue, #2563eb) !important;
+    background: var(--primary-orange-light) !important;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08) !important;
 }
 .event-cal-day.past {
     opacity: 0.45 !important;
@@ -544,7 +544,7 @@
     background: var(--owner-primary-blue, #2563eb) !important;
     color: #ffffff !important;
     border-color: var(--owner-primary-blue, #2563eb) !important;
-    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25) !important;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08) !important;
 }
 .duration-pill-btn {
     padding: 6px 12px !important;
@@ -723,16 +723,16 @@
     background: var(--owner-primary-blue, #2563eb) !important;
     color: #ffffff !important;
     border: 1.5px solid var(--owner-primary-blue, #2563eb) !important;
-    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3) !important;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08) !important;
 }
 .matrix-slot-cell.target-window:hover {
     background: #1d4ed8 !important;
     border-color: #1d4ed8 !important;
 }
 .matrix-slot-cell.conflict-window {
-    background: repeating-linear-gradient(45deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.15) 4px, rgba(239, 68, 68, 0.3) 4px, rgba(239, 68, 68, 0.3) 8px) !important;
+    background: rgba(239, 68, 68, 0.16) !important;
     color: #dc2626 !important;
-    border: 1.5px solid #ef4444 !important;
+    border: 1.5px dashed #ef4444 !important;
     cursor: pointer !important;
 }
 .matrix-slot-cell.past {
@@ -766,7 +766,7 @@
 .legend-box-sample.target { background: var(--owner-primary-blue, #2563eb) !important; }
 .legend-box-sample.booked { background: rgba(239, 68, 68, 0.2) !important; border: 1px solid #ef4444 !important; }
 .legend-box-sample.event { background: rgba(139, 92, 246, 0.2) !important; border: 1px solid #7c3aed !important; }
-.legend-box-sample.conflict { background: repeating-linear-gradient(45deg, rgba(239, 68, 68, 0.3), rgba(239, 68, 68, 0.3) 3px, rgba(239, 68, 68, 0.6) 3px, rgba(239, 68, 68, 0.6) 6px) !important; border: 1px solid #ef4444 !important; }
+.legend-box-sample.conflict { background: rgba(239, 68, 68, 0.25) !important; border: 1px dashed #ef4444 !important; }
 
 /* Step Navigation Controls */
 .step-nav {
@@ -802,22 +802,22 @@
 .btn-nav-primary {
     background: var(--owner-primary-blue, #2563eb);
     color: #ffffff !important;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 }
 .btn-nav-primary:hover {
     background: var(--owner-primary-blue-hover, #1d4ed8);
     transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
 }
 .btn-nav-success {
     background: #10b981;
     color: #ffffff !important;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 }
 .btn-nav-success:hover {
     background: #059669;
     transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
 }
 
 /* Review Cards */

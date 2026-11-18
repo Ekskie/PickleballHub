@@ -19,7 +19,7 @@
     --input-border: rgba(0, 0, 0, 0.12);
     --input-border-focus: rgba(230, 74, 25, 0.5);
     --transition: 0.3s ease;
-    --bg-overlay: radial-gradient(circle at top right, rgba(230, 74, 25, 0.06) 0%, rgba(243, 239, 230, 0.85) 60%, rgba(243, 239, 230, 0.98) 100%);
+    --bg-overlay: rgba(243, 239, 230, 0.90);
     --navbar-bg: rgba(243, 239, 230, 0.92);
     --border-newspaper: rgba(43, 45, 53, 0.12);
     --accent-bg: #ece7db;
@@ -44,7 +44,7 @@
     --input-bg: rgba(28, 32, 41, 0.6);
     --input-border: rgba(255, 255, 255, 0.1);
     --input-border-focus: rgba(255, 87, 34, 0.5);
-    --bg-overlay: radial-gradient(circle at top right, rgba(255, 87, 34, 0.15) 0%, rgba(28, 31, 38, 0.85) 60%, rgba(28, 31, 38, 0.95) 100%);
+    --bg-overlay: rgba(28, 31, 38, 0.90);
     --navbar-bg: rgba(28, 31, 38, 0.92);
     --border-newspaper: rgba(226, 232, 240, 0.12);
     --accent-bg: #252933;
@@ -90,14 +90,14 @@ button:focus-visible {
     font-weight: 700;
     border-radius: 12px;
     cursor: pointer;
-    box-shadow: 0 4px 14px rgba(230, 74, 25, 0.28);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
     transition: all 0.25s ease;
     border: none;
 }
 .courts-filter-submit-btn:hover {
     background: var(--primary-orange-hover, #d84315);
     transform: translateY(-1px);
-    box-shadow: 0 6px 18px rgba(230, 74, 25, 0.38);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.16);
 }
 .courts-filter-submit-btn:active {
     transform: translateY(0);
@@ -605,7 +605,7 @@ p {
     border-color: var(--primary-orange);
     color: var(--text-primary);
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(255, 87, 34, 0.1);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
 }
 
 .role-choice-card.active i {
@@ -759,7 +759,7 @@ p {
 
 .submit-btn.primary-orange:hover {
     background: var(--primary-orange-hover);
-    box-shadow: 0 10px 20px -10px rgba(255, 87, 34, 0.5);
+    box-shadow: 0 8px 18px -6px rgba(15, 23, 42, 0.28);
 }
 
 .divider {
@@ -996,8 +996,8 @@ p {
 
 /* PREMIUM HERO & REDESIGNED AUTH LAYOUT */
 .premium-hero-container {
-    background-image: linear-gradient(rgba(15, 17, 21, 0.75), rgba(15, 17, 21, 0.9)), url('../images/hero-action.png');
-    background-position: center;
+    background: url('../images/hero-action.png') center / cover no-repeat;
+    box-shadow: inset 0 0 0 9999px rgba(15, 17, 21, 0.82);
     padding: 80px 4% 80px;
     color: #e2e8f0;
     border-bottom: 1px solid var(--border-newspaper);
@@ -1135,24 +1135,23 @@ p {
     border-radius: 50%;
     display: inline-block;
     margin-right: 4px;
-    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
     animation: livePulseDot 2s infinite;
 }
 
 @keyframes livePulseDot {
     0% {
         transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+        opacity: 1;
     }
 
     70% {
-        transform: scale(1);
-        box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
+        transform: scale(1.1);
+        opacity: 0.65;
     }
 
     100% {
         transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+        opacity: 1;
     }
 }
 
@@ -1191,12 +1190,10 @@ p {
 @keyframes firePulse {
     from {
         transform: scale(1);
-        filter: drop-shadow(0 0 2px rgba(255, 112, 67, 0.5));
     }
 
     to {
         transform: scale(1.15);
-        filter: drop-shadow(0 0 8px rgba(255, 112, 67, 0.8));
     }
 }
 
@@ -1276,7 +1273,7 @@ p {
 .hero-auth-card .input-wrapper input:focus {
     border-color: var(--primary-orange);
     background: rgba(15, 17, 21, 0.6);
-    box-shadow: 0 0 0 3px rgba(230, 74, 25, 0.35);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12);
 }
 
 .hero-auth-card .input-wrapper i {
@@ -1296,7 +1293,7 @@ p {
 .hero-auth-card .role-choice-card.active {
     background: rgba(230, 74, 25, 0.18) !important;
     border: 1.5px solid var(--primary-orange) !important;
-    box-shadow: 0 0 0 2px rgba(230, 74, 25, 0.25), 0 8px 24px rgba(230, 74, 25, 0.2) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
     transform: translateY(-2px);
 }
 
@@ -1651,13 +1648,13 @@ p {
     font-size: 1rem;
     text-decoration: none;
     transition: var(--transition);
-    box-shadow: 0 4px 16px rgba(217, 119, 6, 0.25);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.14);
 }
 
 .final-cta-btn:hover {
     background: var(--primary-orange-hover);
     transform: translateY(-2px);
-    box-shadow: 0 6px 24px rgba(217, 119, 6, 0.35);
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2);
 }
 
 /* Scroll To Top Button */
@@ -1676,7 +1673,7 @@ p {
     align-items: center;
     justify-content: center;
     font-size: 1.4rem;
-    box-shadow: 0 4px 12px rgba(230, 74, 25, 0.3);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18);
     z-index: 9999;
     opacity: 0;
     visibility: hidden;
@@ -1695,7 +1692,7 @@ p {
 .scroll-to-top-btn:hover {
     background-color: var(--primary-orange-hover);
     transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 6px 20px rgba(230, 74, 25, 0.45);
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.24);
 }
 
 .scroll-to-top-btn:active {

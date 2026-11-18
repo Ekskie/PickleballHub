@@ -32,7 +32,7 @@
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0; height: 4px;
-    background: linear-gradient(90deg, #ff5722 0%, #22c55e 100%);
+    background: var(--primary-orange);
 }
 
 .roster-kpi-bar {
@@ -108,8 +108,8 @@
 
 .search-input-field:focus {
     border-color: var(--primary-orange);
-    background: #fff;
-    box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.12);
+    background: var(--card-bg, #fff);
+    box-shadow: none;
 }
 
 .filter-pills-row {
@@ -131,8 +131,8 @@
 }
 
 .filter-chip.active {
-    background: var(--primary-orange, #ff5722);
-    border-color: var(--primary-orange, #ff5722);
+    background: var(--primary-orange);
+    border-color: var(--primary-orange);
     color: #fff;
 }
 
@@ -141,7 +141,7 @@
     border: 1px solid var(--border-color, #e2e8f0);
     border-radius: 18px;
     overflow: hidden;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 }
 
 .roster-table {
@@ -170,14 +170,14 @@
 }
 
 .roster-table tr:hover td {
-    background: rgba(255, 87, 34, 0.02);
+    background: var(--primary-orange-light);
 }
 
 .participant-avatar-wrap {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: rgba(255, 87, 34, 0.1);
+    background: var(--primary-orange-light);
     color: var(--primary-orange);
     display: flex;
     align-items: center;
@@ -242,7 +242,7 @@
 .btn-desk-checkin:hover {
     background: #16a34a;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 }
 
 .btn-desk-noshow {
@@ -272,7 +272,7 @@
                     <i class="ph ph-arrow-left"></i> Back to Venue Events
                 </a>
                 <span style="color: var(--border-color);">•</span>
-                <span style="background: rgba(255, 87, 34, 0.12); color: var(--primary-orange); font-size: 0.74rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; text-transform: uppercase;">
+                <span style="background: var(--primary-orange-light); color: var(--primary-orange); font-size: 0.74rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; text-transform: uppercase;">
                     {{ event.type }}
                 </span>
             </div>
@@ -289,7 +289,7 @@
             {% if event.organizer_id %}
             <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                 <span style="font-size: 0.8rem; color: var(--text-muted);">Organizer: <strong>{{ event.profiles.first_name }} {{ event.profiles.last_name }}</strong></span>
-                <a href="{{ url_for('facilitystaff.messages', chat_user=event.organizer_id) }}" style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.78rem; font-weight: 700; color: var(--primary-orange); text-decoration: none; padding: 3px 8px; background: rgba(255,87,34,0.08); border-radius: 6px;">
+                <a href="{{ url_for('facilitystaff.messages', chat_user=event.organizer_id) }}" style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.78rem; font-weight: 700; color: var(--primary-orange); text-decoration: none; padding: 3px 8px; background: var(--primary-orange-light); border-radius: 6px;">
                     <i class="ph ph-chat-circle-dots"></i> Message Organizer
                 </a>
             </div>

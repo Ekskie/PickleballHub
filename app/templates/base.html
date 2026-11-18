@@ -12,12 +12,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Base CSS + Dashboard Specific CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=20261103_v6">
-    {% if request.blueprint == 'player' %}
+    {% if request.blueprint == 'player' or (current_user and current_user.role_raw == 'player') %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/player-sports.css') }}?v=20261103_v6">
     {% endif %}
     {% if request.blueprint == 'owner' or (current_user and current_user.role_raw == 'owner') %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/owner-theme.css') }}?v=20261103_v6">
     {% endif %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/role-themes.css') }}?v=20261119_v1">
     <!-- Phosphor Icons -->
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
 
@@ -235,14 +236,14 @@
             color: #fff;
         }
         .header-membership-pill.upgrade {
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(99, 102, 241, 0.12));
-            color: #8b5cf6;
-            border: 1.5px solid rgba(139, 92, 246, 0.4);
+            background: var(--primary-orange-light, rgba(255, 87, 34, 0.12));
+            color: var(--primary-orange, #ff5722);
+            border: 1.5px solid var(--role-accent-border, rgba(255, 87, 34, 0.3));
         }
         .header-membership-pill.upgrade:hover {
-            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            background: var(--primary-orange, #ff5722);
             color: #fff;
-            box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
         }
 
         /* ── Global Confirmation Modal Styles ── */
@@ -325,9 +326,9 @@
             justify-content: center;
             font-size: 1.6rem;
             flex-shrink: 0;
-            background: rgba(225, 86, 35, 0.12);
+            background: var(--primary-orange-light, rgba(225, 86, 35, 0.12));
             color: var(--primary-orange, #e15623);
-            border: 1px solid rgba(225, 86, 35, 0.25);
+            border: 1px solid var(--role-accent-border, rgba(225, 86, 35, 0.25));
         }
 
         .confirm-modal-icon-wrap.danger {
@@ -398,41 +399,41 @@
             font-weight: 700;
             cursor: pointer;
             font-family: inherit;
-            box-shadow: 0 2px 8px rgba(225, 86, 35, 0.3);
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
             transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
         }
 
         .confirm-btn-primary:hover {
             background: var(--primary-orange-hover, #d04512);
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(225, 86, 35, 0.4);
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.16);
         }
 
         .confirm-btn-primary.danger {
             background: #ef4444;
-            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
         }
 
         .confirm-btn-primary.danger:hover {
             background: #dc2626;
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.16);
         }
 
         .confirm-btn-primary.success {
             background: #10b981;
-            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
         }
 
         .confirm-btn-primary.success:hover {
             background: #059669;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.16);
         }
     </style>
     {% include 'seo_tags.html' %}
     {% block extra_head %}{% endblock %}
 </head>
 
-<body class="dashboard-body {% if request.blueprint == 'owner' or (current_user and current_user.role_raw == 'owner') %}role-owner-portal{% endif %}">
+<body class="dashboard-body role-{{ current_user.role_raw if (current_user and current_user.role_raw) else 'player' }}-portal {% if request.blueprint == 'owner' or (current_user and current_user.role_raw == 'owner') %}role-owner-portal{% endif %}">
     <!-- Sidebar Overlay for Mobile -->
     <div class="sidebar-overlay" onclick="toggleSidebar(false)"></div>
 
@@ -908,11 +909,18 @@
                     <textarea name="message" rows="4" required placeholder="Describe your issue or feedback..."
                         style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary); resize: vertical; outline: none;"></textarea>
                 </div>
-                <div class="form-actions" style="display: flex; justify-content: flex-end; gap: 1rem;">
+                <div class="form-actions" style="display: flex; justify-content: flex-end; gap: 1rem; flex-wrap: wrap;">
                     <!-- Add these right before your form's submit button -->
-                    <a href="{{url_for('player.support')}}"
-                        style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; background: var(--accent-color); color: rgb(0, 0, 0); border: none; border-radius: 8px; text-decoration: none; cursor: pointer; font-weight: 600; font-size: 0.9rem;">
-                        <i class="ph ph-person"></i> More
+                    {% if current_user and current_user.role_raw in ['player', 'owner', 'clubadmin', 'facilitystaff', 'adminstaff'] %}
+                        {% set modal_support_url = url_for(current_user.role_raw ~ '.support') %}
+                    {% elif current_user and current_user.role_raw == 'superadmin' %}
+                        {% set modal_support_url = url_for('adminstaff.support') %}
+                    {% else %}
+                        {% set modal_support_url = url_for('player.support') %}
+                    {% endif %}
+                    <a href="{{ modal_support_url }}"
+                        style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; background: var(--primary-orange-light); color: var(--primary-orange); border: 1px solid var(--role-accent-border, var(--primary-orange)); border-radius: 8px; text-decoration: none; cursor: pointer; font-weight: 600; font-size: 0.9rem;">
+                        <i class="ph ph-lifebuoy"></i> My Tickets &amp; FAQ
                     </a>
                     <button type="button" class="action-box"
                         onclick="document.getElementById('support-modal').style.display='none'"
@@ -1902,6 +1910,7 @@
 
     {% block extra_scripts %}{% endblock %}
     {% block scripts %}{% endblock %}
+    {% include "partials/cookie_consent.html" ignore missing %}
 </body>
 
 </html>

@@ -47,14 +47,12 @@
         height: 8px;
         border-radius: 50%;
         background: #10b981;
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
         animation: telemetryPulse 1.8s infinite;
     }
 
     @keyframes telemetryPulse {
-        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-        70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        0%, 100% { transform: scale(0.95); opacity: 1; }
+        50% { transform: scale(1.05); opacity: 0.45; }
     }
 
     /* Primary Stat Cards */
@@ -82,16 +80,7 @@
         gap: 14px;
     }
 
-    .kpi-card::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 80px;
-        height: 80px;
-        background: radial-gradient(circle, var(--kpi-glow-color, rgba(255, 87, 34, 0.12)) 0%, transparent 70%);
-        pointer-events: none;
-    }
+
 
     .kpi-top-row {
         display: flex;
@@ -321,8 +310,8 @@
     }
 
     .op-action-btn:hover {
-        background: rgba(255, 87, 34, 0.08);
-        border-color: rgba(255, 87, 34, 0.3);
+        background: var(--primary-orange-light);
+        border-color: var(--role-accent-border);
         color: var(--primary-orange);
         transform: translateY(-2px);
     }
@@ -351,7 +340,7 @@
     }
 
     .audit-stream-item:hover {
-        background: rgba(255, 87, 34, 0.04);
+        background: var(--primary-orange-light);
     }
 
     .audit-icon-wrap {
@@ -640,7 +629,7 @@
 <!-- ── 1. PRIMARY KPI STATS GRID ── -->
 <div class="stats-kpi-grid">
     <!-- Stat 1: Total Platform Users -->
-    <div class="glass-card kpi-card" style="--kpi-glow-color: rgba(99, 102, 241, 0.15);">
+    <div class="glass-card kpi-card">
         <div class="kpi-top-row">
             <div class="kpi-icon-box" style="color: #6366f1; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.2);">
                 <i class="ph ph-users-four"></i>
@@ -658,12 +647,12 @@
     </div>
 
     <!-- Stat 2: Active Facilities & Courts -->
-    <div class="glass-card kpi-card" style="--kpi-glow-color: rgba(255, 87, 34, 0.15);">
+    <div class="glass-card kpi-card">
         <div class="kpi-top-row">
-            <div class="kpi-icon-box" style="color: var(--primary-orange); background: rgba(255, 87, 34, 0.1); border: 1px solid rgba(255, 87, 34, 0.2);">
+            <div class="kpi-icon-box" style="color: var(--primary-orange); background: var(--primary-orange-light); border: 1px solid var(--role-accent-border);">
                 <i class="ph ph-buildings"></i>
             </div>
-            <span class="kpi-tag" style="background: rgba(255, 87, 34, 0.1); color: var(--primary-orange);">Hubs Online</span>
+            <span class="kpi-tag" style="background: var(--primary-orange-light); color: var(--primary-orange);">Hubs Online</span>
         </div>
         <div>
             <h4 class="kpi-title">Active Facilities</h4>
@@ -676,7 +665,7 @@
     </div>
 
     <!-- Stat 3: Platform Gross Revenue -->
-    <div class="glass-card kpi-card" style="--kpi-glow-color: rgba(16, 185, 129, 0.15);">
+    <div class="glass-card kpi-card">
         <div class="kpi-top-row">
             <div class="kpi-icon-box" style="color: #10b981; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2);">
                 <i class="ph ph-currency-circle-dollar"></i>
@@ -694,7 +683,7 @@
     </div>
 
     <!-- Stat 4: Pending KYC Approvals -->
-    <div class="glass-card kpi-card" style="--kpi-glow-color: rgba(245, 158, 11, 0.15);">
+    <div class="glass-card kpi-card">
         <div class="kpi-top-row">
             <div class="kpi-icon-box" style="color: #f59e0b; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2);">
                 <i class="ph ph-shield-check"></i>
@@ -714,7 +703,7 @@
     </div>
 
     <!-- Stat 5: Platform Subscriptions Revenue -->
-    <div class="glass-card kpi-card" style="--kpi-glow-color: rgba(16, 185, 129, 0.15);">
+    <div class="glass-card kpi-card">
         <div class="kpi-top-row">
             <div class="kpi-icon-box" style="color: #10b981; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2);">
                 <i class="ph ph-crown"></i>
@@ -732,7 +721,7 @@
     </div>
 
     <!-- Stat 6: Pending Subscription Proofs -->
-    <div class="glass-card kpi-card" style="--kpi-glow-color: rgba(245, 158, 11, 0.15);">
+    <div class="glass-card kpi-card">
         <div class="kpi-top-row">
             <div class="kpi-icon-box" style="color: #f59e0b; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2);">
                 <i class="ph ph-credit-card"></i>
@@ -895,7 +884,7 @@
                         data-status="{{ f.status or 'active' }}">
                         <td class="bold" style="color: var(--text-primary); font-weight: 600;">
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(255, 87, 34, 0.08); border: 1px solid rgba(255, 87, 34, 0.15); display: flex; align-items: center; justify-content: center; color: var(--primary-orange); font-size: 1.15rem; flex-shrink: 0;">
+                                <div style="width: 36px; height: 36px; border-radius: 8px; background: var(--primary-orange-light); border: 1px solid var(--role-accent-border); display: flex; align-items: center; justify-content: center; color: var(--primary-orange); font-size: 1.15rem; flex-shrink: 0;">
                                     <i class="ph ph-buildings"></i>
                                 </div>
                                 <div style="display: flex; flex-direction: column; gap: 2px;">
@@ -1292,11 +1281,6 @@
     // 4. Revenue & Booking Velocity Line/Area Chart
     const revCanvas = document.getElementById('saRevenueTrendChart');
     if (revCanvas && revTrendData.labels && revTrendData.labels.length > 0) {
-        const ctx = revCanvas.getContext('2d');
-        const revGradient = ctx.createLinearGradient(0, 0, 0, 240);
-        revGradient.addColorStop(0, 'rgba(16, 185, 129, 0.28)');
-        revGradient.addColorStop(1, 'rgba(16, 185, 129, 0.00)');
-
         revenueChartInstance = new Chart(revCanvas, {
             type: 'line',
             data: {
@@ -1305,7 +1289,7 @@
                     label: 'Gross Revenue (₱)',
                     data: revTrendData.revenue,
                     borderColor: '#10b981',
-                    backgroundColor: revGradient,
+                    backgroundColor: 'rgba(16, 185, 129, 0.14)',
                     borderWidth: 2.5,
                     fill: true,
                     tension: 0.38,
@@ -1361,15 +1345,10 @@
             btnRev.classList.add('active');
             btnBk.classList.remove('active');
 
-            const ctx = document.getElementById('saRevenueTrendChart').getContext('2d');
-            const revGrad = ctx.createLinearGradient(0, 0, 0, 240);
-            revGrad.addColorStop(0, 'rgba(16, 185, 129, 0.28)');
-            revGrad.addColorStop(1, 'rgba(16, 185, 129, 0.00)');
-
             revenueChartInstance.data.datasets[0].label = 'Gross Revenue (₱)';
             revenueChartInstance.data.datasets[0].data = revTrendData.revenue;
             revenueChartInstance.data.datasets[0].borderColor = '#10b981';
-            revenueChartInstance.data.datasets[0].backgroundColor = revGrad;
+            revenueChartInstance.data.datasets[0].backgroundColor = 'rgba(16, 185, 129, 0.14)';
             revenueChartInstance.data.datasets[0].pointBackgroundColor = '#10b981';
             revenueChartInstance.options.scales.y.ticks.callback = function(val) { return '₱' + val.toLocaleString(); };
             revenueChartInstance.options.plugins.tooltip.callbacks.label = function(c) {
@@ -1379,15 +1358,10 @@
             btnBk.classList.add('active');
             btnRev.classList.remove('active');
 
-            const ctx = document.getElementById('saRevenueTrendChart').getContext('2d');
-            const bkGrad = ctx.createLinearGradient(0, 0, 0, 240);
-            bkGrad.addColorStop(0, 'rgba(99, 102, 241, 0.28)');
-            bkGrad.addColorStop(1, 'rgba(99, 102, 241, 0.00)');
-
             revenueChartInstance.data.datasets[0].label = 'Court Bookings';
             revenueChartInstance.data.datasets[0].data = revTrendData.bookings;
             revenueChartInstance.data.datasets[0].borderColor = '#6366f1';
-            revenueChartInstance.data.datasets[0].backgroundColor = bkGrad;
+            revenueChartInstance.data.datasets[0].backgroundColor = 'rgba(99, 102, 241, 0.14)';
             revenueChartInstance.data.datasets[0].pointBackgroundColor = '#6366f1';
             revenueChartInstance.options.scales.y.ticks.callback = function(val) { return val + ' Bookings'; };
             revenueChartInstance.options.plugins.tooltip.callbacks.label = function(c) {

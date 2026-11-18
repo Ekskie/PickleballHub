@@ -95,7 +95,7 @@
     .event-hero-scrim {
         position: absolute;
         inset: 0;
-        background: linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.4) 60%, rgba(15, 23, 42, 0.2) 100%);
+        background: rgba(15, 23, 42, 0.55);
         z-index: 1;
     }
 
@@ -126,26 +126,26 @@
 
     .event-type-badge.badge-tournament {
         color: #ffffff;
-        background: linear-gradient(135deg, var(--primary-orange, #ff5722), #ea580c);
-        box-shadow: 0 2px 8px rgba(225, 86, 35, 0.35);
+        background: var(--primary-orange, #ff5722);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
     }
 
     .event-type-badge.badge-social {
         color: #ffffff;
-        background: linear-gradient(135deg, #0284c7, #0369a1);
-        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+        background: #0284c7;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
     }
 
     .event-type-badge.badge-training {
         color: #ffffff;
-        background: linear-gradient(135deg, #7c3aed, #6d28d9);
-        box-shadow: 0 2px 8px rgba(124, 58, 237, 0.35);
+        background: #7c3aed;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
     }
 
     .event-type-badge.badge-league {
         color: #ffffff;
-        background: linear-gradient(135deg, #d97706, #b45309);
-        box-shadow: 0 2px 8px rgba(217, 119, 6, 0.35);
+        background: #d97706;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
     }
 
     .event-status-pill {
@@ -163,13 +163,13 @@
     .event-status-pill.open {
         background: rgba(16, 185, 129, 0.95);
         color: #ffffff;
-        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
     }
 
     .event-status-pill.full {
         background: rgba(239, 68, 68, 0.95);
         color: #ffffff;
-        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
     }
 
     .event-status-pill.soon {
@@ -194,7 +194,7 @@
         font-weight: 800;
         background: rgba(245, 158, 11, 0.95);
         color: #ffffff;
-        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
         margin-bottom: 10px;
     }
 
@@ -258,7 +258,7 @@
 
     /* ── Tournament Bracket Banner Callout ── */
     .tournament-bracket-callout {
-        background: linear-gradient(135deg, #0f172a, #1e293b);
+        background: #0f172a;
         border: 1.5px solid rgba(255, 255, 255, 0.1);
         border-radius: 16px;
         padding: 20px 24px;
@@ -280,14 +280,14 @@
         width: 46px;
         height: 46px;
         border-radius: 12px;
-        background: linear-gradient(135deg, #10b981, #059669);
+        background: var(--pb-green, #10b981);
         color: #ffffff;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.4rem;
         flex-shrink: 0;
-        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
     }
 
     .bracket-callout-title {
@@ -384,7 +384,7 @@
         width: 44px;
         height: 44px;
         border-radius: 12px;
-        background: linear-gradient(135deg, var(--primary-orange, #ff5722), #ea580c);
+        background: var(--primary-orange, #ff5722);
         color: #ffffff;
         display: flex;
         align-items: center;
@@ -395,7 +395,7 @@
     }
 
     .venue-host-avatar.venue {
-        background: linear-gradient(135deg, #0284c7, #0369a1);
+        background: #0284c7;
     }
 
     .venue-host-text {
@@ -447,7 +447,7 @@
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, var(--primary-orange, #ff5722), #f59e0b);
+        background: var(--primary-orange, #ff5722);
     }
 
     .reg-price-box {
@@ -542,20 +542,21 @@
     }
 
     .btn-register-main.join {
-        background: linear-gradient(135deg, var(--primary-orange, #ff5722), #ea580c);
+        background: var(--primary-orange, #ff5722);
         color: #ffffff;
-        box-shadow: 0 4px 14px rgba(225, 86, 35, 0.3);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .btn-register-main.join:hover {
+        background: var(--primary-orange-hover, #ea580c);
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(225, 86, 35, 0.4);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
     }
 
     .btn-register-main.waitlist {
-        background: linear-gradient(135deg, #f59e0b, #d97706);
+        background: #f59e0b;
         color: #ffffff;
-        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .btn-register-main.waitlist:hover {
@@ -571,14 +572,15 @@
     }
 
     .btn-register-main.pending-pay {
-        background: linear-gradient(135deg, #0070BA, #00AAE4);
+        background: #0070BA;
         color: #ffffff;
-        box-shadow: 0 4px 14px rgba(0, 112, 186, 0.3);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .btn-register-main.pending-pay:hover {
+        background: #005ea6;
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 112, 186, 0.4);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
     }
 
     .btn-register-main.disabled {

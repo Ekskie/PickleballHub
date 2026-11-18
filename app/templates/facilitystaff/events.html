@@ -61,7 +61,7 @@
     font-size: 1.35rem;
     flex-shrink: 0;
 }
-.kpi-icon-total   { background: rgba(249, 115, 22, 0.12); color: var(--primary-orange); }
+.kpi-icon-total   { background: var(--primary-orange-light); color: var(--primary-orange); }
 .kpi-icon-active  { background: rgba(34, 197, 94, 0.12); color: #16a34a; }
 .kpi-icon-pending { background: rgba(245, 158, 11, 0.12); color: #d97706; }
 .kpi-icon-players { background: rgba(124, 58, 237, 0.12); color: #7c3aed; }
@@ -111,7 +111,7 @@
 }
 .filter-search-input:focus {
     border-color: var(--primary-orange);
-    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+    box-shadow: none;
 }
 .filter-pills {
     display: flex;
@@ -142,7 +142,7 @@
     background: var(--primary-orange);
     color: #fff;
     border-color: var(--primary-orange);
-    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.25);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 }
 .pill-count {
     background: rgba(0, 0, 0, 0.12);
@@ -176,7 +176,7 @@
     overflow: hidden;
 }
 .event-card:hover {
-    box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(249, 115, 22, 0.08);
+    box-shadow: var(--shadow-hover);
     transform: translateY(-3px);
 }
 .event-card.card-pending {
@@ -206,7 +206,7 @@
     align-items: center;
     gap: 4px;
 }
-.badge-tournament { color: #ea580c; background: rgba(249, 115, 22, 0.12); }
+.badge-tournament { color: var(--primary-orange); background: var(--primary-orange-light); }
 .badge-social     { color: #0284c7; background: rgba(14, 165, 233, 0.12); }
 .badge-training   { color: #7c3aed; background: rgba(139, 92, 246, 0.12); }
 .badge-league     { color: #b45309; background: rgba(245, 158, 11, 0.12); }
@@ -385,7 +385,7 @@
     width: 72px;
     height: 72px;
     border-radius: 20px;
-    background: rgba(249, 115, 22, 0.1);
+    background: var(--primary-orange-light);
     color: var(--primary-orange);
     display: flex;
     align-items: center;
@@ -588,7 +588,7 @@
                             <i class="ph ph-clipboard-text"></i> Check-In
                         </a>
                         {% if ev.organizer_id %}
-                        <a href="{{ url_for('facilitystaff.messages', chat_user=ev.organizer_id) }}" class="btn-sm btn-sm-outline" style="color:var(--primary-orange);border-color:rgba(255,87,34,0.3);text-decoration:none;" title="Chat with Organizer">
+                        <a href="{{ url_for('facilitystaff.messages', chat_user=ev.organizer_id) }}" class="btn-sm btn-sm-outline" style="color:var(--primary-orange);border-color:var(--role-accent-border);text-decoration:none;" title="Chat with Organizer">
                             <i class="ph ph-chat-circle-dots"></i> Message
                         </a>
                         {% endif %}

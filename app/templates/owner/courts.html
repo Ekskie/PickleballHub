@@ -49,14 +49,14 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    box-shadow: 0 4px 14px rgba(225, 86, 35, 0.35);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-primary-add:hover {
+    background: var(--primary-orange-hover);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(225, 86, 35, 0.45);
-    filter: brightness(1.04);
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
 }
 
 .btn-primary-add:active {
@@ -99,7 +99,7 @@
 }
 
 .kpi-icon-orange {
-    background: rgba(225, 86, 35, 0.12);
+    background: var(--primary-orange-light);
     color: var(--primary-orange);
 }
 
@@ -219,7 +219,7 @@
     outline: none;
     border-color: var(--primary-orange);
     background: var(--card-bg);
-    box-shadow: 0 0 0 3px rgba(225, 86, 35, 0.12);
+    box-shadow: 0 0 0 3px var(--primary-orange-light);
 }
 
 .search-clear-btn {
@@ -257,7 +257,7 @@
 .facility-filter-select:focus {
     outline: none;
     border-color: var(--primary-orange);
-    box-shadow: 0 0 0 3px rgba(225, 86, 35, 0.12);
+    box-shadow: 0 0 0 3px var(--primary-orange-light);
 }
 
 .view-and-count-group {
@@ -349,7 +349,7 @@
 }
 
 .filter-chip.active {
-    background: rgba(225, 86, 35, 0.09);
+    background: var(--primary-orange-light);
     border-color: var(--primary-orange);
     color: var(--primary-orange);
 }
@@ -383,7 +383,7 @@
 .court-card-item:hover {
     transform: translateY(-4px);
     box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08);
-    border-color: rgba(225, 86, 35, 0.35);
+    border-color: var(--role-accent-border);
 }
 
 /* Card Cover Media Banner */
@@ -520,13 +520,13 @@
 
 .status-dot-pulse.active {
     background: #10b981;
-    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.4);
+    box-shadow: none;
     animation: pulseDot 2s infinite;
 }
 
 .status-dot-pulse.maintenance {
     background: #f59e0b;
-    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.4);
+    box-shadow: none;
 }
 
 .status-dot-pulse.closed {
@@ -534,9 +534,8 @@
 }
 
 @keyframes pulseDot {
-    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
 }
 
 /* Card Body Details */
@@ -684,8 +683,8 @@
 }
 
 .btn-card-schedule:hover {
-    background: rgba(225, 86, 35, 0.1);
-    border-color: rgba(225, 86, 35, 0.3);
+    background: var(--primary-orange-light);
+    border-color: var(--role-accent-border);
     color: var(--primary-orange);
 }
 
@@ -772,7 +771,7 @@
 }
 
 .courts-table tr:hover td {
-    background: rgba(225, 86, 35, 0.02);
+    background: rgba(37, 99, 235, 0.03);
 }
 
 .courts-table tr:last-child td {
@@ -799,9 +798,9 @@
     width: 44px;
     height: 44px;
     border-radius: 10px;
-    background: rgba(225, 86, 35, 0.1);
+    background: var(--primary-orange-light);
     color: var(--primary-orange);
-    border: 1px solid rgba(225, 86, 35, 0.2);
+    border: 1px solid var(--role-accent-border);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -898,7 +897,7 @@
     width: 44px;
     height: 44px;
     border-radius: 12px;
-    background: rgba(225, 86, 35, 0.12);
+    background: var(--primary-orange-light);
     color: var(--primary-orange);
     display: flex;
     align-items: center;
@@ -972,7 +971,7 @@
 .form-group textarea:focus {
     outline: none;
     border-color: var(--primary-orange);
-    box-shadow: 0 0 0 3px rgba(225, 86, 35, 0.12);
+    box-shadow: 0 0 0 3px var(--primary-orange-light);
 }
 
 .form-row-two-col {
@@ -1039,7 +1038,7 @@
 
 .court-type-option input:checked + .option-card {
     border-color: var(--primary-orange);
-    background: rgba(225, 86, 35, 0.08);
+    background: var(--primary-orange-light);
 }
 
 .court-type-option input:checked + .option-card i {
@@ -1084,7 +1083,7 @@
 
 .img-upload-zone:hover {
     border-color: var(--primary-orange);
-    background: rgba(225, 86, 35, 0.04);
+    background: var(--primary-orange-light);
 }
 
 .img-upload-zone i {
@@ -1192,12 +1191,12 @@
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    box-shadow: 0 4px 14px rgba(225, 86, 35, 0.35);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     transition: all 0.2s ease;
 }
 
 .btn-modal-submit:hover {
-    background: #ea580c;
+    background: var(--primary-orange-hover);
     transform: translateY(-1px);
 }
 
@@ -1248,7 +1247,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 18px;
-    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.08);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     transition: all 0.3s ease;
 }
 
@@ -1256,7 +1255,7 @@ html.dark-mode .court-limit-banner {
     background: rgba(245, 158, 11, 0.15);
     border-color: rgba(245, 158, 11, 0.5);
     border-left-color: #fbbf24;
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35), 0 0 20px rgba(245, 158, 11, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
 
 .limit-banner-content {
@@ -1357,7 +1356,7 @@ html.dark-mode .limit-banner-desc {
     flex-shrink: 0;
 }
 
-.btn-upgrade-glow {
+.btn-upgrade-cta {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -1368,15 +1367,15 @@ html.dark-mode .limit-banner-desc {
     padding: 10px 20px;
     border-radius: 10px;
     text-decoration: none;
-    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     transition: all 0.25s ease;
     white-space: nowrap;
 }
 
-.btn-upgrade-glow:hover {
+.btn-upgrade-cta:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45);
-    filter: brightness(1.06);
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
+    background: #d97706;
 }
 
 /* Button & Pill styles when limit is reached */
@@ -1384,7 +1383,7 @@ html.dark-mode .limit-banner-desc {
     background: #f59e0b !important;
     color: #ffffff !important;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     transition: all 0.2s ease;
     border: none;
     display: inline-flex !important;
@@ -1393,8 +1392,8 @@ html.dark-mode .limit-banner-desc {
 }
 .limit-locked-btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.35);
-    filter: brightness(1.05);
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
+    background: #d97706 !important;
 }
 .btn-limit-pill {
     background: rgba(0, 0, 0, 0.22);
@@ -1442,7 +1441,7 @@ html.dark-mode .limit-modal-hero {
     justify-content: center;
     font-size: 1.75rem;
     color: #fff;
-    box-shadow: 0 6px 18px rgba(245, 158, 11, 0.4);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 }
 
 .limit-modal-body {
@@ -1606,14 +1605,14 @@ html.dark-mode .limit-modal-comparison {
     background: #f59e0b;
     color: #ffffff !important;
     text-decoration: none;
-    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     transition: all 0.2s ease;
 }
 
 .btn-limit-upgrade:hover {
     transform: translateY(-1px);
-    box-shadow: 0 6px 18px rgba(245, 158, 11, 0.45);
-    filter: brightness(1.06);
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
+    background: #d97706;
 }
 
 @media (max-width: 640px) {
@@ -1621,7 +1620,7 @@ html.dark-mode .limit-modal-comparison {
         flex-direction: column;
         align-items: stretch;
     }
-    .btn-upgrade-glow {
+    .btn-upgrade-cta {
         justify-content: center;
     }
     .limit-modal-comparison {
@@ -1671,7 +1670,7 @@ html.dark-mode .limit-modal-comparison {
             </div>
         </div>
         <div class="limit-banner-actions">
-            <a href="{{ url_for('billing.subscription_page') }}?highlight={{ required_tier }}" class="btn-upgrade-glow">
+            <a href="{{ url_for('billing.subscription_page') }}?highlight={{ required_tier }}" class="btn-upgrade-cta">
                 <i class="ph-fill ph-crown"></i>
                 <span>Upgrade to {{ 'Pro Facility Pass' if required_tier == 'pro' else 'Elite Enterprise' }}</span>
                 <i class="ph ph-arrow-right"></i>
@@ -2413,7 +2412,7 @@ html.dark-mode .limit-modal-comparison {
 
             <div class="modal-footer" style="padding-top:0; border-top:none;">
                 <button type="button" class="btn-modal-cancel" onclick="closeModal('deleteCourtModal')">Cancel</button>
-                <button type="submit" class="btn-modal-submit" style="background:#ef4444; box-shadow:0 4px 14px rgba(239,68,68,0.35);">
+                <button type="submit" class="btn-modal-submit" style="background:#ef4444; box-shadow:0 2px 6px rgba(15, 23, 42, 0.08);">
                     <i class="ph ph-trash"></i> Delete Court
                 </button>
             </div>

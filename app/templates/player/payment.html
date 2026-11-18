@@ -15,7 +15,7 @@
     --bezel-inner-bg: var(--card-bg, #ffffff);
     --bezel-inner-border: rgba(226, 232, 240, 0.85);
     --bezel-inner-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 14px 34px -10px rgba(15, 23, 42, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.95);
-    --accent-glow: rgba(230, 74, 25, 0.15);
+    --focus-ring-neutral: rgba(15, 23, 42, 0.08);
 }
 
 .dark-mode, [data-theme="dark"] {
@@ -24,7 +24,7 @@
     --bezel-inner-bg: rgba(21, 24, 33, 0.95);
     --bezel-inner-border: rgba(255, 255, 255, 0.08);
     --bezel-inner-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 20px 40px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    --accent-glow: rgba(249, 115, 22, 0.2);
+    --focus-ring-neutral: rgba(255, 255, 255, 0.12);
 }
 
 /* Page Scaffolding & Fluid Stagger */
@@ -298,7 +298,7 @@
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary-orange), #c2410c);
+    background: var(--primary-orange, #ff5722);
     color: #ffffff;
     font-size: 0.72rem;
     font-weight: 800;
@@ -307,7 +307,7 @@
     justify-content: center;
     flex-shrink: 0;
     margin-top: 1px;
-    box-shadow: 0 2px 6px rgba(230, 74, 25, 0.3);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 }
 
 .pay-step-desc {
@@ -328,11 +328,11 @@
     border: 1px solid rgba(0, 112, 186, 0.22);
     border-radius: 26px;
     padding: 7px;
-    box-shadow: 0 16px 40px -12px rgba(0, 112, 186, 0.28);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
 }
 
 .bezel-gcash-inner {
-    background: linear-gradient(145deg, #004b87 0%, #0070BA 48%, #00aae4 100%);
+    background: #0070BA;
     border: 1px solid rgba(255, 255, 255, 0.25);
     border-radius: 19px;
     padding: 24px 20px;
@@ -340,19 +340,7 @@
     text-align: center;
     position: relative;
     overflow: hidden;
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.45);
-}
-
-.bezel-gcash-inner::before {
-    content: '';
-    position: absolute;
-    top: -50px;
-    right: -50px;
-    width: 160px;
-    height: 160px;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
-    border-radius: 50%;
-    pointer-events: none;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .gcash-brand-banner {
@@ -524,7 +512,7 @@
 
 .form-text-input:focus {
     border-color: var(--primary-orange);
-    box-shadow: 0 0 0 4px var(--accent-glow);
+    box-shadow: 0 0 0 3px var(--focus-ring-neutral);
 }
 
 /* Drag-Drop Zone */
@@ -652,7 +640,7 @@
 .btn-vanguard-submit {
     width: 100%;
     padding: 8px 10px 8px 24px;
-    background: linear-gradient(135deg, var(--primary-orange, #e64a19) 0%, #c2410c 100%);
+    background: var(--primary-orange, #ff5722);
     color: #ffffff;
     border: none;
     border-radius: 9999px;
@@ -663,13 +651,13 @@
     align-items: center;
     justify-content: space-between;
     transition: all 0.35s var(--ease-vanguard);
-    box-shadow: 0 6px 20px rgba(230, 74, 25, 0.35);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
     margin-top: 20px;
 }
 
 .btn-vanguard-submit:hover {
-    background: linear-gradient(135deg, #f0541e 0%, #d8450f 100%);
-    box-shadow: 0 8px 26px rgba(230, 74, 25, 0.45);
+    background: var(--primary-orange-hover, #ea580c);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.16);
     transform: translateY(-1.5px);
 }
 

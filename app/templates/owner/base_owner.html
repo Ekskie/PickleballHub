@@ -9,7 +9,7 @@
 </li>
 
 <!-- Facility & Operations Dropdown -->
-{% set is_fac_active = request.endpoint in ['owner.facilities', 'owner.courts', 'owner.court_schedule', 'owner.staff'] %}
+{% set is_fac_active = request.endpoint in ['owner.facilities', 'owner.courts', 'owner.court_schedule', 'owner.queue', 'owner.staff'] %}
 <li class="sidebar-dropdown-group {% if is_fac_active %}open active-group{% endif %}" data-group="owner-fac">
     <button type="button" class="sidebar-dropdown-btn" onclick="toggleSidebarDropdown(this)">
         <span class="dropdown-btn-label">
@@ -28,6 +28,7 @@
         <li class="{% if request.endpoint == 'owner.court_schedule' %}active{% endif %}">
             <a href="{{ url_for('owner.court_schedule') }}"><i class="ph ph-calendar-check"></i> <span>Court Schedule</span></a>
         </li>
+        <li class="{% if request.endpoint == 'owner.queue' %}active{% endif %}"><a href="{{ url_for('owner.queue') }}"><i class="ph ph-list-numbers"></i> <span>Live Court Queue</span></a></li>
         <li class="{% if request.endpoint == 'owner.staff' %}active{% endif %}">
             <a href="{{ url_for('owner.staff') }}"><i class="ph ph-users-three"></i> <span>Staff Management</span></a>
         </li>

@@ -7,16 +7,14 @@
   /* Athletic Vibrant Accents */
   --pb-green: #10b981;
   --pb-green-hover: #059669;
-  --pb-green-glow: rgba(16, 185, 129, 0.28);
   --pb-green-light: rgba(16, 185, 129, 0.12);
 
   --pb-volt: #84cc16;
-  --pb-volt-glow: rgba(132, 204, 22, 0.3);
 
   --pb-orange: #ff5722;
   --pb-orange-hover: #ea580c;
-  --pb-orange-glow: rgba(255, 87, 34, 0.28);
   --pb-orange-light: rgba(255, 87, 34, 0.12);
+  --pb-shadow-accent: rgba(15, 23, 42, 0.08);
 
   --pb-blue: #3b82f6;
   --pb-blue-light: rgba(59, 130, 246, 0.12);
@@ -60,6 +58,7 @@ html.dark-mode {
   --sports-text-muted: #94a3b8;
   --sports-text-dim: #64748b;
 
+  --pb-shadow-accent: rgba(0, 0, 0, 0.25);
   --sports-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
   --sports-shadow-md: 0 8px 24px -2px rgba(0, 0, 0, 0.45);
   --sports-shadow-lg: 0 16px 36px -4px rgba(0, 0, 0, 0.6);
@@ -102,10 +101,10 @@ html.dark-mode {
   height: 58px;
   border-radius: 50%;
   padding: 3px;
-  background: linear-gradient(135deg, var(--pb-orange), var(--pb-green));
+  background: var(--primary-orange, var(--pb-orange));
   position: relative;
   flex-shrink: 0;
-  box-shadow: 0 0 16px var(--pb-orange-glow);
+  box-shadow: 0 2px 6px var(--pb-shadow-accent);
 }
 
 .sports-avatar-inner {
@@ -259,7 +258,7 @@ html.dark-mode {
 
 .mini-xp-track .sports-xp-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--pb-orange), var(--pb-green));
+  background: var(--primary-orange, var(--pb-orange));
   border-radius: var(--radius-pill);
   transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -446,25 +445,27 @@ html.dark-mode {
 }
 
 .sports-pill-btn.primary {
-  background: linear-gradient(135deg, var(--pb-orange), #ea580c);
+  background: var(--primary-orange, var(--pb-orange));
   color: #ffffff;
-  box-shadow: 0 4px 14px var(--pb-orange-glow);
+  box-shadow: 0 2px 6px var(--pb-shadow-accent);
 }
 
 .sports-pill-btn.primary:hover {
+  background: var(--primary-orange-hover, var(--pb-orange-hover));
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px var(--pb-orange-glow);
+  box-shadow: 0 4px 12px var(--pb-shadow-accent);
 }
 
 .sports-pill-btn.green {
-  background: linear-gradient(135deg, var(--pb-green), #059669);
+  background: var(--pb-green);
   color: #ffffff;
-  box-shadow: 0 4px 14px var(--pb-green-glow);
+  box-shadow: 0 2px 6px var(--pb-shadow-accent);
 }
 
 .sports-pill-btn.green:hover {
+  background: var(--pb-green-hover);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px var(--pb-green-glow);
+  box-shadow: 0 4px 12px var(--pb-shadow-accent);
 }
 
 .sports-pill-btn.outline {
@@ -495,30 +496,7 @@ html.dark-mode {
   backdrop-filter: blur(12px);
 }
 
-/* Subtle Court Watermark Background */
-.sports-hero-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 320px;
-  height: 100%;
-  background: radial-gradient(circle at 80% 20%, rgba(255, 87, 34, 0.08) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
 
-.sports-hero-card::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 280px;
-  height: 100%;
-  background: radial-gradient(circle at 20% 90%, rgba(16, 185, 129, 0.07) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
 
 .sports-hero-top {
   position: relative;
@@ -567,7 +545,7 @@ html.dark-mode {
 }
 
 .player-rank-badge.elite {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(132, 204, 22, 0.15));
+  background: var(--pb-green-light);
   color: var(--pb-green);
   border: 1px solid rgba(16, 185, 129, 0.4);
 }
@@ -578,12 +556,11 @@ html.dark-mode {
   gap: 6px;
   padding: 6px 14px;
   border-radius: var(--radius-pill);
-  background: linear-gradient(135deg, rgba(255, 87, 34, 0.14), rgba(234, 88, 12, 0.14));
+  background: var(--pb-orange-light);
   border: 1px solid rgba(255, 87, 34, 0.35);
   color: var(--pb-orange);
   font-size: 0.78rem;
   font-weight: 800;
-  box-shadow: 0 0 12px rgba(255, 87, 34, 0.2);
 }
 
 .streak-pill i {
@@ -709,10 +686,9 @@ html.dark-mode .sports-xp-track {
 .sports-xp-fill {
   height: 100%;
   border-radius: var(--radius-pill);
-  background: linear-gradient(90deg, var(--pb-orange) 0%, #ea580c 50%, var(--pb-green) 100%);
+  background: var(--primary-orange, var(--pb-orange));
   position: relative;
   transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 0 10px var(--pb-orange-glow);
 }
 
 /* ==========================================================================
@@ -830,7 +806,7 @@ html.dark-mode .sports-xp-track {
 .sports-match-card:hover {
   border-color: var(--pb-green);
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px var(--pb-green-glow);
+  box-shadow: var(--sports-shadow-md);
 }
 
 .match-players-faceoff {
@@ -1165,7 +1141,7 @@ html.dark-mode .sports-xp-track {
 
 .podium-slot.rank-1 {
   border-color: #fbbf24;
-  box-shadow: 0 4px 18px rgba(251, 191, 36, 0.15);
+  box-shadow: var(--sports-shadow-sm);
   order: 2;
   padding-top: 22px;
 }
@@ -1238,7 +1214,7 @@ html.dark-mode .sports-xp-track {
 
 /* Current Player Rank Banner */
 .sports-user-rank-strip {
-  background: linear-gradient(135deg, rgba(255, 87, 34, 0.08), rgba(16, 185, 129, 0.08));
+  background: var(--pb-orange-light);
   border: 1px solid rgba(255, 87, 34, 0.25);
   border-radius: var(--radius-sm);
   padding: 12px 16px;
@@ -1296,7 +1272,7 @@ html.dark-mode .sports-xp-track {
 
 .sports-badge-card.unlocked {
   border-color: rgba(16, 185, 129, 0.35);
-  background: linear-gradient(180deg, var(--sports-card-elevated) 0%, rgba(16, 185, 129, 0.05) 100%);
+  background: var(--sports-card-elevated);
 }
 
 .sports-badge-card.locked {
@@ -1317,7 +1293,6 @@ html.dark-mode .sports-xp-track {
 .sports-badge-card.unlocked .badge-icon-box {
   background: rgba(16, 185, 129, 0.14);
   color: var(--pb-green);
-  box-shadow: 0 0 14px var(--pb-green-glow);
 }
 
 .sports-badge-card.locked .badge-icon-box {
@@ -1477,7 +1452,7 @@ html.dark-mode .sports-xp-track {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--pb-orange), #ea580c);
+  background: var(--primary-orange, var(--pb-orange));
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -1485,7 +1460,7 @@ html.dark-mode .sports-xp-track {
   font-size: 1.5rem;
   border: none;
   cursor: pointer;
-  box-shadow: 0 6px 18px var(--pb-orange-glow);
+  box-shadow: 0 4px 12px var(--pb-shadow-accent);
   transform: translateY(-16px);
   transition: var(--sports-transition);
 }
@@ -1658,8 +1633,8 @@ html.dark-mode .sports-xp-track {
   left: 0;
   right: 0;
   height: 90px;
-  background: linear-gradient(135deg, rgba(255, 87, 34, 0.25) 0%, rgba(16, 185, 129, 0.2) 100%);
-  opacity: 0.85;
+  background: var(--sports-card-elevated);
+  border-bottom: 1px solid var(--sports-border);
 }
 
 .profile-hero-content {
@@ -1804,7 +1779,7 @@ html.dark-mode .sports-xp-track {
   border-radius: var(--radius-md);
   padding: 22px 24px;
   margin-bottom: 24px;
-  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.08);
+  box-shadow: var(--sports-shadow-sm);
   position: relative;
 }
 
@@ -1883,7 +1858,7 @@ html.dark-mode .sports-xp-track {
 
 .pending-booking-item:hover {
   border-color: rgba(245, 158, 11, 0.5);
-  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.1);
+  box-shadow: var(--sports-shadow-md);
   transform: translateY(-2px);
 }
 
@@ -1976,65 +1951,39 @@ html.dark-mode .sports-xp-track {
 }
 
 .sports-pill-btn.amber {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+  background: #f59e0b;
   color: #fff;
   border: none;
-  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+  box-shadow: 0 2px 6px var(--pb-shadow-accent);
 }
 
 .sports-pill-btn.amber:hover {
-  background: linear-gradient(135deg, #d97706, #b45309);
+  background: #d97706;
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(245, 158, 11, 0.45);
+  box-shadow: 0 4px 12px var(--pb-shadow-accent);
 }
 
-.sports-pill-btn.pulse {
-  animation: amberPulse 2s infinite;
-}
-
-@keyframes amberPulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6);
-  }
-  70% {
-    box-shadow: 0 0 0 8px rgba(245, 158, 11, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
-  }
-}
-
-/* ── Volt Button & Glow ─────────────────────────────────────────────── */
+/* ── Volt Button ────────────────────────────────────────────────────── */
 .sports-pill-btn.volt {
-  background: linear-gradient(135deg, #84cc16, #65a30d);
+  background: #84cc16;
   color: #0f172a;
   border: none;
   font-weight: 800;
-  box-shadow: 0 4px 14px rgba(132, 204, 22, 0.35);
+  box-shadow: 0 2px 6px var(--pb-shadow-accent);
 }
 
 .sports-pill-btn.volt:hover {
-  background: linear-gradient(135deg, #a3e635, #84cc16);
+  background: #a3e635;
   color: #022c22;
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(132, 204, 22, 0.45);
-}
-
-.sports-pill-btn.pulse-glow {
-  animation: voltGlow 2.5s infinite;
-}
-
-@keyframes voltGlow {
-  0% { box-shadow: 0 0 0 0 rgba(132, 204, 22, 0.5); }
-  70% { box-shadow: 0 0 0 8px rgba(132, 204, 22, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(132, 204, 22, 0); }
+  box-shadow: 0 4px 12px var(--pb-shadow-accent);
 }
 
 /* ==========================================================================
    LIVE MATCH COUNTDOWN HERO BANNER
    ========================================================================== */
 .sports-countdown-hero {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(255, 87, 34, 0.06) 50%, rgba(139, 92, 246, 0.06) 100%);
+  background: var(--sports-card-elevated);
   border: 1.5px solid rgba(16, 185, 129, 0.3);
   border-radius: var(--radius-lg);
   padding: 20px 24px;
@@ -2045,7 +1994,7 @@ html.dark-mode .sports-xp-track {
 }
 
 html.dark-mode .sports-countdown-hero {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(255, 87, 34, 0.08) 50%, rgba(139, 92, 246, 0.1) 100%);
+  background: var(--sports-card-elevated);
   border-color: rgba(16, 185, 129, 0.35);
 }
 
@@ -2056,7 +2005,7 @@ html.dark-mode .sports-countdown-hero {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #10b981, #ff5722, #8b5cf6);
+  background: var(--primary-orange, var(--pb-orange));
 }
 
 .countdown-hero-grid {
@@ -2205,7 +2154,7 @@ html.dark-mode .sports-countdown-hero {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--pb-orange), var(--pb-volt), var(--pb-green));
+  background: var(--primary-orange, var(--pb-orange));
 }
 
 .booking-showcase-header {
@@ -2304,7 +2253,7 @@ html.dark-mode .booking-pending-row {
 
 .booking-pending-row:hover {
   border-color: rgba(245, 158, 11, 0.65);
-  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.08);
+  box-shadow: var(--sports-shadow-sm);
 }
 
 .bpr-left {
@@ -2562,7 +2511,7 @@ html.dark-mode .booking-pending-row {
   background: var(--primary-orange, #ff5722);
   color: #ffffff;
   border-color: var(--primary-orange, #ff5722);
-  box-shadow: 0 2px 8px rgba(255, 87, 34, 0.25);
+  box-shadow: 0 2px 6px var(--pb-shadow-accent);
 }
 
 .timeline-legend-row {
@@ -2710,7 +2659,7 @@ html.dark-mode .booking-pending-row {
   background: #10b981;
   color: #ffffff;
   transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.35);
+  box-shadow: 0 2px 6px var(--pb-shadow-accent);
 }
 
 .timeline-cell-slot.booked {
@@ -2743,7 +2692,7 @@ html.dark-mode .booking-pending-row {
   background: var(--primary-orange, #ff5722);
   color: #ffffff;
   border: 1.5px solid var(--primary-orange, #ff5722);
-  box-shadow: 0 4px 12px rgba(255, 87, 34, 0.35);
+  box-shadow: 0 2px 6px var(--pb-shadow-accent);
 }
 
 /* ── DIGITAL COURT ENTRY PASS MODAL ── */
@@ -2827,7 +2776,7 @@ html.dark-mode .booking-pending-row {
 
 .pass-ticket-top {
   padding: 22px 24px 16px;
-  background: linear-gradient(135deg, rgba(255, 87, 34, 0.08) 0%, rgba(16, 185, 129, 0.06) 100%);
+  background: var(--sports-card-elevated);
   border-bottom: 1px solid var(--border-color, #e2e8f0);
 }
 
@@ -2849,13 +2798,12 @@ html.dark-mode .booking-pending-row {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #ff5722;
+  background: var(--primary-orange, var(--pb-orange));
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.95rem;
-  box-shadow: 0 0 10px rgba(255, 87, 34, 0.35);
 }
 
 .pass-brand-title {
@@ -2893,7 +2841,6 @@ html.dark-mode .booking-pending-row {
   height: 7px;
   border-radius: 50%;
   background: #10b981;
-  box-shadow: 0 0 6px #10b981;
   animation: pulse-ping-green 1.5s infinite;
 }
 
@@ -3081,14 +3028,14 @@ html.dark-mode .booking-pending-row {
 }
 
 .pass-btn-action.primary {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: var(--pb-green);
   color: #ffffff;
   border: none;
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+  box-shadow: 0 2px 6px var(--pb-shadow-accent);
 }
 
 .pass-btn-action.primary:hover {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  background: var(--pb-green-hover);
   transform: translateY(-1px);
 }
 
@@ -3110,7 +3057,7 @@ body.dark-mode .sports-pass-dialog {
   background: #111827 !important;
   border-color: rgba(255, 255, 255, 0.12) !important;
   color: #f8fafc !important;
-  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 35px rgba(16, 185, 129, 0.15) !important;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7) !important;
 }
 
 html.dark-mode .pass-modal-close,
@@ -3122,7 +3069,7 @@ body.dark-mode .pass-modal-close {
 
 html.dark-mode .pass-ticket-top,
 body.dark-mode .pass-ticket-top {
-  background: linear-gradient(135deg, rgba(255, 87, 34, 0.08) 0%, rgba(16, 185, 129, 0.06) 100%);
+  background: var(--sports-card-elevated);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 

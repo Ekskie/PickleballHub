@@ -41,7 +41,7 @@
         min-height: 180px;
         border-radius: 20px;
         overflow: hidden;
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        background: var(--sports-card-bg, #ffffff);
         border: 1.5px solid var(--sports-border, #eaecf0);
         box-shadow: 0 4px 16px rgba(16, 24, 40, 0.05);
         display: flex;
@@ -56,7 +56,7 @@
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, #ff5722, #10b981);
+        background: var(--primary-orange, #ff5722);
         z-index: 2;
     }
 
@@ -64,10 +64,6 @@
         background-size: cover !important;
         background-position: center !important;
         border-color: rgba(255, 255, 255, 0.15) !important;
-    }
-
-    .club-banner-hero.has-cover::before {
-        display: none;
     }
 
     .club-banner-hero.has-cover .club-banner-title {
@@ -83,18 +79,6 @@
     .club-banner-hero.has-cover .club-banner-logo-wrap {
         border-color: rgba(255, 255, 255, 0.6);
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-    }
-
-    .club-banner-hero::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 380px;
-        height: 100%;
-        background: radial-gradient(circle at 85% 20%, rgba(225, 86, 35, 0.08) 0%, rgba(16, 185, 129, 0.04) 50%, transparent 80%);
-        pointer-events: none;
-        z-index: 0;
     }
 
     .club-banner-overlay {
@@ -147,7 +131,7 @@
         font-size: 1.8rem;
         font-weight: 900;
         color: #ffffff;
-        background: linear-gradient(135deg, var(--primary-orange, #ff5722), #ea580c);
+        background: var(--primary-orange, #ff5722);
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         user-select: none;
     }
@@ -212,7 +196,7 @@
         color: var(--primary-orange, #ff5722);
         background: #fff7ed;
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(225, 86, 35, 0.15);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
     }
 
     /* ── Quick Action Hub ── */
@@ -240,7 +224,7 @@
     .club-action-tile:hover {
         transform: translateY(-2px);
         border-color: var(--primary-orange, #ff5722);
-        box-shadow: 0 6px 18px rgba(225, 86, 35, 0.1);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
     }
 
     .action-tile-icon {
@@ -414,7 +398,7 @@
 
     /* Notice Board Card */
     .club-announcement-box {
-        background: linear-gradient(135deg, rgba(225, 86, 35, 0.04), rgba(245, 158, 11, 0.04));
+        background: var(--primary-orange-light, rgba(255, 87, 34, 0.06));
         border: 1.5px dashed rgba(225, 86, 35, 0.35);
         border-radius: 14px;
         padding: 18px 20px;
@@ -485,7 +469,7 @@
         justify-content: space-between;
         padding: 16px 20px;
         border-bottom: 1.5px solid var(--sports-border, #eaecf0);
-        background: linear-gradient(180deg, rgba(248, 250, 252, 0.8), rgba(241, 245, 249, 0.5));
+        background: #f8fafc;
     }
 
     html.dark-mode .club-chat-header,
@@ -535,7 +519,6 @@
         height: 8px;
         border-radius: 50%;
         background: #10b981;
-        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
         animation: pulseDot 2s infinite;
     }
 
@@ -631,7 +614,7 @@
         width: 36px;
         height: 36px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #e15623, #f59e0b);
+        background: var(--primary-orange, #ff5722);
         color: #ffffff;
         font-weight: 800;
         font-size: 0.8rem;
@@ -715,7 +698,7 @@
     }
 
     .club-chat-bubble.is-me {
-        background: linear-gradient(135deg, var(--primary-orange, #e15623), #ea580c);
+        background: var(--primary-orange, #ff5722);
         color: #ffffff;
         border-radius: 14px;
         border-top-right-radius: 4px;
@@ -751,7 +734,7 @@
     .club-chat-input:focus {
         border-color: var(--primary-orange, #e15623);
         background: #ffffff;
-        box-shadow: 0 0 0 3px rgba(225, 86, 35, 0.12);
+        box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
     }
 
     html.dark-mode .club-chat-input:focus,
@@ -777,8 +760,8 @@
 
     .btn-chat-send:hover {
         transform: translateY(-1px) scale(1.05);
-        background: #ea580c;
-        box-shadow: 0 4px 12px rgba(225, 86, 35, 0.3);
+        background: var(--primary-orange-hover, #ea580c);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
     }
 
     .btn-chat-send:disabled {
@@ -835,7 +818,7 @@
     .member-search-input:focus {
         border-color: var(--primary-orange, #ff5722);
         background: #ffffff;
-        box-shadow: 0 0 0 3px rgba(225, 86, 35, 0.1);
+        box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
     }
 
     .members-roster-list {
@@ -878,7 +861,7 @@
         width: 44px;
         height: 44px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #1A213B, #2E3856);
+        background: #1A213B;
         color: #ffffff;
         display: flex;
         align-items: center;
@@ -1029,7 +1012,7 @@
         left: 0;
         right: 0;
         height: 6px;
-        background: linear-gradient(90deg, #10b981, var(--primary-orange, #ff5722));
+        background: var(--primary-orange, #ff5722);
     }
 
     .pass-header {
@@ -1099,7 +1082,7 @@
         border-radius: 12px;
         font-size: 0.86rem;
         font-weight: 800;
-        background: linear-gradient(135deg, #1A213B, #2E3856);
+        background: #1A213B;
         color: #ffffff;
         border: none;
         cursor: pointer;
@@ -1112,7 +1095,7 @@
 
     .btn-show-pass-modal:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 14px rgba(26, 33, 59, 0.25);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
     }
 
     .btn-leave-club-subtle {
@@ -1171,7 +1154,7 @@
         left: 0;
         right: 0;
         height: 6px;
-        background: linear-gradient(90deg, #ff5722, #10b981);
+        background: var(--primary-orange, #ff5722);
     }
 
     .digital-pass-close {
@@ -1243,7 +1226,7 @@
         justify-content: center;
         font-size: 1.5rem;
         font-weight: 800;
-        box-shadow: 0 4px 14px rgba(225, 86, 35, 0.2);
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
     }
 
     .pass-modal-avatar-ring img {
@@ -1333,7 +1316,7 @@
        DARK MODE OVERRIDES
        ========================================================================== */
     html.dark-mode .club-banner-hero {
-        background: linear-gradient(135deg, #19202e 0%, #111723 100%);
+        background: #19202e;
         border-color: rgba(255, 255, 255, 0.08);
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     }
@@ -1420,7 +1403,7 @@
     }
 
     html.dark-mode .digital-pass-card {
-        background: linear-gradient(135deg, #1A213B 0%, #0F1626 100%);
+        background: #1A213B;
         border-color: rgba(255, 255, 255, 0.15);
         color: #ffffff;
         box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
@@ -1538,7 +1521,7 @@
     <header class="club-banner-hero animate-entry {% if club.banner_url %}has-cover{% endif %}"
             {% if club.banner_url %}style="background: url('{{ club.banner_url }}') center/cover no-repeat; position: relative;"{% endif %}>
         {% if club.banner_url %}
-        <div style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(15, 23, 42, 0.82) 0%, rgba(15, 23, 42, 0.65) 100%); backdrop-filter: blur(2px); z-index: 0; border-radius: inherit;"></div>
+        <div style="position: absolute; inset: 0; background: rgba(15, 23, 42, 0.55); backdrop-filter: blur(2px); z-index: 0; border-radius: inherit;"></div>
         {% endif %}
         <div class="club-banner-overlay" style="position: relative; z-index: 1;">
             <div class="club-banner-info-left">
@@ -1811,7 +1794,7 @@
                                         <span style="font-size: 0.68rem; font-weight: 800; background: rgba(225,86,35,0.15); color: var(--primary-orange); padding: 2px 6px; border-radius: 6px; margin-left: 4px;">CAPTAIN</span>
                                         {% endif %}
                                         {% if m.is_pro %}
-                                        <span class="pro-paddle-badge" style="display:inline-flex; align-items:center; gap:2px; background:linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.25)); color:#d97706; border:1px solid rgba(245, 158, 11, 0.4); font-size:0.62rem; font-weight:800; padding:1px 6px; border-radius:999px; vertical-align:middle; margin-left:4px;" title="Pickleball Pro Player">
+                                        <span class="pro-paddle-badge" style="display:inline-flex; align-items:center; gap:2px; background: rgba(245, 158, 11, 0.16); color:#d97706; border:1px solid rgba(245, 158, 11, 0.4); font-size:0.62rem; font-weight:800; padding:1px 6px; border-radius:999px; vertical-align:middle; margin-left:4px;" title="Pickleball Pro Player">
                                             <i class="ph-fill ph-medal" style="font-size:0.7rem; color:#f59e0b;"></i> PRO
                                         </span>
                                         {% endif %}
@@ -1922,7 +1905,7 @@
                                             <span class="member-name-tag" onclick="openPlayerDrawer('{{ m.profiles.id }}')">
                                                 {{ m.name }}
                                                 {% if m.is_pro %}
-                                                <span class="pro-paddle-badge" style="display:inline-flex; align-items:center; gap:2px; background:linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.25)); color:#d97706; border:1px solid rgba(245, 158, 11, 0.4); font-size:0.62rem; font-weight:800; padding:1px 6px; border-radius:999px; vertical-align:middle; margin-left:4px;" title="Pickleball Pro Player">
+                                                <span class="pro-paddle-badge" style="display:inline-flex; align-items:center; gap:2px; background: rgba(245, 158, 11, 0.16); color:#d97706; border:1px solid rgba(245, 158, 11, 0.4); font-size:0.62rem; font-weight:800; padding:1px 6px; border-radius:999px; vertical-align:middle; margin-left:4px;" title="Pickleball Pro Player">
                                                     <i class="ph-fill ph-medal" style="font-size:0.7rem; color:#f59e0b;"></i> PRO
                                                 </span>
                                                 {% endif %}

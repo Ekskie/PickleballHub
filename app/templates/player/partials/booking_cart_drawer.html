@@ -13,7 +13,7 @@
         background: var(--card-bg, #ffffff);
         border: 2px solid var(--primary-orange, #ff5722);
         border-radius: 50px;
-        box-shadow: 0 10px 30px rgba(225, 86, 35, 0.22), 0 4px 10px rgba(0, 0, 0, 0.08);
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
         cursor: pointer;
         transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         backdrop-filter: blur(8px);
@@ -23,7 +23,7 @@
 
     .floating-res-cart-widget:hover {
         transform: translateY(-3px) scale(1.02);
-        box-shadow: 0 14px 36px rgba(225, 86, 35, 0.32), 0 6px 14px rgba(0, 0, 0, 0.12);
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
         border-color: var(--primary-orange-hover, #ea580c);
     }
 
@@ -92,20 +92,18 @@
 
     .cart-pulse-dot.pending {
         background: #f59e0b;
-        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
         animation: cartPulse 1.8s infinite;
     }
 
     .cart-pulse-dot.confirmed {
         background: #16a34a;
-        box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7);
         animation: cartPulse 1.8s infinite;
     }
 
     @keyframes cartPulse {
-        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
-        70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
-        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        0% { transform: scale(0.92); opacity: 0.75; }
+        70% { transform: scale(1.08); opacity: 1; }
+        100% { transform: scale(0.92); opacity: 0.75; }
     }
 
     /* Mobile offset so floating widget doesn't cover bottom navigation bar */

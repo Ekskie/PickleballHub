@@ -23,7 +23,7 @@
 <!-- Facilities Stats Summary Bar -->
 <div class="stats-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px;">
     <div class="glass-card" style="padding: 16px; display: flex; align-items: center; gap: 14px; border-radius: 12px !important; box-shadow: var(--shadow-sm) !important; transform: none !important; border-color: var(--border-color-soft) !important;">
-        <div style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--primary-orange); background: rgba(255,87,34,0.08); border: 1px solid rgba(255,87,34,0.15); flex-shrink: 0;">
+        <div style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--primary-orange); background: var(--primary-orange-light); border: 1px solid var(--role-accent-border); flex-shrink: 0;">
             <i class="ph ph-buildings"></i>
         </div>
         <div>
@@ -339,7 +339,7 @@ function toggleCourtsRow(event, rowId) {
     if (detailRow.style.display === 'none' || detailRow.style.display === '') {
         detailRow.style.display = 'table-row';
         btn.innerHTML = `<i class="ph ph-caret-up"></i> Hide Courts`;
-        btn.style.background = 'rgba(255, 87, 34, 0.1)';
+        btn.style.background = 'var(--primary-orange-light)';
         btn.style.color = 'var(--primary-orange)';
     } else {
         detailRow.style.display = 'none';

@@ -73,21 +73,21 @@
         align-items: center;
         gap: 12px;
         padding: 11px 22px;
-        background: linear-gradient(135deg, #10b981, #059669);
+        background: var(--pb-green, #10b981);
         color: #fff;
         border: none;
         border-radius: 14px;
         cursor: pointer;
         font-family: inherit;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
         text-align: left;
     }
 
     .btn-create-match-lobby:hover {
-        background: linear-gradient(135deg, #059669, #047857);
+        background: var(--pb-green-hover, #059669);
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
     }
 
     .btn-create-match-lobby i {
@@ -159,7 +159,7 @@
         background: var(--primary-orange);
         color: #fff;
         border-color: var(--primary-orange);
-        box-shadow: 0 3px 10px rgba(249, 115, 22, 0.25);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .pill-counter {
@@ -222,7 +222,7 @@
 
     .filter-input-wrap:focus-within {
         border-color: var(--primary-orange);
-        box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.15);
+        box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08);
     }
 
     .filter-input-wrap i {
@@ -332,23 +332,23 @@
     .lobby-card.is-user-host {
         border-top: 4px solid var(--primary-orange);
         border-color: rgba(249, 115, 22, 0.45);
-        box-shadow: 0 4px 16px rgba(249, 115, 22, 0.08);
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
     }
 
     .lobby-card.is-user-host:hover {
         border-color: var(--primary-orange);
-        box-shadow: 0 14px 30px rgba(249, 115, 22, 0.16);
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1);
     }
 
     .lobby-card.is-user-joined {
         border-top: 4px solid #10b981;
         border-color: rgba(16, 185, 129, 0.45);
-        box-shadow: 0 4px 16px rgba(16, 185, 129, 0.08);
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
     }
 
     .lobby-card.is-user-joined:hover {
         border-color: #10b981;
-        box-shadow: 0 14px 30px rgba(16, 185, 129, 0.16);
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1);
     }
 
     /* Responsive Wrapping Card Header (Status + DUPR) */
@@ -569,11 +569,11 @@
     }
 
     .slots-progress-fill.half {
-        background: linear-gradient(90deg, #10b981, #f59e0b);
+        background: #f59e0b;
     }
 
     .slots-progress-fill.full {
-        background: linear-gradient(90deg, #f59e0b, #ef4444);
+        background: #ef4444;
     }
 
     /* Action CTA Buttons */
@@ -595,39 +595,39 @@
     }
 
     .btn-lobby-cta.host {
-        background: linear-gradient(135deg, #f97316, #ea580c);
+        background: var(--primary-orange, #ff5722);
         color: #fff;
         border: none;
-        box-shadow: 0 4px 12px rgba(249, 115, 22, 0.25);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
     .btn-lobby-cta.host:hover {
-        background: linear-gradient(135deg, #ea580c, #c2410c);
+        background: var(--primary-orange-hover, #ea580c);
         transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(249, 115, 22, 0.35);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
     }
 
     .btn-lobby-cta.joined {
         background: #10b981;
         color: #fff;
         border: none;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
     .btn-lobby-cta.joined:hover {
         background: #059669;
         transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
     }
 
     .btn-lobby-cta.open {
         background: #10b981;
         color: #fff;
         border: none;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
     .btn-lobby-cta.open:hover {
         background: #059669;
         transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
     }
 
     .btn-lobby-cta.view-only {
@@ -951,7 +951,7 @@
                     </span>
 
                     {% if lobby.is_creator_pro %}
-                    <span class="status-pill status-priority" style="background:linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(217, 119, 6, 0.28)); color:#d97706; border:1px solid rgba(245, 158, 11, 0.45); font-weight:800;" title="Priority Queue: Hosted by a Pickleball Pro Member">
+                    <span class="status-pill status-priority" style="background: rgba(245, 158, 11, 0.16); color:#d97706; border:1px solid rgba(245, 158, 11, 0.45); font-weight:800;" title="Priority Queue: Hosted by a Pickleball Pro Member">
                         <i class="ph-fill ph-lightning" style="color:#f59e0b;"></i> Pro Match
                     </span>
                     {% endif %}
@@ -1016,7 +1016,7 @@
                         {% if lobby.is_creator %}
                         Hosted by <strong>You</strong> <span class="badge-you-pill">Host</span>
                         {% if current_user.is_pro %}
-                        <span class="pro-paddle-badge" style="display:inline-flex; align-items:center; gap:2px; background:linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.25)); color:#d97706; border:1px solid rgba(245, 158, 11, 0.4); font-size:0.62rem; font-weight:800; padding:1px 6px; border-radius:999px; vertical-align:middle; margin-left:4px;" title="Pro Member">
+                        <span class="pro-paddle-badge" style="display:inline-flex; align-items:center; gap:2px; background: rgba(245, 158, 11, 0.16); color:#d97706; border:1px solid rgba(245, 158, 11, 0.4); font-size:0.62rem; font-weight:800; padding:1px 6px; border-radius:999px; vertical-align:middle; margin-left:4px;" title="Pro Member">
                             <i class="ph-fill ph-medal" style="font-size:0.7rem; color:#f59e0b;"></i> PRO
                         </span>
                         {% endif %}
@@ -1024,7 +1024,7 @@
                         {% else %}
                         Hosted by <strong>{{ lobby.creator_name }}</strong>
                         {% if lobby.is_creator_pro %}
-                        <span class="pro-paddle-badge" style="display:inline-flex; align-items:center; gap:2px; background:linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.25)); color:#d97706; border:1px solid rgba(245, 158, 11, 0.4); font-size:0.62rem; font-weight:800; padding:1px 6px; border-radius:999px; vertical-align:middle; margin-left:4px;" title="Pro Member">
+                        <span class="pro-paddle-badge" style="display:inline-flex; align-items:center; gap:2px; background: rgba(245, 158, 11, 0.16); color:#d97706; border:1px solid rgba(245, 158, 11, 0.4); font-size:0.62rem; font-weight:800; padding:1px 6px; border-radius:999px; vertical-align:middle; margin-left:4px;" title="Pro Member">
                             <i class="ph-fill ph-medal" style="font-size:0.7rem; color:#f59e0b;"></i> PRO
                         </span>
                         {% endif %}

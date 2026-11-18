@@ -217,13 +217,13 @@
         background: #ef4444 !important;
         color: #ffffff !important;
         border: none !important;
-        box-shadow: 0 4px 14px rgba(239, 68, 68, 0.25);
+        box-shadow: var(--shadow-sm, 0 2px 6px rgba(15, 23, 42, 0.08));
     }
 
     .sports-pill-btn.danger:hover {
         background: #dc2626 !important;
         transform: translateY(-1px);
-        box-shadow: 0 6px 18px rgba(239, 68, 68, 0.35);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
     }
 
     /* Delete Account Confirmation Modal */
@@ -370,7 +370,7 @@
 
     .delete-input-field:focus {
         border-color: #ef4444;
-        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+        box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.12);
     }
 
     .delete-modal-actions {
@@ -417,12 +417,12 @@
         justify-content: center;
         gap: 8px;
         transition: all 0.18s;
-        box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+        box-shadow: var(--shadow-sm, 0 2px 6px rgba(15, 23, 42, 0.08));
     }
 
     .btn-delete-confirm:hover {
         background: #dc2626;
-        box-shadow: 0 6px 18px rgba(239, 68, 68, 0.4);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
     }
 </style>
 {% endblock %}

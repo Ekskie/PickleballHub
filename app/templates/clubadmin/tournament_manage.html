@@ -75,7 +75,7 @@ input:checked + .switch-slider:before { transform: translateX(18px); }
     font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
     padding: 2px 6px; border-radius: 4px;
 }
-.tag-badge.walkin { background: rgba(249,115,22,0.15); color: #fb923c; border: 1px solid rgba(249,115,22,0.3); }
+.tag-badge.walkin { background: var(--primary-orange-light); color: var(--primary-orange); border: 1px solid var(--role-accent-border); }
 .tag-badge.registered { background: rgba(74,222,128,0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.3); }
 
 /* ── Center Modals ────────────────────────────── */
@@ -128,17 +128,13 @@ input:checked + .switch-slider:before { transform: translateX(18px); }
 
 /* ── Champion Banner ─────────────────────────── */
 .champion-banner {
-    background: linear-gradient(135deg, rgba(250,204,21,0.15) 0%, rgba(251,146,60,0.15) 100%);
+    background: rgba(245, 158, 11, 0.12);
     border: 2px solid rgba(250,204,21,0.4);
     border-radius: 16px; padding: 28px; text-align: center;
     margin-bottom: 24px; position: relative; overflow: hidden;
 }
-.champion-banner::before {
-    content: ''; position: absolute; inset: 0;
-    background: radial-gradient(ellipse at center, rgba(250,204,21,0.08) 0%, transparent 70%);
-}
-.champion-trophy { font-size: 3.5rem; margin-bottom: 8px; display: block; animation: pulse-glow 2s ease-in-out infinite; }
-@keyframes pulse-glow { 0%,100%{ filter: drop-shadow(0 0 8px rgba(250,204,21,.8)) } 50%{ filter: drop-shadow(0 0 28px rgba(250,204,21,1)) } }
+.champion-trophy { font-size: 3.5rem; margin-bottom: 8px; display: block; animation: trophy-bounce 2s ease-in-out infinite; }
+@keyframes trophy-bounce { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-4px); } }
 .champion-name { font-size: 2rem; font-weight: 800; color: #fcd34d; margin-bottom: 4px; }
 .champion-label { font-size: 0.9rem; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 2px; }
 
@@ -163,7 +159,7 @@ input:checked + .switch-slider:before { transform: translateX(18px); }
 .bracket-svg-layer path { transition: stroke .4s ease; }
 .bracket-svg-layer path.connector-done { stroke: rgba(74,222,128,.45); }
 .bracket-svg-layer path.connector-pending {
-    stroke: rgba(249,115,22,.55);
+    stroke: rgba(124, 58, 237, 0.65);
     stroke-dasharray: 6 4;
     animation: dash-flow 1.2s linear infinite;
 }
@@ -190,7 +186,6 @@ input:checked + .switch-slider:before { transform: translateX(18px); }
 }
 .round-header.final-header {
     color: #fcd34d;
-    text-shadow: 0 0 12px rgba(252,211,77,.5);
 }
 .round-matches {
     display: flex;
@@ -217,9 +212,9 @@ input:checked + .switch-slider:before { transform: translateX(18px); }
 .match-node.is-done { border-color: rgba(74,222,128,.25); }
 .match-node.is-final {
     border-color: rgba(250,204,21,.45);
-    box-shadow: 0 0 20px rgba(250,204,21,.1);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 }
-.match-node.is-final:hover { box-shadow: 0 0 30px rgba(250,204,21,.2); }
+.match-node.is-final:hover { box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12); }
 
 /* ── Player Row ──────────────────────────────── */
 .mp-row {
@@ -267,7 +262,7 @@ input:checked + .switch-slider:before { transform: translateX(18px); }
     border-radius: 6px; padding: 4px 8px; font-size: 0.72rem; font-weight: 600;
     cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
 }
-.score-btn:hover { background: #f4511e; }
+.score-btn:hover { background: var(--primary-orange-hover); }
 .done-badge {
     color: #4ade80; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;
 }
@@ -332,7 +327,7 @@ input:checked + .switch-slider:before { transform: translateX(18px); }
     border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 700;
     cursor: pointer; transition: background .2s, transform .15s;
 }
-.drawer-submit:hover { background: #f4511e; transform: translateY(-1px); }
+.drawer-submit:hover { background: var(--primary-orange-hover); transform: translateY(-1px); }
 
 /* ── Empty state ─────────────────────────────── */
 .bracket-empty {
@@ -447,7 +442,7 @@ input:checked + .switch-slider:before { transform: translateX(18px); }
         {% set p_skill = p.skill_level if is_walk else (p.profiles.proficiency or 'Registered') %}
         <div class="roster-item">
             <div class="roster-left">
-                <div class="roster-avatar" style="background:{% if is_walk %}#f97316{% else %}#3b82f6{% endif %};">
+                <div class="roster-avatar" style="background:{% if is_walk %}var(--primary-orange){% else %}#3b82f6{% endif %};">
                     {% if not is_walk and p.profiles.avatar_url %}
                     <img src="{{ p.profiles.avatar_url }}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
                     {% else %}
@@ -804,7 +799,7 @@ input:checked + .switch-slider:before { transform: translateX(18px); }
 
 <script>
 /* ── Avatar Colors ── */
-const AVATAR_COLORS = ['#ff5722','#8b5cf6','#06b6d4','#10b981','#f59e0b','#ec4899','#3b82f6','#84cc16'];
+const AVATAR_COLORS = ['#7c3aed','#4f46e5','#06b6d4','#10b981','#f59e0b','#ec4899','#3b82f6','#84cc16'];
 function avatarColor(name) {
     let h = 0;
     for (let c of name) h = (h * 31 + c.charCodeAt(0)) & 0xffff;
@@ -859,7 +854,7 @@ function drawConnectors() {
 
                 const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                 path.setAttribute('d', d);
-                path.setAttribute('stroke', cls === 'connector-done' ? 'rgba(74,222,128,.45)' : cls === 'connector-pending' ? 'rgba(249,115,22,.5)' : 'rgba(255,255,255,.12)');
+                path.setAttribute('stroke', cls === 'connector-done' ? 'rgba(74,222,128,.45)' : cls === 'connector-pending' ? 'rgba(124,58,237,.65)' : 'rgba(255,255,255,.12)');
                 path.setAttribute('stroke-width', '2');
                 path.setAttribute('fill', 'none');
                 path.setAttribute('stroke-linecap', 'round');
@@ -998,7 +993,7 @@ document.addEventListener('keydown', e => {
 
 /* ── Confetti Burst ── */
 function launchConfetti() {
-    const colors = ['#fcd34d','#ff5722','#4ade80','#818cf8','#fb923c','#f472b6'];
+    const colors = ['#fcd34d','#7c3aed','#4ade80','#818cf8','#a78bfa','#f472b6'];
     for (let i = 0; i < 90; i++) {
         const el = document.createElement('div');
         const size = Math.random() * 7 + 5;

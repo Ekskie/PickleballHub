@@ -200,7 +200,7 @@
 .search-box-wrapper input:focus {
     border-color: var(--primary-orange);
     background: var(--card-bg, #ffffff);
-    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12);
+    box-shadow: 0 0 0 3px var(--primary-orange-light);
 }
 
 .clear-search-btn {
@@ -323,7 +323,7 @@
 }
 
 .club-ledger-table tbody tr:hover {
-    background-color: rgba(249, 115, 22, 0.025);
+    background-color: rgba(124, 58, 237, 0.04);
 }
 
 /* Member Column */
@@ -337,7 +337,7 @@
     width: 40px;
     height: 40px;
     border-radius: 12px;
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    background: #0f172a;
     color: #ffffff;
     display: flex;
     align-items: center;
@@ -346,7 +346,7 @@
     font-weight: 800;
     overflow: hidden;
     flex-shrink: 0;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 }
 
 .player-avatar-circle img {
@@ -686,7 +686,7 @@
                 <button type="button" class="tab-pill-btn" data-tab="pending" onclick="setQuickTab('pending')">
                     Pending Review 
                     {% if stats.pending_count > 0 %}
-                    <span class="tab-pill-badge" style="background:#ea580c; color:#fff;">{{ stats.pending_count }}</span>
+                    <span class="tab-pill-badge" style="background:var(--primary-orange); color:#fff;">{{ stats.pending_count }}</span>
                     {% else %}
                     <span class="tab-pill-badge">0</span>
                     {% endif %}
@@ -971,7 +971,7 @@
                 </div>
                 <div style="background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; text-align: center;">
                     <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Club ELO</span>
-                    <div id="dossierElo" style="font-size: 1.35rem; font-weight: 800; color: #ea580c; margin-top: 2px;">1200</div>
+                    <div id="dossierElo" style="font-size: 1.35rem; font-weight: 800; color: var(--primary-orange); margin-top: 2px;">1200</div>
                 </div>
             </div>
 

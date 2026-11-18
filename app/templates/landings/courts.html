@@ -118,7 +118,7 @@
         .search-input-wrap input:focus {
             outline: none;
             border-color: var(--primary-orange);
-            box-shadow: 0 0 0 3px rgba(224, 86, 56, 0.15);
+            box-shadow: none;
         }
 
         .facility-select-wrap {
@@ -161,7 +161,7 @@
         .facility-select:focus {
             outline: none;
             border-color: var(--primary-orange);
-            box-shadow: 0 0 0 3px rgba(224, 86, 56, 0.15);
+            box-shadow: none;
         }
 
         .facility-select option {
@@ -193,7 +193,7 @@
 
         .search-filter button:hover {
             background: var(--primary-orange-hover);
-            box-shadow: 0 6px 20px rgba(230, 74, 25, 0.35);
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
             transform: translateY(-2px);
         }
 
@@ -367,11 +367,11 @@
         .court-card.highlight {
             border-color: var(--primary-orange) !important;
             background: var(--card-bg-hover) !important;
-            box-shadow: 0 10px 24px rgba(230, 74, 25, 0.15) !important;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08) !important;
             transform: translateY(-4px);
         }
 
-        /* ── Custom Glowing Marker ── */
+        /* ── Custom Map Marker ── */
         .custom-map-marker {
             display: flex;
             align-items: center;
@@ -383,7 +383,7 @@
         .marker-pin {
             width: 40px;
             height: 40px;
-            background: linear-gradient(135deg, #ff5722 0%, #ff7043 100%);
+            background: var(--primary-orange, #ff5722);
             border-radius: 50% 50% 50% 0;
             position: absolute;
             transform: rotate(-45deg);
@@ -391,7 +391,7 @@
             align-items: center;
             justify-content: center;
             border: 2px solid #fff;
-            box-shadow: 0 4px 10px rgba(255, 87, 34, 0.5);
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.25);
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             z-index: 2;
         }
@@ -428,9 +428,9 @@
 
         .custom-map-marker.active .marker-pin {
             transform: rotate(-45deg) scale(1.2);
-            background: linear-gradient(135deg, #fff 0%, #ff5722 100%);
-            box-shadow: 0 6px 16px rgba(255, 87, 34, 0.8);
-            border-color: #ff5722;
+            background: #ffffff;
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.3);
+            border-color: var(--primary-orange, #ff5722);
         }
 
         .custom-map-marker.active .marker-pin i {
@@ -521,7 +521,7 @@
             width: 100%;
             height: 120px;
             position: relative;
-            background: linear-gradient(135deg, #c2520a, #ff5722);
+            background: var(--primary-orange, #ff5722);
             overflow: hidden;
         }
 
@@ -547,7 +547,7 @@
             left: 0;
             right: 0;
             padding: 12px 16px;
-            background: linear-gradient(0deg, rgba(15, 20, 25, 0.95) 0%, transparent 100%);
+            background: rgba(15, 23, 42, 0.55);
         }
 
         .popup-kyc-badge {
@@ -563,7 +563,7 @@
             display: flex;
             align-items: center;
             gap: 4px;
-            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
             z-index: 5;
         }
 
@@ -885,7 +885,7 @@
             font-size: 0.92rem;
             font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 6px 24px rgba(224, 86, 56, 0.45);
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.16);
             align-items: center;
             gap: 8px;
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -895,7 +895,7 @@
         .mobile-toggle-btn:hover {
             background: var(--primary-orange-hover);
             transform: translateX(-50%) translateY(-2px);
-            box-shadow: 0 8px 28px rgba(224, 86, 56, 0.6);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.22);
         }
 
         @media (max-width: 991px) {

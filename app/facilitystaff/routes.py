@@ -7,6 +7,7 @@ from datetime import datetime, timedelta, timezone
 
 from app.db import get_db, get_admin_db, log_audit_action
 from app.booking_utils import safe_time_hours
+from app.support.routes import get_user_tickets
 
 
 
@@ -1326,6 +1327,26 @@ def mark_notifications_read():
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+@facilitystaff_bp.route('/notifications/delete/<notif_id>', methods=['POST'])
+@require_role('facilitystaff')
+def delete_notification(notif_id):
+    user_id = session.get('user_id')
+    try:
+        db = get_admin_db() or get_db()
+    except Exception:
+        db = get_db()
+    try:
+        db.table('notifications').delete().eq('id', notif_id).eq('user_id', user_id).execute()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@facilitystaff_bp.route('/support')
+@require_role('facilitystaff')
+def support():
+    tickets = get_user_tickets(session.get('user_id'))
+    return render_template('facilitystaff/support.html', tickets=tickets)
 
 @facilitystaff_bp.route('/messages')
 @require_role('facilitystaff')

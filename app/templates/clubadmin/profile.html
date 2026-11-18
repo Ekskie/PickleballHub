@@ -37,7 +37,7 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #ff5722 0%, #ea580c 50%, #f59e0b 100%);
+    background: var(--primary-orange);
 }
 
 .admin-hero-identity {
@@ -62,7 +62,7 @@
     width: 86px;
     height: 86px;
     border-radius: 22px;
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    background: #0f172a;
     color: #ffffff;
     display: flex;
     align-items: center;
@@ -70,8 +70,8 @@
     font-size: 2.2rem;
     font-weight: 800;
     overflow: hidden;
-    border: 3px solid rgba(255, 87, 34, 0.35);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    border: 3px solid var(--role-accent-border);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 }
 
 .hero-avatar-box img {
@@ -84,7 +84,7 @@
     position: absolute;
     bottom: -3px;
     right: -3px;
-    background: var(--primary-orange, #ff5722);
+    background: var(--primary-orange);
     color: #ffffff;
     width: 28px;
     height: 28px;
@@ -94,13 +94,13 @@
     justify-content: center;
     font-size: 0.92rem;
     border: 2.5px solid var(--card-bg, #ffffff);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     transition: background 0.15s ease, transform 0.15s ease;
 }
 
 .hero-avatar-wrap:hover .hero-avatar-cam-badge {
     transform: scale(1.1);
-    background: #ea580c;
+    background: var(--primary-orange-hover);
 }
 
 .hero-meta {
@@ -124,11 +124,11 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--primary-orange, #ff5722);
-    background: rgba(255, 87, 34, 0.08);
+    color: var(--primary-orange);
+    background: var(--primary-orange-light);
     padding: 4px 12px;
     border-radius: 20px;
-    border: 1px solid rgba(255, 87, 34, 0.22);
+    border: 1px solid var(--role-accent-border);
 }
 
 .admin-id-badge {
@@ -162,14 +162,13 @@
     height: 7px;
     border-radius: 50%;
     background-color: currentColor;
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-    animation: pulseGlow 2s infinite;
+    box-shadow: none;
+    animation: pulseDot 2s infinite;
 }
 
-@keyframes pulseGlow {
-    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
-    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+@keyframes pulseDot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
 }
 
 .hero-name {
@@ -220,21 +219,22 @@
 
 .btn-hero-action:hover {
     background: var(--card-bg, #ffffff);
-    border-color: var(--primary-orange, #ff5722);
-    color: var(--primary-orange, #ff5722);
+    border-color: var(--primary-orange);
+    color: var(--primary-orange);
     transform: translateY(-1px);
 }
 
 .btn-hero-action.primary {
-    background: linear-gradient(135deg, var(--primary-orange, #ff5722) 0%, #ea580c 100%);
+    background: var(--primary-orange);
     color: #ffffff !important;
     border: none;
-    box-shadow: 0 4px 14px rgba(255, 87, 34, 0.3);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 }
 
 .btn-hero-action.primary:hover {
-    box-shadow: 0 6px 20px rgba(255, 87, 34, 0.45);
-    background: linear-gradient(135deg, #ff6633 0%, #f97316 100%);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+    background: var(--primary-orange-hover);
+    color: #ffffff !important;
 }
 
 /* ── Two-Column Layout Grid ── */
@@ -271,8 +271,8 @@
 }
 
 .admin-card:focus-within {
-    box-shadow: 0 8px 26px rgba(255, 87, 34, 0.06);
-    border-color: rgba(255, 87, 34, 0.35);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    border-color: var(--role-accent-border);
 }
 
 .card-title-row {
@@ -287,14 +287,14 @@
     width: 42px;
     height: 42px;
     border-radius: 12px;
-    background: linear-gradient(135deg, rgba(255, 87, 34, 0.12) 0%, rgba(234, 88, 12, 0.05) 100%);
-    color: var(--primary-orange, #ff5722);
+    background: var(--primary-orange-light);
+    color: var(--primary-orange);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.3rem;
     flex-shrink: 0;
-    border: 1px solid rgba(255, 87, 34, 0.2);
+    border: 1px solid var(--role-accent-border);
 }
 
 .card-title-content {
@@ -387,9 +387,9 @@
 
 .form-input-custom:focus {
     outline: none;
-    border-color: var(--primary-orange, #ff5722);
+    border-color: var(--primary-orange);
     background: var(--card-bg, #ffffff);
-    box-shadow: 0 0 0 3.5px rgba(255, 87, 34, 0.12);
+    box-shadow: 0 0 0 3.5px var(--primary-orange-light);
 }
 
 .form-input-custom[readonly] {
@@ -400,7 +400,7 @@
 }
 
 .input-with-icon input:focus ~ .input-prefix-icon {
-    color: var(--primary-orange, #ff5722);
+    color: var(--primary-orange);
 }
 
 .field-helper {
@@ -427,8 +427,8 @@
 }
 
 .btn-copy-id:hover {
-    color: var(--primary-orange, #ff5722);
-    border-color: var(--primary-orange, #ff5722);
+    color: var(--primary-orange);
+    border-color: var(--primary-orange);
 }
 
 .email-verified-pill {
@@ -448,8 +448,8 @@
 /* Administrative Privileges Box */
 .admin-privileges-box {
     border-radius: 14px;
-    background: linear-gradient(135deg, rgba(255, 87, 34, 0.04) 0%, rgba(245, 158, 11, 0.04) 100%);
-    border: 1px solid rgba(255, 87, 34, 0.2);
+    background: var(--primary-orange-light);
+    border: 1px solid var(--role-accent-border);
     padding: 16px;
     display: flex;
     flex-direction: column;
@@ -472,15 +472,15 @@
 }
 
 .privilege-title i {
-    color: var(--primary-orange, #ff5722);
+    color: var(--primary-orange);
 }
 
 .privilege-tag {
     font-size: 0.72rem;
     font-weight: 700;
     text-transform: uppercase;
-    color: #ea580c;
-    background: rgba(234, 88, 12, 0.1);
+    color: var(--primary-orange);
+    background: var(--primary-orange-light);
     padding: 2px 8px;
     border-radius: 8px;
 }
@@ -515,11 +515,11 @@
     border-radius: 12px;
     font-size: 0.94rem;
     font-weight: 700;
-    background: linear-gradient(135deg, var(--primary-orange, #ff5722) 0%, #ea580c 100%);
+    background: var(--primary-orange);
     color: #ffffff !important;
     border: none;
     cursor: pointer;
-    box-shadow: 0 4px 18px rgba(255, 87, 34, 0.35);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
     align-items: center;
@@ -529,8 +529,8 @@
 
 .btn-save-profile:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(255, 87, 34, 0.45);
-    background: linear-gradient(135deg, #ff6633 0%, #f97316 100%);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+    background: var(--primary-orange-hover);
 }
 
 .btn-save-profile:active {
@@ -595,7 +595,7 @@
 }
 
 .metric-tile:hover {
-    border-color: var(--primary-orange, #ff5722);
+    border-color: var(--primary-orange);
     transform: translateY(-2px);
     background: var(--card-bg, #ffffff);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
@@ -613,8 +613,8 @@
 }
 
 .metric-tile.orange .metric-tile-icon {
-    background: rgba(255, 87, 34, 0.12);
-    color: var(--primary-orange, #ff5722);
+    background: var(--primary-orange-light);
+    color: var(--primary-orange);
 }
 
 .metric-tile.blue .metric-tile-icon {
@@ -696,14 +696,14 @@
     width: 60px;
     height: 60px;
     border-radius: 16px;
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    background: #0f172a;
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    border: 2px solid rgba(255, 87, 34, 0.25);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 2px solid var(--role-accent-border);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 }
 
 .managed-crest-box img {
@@ -716,9 +716,6 @@
     font-size: 1.4rem;
     font-weight: 800;
     color: #ffffff;
-    background: linear-gradient(135deg, #ff5722 0%, #f59e0b 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
 }
 
 .managed-club-meta {
@@ -743,7 +740,7 @@
 }
 
 .managed-club-loc i {
-    color: var(--primary-orange, #ff5722);
+    color: var(--primary-orange);
 }
 
 .managed-plan-pill {
@@ -752,11 +749,11 @@
     gap: 5px;
     font-size: 0.74rem;
     font-weight: 700;
-    color: var(--primary-orange, #ff5722);
-    background: rgba(255, 87, 34, 0.1);
+    color: var(--primary-orange);
+    background: var(--primary-orange-light);
     padding: 3px 10px;
     border-radius: 12px;
-    border: 1px solid rgba(255, 87, 34, 0.2);
+    border: 1px solid var(--role-accent-border);
     width: fit-content;
 }
 
@@ -776,8 +773,8 @@
 }
 
 .btn-edit-club:hover {
-    border-color: var(--primary-orange, #ff5722);
-    color: var(--primary-orange, #ff5722);
+    border-color: var(--primary-orange);
+    color: var(--primary-orange);
     transform: translateY(-1px);
 }
 
@@ -840,8 +837,8 @@
 }
 
 .activity-icon-badge.dues {
-    background: rgba(255, 87, 34, 0.12);
-    color: var(--primary-orange, #ff5722);
+    background: var(--primary-orange-light);
+    color: var(--primary-orange);
 }
 
 .activity-content {
@@ -906,8 +903,8 @@
 }
 
 [data-theme="dark"] .admin-privileges-box {
-    background: rgba(255, 87, 34, 0.05);
-    border-color: rgba(255, 87, 34, 0.25);
+    background: var(--primary-orange-light);
+    border-color: var(--role-accent-border);
 }
 
 [data-theme="dark"] .btn-edit-club,

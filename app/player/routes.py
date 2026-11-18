@@ -4,6 +4,7 @@ from app import limiter
 from datetime import datetime, timedelta, timezone
 from app.db import get_db, get_admin_db
 from app.player import player_bp
+from app.support.routes import get_user_tickets
 
 PH_TZ = timezone(timedelta(hours=8))
 
@@ -489,7 +490,8 @@ def dashboard():
 @player_bp.route('/support')
 @require_role('player')
 def support():
-    return render_template('player/support.html')
+    tickets = get_user_tickets(session.get('user_id'))
+    return render_template('player/support.html', tickets=tickets)
 
 
 @player_bp.route('/change-password', methods=['POST'])

@@ -33,19 +33,6 @@
         flex-wrap: wrap;
     }
 
-    /* Subtle Athletic Court Watermark */
-    .clubs-hero-banner::before {
-        content: "";
-        position: absolute;
-        top: -40px;
-        right: -40px;
-        width: 320px;
-        height: 320px;
-        background: radial-gradient(circle, rgba(225, 86, 35, 0.09) 0%, rgba(16, 185, 129, 0.04) 60%, transparent 80%);
-        border-radius: 50%;
-        pointer-events: none;
-    }
-
     .clubs-hero-info {
         position: relative;
         z-index: 1;
@@ -111,14 +98,14 @@
     .btn-my-clubs-hero:hover {
         border-color: var(--primary-orange, #ff5722);
         transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(225, 86, 35, 0.15);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
     }
 
     .my-clubs-hero-icon {
         width: 38px;
         height: 38px;
         border-radius: 10px;
-        background: linear-gradient(135deg, var(--btn-navy, #1a213b), #2c3859);
+        background: var(--btn-navy, #1a213b);
         color: #ffffff;
         display: flex;
         align-items: center;
@@ -294,7 +281,7 @@
     .clubs-search-input:focus {
         border-color: var(--primary-orange, #ff5722);
         background: var(--sports-card-bg, #ffffff);
-        box-shadow: 0 0 0 3px rgba(225, 86, 35, 0.12);
+        box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
     }
 
     .clubs-search-clear {
@@ -350,7 +337,7 @@
         background: var(--primary-orange, #ff5722);
         border-color: var(--primary-orange, #ff5722);
         color: #ffffff;
-        box-shadow: 0 3px 12px rgba(225, 86, 35, 0.25);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .filter-pill-badge {
@@ -461,27 +448,15 @@
     .club-card-banner {
         height: 82px;
         position: relative;
-        background: linear-gradient(135deg, #1e293b, #0f172a);
+        background: #1e293b;
         overflow: hidden;
     }
 
-    .club-card-banner.grad-0 { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); }
-    .club-card-banner.grad-1 { background: linear-gradient(135deg, #064e3b 0%, #0f766e 100%); }
-    .club-card-banner.grad-2 { background: linear-gradient(135deg, #1e3a8a 0%, #0369a1 100%); }
-    .club-card-banner.grad-3 { background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 100%); }
-    .club-card-banner.grad-4 { background: linear-gradient(135deg, #78350f 0%, #b45309 100%); }
-
-    /* Subtle court lines in banner */
-    .club-card-banner::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background-image: 
-            radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.12) 0%, transparent 60%),
-            linear-gradient(45deg, rgba(255, 255, 255, 0.04) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.04) 50%, rgba(255, 255, 255, 0.04) 75%, transparent 75%, transparent);
-        background-size: 100% 100%, 20px 20px;
-        opacity: 0.8;
-    }
+    .club-card-banner.grad-0 { background: #1e293b; }
+    .club-card-banner.grad-1 { background: #064e3b; }
+    .club-card-banner.grad-2 { background: #1e3a8a; }
+    .club-card-banner.grad-3 { background: #4c1d95; }
+    .club-card-banner.grad-4 { background: #78350f; }
 
     /* Badges placed on banner */
     .club-banner-badges {
@@ -511,13 +486,13 @@
     .badge-fee-pill.free {
         background: rgba(16, 185, 129, 0.9);
         color: #ffffff;
-        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
     }
 
     .badge-fee-pill.paid {
         background: rgba(245, 158, 11, 0.95);
         color: #ffffff;
-        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
     }
 
     .badge-member-status {
@@ -594,11 +569,11 @@
         user-select: none;
     }
 
-    .club-fallback-avatar.avatar-grad-0 { background: linear-gradient(135deg, #ff5722, #ea580c); }
-    .club-fallback-avatar.avatar-grad-1 { background: linear-gradient(135deg, #10b981, #059669); }
-    .club-fallback-avatar.avatar-grad-2 { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
-    .club-fallback-avatar.avatar-grad-3 { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
-    .club-fallback-avatar.avatar-grad-4 { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .club-fallback-avatar.avatar-grad-0 { background: var(--primary-orange, #ff5722); }
+    .club-fallback-avatar.avatar-grad-1 { background: var(--pb-green, #10b981); }
+    .club-fallback-avatar.avatar-grad-2 { background: #3b82f6; }
+    .club-fallback-avatar.avatar-grad-3 { background: #8b5cf6; }
+    .club-fallback-avatar.avatar-grad-4 { background: #f59e0b; }
 
     /* Title & Location */
     .club-name-link {
@@ -749,37 +724,39 @@
 
     /* Action variations */
     .btn-club-main.join-free {
-        background: linear-gradient(135deg, var(--primary-orange, #ff5722), #ea580c);
+        background: var(--primary-orange, #ff5722);
         color: #ffffff;
-        box-shadow: 0 3px 12px rgba(225, 86, 35, 0.25);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .btn-club-main.join-free:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(225, 86, 35, 0.35);
-        background: linear-gradient(135deg, #ea580c, #c2410c);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+        background: var(--primary-orange-hover, #ea580c);
     }
 
     .btn-club-main.join-paid {
-        background: linear-gradient(135deg, #f59e0b, #d97706);
+        background: #f59e0b;
         color: #ffffff;
-        box-shadow: 0 3px 12px rgba(245, 158, 11, 0.25);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .btn-club-main.join-paid:hover {
+        background: #d97706;
         transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(245, 158, 11, 0.35);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
     }
 
     .btn-club-main.open-club {
-        background: linear-gradient(135deg, #10b981, #059669);
+        background: var(--pb-green, #10b981);
         color: #ffffff;
-        box-shadow: 0 3px 12px rgba(16, 185, 129, 0.25);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .btn-club-main.open-club:hover {
+        background: var(--pb-green-hover, #059669);
         transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
     }
 
     .btn-club-main.pending-status {
@@ -1098,7 +1075,7 @@
                 <div class="club-card-banner {% if not club.banner_url %}grad-{{ grad_index }}{% endif %}"
                      {% if club.banner_url %}style="background: url('{{ club.banner_url }}') center/cover no-repeat; position: relative;"{% endif %}>
                     {% if club.banner_url %}
-                    <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15, 23, 42, 0.3) 0%, rgba(15, 23, 42, 0.6) 100%); pointer-events: none; border-top-left-radius: 18px; border-top-right-radius: 18px;"></div>
+                    <div style="position: absolute; inset: 0; background: rgba(15, 23, 42, 0.55); pointer-events: none; border-top-left-radius: 18px; border-top-right-radius: 18px;"></div>
                     {% endif %}
                     <div class="club-banner-badges" style="position: relative; z-index: 2;">
                         <!-- Fee Badge -->

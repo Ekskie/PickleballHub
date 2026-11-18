@@ -6,6 +6,7 @@ PH_TZ = timezone(timedelta(hours=8))
 
 from app.owner import owner_bp
 from app.db import get_db, get_admin_db
+from app.support.routes import get_user_tickets
 
 # ── Dashboard ──────────────────────────────────────────────────────────────────
 @owner_bp.route('/dashboard')
@@ -340,6 +341,21 @@ def mark_notifications_read():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@owner_bp.route('/notifications/delete/<notif_id>', methods=['POST'])
+@require_role('owner')
+def delete_notification(notif_id):
+    user_id = session.get('user_id')
+    try:
+        db = get_admin_db() or get_db()
+    except Exception:
+        db = get_db()
+    try:
+        db.table('notifications').delete().eq('id', notif_id).eq('user_id', user_id).execute()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 # ── Messages ────────────────────────────────────────────────────────────────────
 @owner_bp.route('/messages')
 @require_role('owner')
@@ -358,7 +374,8 @@ def community():
 @owner_bp.route('/support')
 @require_role('owner')
 def support():
-    return render_template('owner/support.html')
+    tickets = get_user_tickets(session.get('user_id'))
+    return render_template('owner/support.html', tickets=tickets)
 
 
 # ── Tutorials ────────────────────────────────────────────────────────────────────

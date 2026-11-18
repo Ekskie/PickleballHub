@@ -125,21 +125,20 @@
         height: 8px;
         background: #10b981;
         border-radius: 50%;
-        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+        box-shadow: none;
         animation: pulseLive 2s infinite;
     }
 
     @keyframes pulseLive {
-        0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
-        70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.45; }
     }
 
     .btn-hero-action {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        background: #2563EB;
+        background: var(--primary-orange);
         color: #ffffff;
         border: none;
         padding: 9px 18px;
@@ -148,14 +147,14 @@
         font-weight: 800;
         cursor: pointer;
         text-decoration: none;
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .btn-hero-action:hover {
         transform: translateY(-2px);
-        background: #1D4ED8;
-        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+        background: var(--primary-orange-hover);
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
     }
 
     /* ── 4 KPI Stats Grid ── */
@@ -427,8 +426,8 @@
     }
 
     .executive-action-btn.btn-fac:hover {
-        border-color: #ff5722;
-        background: rgba(255, 87, 34, 0.04);
+        border-color: var(--primary-orange);
+        background: var(--primary-orange-light);
     }
 
     .executive-action-btn.btn-courts:hover {
@@ -463,8 +462,8 @@
     }
 
     .btn-fac .action-icon-circle {
-        background: rgba(255, 87, 34, 0.12);
-        color: #ff5722;
+        background: var(--primary-orange-light);
+        color: var(--primary-orange);
     }
 
     .btn-courts .action-icon-circle {

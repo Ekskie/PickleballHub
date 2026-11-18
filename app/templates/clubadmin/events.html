@@ -33,19 +33,20 @@
     align-items: center;
     gap: 8px;
     padding: 10px 22px;
-    background: linear-gradient(135deg, var(--primary-orange) 0%, #ea580c 100%);
+    background: var(--primary-orange);
     color: #fff !important;
     font-weight: 700;
     font-size: 0.88rem;
     border-radius: 12px;
     text-decoration: none;
-    box-shadow: 0 4px 14px rgba(249, 115, 22, 0.35);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     border: none;
 }
 .btn-create-event:hover {
+    background: var(--primary-orange-hover);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(249, 115, 22, 0.45);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
     color: #fff;
 }
 .btn-create-event i { font-size: 1.15rem; }
@@ -84,7 +85,7 @@
     font-size: 1.35rem;
     flex-shrink: 0;
 }
-.kpi-icon-total   { background: rgba(249, 115, 22, 0.12); color: var(--primary-orange); }
+.kpi-icon-total   { background: var(--primary-orange-light); color: var(--primary-orange); }
 .kpi-icon-active  { background: rgba(34, 197, 94, 0.12); color: #16a34a; }
 .kpi-icon-pending { background: rgba(245, 158, 11, 0.12); color: #d97706; }
 .kpi-icon-players { background: rgba(124, 58, 237, 0.12); color: #7c3aed; }
@@ -134,7 +135,7 @@
 }
 .filter-search-input:focus {
     border-color: var(--primary-orange);
-    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+    box-shadow: 0 0 0 3px var(--primary-orange-light);
 }
 .filter-pills {
     display: flex;
@@ -165,7 +166,7 @@
     background: var(--primary-orange);
     color: #fff;
     border-color: var(--primary-orange);
-    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.25);
+    box-shadow: none;
 }
 .pill-count {
     background: rgba(0, 0, 0, 0.12);
@@ -199,9 +200,9 @@
     overflow: hidden;
 }
 .event-card:hover {
-    box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(249, 115, 22, 0.08);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
     transform: translateY(-3px);
-    border-color: rgba(249, 115, 22, 0.3);
+    border-color: var(--role-accent-border);
 }
 
 /* Top Badge Row */
@@ -227,7 +228,7 @@
     align-items: center;
     gap: 4px;
 }
-.badge-tournament { color: #ea580c; background: rgba(249, 115, 22, 0.12); }
+.badge-tournament { color: var(--primary-orange); background: var(--primary-orange-light); }
 .badge-social     { color: #0284c7; background: rgba(14, 165, 233, 0.12); }
 .badge-training   { color: #7c3aed; background: rgba(139, 92, 246, 0.12); }
 .badge-league     { color: #b45309; background: rgba(245, 158, 11, 0.12); }
@@ -297,14 +298,13 @@
     border-radius: 50%;
     background: #16a34a;
     display: inline-block;
-    box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7);
+    box-shadow: none;
     animation: statusPulse 1.8s infinite;
 }
 
 @keyframes statusPulse {
-    0% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.6); }
-    70% { box-shadow: 0 0 0 6px rgba(22, 163, 74, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
 }
 
 @keyframes pulseAmber {
@@ -384,9 +384,9 @@
     border-radius: 10px;
     transition: width 0.4s ease;
 }
-.capacity-bar-fill.fill-green { background: linear-gradient(90deg, #22c55e, #16a34a); }
-.capacity-bar-fill.fill-orange { background: linear-gradient(90deg, #f97316, #ea580c); }
-.capacity-bar-fill.fill-purple { background: linear-gradient(90deg, #a855f7, #9333ea); }
+.capacity-bar-fill.fill-green { background: #16a34a; }
+.capacity-bar-fill.fill-orange { background: var(--primary-orange); }
+.capacity-bar-fill.fill-purple { background: var(--primary-orange-hover); }
 
 /* Alert Boxes */
 .approval-alert {
@@ -460,7 +460,7 @@
 }
 .status-select:focus {
     border-color: var(--primary-orange);
-    box-shadow: 0 0 0 3px rgba(225, 86, 35, 0.15);
+    box-shadow: 0 0 0 3px var(--primary-orange-light);
 }
 .status-select-wrap i {
     position: absolute;
@@ -536,7 +536,7 @@
 .btn-card-action.btn-primary {
     background: var(--primary-orange);
     color: #fff;
-    box-shadow: 0 2px 6px rgba(249, 115, 22, 0.25);
+    box-shadow: none;
 }
 .btn-card-action.btn-primary:hover {
     background: var(--primary-orange-hover);
@@ -570,7 +570,7 @@
     width: 72px;
     height: 72px;
     border-radius: 20px;
-    background: rgba(249, 115, 22, 0.1);
+    background: var(--primary-orange-light);
     color: var(--primary-orange);
     display: flex;
     align-items: center;
@@ -809,7 +809,7 @@
                     {% endif %}
 
                     {% if ev.facilities and ev.facilities.owner_id %}
-                        <a href="{{ url_for('clubadmin.messages', chat_user=ev.facilities.owner_id) }}" class="btn-card-action btn-outline" title="Chat with Venue Owner" style="color:var(--primary-orange); border-color:rgba(255,87,34,0.3);">
+                        <a href="{{ url_for('clubadmin.messages', chat_user=ev.facilities.owner_id) }}" class="btn-card-action btn-outline" title="Chat with Venue Owner" style="color:var(--primary-orange); border-color:var(--role-accent-border);">
                             <i class="ph ph-chat-circle-dots"></i> Venue
                         </a>
                     {% endif %}

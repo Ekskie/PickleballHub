@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, current_app
 from app.decorators import require_role
 from datetime import datetime, timedelta, timezone, date
 
@@ -176,10 +176,20 @@ def resolve_ticket(ticket_id):
     db = get_admin_db()
     try:
         # Fetch current ticket details for user notification and audit
-        tkt_query = db.table('tickets').select('id, user_id, subject, status, response').eq('id', ticket_id).execute()
+        tkt_query = db.table('tickets').select('id, user_id, subject, status, response, profiles!user_id(role)').eq('id', ticket_id).execute()
         ticket_data = tkt_query.data[0] if (tkt_query and tkt_query.data) else {}
         user_id = ticket_data.get('user_id')
         subject = ticket_data.get('subject', 'Ticket Inquiry')
+        submitter_prof = ticket_data.get('profiles')
+        if isinstance(submitter_prof, list):
+            submitter_prof = submitter_prof[0] if submitter_prof else {}
+        submitter_role = ((submitter_prof or {}).get('role') or '').strip().lower()
+        if not submitter_role and user_id:
+            try:
+                prof_resp = db.table('profiles').select('role').eq('id', user_id).single().execute()
+                submitter_role = ((prof_resp.data or {}).get('role') or '').strip().lower()
+            except Exception:
+                submitter_role = ''
 
         update_payload = {'status': status}
         if response:
@@ -194,13 +204,26 @@ def resolve_ticket(ticket_id):
             status_label = 'Resolved' if status == 'closed' else ('In Progress' if status == 'in_progress' else 'Reopened')
             notif_title = f"Support Ticket #{ticket_id[:6].upper()}: {status_label}"
             notif_msg = response[:180] if response else f"Your support ticket '{subject}' status has been updated to {status_label}."
+            role_support_endpoints = {
+                'owner': 'owner.support',
+                'clubadmin': 'clubadmin.support',
+                'facilitystaff': 'facilitystaff.support',
+                'adminstaff': 'adminstaff.support',
+                'superadmin': 'adminstaff.support',
+                'player': 'player.support',
+            }
+            target_endpoint = role_support_endpoints.get(submitter_role, 'player.support')
+            try:
+                notif_link = url_for(target_endpoint)
+            except Exception:
+                notif_link = f"/{submitter_role if submitter_role in ('owner', 'clubadmin', 'facilitystaff') else 'player'}/support"
             try:
                 db.table('notifications').insert({
                     'user_id': user_id,
                     'title': notif_title,
                     'message': notif_msg,
                     'type': 'success' if status == 'closed' else 'info',
-                    'link': ''
+                    'link': notif_link
                 }).execute()
             except Exception as notif_err:
                 print(f"Warning: Could not create ticket update notification: {notif_err}")
@@ -473,6 +496,20 @@ def mark_notifications_read():
     db = get_db()
     try:
         db.table('notifications').update({'is_read': True}).eq('user_id', user_id).eq('is_read', False).execute()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@adminstaff_bp.route('/notifications/delete/<notif_id>', methods=['POST'])
+@require_role('adminstaff')
+def delete_notification(notif_id):
+    user_id = session.get('user_id')
+    try:
+        db = get_admin_db() or get_db()
+    except Exception:
+        db = get_db()
+    try:
+        db.table('notifications').delete().eq('id', notif_id).eq('user_id', user_id).execute()
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500

@@ -74,20 +74,8 @@
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, var(--primary-orange, #ff5722), #f59e0b);
+        background: var(--primary-orange, #ff5722);
         z-index: 2;
-    }
-
-    .tournaments-hero-banner::before {
-        content: "";
-        position: absolute;
-        top: -40px;
-        right: -40px;
-        width: 300px;
-        height: 300px;
-        background: radial-gradient(circle, rgba(225, 86, 35, 0.08) 0%, rgba(245, 158, 11, 0.04) 60%, transparent 80%);
-        border-radius: 50%;
-        pointer-events: none;
     }
 
     .tournaments-hero-info {
@@ -143,20 +131,21 @@
         align-items: center;
         gap: 8px;
         padding: 12px 20px;
-        background: linear-gradient(135deg, var(--primary-orange, #ff5722), #ea580c);
+        background: var(--primary-orange, #ff5722);
         color: #ffffff;
         border: none;
         border-radius: 12px;
         font-size: 0.86rem;
         font-weight: 700;
         text-decoration: none;
-        box-shadow: 0 3px 12px rgba(225, 86, 35, 0.25);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
         transition: all 0.22s ease;
     }
 
     .btn-browse-events-hero:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(225, 86, 35, 0.35);
+        background: var(--primary-orange-hover, #ea580c);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
         color: #ffffff;
     }
 
@@ -329,7 +318,7 @@
         justify-content: center;
         gap: 8px;
         padding: 11px 16px;
-        background: linear-gradient(135deg, #059669, #047857);
+        background: var(--pb-green, #10b981);
         color: #ffffff;
         border: none;
         border-radius: 12px;
@@ -338,13 +327,13 @@
         text-decoration: none;
         flex: 1;
         transition: all 0.2s ease;
-        box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .btn-tourn-bracket:hover {
-        background: linear-gradient(135deg, #10b981, #059669);
+        background: var(--pb-green-hover, #059669);
         transform: translateY(-2px);
-        box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
         color: #ffffff;
     }
 

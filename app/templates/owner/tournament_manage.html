@@ -32,8 +32,8 @@
 .champion-banner::before {
     display: none;
 }
-.champion-trophy { font-size: 3.5rem; margin-bottom: 8px; display: block; animation: pulse-glow 2s ease-in-out infinite; }
-@keyframes pulse-glow { 0%,100%{ filter: drop-shadow(0 0 8px rgba(250,204,21,.8)) } 50%{ filter: drop-shadow(0 0 28px rgba(250,204,21,1)) } }
+.champion-trophy { font-size: 3.5rem; margin-bottom: 8px; display: block; animation: trophy-bounce 2s ease-in-out infinite; }
+@keyframes trophy-bounce { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-4px); } }
 .champion-name { font-size: 2rem; font-weight: 800; color: #fcd34d; margin-bottom: 4px; }
 .champion-label { font-size: 0.9rem; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 2px; }
 
@@ -58,7 +58,7 @@
 .bracket-svg-layer path { transition: stroke .4s ease; }
 .bracket-svg-layer path.connector-done { stroke: rgba(74,222,128,.45); }
 .bracket-svg-layer path.connector-pending {
-    stroke: rgba(249,115,22,.55);
+    stroke: rgba(37,99,235,.65);
     stroke-dasharray: 6 4;
     animation: dash-flow 1.2s linear infinite;
 }
@@ -85,7 +85,6 @@
 }
 .round-header.final-header {
     color: #fcd34d;
-    text-shadow: 0 0 12px rgba(252,211,77,.5);
 }
 .round-matches {
     display: flex;
@@ -111,9 +110,9 @@
 .match-node.is-done { border-color: rgba(74,222,128,.25); }
 .match-node.is-final {
     border-color: rgba(250,204,21,.45);
-    box-shadow: 0 0 20px rgba(250,204,21,.1);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 }
-.match-node.is-final:hover { box-shadow: 0 0 30px rgba(250,204,21,.2); }
+.match-node.is-final:hover { box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12); }
 
 /* ── Player Row ──────────────────────────────── */
 .mp-row {
@@ -282,7 +281,7 @@
     cursor: pointer; font-family: inherit;
     transition: background .2s, transform .15s;
 }
-.drawer-submit:hover { background: #f4511e; transform: translateY(-1px); }
+.drawer-submit:hover { background: var(--primary-orange-hover); transform: translateY(-1px); }
 
 /* ── Empty state ─────────────────────────────── */
 .bracket-empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
@@ -562,7 +561,7 @@
 </div>
 
 <script>
-const AVATAR_COLORS = ['#ff5722','#8b5cf6','#06b6d4','#10b981','#f59e0b','#ec4899','#3b82f6','#84cc16'];
+const AVATAR_COLORS = ['#2563eb','#8b5cf6','#06b6d4','#10b981','#f59e0b','#ec4899','#3b82f6','#84cc16'];
 function avatarColor(name) {
     let h = 0;
     for (let c of name) h = (h * 31 + c.charCodeAt(0)) & 0xffff;
@@ -598,7 +597,7 @@ function drawConnectors() {
                 const y2 = tr.top    + tr.height / 2 - canvasRect.top + scrollTop;
                 const mx = (x1 + x2) / 2;
                 const status = fromCard.dataset.status;
-                const stroke = status === 'completed' ? 'rgba(74,222,128,.45)' : status === 'pending' ? 'rgba(249,115,22,.5)' : 'rgba(255,255,255,.12)';
+                const stroke = status === 'completed' ? 'rgba(74,222,128,.45)' : status === 'pending' ? 'rgba(37,99,235,.65)' : 'rgba(255,255,255,.12)';
                 const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                 path.setAttribute('d', `M ${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`);
                 path.setAttribute('stroke', stroke);
@@ -698,7 +697,7 @@ document.addEventListener('keydown', e => {
 });
 
 function launchConfetti() {
-    const colors = ['#fcd34d','#ff5722','#4ade80','#818cf8','#fb923c','#f472b6'];
+    const colors = ['#fcd34d','#2563eb','#4ade80','#818cf8','#60a5fa','#f472b6'];
     for (let i = 0; i < 90; i++) {
         const el = document.createElement('div');
         const sz = Math.random() * 7 + 5;

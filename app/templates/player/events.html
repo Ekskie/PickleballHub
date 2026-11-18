@@ -41,20 +41,8 @@
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, var(--primary-orange, #ff5722), #f59e0b);
+        background: var(--primary-orange, #ff5722);
         z-index: 2;
-    }
-
-    .events-hero-banner::before {
-        content: "";
-        position: absolute;
-        top: -40px;
-        right: -40px;
-        width: 320px;
-        height: 320px;
-        background: radial-gradient(circle, rgba(225, 86, 35, 0.08) 0%, rgba(245, 158, 11, 0.04) 60%, transparent 80%);
-        border-radius: 50%;
-        pointer-events: none;
     }
 
     .events-hero-info {
@@ -122,14 +110,14 @@
     .btn-my-tournaments-hero:hover {
         border-color: var(--primary-orange, #ff5722);
         transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(225, 86, 35, 0.15);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
     }
 
     .my-tournaments-hero-icon {
         width: 38px;
         height: 38px;
         border-radius: 10px;
-        background: linear-gradient(135deg, var(--primary-orange, #ff5722), #ea580c);
+        background: var(--primary-orange, #ff5722);
         color: #ffffff;
         display: flex;
         align-items: center;
@@ -137,7 +125,7 @@
         font-size: 1.2rem;
         position: relative;
         flex-shrink: 0;
-        box-shadow: 0 2px 8px rgba(225, 86, 35, 0.25);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .my-tournaments-badge-dot {
@@ -292,7 +280,7 @@
     .events-search-input:focus {
         border-color: var(--primary-orange, #ff5722);
         background: #ffffff;
-        box-shadow: 0 0 0 3px rgba(225, 86, 35, 0.12);
+        box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
     }
 
     .events-search-clear {
@@ -348,7 +336,7 @@
         background: var(--primary-orange, #ff5722);
         border-color: var(--primary-orange, #ff5722);
         color: #ffffff;
-        box-shadow: 0 3px 12px rgba(225, 86, 35, 0.25);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .filter-pill-badge {
@@ -462,7 +450,7 @@
     .event-card-banner {
         height: 145px;
         position: relative;
-        background: linear-gradient(135deg, #1e293b, #0f172a);
+        background: #1e293b;
         background-size: cover;
         background-position: center;
         overflow: hidden;
@@ -471,7 +459,7 @@
     .event-banner-scrim {
         position: absolute;
         inset: 0;
-        background: linear-gradient(to top, rgba(15, 23, 42, 0.92) 0%, rgba(15, 23, 42, 0.35) 60%, rgba(15, 23, 42, 0.5) 100%);
+        background: rgba(15, 23, 42, 0.55);
         z-index: 1;
     }
 
@@ -502,26 +490,26 @@
 
     .event-type-badge.badge-tournament {
         color: #ffffff;
-        background: linear-gradient(135deg, var(--primary-orange, #ff5722), #ea580c);
-        box-shadow: 0 2px 8px rgba(225, 86, 35, 0.35);
+        background: var(--primary-orange, #ff5722);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
     }
 
     .event-type-badge.badge-social {
         color: #ffffff;
-        background: linear-gradient(135deg, #0284c7, #0369a1);
-        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+        background: #0284c7;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
     }
 
     .event-type-badge.badge-training {
         color: #ffffff;
-        background: linear-gradient(135deg, #7c3aed, #6d28d9);
-        box-shadow: 0 2px 8px rgba(124, 58, 237, 0.35);
+        background: #7c3aed;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
     }
 
     .event-type-badge.badge-league {
         color: #ffffff;
-        background: linear-gradient(135deg, #d97706, #b45309);
-        box-shadow: 0 2px 8px rgba(217, 119, 6, 0.35);
+        background: #d97706;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
     }
 
     .event-status-pill {
@@ -539,13 +527,13 @@
     .event-status-pill.open {
         background: rgba(16, 185, 129, 0.95);
         color: #ffffff;
-        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
     }
 
     .event-status-pill.full {
         background: rgba(239, 68, 68, 0.95);
         color: #ffffff;
-        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
     }
 
     .event-status-pill.soon {
@@ -568,7 +556,7 @@
         font-weight: 800;
         background: rgba(245, 158, 11, 0.95);
         color: #ffffff;
-        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
     }
 
     /* Card Content Body */
@@ -745,14 +733,15 @@
     }
 
     .btn-event-main.join {
-        background: linear-gradient(135deg, var(--primary-orange, #ff5722), #ea580c);
+        background: var(--primary-orange, #ff5722);
         color: #ffffff;
-        box-shadow: 0 3px 12px rgba(225, 86, 35, 0.25);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .btn-event-main.join:hover {
+        background: var(--primary-orange-hover, #ea580c);
         transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(225, 86, 35, 0.35);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
     }
 
     .btn-event-main.registered {

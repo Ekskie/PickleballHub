@@ -39,6 +39,13 @@ def create_app():
     limiter.init_app(app)
     compress.init_app(app)
     app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 31536000
+
+    is_prod = os.environ.get("FLASK_ENV") == "production" or os.environ.get("VERCEL") == "1"
+    app.config["SESSION_COOKIE_NAME"] = "pbhub_session"
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+    app.config["SESSION_COOKIE_SECURE"] = is_prod
+    app.config["PERMANENT_SESSION_LIFETIME"] = 60 * 60 * 24 * 30
    
     from app.main.routes import main_bp
     from app.auth.routes import auth_bp

@@ -52,7 +52,7 @@
 </li>
 
 <!-- Community & Learning Dropdown -->
-{% set is_social_active = request.endpoint in ['clubadmin.community', 'clubadmin.messages', 'clubadmin.tutorials'] %}
+{% set is_social_active = request.endpoint in ['clubadmin.community', 'clubadmin.messages', 'clubadmin.tutorials', 'clubadmin.support'] %}
 <li class="sidebar-dropdown-group {% if is_social_active %}open active-group{% endif %}" data-group="club-social">
     <button type="button" class="sidebar-dropdown-btn" onclick="toggleSidebarDropdown(this)">
         <span class="dropdown-btn-label">
@@ -70,6 +70,9 @@
         </li>
         <li class="{% if request.endpoint == 'clubadmin.tutorials' %}active{% endif %}">
             <a href="{{ url_for('clubadmin.tutorials') }}"><i class="ph ph-video"></i> <span>Tutorials</span></a>
+        </li>
+        <li class="{% if request.endpoint == 'clubadmin.support' %}active{% endif %}">
+            <a href="{{ url_for('clubadmin.support') }}"><i class="ph ph-lifebuoy"></i> <span>Help &amp; Support</span></a>
         </li>
     </ul>
 </li>

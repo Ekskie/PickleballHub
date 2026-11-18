@@ -1,213 +1,950 @@
 {% extends "owner/base_owner.html" %}
 
-{% block title %}Queue Management{% endblock %}
+{% block title %}Live Court Queue • Facility Owner{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* ==========================================================================
+       OWNER LIVE COURT QUEUE — EXECUTIVE BLUE THEME (LIGHT & DARK)
+       ========================================================================== */
+    .owner-queue-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+        width: 100%;
+        padding-bottom: 48px;
+        box-sizing: border-box;
+    }
+
+    /* ── Header Hero Card ── */
+    .owner-queue-hero {
+        position: relative;
+        background: var(--card-bg, #ffffff);
+        border: 1.5px solid var(--border-color, #e2e8f0);
+        border-radius: 18px;
+        padding: 24px 28px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 18px;
+        overflow: hidden;
+        box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04);
+    }
+
+    .owner-queue-hero::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary-orange);
+    }
+
+    .queue-hero-left {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .live-badge-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .live-status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 12px;
+        border-radius: 9999px;
+        background: var(--owner-light-green, #EAF8EF);
+        border: 1px solid rgba(22, 163, 74, 0.25);
+        color: var(--owner-accent-green, #16A34A);
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .live-pulse-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #16A34A;
+        box-shadow: none;
+        animation: ownerQueuePulse 1.8s infinite;
+    }
+
+    @keyframes ownerQueuePulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.45; }
+    }
+
+    .queue-hero-title {
+        font-size: 1.7rem;
+        font-weight: 800;
+        color: var(--text-primary, #0F172A);
+        letter-spacing: -0.02em;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .queue-hero-title i {
+        color: var(--owner-primary-blue, #2563EB);
+    }
+
+    .queue-hero-subtitle {
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--text-secondary, #475569);
+        max-width: 600px;
+    }
+
+    .queue-hero-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .btn-exec-outline {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border-radius: 11px;
+        background: var(--input-bg, #F1F5F9);
+        border: 1.5px solid var(--border-color, #E2E8F0);
+        color: var(--text-primary, #0F172A);
+        font-size: 0.86rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-exec-outline:hover {
+        background: var(--owner-light-blue, #EAF2FF);
+        border-color: var(--owner-primary-blue, #2563EB);
+        color: var(--owner-primary-blue, #2563EB);
+        transform: translateY(-1px);
+    }
+
+    .btn-exec-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        border-radius: 11px;
+        background: var(--owner-primary-blue, #2563EB);
+        border: 1.5px solid var(--owner-primary-blue, #2563EB);
+        color: #FFFFFF;
+        font-size: 0.86rem;
+        font-weight: 700;
+        text-decoration: none;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+        transition: all 0.2s ease;
+    }
+
+    .btn-exec-primary:hover {
+        background: var(--owner-ui-btn-hover, #1D4ED8);
+        border-color: var(--owner-ui-btn-hover, #1D4ED8);
+        color: #FFFFFF;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
+    }
+
+    /* ── Summary KPI Cards ── */
+    .queue-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(205px, 1fr));
+        gap: 16px;
+    }
+
+    .queue-kpi-card {
+        background: var(--card-bg, #FFFFFF);
+        border: 1.5px solid var(--border-color, #E2E8F0);
+        border-radius: 16px;
+        padding: 18px 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+        transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .queue-kpi-card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(37, 99, 235, 0.3);
+    }
+
+    .queue-kpi-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+    }
+
+    .kpi-waiting .queue-kpi-icon {
+        background: var(--owner-light-orange, #FFF7E6);
+        color: #D97706;
+    }
+
+    .kpi-next .queue-kpi-icon {
+        background: var(--owner-light-green, #EAF8EF);
+        color: var(--owner-accent-green, #16A34A);
+    }
+
+    .kpi-playing .queue-kpi-icon {
+        background: var(--owner-light-blue, #EAF2FF);
+        color: var(--owner-primary-blue, #2563EB);
+    }
+
+    .kpi-total .queue-kpi-icon {
+        background: rgba(15, 118, 110, 0.12);
+        color: var(--owner-teal-accent, #0F766E);
+    }
+
+    .queue-kpi-meta {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .queue-kpi-value {
+        font-size: 1.55rem;
+        font-weight: 800;
+        color: var(--text-primary, #0F172A);
+        line-height: 1.1;
+    }
+
+    .queue-kpi-label {
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: var(--text-muted, #64748B);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 4px;
+    }
+
+    /* ── Facility Queue Card ── */
+    .queue-facility-card {
+        background: var(--card-bg, #FFFFFF);
+        border: 1.5px solid var(--border-color, #E2E8F0);
+        border-radius: 18px;
+        padding: 22px 24px;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+    }
+
+    .fac-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding-bottom: 16px;
+        margin-bottom: 16px;
+        border-bottom: 1.5px solid var(--border-color, #E2E8F0);
+    }
+
+    .fac-card-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+        font-size: 1.18rem;
+        font-weight: 800;
+        color: var(--text-primary, #0F172A);
+    }
+
+    .fac-title-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: var(--owner-light-blue, #EAF2FF);
+        color: var(--owner-primary-blue, #2563EB);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+    }
+
+    .fac-active-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 13px;
+        border-radius: 9999px;
+        background: var(--owner-light-blue, #EAF2FF);
+        color: var(--owner-primary-blue, #2563EB);
+        border: 1px solid rgba(37, 99, 235, 0.22);
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
+
+    .queue-table-scroll {
+        overflow-x: auto;
+    }
+
+    .owner-queue-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 780px;
+    }
+
+    .owner-queue-table th {
+        text-align: left;
+        padding: 12px 14px;
+        font-size: 0.74rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: var(--text-secondary, #475569);
+        background: var(--owner-neutral-bg, #F8FAFC);
+        border-bottom: 1.5px solid var(--border-color, #E2E8F0);
+    }
+
+    .owner-queue-table td {
+        padding: 14px;
+        vertical-align: middle;
+        border-bottom: 1px solid var(--border-color, #E2E8F0);
+        color: var(--text-primary, #0F172A);
+        font-size: 0.9rem;
+    }
+
+    .owner-queue-table tr.queue-row-item {
+        transition: opacity 0.28s ease, transform 0.28s ease, background-color 0.2s ease;
+    }
+
+    .position-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        background: var(--input-bg, #F1F5F9);
+        color: var(--text-primary, #0F172A);
+        font-weight: 800;
+        font-size: 0.85rem;
+    }
+
+    /* ── Player / Walk-in Info ── */
+    .queue-player-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .queue-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        overflow: hidden;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 0.88rem;
+        background: var(--owner-light-blue, #EAF2FF);
+        color: var(--owner-primary-blue, #2563EB);
+        border: 1px solid rgba(37, 99, 235, 0.2);
+    }
+
+    .queue-avatar.walkin {
+        background: var(--owner-light-purple, #F3EEFF);
+        color: var(--owner-purple-accent, #7C3AED);
+        border-color: rgba(124, 58, 237, 0.22);
+    }
+
+    .queue-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .queue-player-details {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .queue-player-name-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .queue-player-name {
+        font-weight: 700;
+        color: var(--text-primary, #0F172A);
+    }
+
+    .walkin-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 8px;
+        border-radius: 9999px;
+        background: var(--owner-light-purple, #F3EEFF);
+        color: var(--owner-purple-accent, #7C3AED);
+        border: 1px solid rgba(124, 58, 237, 0.25);
+        font-size: 0.7rem;
+        font-weight: 700;
+    }
+
+    .queue-player-sub {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        font-size: 0.78rem;
+        color: var(--text-muted, #64748B);
+    }
+
+    .party-size-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 8px;
+        border-radius: 6px;
+        background: var(--input-bg, #F1F5F9);
+        color: var(--text-secondary, #475569);
+        font-weight: 600;
+        font-size: 0.74rem;
+    }
+
+    /* ── Status Pills ── */
+    .queue-status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 5px 12px;
+        border-radius: 9999px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .queue-status-pill .status-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+    }
+
+    .queue-status-pill.status-waiting {
+        background: var(--owner-light-orange, #FFF7E6);
+        color: #B45309;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .queue-status-pill.status-waiting .status-dot {
+        background: #F59E0B;
+    }
+
+    .queue-status-pill.status-next {
+        background: var(--owner-light-green, #EAF8EF);
+        color: var(--owner-accent-green, #16A34A);
+        border: 1px solid rgba(22, 163, 74, 0.3);
+    }
+
+    .queue-status-pill.status-next .status-dot {
+        background: #16A34A;
+    }
+
+    .queue-status-pill.status-playing {
+        background: var(--owner-light-blue, #EAF2FF);
+        color: var(--owner-primary-blue, #2563EB);
+        border: 1px solid rgba(37, 99, 235, 0.3);
+    }
+
+    .queue-status-pill.status-playing .status-dot {
+        background: #2563EB;
+    }
+
+    /* ── Court Selector ── */
+    .court-select-control {
+        min-width: 155px;
+        padding: 7px 10px;
+        border-radius: 9px;
+        border: 1.5px solid var(--border-color, #E2E8F0);
+        background: var(--input-bg, #F1F5F9);
+        color: var(--text-primary, #0F172A);
+        font-size: 0.83rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .court-select-control:focus {
+        outline: none;
+        border-color: var(--owner-primary-blue, #2563EB);
+        box-shadow: 0 0 0 3px var(--primary-orange-light);
+    }
+
+    .wait-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.84rem;
+        font-weight: 600;
+        color: var(--text-secondary, #475569);
+        white-space: nowrap;
+    }
+
+    .wait-pill.playing {
+        color: var(--owner-primary-blue, #2563EB);
+        font-weight: 700;
+    }
+
+    /* ── Action Buttons ── */
+    .queue-actions-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+
+    .btn-queue-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 13px;
+        border-radius: 9px;
+        border: none;
+        font-size: 0.8rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .btn-queue-action:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .btn-call-next {
+        background: #16A34A;
+        color: #FFFFFF;
+    }
+
+    .btn-call-next:hover:not(:disabled) {
+        background: #15803D;
+        transform: translateY(-1px);
+    }
+
+    .btn-on-court {
+        background: var(--owner-primary-blue, #2563EB);
+        color: #FFFFFF;
+    }
+
+    .btn-on-court:hover:not(:disabled) {
+        background: var(--owner-ui-btn-hover, #1D4ED8);
+        transform: translateY(-1px);
+    }
+
+    .btn-complete {
+        background: var(--owner-teal-accent, #0F766E);
+        color: #FFFFFF;
+    }
+
+    .btn-complete:hover:not(:disabled) {
+        background: #115E59;
+        transform: translateY(-1px);
+    }
+
+    .btn-queue-remove {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        border: 1px solid rgba(220, 38, 38, 0.22);
+        background: rgba(220, 38, 38, 0.08);
+        color: #DC2626;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-queue-remove:hover:not(:disabled) {
+        background: #DC2626;
+        color: #FFFFFF;
+    }
+
+    .queue-empty-cell {
+        text-align: center;
+        padding: 40px 20px !important;
+        color: var(--text-muted, #64748B);
+    }
+
+    .queue-empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .queue-empty-state i {
+        font-size: 2.1rem;
+        color: var(--owner-primary-blue, #2563EB);
+        opacity: 0.55;
+    }
+
+    /* ── Dark Mode Refinements ── */
+    html.dark-mode body.role-owner-portal .live-status-pill {
+        background: rgba(22, 163, 74, 0.16);
+        color: #4ADE80;
+        border-color: rgba(74, 222, 128, 0.3);
+    }
+
+    html.dark-mode body.role-owner-portal .kpi-waiting .queue-kpi-icon {
+        background: rgba(245, 158, 11, 0.16);
+        color: #FBBF24;
+    }
+
+    html.dark-mode body.role-owner-portal .kpi-next .queue-kpi-icon {
+        background: rgba(22, 163, 74, 0.16);
+        color: #4ADE80;
+    }
+
+    html.dark-mode body.role-owner-portal .kpi-playing .queue-kpi-icon,
+    html.dark-mode body.role-owner-portal .fac-title-icon,
+    html.dark-mode body.role-owner-portal .fac-active-badge {
+        background: rgba(37, 99, 235, 0.2);
+        color: #60A5FA;
+    }
+
+    html.dark-mode body.role-owner-portal .queue-status-pill.status-waiting {
+        background: rgba(245, 158, 11, 0.16);
+        color: #FBBF24;
+    }
+
+    html.dark-mode body.role-owner-portal .queue-status-pill.status-next {
+        background: rgba(22, 163, 74, 0.18);
+        color: #4ADE80;
+    }
+
+    html.dark-mode body.role-owner-portal .queue-status-pill.status-playing {
+        background: rgba(37, 99, 235, 0.2);
+        color: #60A5FA;
+    }
+
+    html.dark-mode body.role-owner-portal .walkin-pill,
+    html.dark-mode body.role-owner-portal .queue-avatar.walkin {
+        background: rgba(124, 58, 237, 0.2);
+        color: #C4B5FD;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="dashboard-header">
-    <h1 class="page-title">Live Waitlist</h1>
-</div>
-
-{% if facilities %}
-    {% for fac in facilities %}
-    <div class="glass-card" style="margin-bottom: 30px;">
-        <h2 style="font-size: 1.2rem; margin-bottom: 15px; color: var(--primary-orange);">{{ fac.facilities.name }} Queue</h2>
-        <div class="table-container">
-            <table class="data-grid">
-                <thead>
-                    <tr>
-                        <th>POSITION</th>
-                        <th>PLAYER</th>
-                        <th>STATUS</th>
-                        <th>ASSIGNED COURT</th>
-                        <th>WAIT TIME</th>
-                        <th>ACTIONS</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% set fac_queues = queues | selectattr('facility_id', 'equalto', fac.facility_id) | list %}
-                    
-                    {% if fac_queues %}
-                        {% for q in fac_queues %}
-                        <tr id="queue-row-{{ q.id }}" style="transition: all 0.3s ease;">
-                            <td class="bold position-cell">{{ loop.index }}</td>
-                            <td>{{ q.profiles.first_name if q.profiles else 'Unknown' }} {{ q.profiles.last_name if q.profiles else '' }}</td>
-                            <td>
-                                {% if q.status == 'next' %}
-                                    <span class="status-pill" style="background:var(--btn-green-light);color:var(--btn-green);">Next Up</span>
-                                {% else %}
-                                    <span class="status-pill warning">Waiting</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% set court = courts | selectattr('id', 'equalto', q.court_id) | first %}
-                                {{ court.name if court else 'Any Available' }}
-                            </td>
-                            <td>~{{ q.estimated_wait_mins }} mins</td>
-                            <td id="actions-cell-{{ q.id }}">
-                                <div style="display: flex; gap: 8px;" class="queue-actions-wrapper">
-                                    {% if q.status == 'waiting' %}
-                                        <button type="button" class="btn-waitlist-action green" onclick="updateQueueStatus('{{ q.id }}', 'next')">Call Next</button>
-                                    {% endif %}
-                                    {% if q.status == 'next' %}
-                                        <button type="button" class="btn-waitlist-action navy" onclick="updateQueueStatus('{{ q.id }}', 'completed')">Playing</button>
-                                    {% endif %}
-                                    <button type="button" class="btn-waitlist-action red" onclick="deleteQueueItem('{{ q.id }}')" title="Remove from queue"><i class="ph ph-trash" style="font-size:1.1rem;"></i></button>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td colspan="6" style="text-align: center; padding: 20px; color: var(--text-muted);">
-                                No players in queue for this facility.
-                            </td>
-                        </tr>
-                    {% endif %}
-                </tbody>
-            </table>
+<div class="owner-queue-wrap">
+    <!-- Hero Header -->
+    <div class="owner-queue-hero">
+        <div class="queue-hero-left">
+            <div class="live-badge-row">
+                <span class="live-status-pill">
+                    <span class="live-pulse-dot"></span>
+                    Live Queue Monitor
+                </span>
+            </div>
+            <h1 class="queue-hero-title">
+                <i class="ph ph-list-numbers"></i>
+                <span>Live Court Queue</span>
+            </h1>
+            <p class="queue-hero-subtitle">
+                Monitor registered players and staff walk-ins, assign courts, and advance matches in real time across your venues.
+            </p>
+        </div>
+        <div class="queue-hero-actions">
+            <a href="{{ url_for('owner.staff') }}" class="btn-exec-outline">
+                <i class="ph ph-users-three"></i>
+                <span>Staff Management</span>
+            </a>
+            <a href="{{ url_for('owner.court_schedule') }}" class="btn-exec-primary">
+                <i class="ph ph-calendar-check"></i>
+                <span>Court Schedule</span>
+            </a>
         </div>
     </div>
-    {% endfor %}
-{% else %}
-    <div class="glass-card" style="text-align: center; padding: 40px;">
-        <i class="ph ph-warning-circle" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 15px;"></i>
-        <h3 style="margin-bottom: 10px;">No Facilities Assigned</h3>
-        <p style="color: var(--text-muted);">You are not assigned to manage any facility queues yet. Please contact your facility owner.</p>
+
+    <!-- Summary KPI Cards -->
+    <div class="queue-kpi-grid">
+        <div class="queue-kpi-card kpi-waiting">
+            <div class="queue-kpi-icon"><i class="ph ph-hourglass-medium"></i></div>
+            <div class="queue-kpi-meta">
+                <span class="queue-kpi-value" id="kpi-waiting-count">{{ stats.waiting_count if stats else 0 }}</span>
+                <span class="queue-kpi-label">Waiting</span>
+            </div>
+        </div>
+        <div class="queue-kpi-card kpi-next">
+            <div class="queue-kpi-icon"><i class="ph ph-megaphone"></i></div>
+            <div class="queue-kpi-meta">
+                <span class="queue-kpi-value" id="kpi-next-count">{{ stats.next_count if stats else 0 }}</span>
+                <span class="queue-kpi-label">Up Next</span>
+            </div>
+        </div>
+        <div class="queue-kpi-card kpi-playing">
+            <div class="queue-kpi-icon"><i class="ph ph-tennis-ball"></i></div>
+            <div class="queue-kpi-meta">
+                <span class="queue-kpi-value" id="kpi-playing-count">{{ stats.playing_count if stats else 0 }}</span>
+                <span class="queue-kpi-label">On Court</span>
+            </div>
+        </div>
+        <div class="queue-kpi-card kpi-total">
+            <div class="queue-kpi-icon"><i class="ph ph-users"></i></div>
+            <div class="queue-kpi-meta">
+                <span class="queue-kpi-value" id="kpi-total-count">{{ stats.total_active if stats else 0 }}</span>
+                <span class="queue-kpi-label">Active Queue</span>
+            </div>
+        </div>
     </div>
-{% endif %}
+
+    <!-- Per-Facility Queue Cards -->
+    {% if facilities %}
+        {% for fac in facilities %}
+        {% set fac_queues = queues | selectattr('facility_id', 'equalto', fac.facility_id) | list %}
+        {% set fac_courts = courts | selectattr('facility_id', 'equalto', fac.facility_id) | list %}
+        <div class="queue-facility-card" data-facility-id="{{ fac.facility_id }}">
+            <div class="fac-card-header">
+                <h2 class="fac-card-title">
+                    <span class="fac-title-icon"><i class="ph ph-buildings"></i></span>
+                    <span>{{ fac.facilities.name }} Queue</span>
+                </h2>
+                <span class="fac-active-badge" id="fac-count-{{ fac.facility_id }}">{{ fac_queues | length }} Active</span>
+            </div>
+
+            <div class="queue-table-scroll">
+                <table class="owner-queue-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 72px;">#</th>
+                            <th>Player / Party</th>
+                            <th>Status</th>
+                            <th>Assigned Court</th>
+                            <th>Est. Wait</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if fac_queues %}
+                            {% for q in fac_queues %}
+                            {% set prof = q.profiles if q.profiles else none %}
+                            {% set first_name = (prof.first_name or '') if prof else '' %}
+                            {% set last_name = (prof.last_name or '') if prof else '' %}
+                            {% set full_name = (first_name ~ ' ' ~ last_name).strip() %}
+                            <tr id="queue-row-{{ q.id }}" class="queue-row-item" data-queue-id="{{ q.id }}" data-status="{{ q.status }}">
+                                <td class="bold">
+                                    <span class="position-badge position-cell">{{ loop.index }}</span>
+                                </td>
+                                <td>
+                                    <div class="queue-player-cell">
+                                        {% if q.player_id and full_name %}
+                                            <div class="queue-avatar">
+                                                {% if prof and prof.avatar_url %}
+                                                    <img src="{{ prof.avatar_url }}" alt="{{ full_name }}">
+                                                {% else %}
+                                                    {{ ((first_name or 'P')[0] ~ (last_name or '')[0]).upper() }}
+                                                {% endif %}
+                                            </div>
+                                            <div class="queue-player-details">
+                                                <div class="queue-player-name-row">
+                                                    <span class="queue-player-name">{{ full_name }}</span>
+                                                </div>
+                                                <div class="queue-player-sub">
+                                                    <span class="party-size-pill">
+                                                        <i class="ph ph-users"></i>
+                                                        {{ q.party_size or 1 }} {{ 'Player' if (q.party_size or 1) == 1 else 'Players' }}
+                                                    </span>
+                                                    {% if prof and prof.phone %}
+                                                    <span><i class="ph ph-phone"></i> {{ prof.phone }}</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                            <div class="queue-avatar walkin">W</div>
+                                            <div class="queue-player-details">
+                                                <div class="queue-player-name-row">
+                                                    <span class="queue-player-name">{{ q.guest_name or 'Walk-in Guest' }}</span>
+                                                    <span class="walkin-pill"><i class="ph ph-person-simple-walk"></i> Walk-in Guest</span>
+                                                </div>
+                                                <div class="queue-player-sub">
+                                                    <span class="party-size-pill">
+                                                        <i class="ph ph-users"></i>
+                                                        {{ q.party_size or 1 }} {{ 'Player' if (q.party_size or 1) == 1 else 'Players' }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td class="status-cell">
+                                    {% if q.status == 'playing' %}
+                                        <span class="queue-status-pill status-playing"><span class="status-dot"></span>On Court</span>
+                                    {% elif q.status == 'next' %}
+                                        <span class="queue-status-pill status-next"><span class="status-dot"></span>Next Up</span>
+                                    {% else %}
+                                        <span class="queue-status-pill status-waiting"><span class="status-dot"></span>Waiting</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <select class="court-select-control" data-queue-id="{{ q.id }}" data-prev-court="{{ q.court_id or '' }}" onchange="assignQueueCourt('{{ q.id }}', this)" aria-label="Assigned Court">
+                                        <option value="">Any Available</option>
+                                        {% for c in fac_courts %}
+                                        <option value="{{ c.id }}" {% if q.court_id == c.id %}selected{% endif %}>{{ c.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td class="wait-cell">
+                                    {% if q.status == 'playing' %}
+                                        <span class="wait-pill playing"><i class="ph ph-play-circle"></i> On Court</span>
+                                    {% else %}
+                                        <span class="wait-pill"><i class="ph ph-clock"></i> ~{{ q.estimated_wait_mins or 0 }} mins</span>
+                                    {% endif %}
+                                </td>
+                                <td id="actions-cell-{{ q.id }}">
+                                    <div class="queue-actions-wrapper">
+                                        {% if q.status == 'waiting' %}
+                                            <button type="button" class="btn-queue-action btn-call-next" onclick="updateQueueStatus('{{ q.id }}', 'next')">
+                                                <i class="ph ph-megaphone"></i> <span>Call Next</span>
+                                            </button>
+                                        {% elif q.status == 'next' %}
+                                            <button type="button" class="btn-queue-action btn-on-court" onclick="updateQueueStatus('{{ q.id }}', 'playing')">
+                                                <i class="ph ph-play-circle"></i> <span>On Court</span>
+                                            </button>
+                                        {% elif q.status == 'playing' %}
+                                            <button type="button" class="btn-queue-action btn-complete" onclick="updateQueueStatus('{{ q.id }}', 'completed')">
+                                                <i class="ph ph-check-circle"></i> <span>Complete</span>
+                                            </button>
+                                        {% endif %}
+                                        <button type="button" class="btn-queue-remove" onclick="deleteQueueItem('{{ q.id }}')" title="Remove from queue" aria-label="Remove from queue">
+                                            <i class="ph ph-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr class="empty-queue-row">
+                                <td colspan="6" class="queue-empty-cell">
+                                    <div class="queue-empty-state">
+                                        <i class="ph ph-queue"></i>
+                                        <strong>No active players in queue</strong>
+                                        <span>Players and walk-in guests checked into {{ fac.facilities.name }} will appear here automatically.</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="queue-facility-card" style="text-align: center; padding: 48px 24px;">
+            <i class="ph ph-buildings" style="font-size: 3rem; color: var(--owner-primary-blue, #2563EB); opacity: 0.65; margin-bottom: 12px; display: inline-block;"></i>
+            <h3 style="margin: 0 0 8px 0; color: var(--text-primary);">No Facilities Found</h3>
+            <p style="color: var(--text-muted); margin: 0 0 18px 0;">Register a facility first to monitor live player and walk-in court queues.</p>
+            <a href="{{ url_for('owner.facilities') }}" class="btn-exec-primary">
+                <i class="ph ph-plus-circle"></i> <span>Go to My Facilities</span>
+            </a>
+        </div>
+    {% endif %}
+</div>
 
 <script>
-async function updateQueueStatus(queueId, nextStatus) {
-    const row = document.getElementById(`queue-row-${queueId}`);
-    const actionsCell = document.getElementById(`actions-cell-${queueId}`);
-    if (!row || !actionsCell) return;
+const UPDATE_QUEUE_URL = "{{ url_for('owner.update_queue') }}";
 
-    // Disable buttons
-    const buttons = actionsCell.querySelectorAll('button');
-    buttons.forEach(btn => btn.disabled = true);
-
-    try {
-        const response = await fetch("{{ url_for('owner.update_queue') }}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                queue_id: queueId,
-                status: nextStatus
-            })
-        });
-
-        const result = await response.json();
-        if (result.success) {
-            showToast('Success', result.message || 'Queue updated!', 'success');
-            
-            if (nextStatus === 'completed') {
-                // Fade out row and remove it from table
-                row.style.opacity = '0';
-                row.style.transform = 'translateX(20px)';
-                setTimeout(() => {
-                    const tbody = row.parentNode;
-                    row.remove();
-                    // Recalculate index numbers
-                    recalculateQueuePositions(tbody);
-                }, 300);
-            } else if (nextStatus === 'next') {
-                // Update status badge inline
-                const statusCell = row.cells[2];
-                if (statusCell) {
-                    statusCell.innerHTML = `<span class="status-pill" style="background:var(--btn-green-light);color:var(--btn-green);">Next Up</span>`;
-                }
-                
-                // Update actions button to "Playing"
-                actionsCell.querySelector('.btn-waitlist-action.green')?.remove();
-                
-                const playBtn = document.createElement('button');
-                playBtn.type = 'button';
-                playBtn.className = 'btn-waitlist-action navy';
-                playBtn.onclick = () => updateQueueStatus(queueId, 'completed');
-                playBtn.style.padding = '0.35rem 0.75rem';
-                playBtn.style.fontSize = '0.8rem';
-                playBtn.style.fontWeight = '600';
-                playBtn.style.borderRadius = '6px';
-                playBtn.style.cursor = 'pointer';
-                playBtn.style.border = 'none';
-                playBtn.style.color = 'white';
-                playBtn.style.backgroundColor = 'var(--btn-navy)';
-                playBtn.style.transition = 'background-color 0.2s';
-                playBtn.textContent = 'Playing';
-                
-                const wrapper = actionsCell.querySelector('.queue-actions-wrapper');
-                if (wrapper) {
-                    wrapper.insertBefore(playBtn, wrapper.firstChild);
-                }
-                buttons.forEach(btn => btn.disabled = false);
-            }
-        } else {
-            showToast('Error', result.message || 'Failed to update queue.', 'error');
-            buttons.forEach(btn => btn.disabled = false);
-        }
-    } catch (err) {
-        console.error('AJAX queue update error:', err);
-        showToast('Error', 'An unexpected error occurred.', 'error');
-        buttons.forEach(btn => btn.disabled = false);
+function renderStatusBadgeHtml(status) {
+    if (status === 'playing') {
+        return '<span class="queue-status-pill status-playing"><span class="status-dot"></span>On Court</span>';
     }
+    if (status === 'next') {
+        return '<span class="queue-status-pill status-next"><span class="status-dot"></span>Next Up</span>';
+    }
+    return '<span class="queue-status-pill status-waiting"><span class="status-dot"></span>Waiting</span>';
 }
 
-function deleteQueueItem(queueId) {
-    showConfirmModal({
-        title: 'Remove Player',
-        message: 'Remove this player from the active queue?',
-        confirmText: 'Remove',
-        danger: true,
-        onConfirm: async () => {
-            const row = document.getElementById(`queue-row-${queueId}`);
-            if (!row) return;
+function renderPrimaryActionBtn(queueId, status) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
 
-            try {
-                const response = await fetch("{{ url_for('owner.update_queue') }}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        queue_id: queueId,
-                        status: 'cancelled'
-                    })
-                });
+    if (status === 'waiting') {
+        btn.className = 'btn-queue-action btn-call-next';
+        btn.innerHTML = '<i class="ph ph-megaphone"></i> <span>Call Next</span>';
+        btn.onclick = () => updateQueueStatus(queueId, 'next');
+        return btn;
+    }
+    if (status === 'next') {
+        btn.className = 'btn-queue-action btn-on-court';
+        btn.innerHTML = '<i class="ph ph-play-circle"></i> <span>On Court</span>';
+        btn.onclick = () => updateQueueStatus(queueId, 'playing');
+        return btn;
+    }
+    if (status === 'playing') {
+        btn.className = 'btn-queue-action btn-complete';
+        btn.innerHTML = '<i class="ph ph-check-circle"></i> <span>Complete</span>';
+        btn.onclick = () => updateQueueStatus(queueId, 'completed');
+        return btn;
+    }
+    return null;
+}
 
-                const result = await response.json();
+function updateQueueKPIs() {
+    const rows = document.querySelectorAll('tr.queue-row-item');
+    let waiting = 0;
+    let next = 0;
+    let playing = 0;
 
-                if (response.ok && result.success) {
-                    showToast('Success', 'Player removed from queue.', 'success');
-                    row.style.opacity = '0';
-                    row.style.transform = 'translateX(20px)';
-                    row.style.transition = 'opacity 0.3s, transform 0.3s';
-                    setTimeout(() => {
-                        const tbody = row.parentNode;
-                        row.remove();
-                        checkEmptyQueue();
-                        recalculateQueuePositions(tbody);
-                    }, 300);
-                } else {
-                    showToast('Error', result.message || 'Failed to remove player.', 'error');
-                }
-            } catch (err) {
-                console.error('AJAX queue delete error:', err);
-                showToast('Error', 'An unexpected error occurred.', 'error');
-            }
-        }
+    rows.forEach((r) => {
+        const st = r.dataset.status;
+        if (st === 'waiting') waiting += 1;
+        else if (st === 'next') next += 1;
+        else if (st === 'playing') playing += 1;
     });
+
+    const wEl = document.getElementById('kpi-waiting-count');
+    const nEl = document.getElementById('kpi-next-count');
+    const pEl = document.getElementById('kpi-playing-count');
+    const tEl = document.getElementById('kpi-total-count');
+
+    if (wEl) wEl.textContent = waiting;
+    if (nEl) nEl.textContent = next;
+    if (pEl) pEl.textContent = playing;
+    if (tEl) tEl.textContent = rows.length;
 }
 
 function recalculateQueuePositions(tbody) {
     if (!tbody) return;
-    const rows = tbody.querySelectorAll('tr');
+    const rows = tbody.querySelectorAll('tr.queue-row-item');
+    const facCard = tbody.closest('.queue-facility-card');
+    const facBadge = facCard ? facCard.querySelector('.fac-active-badge') : null;
+
+    if (facBadge) {
+        facBadge.textContent = `${rows.length} Active`;
+    }
+
     if (rows.length === 0) {
         tbody.innerHTML = `
-            <tr>
-                <td colspan="6" style="text-align: center; padding: 20px; color: var(--text-muted);">
-                    No players in queue for this facility.
+            <tr class="empty-queue-row">
+                <td colspan="6" class="queue-empty-cell">
+                    <div class="queue-empty-state">
+                        <i class="ph ph-queue"></i>
+                        <strong>No active players in queue</strong>
+                        <span>No players are currently waiting in this facility's queue.</span>
+                    </div>
                 </td>
             </tr>`;
     } else {
@@ -216,6 +953,167 @@ function recalculateQueuePositions(tbody) {
             if (posCell) posCell.textContent = idx + 1;
         });
     }
+}
+
+async function assignQueueCourt(queueId, selectEl) {
+    if (!selectEl) return;
+    const prevCourt = selectEl.dataset.prevCourt || '';
+    const courtId = selectEl.value;
+    selectEl.disabled = true;
+
+    try {
+        const response = await fetch(UPDATE_QUEUE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ queue_id: queueId, court_id: courtId })
+        });
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            selectEl.dataset.prevCourt = courtId;
+            if (typeof showToast === 'function') {
+                showToast('Court Updated', result.message || 'Court assignment saved.', 'success');
+            }
+        } else {
+            selectEl.value = prevCourt;
+            if (typeof showToast === 'function') {
+                showToast('Error', result.message || 'Failed to update court assignment.', 'error');
+            }
+        }
+    } catch (err) {
+        console.error('AJAX court assignment error:', err);
+        selectEl.value = prevCourt;
+        if (typeof showToast === 'function') {
+            showToast('Error', 'An unexpected error occurred.', 'error');
+        }
+    } finally {
+        selectEl.disabled = false;
+    }
+}
+
+async function updateQueueStatus(queueId, nextStatus) {
+    const row = document.getElementById(`queue-row-${queueId}`);
+    const actionsCell = document.getElementById(`actions-cell-${queueId}`);
+    if (!row || !actionsCell) return;
+
+    const buttons = actionsCell.querySelectorAll('button');
+    buttons.forEach(btn => btn.disabled = true);
+
+    const courtSelect = row.querySelector('.court-select-control');
+    const payload = {
+        queue_id: queueId,
+        status: nextStatus
+    };
+    if (courtSelect) {
+        payload.court_id = courtSelect.value;
+    }
+
+    try {
+        const response = await fetch(UPDATE_QUEUE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        if (response.ok && result.success) {
+            if (typeof showToast === 'function') {
+                showToast('Success', result.message || 'Queue updated!', 'success');
+            }
+
+            if (nextStatus === 'completed' || nextStatus === 'cancelled') {
+                row.style.opacity = '0';
+                row.style.transform = 'translateX(20px)';
+                setTimeout(() => {
+                    const tbody = row.parentNode;
+                    row.remove();
+                    recalculateQueuePositions(tbody);
+                    updateQueueKPIs();
+                }, 280);
+            } else {
+                row.dataset.status = nextStatus;
+
+                const statusCell = row.querySelector('.status-cell');
+                if (statusCell) {
+                    statusCell.innerHTML = renderStatusBadgeHtml(nextStatus);
+                }
+
+                const waitCell = row.querySelector('.wait-cell');
+                if (waitCell && nextStatus === 'playing') {
+                    waitCell.innerHTML = '<span class="wait-pill playing"><i class="ph ph-play-circle"></i> On Court</span>';
+                }
+
+                const wrapper = actionsCell.querySelector('.queue-actions-wrapper');
+                if (wrapper) {
+                    wrapper.querySelectorAll('.btn-queue-action').forEach(b => b.remove());
+                    const nextBtn = renderPrimaryActionBtn(queueId, nextStatus);
+                    if (nextBtn) {
+                        wrapper.insertBefore(nextBtn, wrapper.firstChild);
+                    }
+                }
+
+                actionsCell.querySelectorAll('button').forEach(btn => btn.disabled = false);
+                updateQueueKPIs();
+            }
+        } else {
+            if (typeof showToast === 'function') {
+                showToast('Error', result.message || 'Failed to update queue.', 'error');
+            }
+            buttons.forEach(btn => btn.disabled = false);
+        }
+    } catch (err) {
+        console.error('AJAX queue update error:', err);
+        if (typeof showToast === 'function') {
+            showToast('Error', 'An unexpected error occurred.', 'error');
+        }
+        buttons.forEach(btn => btn.disabled = false);
+    }
+}
+
+function deleteQueueItem(queueId) {
+    showConfirmModal({
+        title: 'Remove from Queue',
+        message: 'Remove this player or party from the active queue?',
+        confirmText: 'Remove',
+        danger: true,
+        onConfirm: async () => {
+            const row = document.getElementById(`queue-row-${queueId}`);
+            if (!row) return;
+
+            try {
+                const response = await fetch(UPDATE_QUEUE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        queue_id: queueId,
+                        status: 'cancelled'
+                    })
+                });
+
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    if (typeof showToast === 'function') {
+                        showToast('Removed', 'Queue entry removed.', 'success');
+                    }
+                    row.style.opacity = '0';
+                    row.style.transform = 'translateX(20px)';
+                    setTimeout(() => {
+                        const tbody = row.parentNode;
+                        row.remove();
+                        recalculateQueuePositions(tbody);
+                        updateQueueKPIs();
+                    }, 280);
+                } else if (typeof showToast === 'function') {
+                    showToast('Error', result.message || 'Failed to remove player.', 'error');
+                }
+            } catch (err) {
+                console.error('AJAX queue delete error:', err);
+                if (typeof showToast === 'function') {
+                    showToast('Error', 'An unexpected error occurred.', 'error');
+                }
+            }
+        }
+    });
 }
 </script>
 {% endblock %}

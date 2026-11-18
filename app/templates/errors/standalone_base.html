@@ -88,20 +88,7 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* Ambient court background glow */
-        .ambient-background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                radial-gradient(circle at 20% 20%, rgba(255, 87, 34, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.12) 0%, transparent 45%),
-                radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 60%);
-            pointer-events: none;
-            z-index: 0;
-        }
+
 
         /* ── STANDALONE TOP NAVIGATION ── */
         .error-navbar {
@@ -187,15 +174,16 @@
         }
 
         .error-nav-btn.primary {
-            background: linear-gradient(135deg, #ff5722 0%, #f4511e 100%);
+            background: var(--primary-orange);
             color: #ffffff;
             border: none;
-            box-shadow: 0 4px 12px rgba(255, 87, 34, 0.35);
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
         }
 
         .error-nav-btn.primary:hover {
+            background: var(--primary-orange-hover);
             transform: translateY(-2px);
-            box-shadow: 0 6px 18px rgba(255, 87, 34, 0.45);
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
         }
 
         .error-theme-toggle {
@@ -253,8 +241,7 @@
 
 <body>
 
-    <!-- Ambient Glowing Background -->
-    <div class="ambient-background"></div>
+
 
     <!-- Clean Standalone Header (No Giant Slider!) -->
     <header class="error-navbar">

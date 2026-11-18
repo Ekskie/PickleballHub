@@ -53,12 +53,12 @@
 
     .stat-pill-card:hover {
         transform: translateY(-2px);
-        border-color: rgba(255, 87, 34, 0.3) !important;
+        border-color: var(--role-accent-border) !important;
     }
 
     .stat-pill-card.filter-active {
         border-color: var(--primary-orange) !important;
-        box-shadow: 0 0 0 2px rgba(255, 87, 34, 0.2) !important;
+        box-shadow: 0 0 0 2px var(--primary-orange-light) !important;
     }
 
     .stat-icon-circle {
@@ -130,7 +130,7 @@
 
     .search-field:focus {
         border-color: var(--primary-orange);
-        box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.12);
+        box-shadow: none;
         background: var(--card-bg-elevated);
     }
 
@@ -205,8 +205,8 @@
     }
 
     .btn-toggle-inspect:hover, .btn-toggle-inspect.active {
-        background: rgba(255, 87, 34, 0.1);
-        border-color: rgba(255, 87, 34, 0.3);
+        background: var(--primary-orange-light);
+        border-color: var(--role-accent-border);
         color: var(--primary-orange);
     }
 
@@ -250,7 +250,7 @@
     .btn-action-pill.approve:hover {
         background: #10b981;
         color: #ffffff;
-        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .btn-action-pill.reject {
@@ -262,7 +262,7 @@
     .btn-action-pill.reject:hover {
         background: #ef4444;
         color: #ffffff;
-        box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .btn-action-pill.reset {
@@ -396,7 +396,7 @@
     }
 
     .court-item-card:hover {
-        border-color: rgba(255, 87, 34, 0.25);
+        border-color: var(--role-accent-border);
         transform: translateX(2px);
     }
 
@@ -640,9 +640,8 @@
     }
 
     @keyframes pulseRing {
-        0% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-        70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-        100% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        0%, 100% { transform: scale(0.97); opacity: 1; }
+        50% { transform: scale(1.03); opacity: 0.78; }
     }
 
     .confirm-icon-ring.approve {
@@ -655,26 +654,14 @@
         background: rgba(239, 68, 68, 0.12);
         color: #ef4444;
         border: 2px solid rgba(239, 68, 68, 0.3);
-        animation-name: pulseRingRed;
-    }
-
-    @keyframes pulseRingRed {
-        0% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-        70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-        100% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        animation-name: pulseRing;
     }
 
     .confirm-icon-ring.reset {
         background: rgba(245, 158, 11, 0.12);
         color: #f59e0b;
         border: 2px solid rgba(245, 158, 11, 0.3);
-        animation-name: pulseRingAmber;
-    }
-
-    @keyframes pulseRingAmber {
-        0% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
-        70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
-        100% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        animation-name: pulseRing;
     }
 
     .confirm-title {
@@ -746,34 +733,34 @@
     .btn-dialog.approve {
         background: #10b981;
         color: #ffffff;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .btn-dialog.approve:hover {
         background: #059669;
-        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.45);
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
     }
 
     .btn-dialog.reject {
         background: #ef4444;
         color: #ffffff;
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .btn-dialog.reject:hover {
         background: #dc2626;
-        box-shadow: 0 6px 16px rgba(239, 68, 68, 0.45);
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
     }
 
     .btn-dialog.reset {
         background: #f59e0b;
         color: #ffffff;
-        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .btn-dialog.reset:hover {
         background: #d97706;
-        box-shadow: 0 6px 16px rgba(245, 158, 11, 0.45);
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
     }
 
     /* ── FLOATING TOAST NOTIFICATION ── */
@@ -865,7 +852,7 @@
 <!-- Facilities Stats Summary Bar -->
 <div class="stats-summary-grid">
     <div class="glass-card stat-pill-card" id="card-filter-all" onclick="setKycFilter('all', this)">
-        <div class="stat-icon-circle" style="background:rgba(255,87,34,0.1); color:var(--primary-orange); border:1px solid rgba(255,87,34,0.2);">
+        <div class="stat-icon-circle" style="background:var(--primary-orange-light); color:var(--primary-orange); border:1px solid var(--role-accent-border);">
             <i class="ph ph-buildings"></i>
         </div>
         <div class="stat-pill-info">
@@ -1143,7 +1130,7 @@
                                         <div style="display: flex; flex-wrap: wrap; gap: 6px;">
                                             {% if f.amenities and f.amenities|length > 0 %}
                                                 {% for amen in f.amenities %}
-                                                <span style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 6px; background: rgba(255, 87, 34, 0.08); color: var(--primary-orange); border: 1px solid rgba(255, 87, 34, 0.2); font-size: 0.75rem; font-weight: 600;">
+                                                <span style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 6px; background: var(--primary-orange-light); color: var(--primary-orange); border: 1px solid var(--role-accent-border); font-size: 0.75rem; font-weight: 600;">
                                                     <i class="ph ph-check"></i> {{ amen }}
                                                 </span>
                                                 {% endfor %}
@@ -1158,7 +1145,7 @@
                                     <div class="kyc-doc-box" style="flex-direction: column; align-items: stretch; gap: 10px;">
                                         <div style="display: flex; align-items: center; justify-content: space-between;">
                                             <div class="kyc-doc-left">
-                                                <div style="width: 38px; height: 38px; border-radius: 8px; background: rgba(255,87,34,0.1); color: var(--primary-orange); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                                                <div style="width: 38px; height: 38px; border-radius: 8px; background: var(--primary-orange-light); color: var(--primary-orange); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
                                                     <i class="ph ph-shield-check"></i>
                                                 </div>
                                                 <div>

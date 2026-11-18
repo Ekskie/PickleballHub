@@ -28,7 +28,7 @@
 
     {% if role != 'player' and pending_sub %}
     <!-- ── Verification In Progress Alert Card ── -->
-    <div class="sub-pending-card animate-entry" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(217, 119, 6, 0.06)); border: 1.5px solid rgba(245, 158, 11, 0.35); border-radius: 16px; padding: 22px 26px; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(245, 158, 11, 0.08);">
+    <div class="sub-pending-card animate-entry" style="background: rgba(245, 158, 11, 0.1); border: 1.5px solid rgba(245, 158, 11, 0.35); border-radius: 16px; padding: 22px 26px; margin-bottom: 24px; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
             <div style="display: flex; gap: 16px; align-items: flex-start;">
                 <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(245, 158, 11, 0.2); color: #f59e0b; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0;">
@@ -69,7 +69,7 @@
     </div>
     {% elif role != 'player' and rejected_sub %}
     <!-- ── Rejection Notice Card ── -->
-    <div class="sub-rejected-card animate-entry" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(220, 38, 38, 0.06)); border: 1.5px solid rgba(239, 68, 68, 0.35); border-radius: 16px; padding: 22px 26px; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(239, 68, 68, 0.08);">
+    <div class="sub-rejected-card animate-entry" style="background: rgba(239, 68, 68, 0.1); border: 1.5px solid rgba(239, 68, 68, 0.35); border-radius: 16px; padding: 22px 26px; margin-bottom: 24px; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
             <div style="display: flex; gap: 16px; align-items: flex-start;">
                 <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(239, 68, 68, 0.2); color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0;">
@@ -93,7 +93,7 @@
                 </div>
             </div>
             <div>
-                <a href="{{ url_for('billing.checkout_page', plan=rejected_sub.tier or 'pro', cycle=rejected_sub.billing_cycle or 'monthly') }}" class="btn-solid" style="padding: 10px 20px; border-radius: 10px; background: #ef4444; color: #fff; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(239,68,68,0.3);">
+                <a href="{{ url_for('billing.checkout_page', plan=rejected_sub.tier or 'pro', cycle=rejected_sub.billing_cycle or 'monthly') }}" class="btn-solid" style="padding: 10px 20px; border-radius: 10px; background: #ef4444; color: #fff; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);">
                     <i class="ph ph-arrow-counter-clockwise"></i> Resubmit Payment Proof
                 </a>
             </div>
@@ -521,8 +521,8 @@
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.6px;
-        color: #8b5cf6;
-        background: rgba(139, 92, 246, 0.12);
+        color: var(--role-accent, var(--primary-orange));
+        background: var(--primary-orange-light);
         padding: 4px 10px;
         border-radius: 20px;
         margin-bottom: 8px;
@@ -606,10 +606,10 @@
     }
 
     .current-badge-avatar.pro {
-        background: linear-gradient(135deg, #8b5cf6, #6366f1);
+        background: var(--primary-orange);
         color: #fff;
         border: none;
-        box-shadow: 0 6px 18px rgba(139, 92, 246, 0.35);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .status-sub-label {
@@ -634,7 +634,7 @@
     }
 
     .btn-sub-upgrade-now {
-        background: linear-gradient(135deg, #8b5cf6, #6366f1);
+        background: var(--primary-orange);
         color: #fff;
         border: none;
         padding: 11px 22px;
@@ -645,13 +645,14 @@
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        box-shadow: 0 4px 16px rgba(139, 92, 246, 0.35);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
         transition: all 0.2s;
     }
 
     .btn-sub-upgrade-now:hover {
+        background: var(--primary-orange-hover);
         transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(139, 92, 246, 0.5);
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
     }
 
     .expiry-callout {
@@ -676,7 +677,7 @@
     .btn-renew-link {
         font-size: 0.75rem;
         font-weight: 700;
-        color: #8b5cf6;
+        color: var(--role-accent, var(--primary-orange));
         text-decoration: none;
         display: inline-flex;
         align-items: center;
@@ -723,8 +724,8 @@
     }
 
     .billing-toggle-btn.annual {
-        background: #8b5cf6;
-        border-color: #8b5cf6;
+        background: var(--primary-orange);
+        border-color: var(--primary-orange);
     }
 
     .toggle-slider {
@@ -768,8 +769,8 @@
     }
 
     .plan-card.featured {
-        border-color: #8b5cf6;
-        box-shadow: 0 10px 30px rgba(139, 92, 246, 0.12);
+        border-color: var(--primary-orange);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .plan-status-flag {
@@ -785,9 +786,9 @@
     }
 
     .plan-status-flag.popular {
-        background: linear-gradient(135deg, #8b5cf6, #6366f1);
+        background: var(--primary-orange);
         color: #fff;
-        box-shadow: 0 2px 8px rgba(139, 92, 246, 0.35);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .plan-status-flag.current {
@@ -806,7 +807,7 @@
     }
 
     .plan-type-pill.pro {
-        color: #8b5cf6;
+        color: var(--role-accent, var(--primary-orange));
     }
 
     .plan-head h4 {
@@ -905,15 +906,16 @@
     }
 
     .btn-plan-action.primary {
-        background: linear-gradient(135deg, #8b5cf6, #6366f1);
+        background: var(--primary-orange);
         color: #fff;
         border: none;
-        box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }
 
     .btn-plan-action.primary:hover {
+        background: var(--primary-orange-hover);
         transform: translateY(-2px);
-        box-shadow: 0 8px 22px rgba(139, 92, 246, 0.5);
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
     }
 
     .btn-plan-action.outline {
@@ -924,14 +926,14 @@
     }
 
     .plan-card.current-plan {
-        border-color: #8b5cf6 !important;
-        box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.4), 0 12px 32px rgba(139, 92, 246, 0.15) !important;
+        border-color: var(--primary-orange) !important;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08) !important;
     }
 
     .plan-card.current-plan .btn-plan-action.outline {
-        background: rgba(139, 92, 246, 0.08);
-        border: 1.5px solid rgba(139, 92, 246, 0.35);
-        color: #7c3aed;
+        background: var(--primary-orange-light);
+        border: 1.5px solid var(--role-accent-border);
+        color: var(--role-accent, var(--primary-orange));
         font-weight: 800;
         cursor: default;
     }
@@ -947,9 +949,9 @@
 
     html.dark-mode .plan-card.current-plan .btn-plan-action.outline,
     [data-theme="dark"] .plan-card.current-plan .btn-plan-action.outline {
-        background: rgba(139, 92, 246, 0.18);
-        border-color: rgba(139, 92, 246, 0.45);
-        color: #c4b5fd;
+        background: var(--primary-orange-light);
+        border-color: var(--role-accent-border);
+        color: var(--role-accent, var(--primary-orange));
     }
 
     html.dark-mode .sub-active-status-badge,
@@ -1031,11 +1033,11 @@
         gap: 4px;
         font-size: 0.72rem;
         font-weight: 700;
-        color: #8b5cf6;
+        color: var(--role-accent, var(--primary-orange));
         text-decoration: none;
         padding: 3px 8px;
         border-radius: 6px;
-        background: rgba(139, 92, 246, 0.1);
+        background: var(--primary-orange-light);
     }
 
     .sub-status-badge {

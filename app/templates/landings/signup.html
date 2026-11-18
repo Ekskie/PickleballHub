@@ -294,8 +294,8 @@
 
         /* ── Role Referral Banner ── */
         .role-referral-card {
-            background: linear-gradient(135deg, rgba(230, 74, 25, 0.06), rgba(99, 102, 241, 0.06));
-            border: 1px solid rgba(230, 74, 25, 0.25);
+            background: var(--signup-ribbon-bg);
+            border: 1px solid var(--signup-ribbon-border);
             border-radius: 14px;
             padding: 16px 20px;
             display: flex;
@@ -309,7 +309,7 @@
 
         .dark-mode .role-referral-card,
         [data-theme="dark"] .role-referral-card {
-            background: linear-gradient(135deg, rgba(230, 74, 25, 0.12), rgba(99, 102, 241, 0.12));
+            background: var(--signup-ribbon-bg);
             border-color: rgba(255, 255, 255, 0.15);
         }
 
@@ -494,7 +494,7 @@
         .field-input-box select:focus,
         .field-input-box textarea:focus {
             border-color: var(--primary-orange);
-            box-shadow: 0 0 0 3px rgba(230, 74, 25, 0.15);
+            box-shadow: none;
         }
 
         .field-input-box:focus-within i.field-icon {
@@ -674,13 +674,13 @@
             justify-content: center;
             gap: 10px;
             transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
-            box-shadow: 0 4px 14px rgba(230, 74, 25, 0.35);
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
         }
 
         .signup-submit-button:hover {
             background: var(--primary-orange-hover);
             transform: translateY(-1px);
-            box-shadow: 0 6px 18px rgba(230, 74, 25, 0.45);
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
         }
 
         .signup-terms-note {

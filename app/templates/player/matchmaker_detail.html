@@ -143,7 +143,7 @@
 
     .dupr-req-card {
         text-align: right;
-        background: linear-gradient(135deg, rgba(225, 86, 35, 0.1) 0%, rgba(225, 86, 35, 0.02) 100%);
+        background: var(--primary-orange-light, rgba(255, 87, 34, 0.1));
         border: 1px solid rgba(225, 86, 35, 0.25);
         padding: 10px 16px;
         border-radius: 12px;
@@ -515,7 +515,7 @@
         color: #ffffff;
         border-color: #ef4444;
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.1);
     }
 
     .btn-host-action.chat {
@@ -627,7 +627,7 @@
     .slot-card.current-user {
         border-color: var(--primary-orange);
         background: #fff6f2;
-        box-shadow: 0 0 10px rgba(225, 86, 35, 0.12);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
     }
 
     html.dark-mode .slot-card.current-user,
@@ -675,7 +675,7 @@
     .claim-btn:hover {
         background: #059669;
         transform: translateY(-1px);
-        box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.1);
     }
 
     .switch-btn {
@@ -828,7 +828,7 @@
     .score-numeric-display:focus {
         border-color: var(--primary-orange);
         outline: none;
-        box-shadow: 0 0 10px rgba(225, 86, 35, 0.2);
+        box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
     }
 
     .scoreboard-vs-col {
@@ -872,25 +872,25 @@
         font-weight: 800;
         font-size: 0.96rem;
         color: #ffffff !important;
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        background: var(--pb-green, #10b981) !important;
         border: none;
         cursor: pointer;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
         opacity: 1 !important;
     }
 
     .btn-submit-score:hover {
-        background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+        background: var(--pb-green-hover, #059669) !important;
         transform: translateY(-2px);
-        box-shadow: 0 8px 22px rgba(16, 185, 129, 0.45);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
         color: #ffffff !important;
     }
 
     .btn-submit-score:active {
         transform: translateY(0);
-        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
     }
 
     /* Verification / Disputed Panels */
@@ -1296,7 +1296,7 @@
                             </form>
                             <form method="POST" action="{{ url_for('player.matchmaker_verify', lobby_id=lobby.id) }}" style="flex: 1; min-width: 180px; margin: 0;">
                                 <input type="hidden" name="action" value="reset">
-                                <button type="submit" class="btn-submit-score" style="background: linear-gradient(135deg, #64748b 0%, #475569 100%) !important; box-shadow: 0 4px 14px rgba(100, 116, 139, 0.3);">
+                                <button type="submit" class="btn-submit-score" style="background: #64748b !important; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);">
                                     <i class="ph ph-arrow-counter-clockwise"></i> Reset Score Report
                                 </button>
                             </form>
@@ -1322,7 +1322,7 @@
                             </form>
                             <form method="POST" action="{{ url_for('player.matchmaker_verify', lobby_id=lobby.id) }}" style="flex: 1; margin: 0;">
                                 <input type="hidden" name="action" value="dispute">
-                                <button type="submit" class="btn-submit-score" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important; box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);">
+                                <button type="submit" class="btn-submit-score" style="background: #ef4444 !important; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);">
                                     <i class="ph ph-x"></i> Dispute Result ({{ lobby.dispute_count }}/3)
                                 </button>
                             </form>
@@ -1398,7 +1398,7 @@
 
                         <div style="padding: 10px 14px; border-radius: 12px; font-size: 0.88rem; line-height: 1.4; word-break: break-word;
                                     {% if is_me %}
-                                    background: linear-gradient(135deg, var(--primary-orange), #f97316); color: white; border-bottom-right-radius: 2px;
+                                    background: var(--primary-orange, #ff5722); color: white; border-bottom-right-radius: 2px;
                                     {% else %}
                                     background: var(--card-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-bottom-left-radius: 2px;
                                     {% endif %}">
@@ -1467,7 +1467,7 @@
                             <span class="host-name-link" onclick="openPlayerDrawer('{{ lobby.creator_id }}')">{{ lobby.creator_name }}</span>
                             <span class="host-badge-tag">Host</span>
                             {% if lobby.is_creator_pro %}
-                            <span class="pro-paddle-badge" style="display:inline-flex; align-items:center; gap:2px; background:linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(217, 119, 6, 0.28)); color:#d97706; border:1px solid rgba(245, 158, 11, 0.45); font-size:0.62rem; font-weight:800; padding:1px 6px; border-radius:999px; vertical-align:middle; margin-left:4px;" title="Pro Member">
+                            <span class="pro-paddle-badge" style="display:inline-flex; align-items:center; gap:2px; background: rgba(245, 158, 11, 0.16); color:#d97706; border:1px solid rgba(245, 158, 11, 0.45); font-size:0.62rem; font-weight:800; padding:1px 6px; border-radius:999px; vertical-align:middle; margin-left:4px;" title="Pro Member">
                                 <i class="ph-fill ph-medal" style="font-size:0.7rem; color:#f59e0b;"></i> PRO
                             </span>
                             {% endif %}
@@ -1527,7 +1527,7 @@
                                                 <span class="host-name-link" onclick="openPlayerDrawer('{{ cell.player.id }}')">{{ cell.player.name }}</span>
                                                 {% if cell.player.is_host %}<span style="color: #f59e0b;">★</span>{% endif %}
                                                 {% if cell.player.is_pro %}
-                                                <span class="pro-paddle-badge" style="display:inline-flex; align-items:center; gap:2px; background:linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.25)); color:#d97706; border:1px solid rgba(245, 158, 11, 0.4); font-size:0.58rem; font-weight:800; padding:1px 5px; border-radius:999px;" title="Pro Member">
+                                                <span class="pro-paddle-badge" style="display:inline-flex; align-items:center; gap:2px; background: rgba(245, 158, 11, 0.16); color:#d97706; border:1px solid rgba(245, 158, 11, 0.4); font-size:0.58rem; font-weight:800; padding:1px 5px; border-radius:999px;" title="Pro Member">
                                                     <i class="ph-fill ph-medal" style="font-size:0.65rem; color:#f59e0b;"></i> PRO
                                                 </span>
                                                 {% endif %}
@@ -1598,7 +1598,7 @@
                                             <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 4px;">
                                                 <span class="host-name-link" onclick="openPlayerDrawer('{{ cell.player.id }}')">{{ cell.player.name }}</span>
                                                 {% if cell.player.is_pro %}
-                                                <span class="pro-paddle-badge" style="display:inline-flex; align-items:center; gap:2px; background:linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.25)); color:#d97706; border:1px solid rgba(245, 158, 11, 0.4); font-size:0.58rem; font-weight:800; padding:1px 5px; border-radius:999px;" title="Pro Member">
+                                                <span class="pro-paddle-badge" style="display:inline-flex; align-items:center; gap:2px; background: rgba(245, 158, 11, 0.16); color:#d97706; border:1px solid rgba(245, 158, 11, 0.4); font-size:0.58rem; font-weight:800; padding:1px 5px; border-radius:999px;" title="Pro Member">
                                                     <i class="ph-fill ph-medal" style="font-size:0.65rem; color:#f59e0b;"></i> PRO
                                                 </span>
                                                 {% endif %}

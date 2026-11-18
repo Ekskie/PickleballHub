@@ -172,6 +172,9 @@
             <div class="notif-content">
                 <h4>{{ n.title }}</h4>
                 <p>{{ n.message }}</p>
+                {% if n.link and not (n.link | string).strip().lower().startswith('javascript:') %}
+                <a href="{{ n.link }}" class="notif-action-link">View Details <i class="ph ph-arrow-right"></i></a>
+                {% endif %}
             </div>
             <div class="notif-right">
                 <span class="notif-time">{{ n.created_at | community_timeago }}</span>
@@ -189,35 +192,89 @@
 </div>
 
 <script>
-// Fluid Slide-out & Collapse Dismiss Animation
+function getCsrfToken() {
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    return meta ? meta.getAttribute('content') : '';
+}
+
+// Fluid Slide-out & Collapse Dismiss Animation with DB Persistence
 function dismissNotif(btn) {
     const item = btn.closest('.notif-item');
-    
+    if (!item) return;
+    const notifId = item.getAttribute('data-id');
+    const isUnread = item.classList.contains('unread');
+    const deleteUrl = "{{ url_for(request.blueprint ~ '.delete_notification', notif_id='__NOTIF_ID__') }}".replace('__NOTIF_ID__', encodeURIComponent(notifId));
+
     // Step 1: Slide out and fade
     item.style.transition = 'opacity 0.25s ease, transform 0.25s ease, max-height 0.25s ease, padding 0.25s ease, margin 0.25s ease';
     item.style.opacity = '0';
     item.style.transform = 'scale(0.92) translateX(40px)';
-    
-    // Step 2: Collapse height
-    setTimeout(() => {
-        item.style.maxHeight = '0';
-        item.style.paddingTop = '0';
-        item.style.paddingBottom = '0';
-        item.style.marginTop = '0';
-        item.style.marginBottom = '0';
-        item.style.border = 'none';
-        
-        // Step 3: Remove from DOM
-        setTimeout(() => {
-            item.remove();
-            checkEmptyState();
-        }, 250);
-    }, 200);
+
+    fetch(deleteUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken(),
+            'X-CSRF-Token': getCsrfToken()
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            // Step 2: Collapse height
+            setTimeout(() => {
+                item.style.maxHeight = '0';
+                item.style.paddingTop = '0';
+                item.style.paddingBottom = '0';
+                item.style.marginTop = '0';
+                item.style.marginBottom = '0';
+                item.style.border = 'none';
+
+                // Step 3: Remove from DOM & sync unread counts
+                setTimeout(() => {
+                    item.remove();
+
+                    const unreadCount = document.querySelectorAll('.notif-item.unread').length;
+                    const label = document.querySelector('.unread-label');
+                    if (label) {
+                        label.textContent = `(${unreadCount} unread)`;
+                    }
+
+                    if (isUnread) {
+                        const badge = document.querySelector('.notification-bell .badge');
+                        if (badge) {
+                            const currentCount = parseInt(badge.textContent || '0', 10);
+                            const nextCount = currentCount - 1;
+                            if (nextCount <= 0) {
+                                badge.style.display = 'none';
+                                badge.textContent = '0';
+                            } else {
+                                badge.textContent = nextCount;
+                            }
+                        }
+                    }
+
+                    checkEmptyState();
+                }, 250);
+            }, 200);
+        } else {
+            item.style.opacity = '';
+            item.style.transform = '';
+            if (typeof showToast === 'function') {
+                showToast('Error', 'Could not delete notification.', 'error');
+            }
+        }
+    })
+    .catch(err => {
+        item.style.opacity = '';
+        item.style.transform = '';
+        console.error('Dismiss error:', err);
+    });
 }
 
 function checkEmptyState() {
     const container = document.getElementById('notificationsContainer');
-    if (container && container.children.length === 0) {
+    if (container && container.querySelectorAll('.notif-item').length === 0) {
         container.innerHTML = `
             <div style="text-align: center; padding: 60px 40px; background: rgba(255,255,255,0.03); border-radius: 16px; border: 1px solid var(--border-color-soft);">
                 <i class="ph ph-bell-slash" style="font-size: 3rem; color: var(--text-secondary); margin-bottom: 14px; display: block;"></i>
@@ -231,16 +288,26 @@ function checkEmptyState() {
 function markAllRead() {
     fetch("{{ url_for(request.blueprint ~ '.mark_notifications_read') }}", {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken(),
+            'X-CSRF-Token': getCsrfToken()
+        }
     }).then(res => res.json()).then(data => {
-        if(data.success) {
+        if (data.success) {
             document.querySelectorAll('.notif-item.unread').forEach(el => {
                 el.classList.remove('unread');
                 el.style.borderLeft = '';
                 el.style.background = '';
             });
-            const unreadLbl = document.getElementById('unreadCount');
+            const unreadLbl = document.querySelector('.unread-label') || document.getElementById('unreadCount');
             if (unreadLbl) unreadLbl.textContent = '(0 unread)';
+
+            const badge = document.querySelector('.notification-bell .badge');
+            if (badge) {
+                badge.style.display = 'none';
+                badge.textContent = '0';
+            }
         }
     });
 }
